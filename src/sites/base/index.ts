@@ -11,84 +11,84 @@ import theme from '@/assets/styles/theme.scss?inline';
 import downloadButton from '@/assets/styles/downloadButton.scss?inline';
 
 type AppElement = HTMLElement & {
-	dark: boolean;
-	updated: boolean;
-	showChangelog(): void;
-	showSetting(): void;
+  dark: boolean;
+  updated: boolean;
+  showChangelog(): void;
+  showSetting(): void;
 };
 
 export abstract class SiteInject {
-	private modal!: AppElement;
+  private modal!: AppElement;
 
-	constructor() {
-		this.inject();
-		this.observeColorScheme();
-	}
+  constructor() {
+    this.inject();
+    this.observeColorScheme();
+  }
 
-	protected inject() {
-		this.injectApp();
-		this.injectStyle();
+  protected inject() {
+    this.injectApp();
+    this.injectStyle();
 
-		GM_registerMenuCommand(
-			t('button.setting'),
-			() => {
-				if (this.modal.shadowRoot?.querySelector('.modal')) {
-					return;
-				}
-				this.modal.showSetting();
-			},
-			's'
-		);
+    GM_registerMenuCommand(
+      t('button.setting'),
+      () => {
+        if (this.modal.shadowRoot?.querySelector('.modal')) {
+          return;
+        }
+        this.modal.showSetting();
+      },
+      's'
+    );
 
-		if (config.get('showMsg')) {
-			this.modal.setAttribute('updated', '');
-			config.set('showMsg', false);
-		}
-	}
+    if (config.get('showMsg')) {
+      this.modal.setAttribute('updated', '');
+      config.set('showMsg', false);
+    }
+  }
 
-	protected injectApp() {
-		customElements.define(
-			'pdl-app',
-			create_custom_element(
-				App,
-				{ dark: { type: 'Boolean' }, updated: { type: 'Boolean' } },
-				[],
-				['showChangelog', 'showSetting'],
-				true
-			)
-		);
-		const modal = document.createElement('pdl-app') as AppElement;
-		modal.setAttribute('style', 'position:fixed; z-index:99999');
-		document.body.append(modal);
+  protected injectApp() {
+    customElements.define(
+      'pdl-app',
+      create_custom_element(
+        App,
+        { dark: { type: 'Boolean' }, updated: { type: 'Boolean' } },
+        [],
+        ['showChangelog', 'showSetting'],
+        true
+      )
+    );
+    const modal = document.createElement('pdl-app') as AppElement;
+    modal.setAttribute('style', 'position:fixed; z-index:99999');
+    document.body.append(modal);
 
-		this.modal = modal;
-	}
+    this.modal = modal;
+  }
 
-	protected injectStyle() {
-		[util, theme, downloadButton].forEach((style) => GM_addStyle(style));
+  protected injectStyle() {
+    [util, theme, downloadButton].forEach((style) => GM_addStyle(style));
 
-		(
-			[
-				'pdl-btn-self-bookmark-left',
-				'pdl-btn-self-bookmark-top',
-				'pdl-btn-left',
-				'pdl-btn-top'
-			] as (keyof ConfigData)[]
-		).forEach((key) => {
-			let val;
-			if ((val = config.get(key)) !== undefined) {
-				document.documentElement.style.setProperty('--' + key, val as string);
-			}
-		});
-	}
+    (
+      [
+        'pdl-btn-self-bookmark-left',
+        'pdl-btn-self-bookmark-top',
+        'pdl-btn-left',
+        'pdl-btn-top'
+      ] as (keyof ConfigData)[]
+    ).forEach((key) => {
+      let val;
+      if ((val = config.get(key)) !== undefined) {
+        document.documentElement.style.setProperty('--' + key, val as string);
+      }
+    });
+  }
 
-	protected setModalDarkMode() {
-		this.modal.setAttribute('dark', '');
-	}
+  protected setModalDarkMode() {
+    this.modal.setAttribute('dark', '');
+  }
 
-	protected setModalLightMode() {
-		this.modal.removeAttribute('dark');
-	}
+  protected setModalLightMode() {
+    this.modal.removeAttribute('dark');
+  }
 
-	protected abstract observeColorScheme(): void;
+  protected abstract observeColorScheme(): void;
 }

@@ -6,27 +6,27 @@ import { PixivDownloadConfig } from '@/sites/pixiv/downloadConfigBuilder';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 
 export async function downloadArtwork(btn: ThumbnailButton) {
-	downloader.dirHandleCheck();
+  downloader.dirHandleCheck();
 
-	const id = btn.getAttribute('pdl-id')!;
-	const pixivMeta = await pixivParser.parse(id);
+  const id = btn.getAttribute('pdl-id')!;
+  const pixivMeta = await pixivParser.parse(id);
 
-	const { bookmarkData, token, tags, artist, userId, title } = pixivMeta;
+  const { bookmarkData, token, tags, artist, userId, title } = pixivMeta;
 
-	if (!bookmarkData) {
-		addBookmark(btn, id, token, tags);
-	}
+  if (!bookmarkData) {
+    addBookmark(btn, id, token, tags);
+  }
 
-	const downloadConfigs = new PixivDownloadConfig(pixivMeta).getDownloadConfig(btn);
+  const downloadConfigs = new PixivDownloadConfig(pixivMeta).getDownloadConfig(btn);
 
-	await downloader.download(downloadConfigs);
+  await downloader.download(downloadConfigs);
 
-	const historyData: HistoryData = {
-		pid: Number(id),
-		user: artist,
-		userId: Number(userId),
-		title,
-		tags
-	};
-	historyDb.add(historyData);
+  const historyData: HistoryData = {
+    pid: Number(id),
+    user: artist,
+    userId: Number(userId),
+    title,
+    tags
+  };
+  historyDb.add(historyData);
 }

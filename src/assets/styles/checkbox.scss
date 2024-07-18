@@ -11,7 +11,9 @@
   border-radius: 14px !important;
   height: 14px;
   background-color: rgba(133, 133, 133) !important;
-  transition: background-color 0.2s ease 0s, box-shadow 0.2s ease 0s;
+  transition:
+    background-color 0.2s ease 0s,
+    box-shadow 0.2s ease 0s;
 
   &:hover {
     background-color: var(--pdl-bg3-hover) !important;

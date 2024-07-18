@@ -7,23 +7,23 @@ import { danbooruParser } from './parser';
 import { DanbooruDownloadConfig } from './downloadConfigBuilder';
 
 export async function downloadArtwork(btn: ThumbnailButton) {
-	downloader.dirHandleCheck();
+  downloader.dirHandleCheck();
 
-	const id = btn.getAttribute('pdl-id')!;
-	const mediaMeta = await danbooruParser.parse(id);
-	const { tags, artist, title } = mediaMeta;
+  const id = btn.getAttribute('pdl-id')!;
+  const mediaMeta = await danbooruParser.parse(id);
+  const { tags, artist, title } = mediaMeta;
 
-	const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
+  const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
 
-	config.get('addBookmark') && addBookmark(id);
+  config.get('addBookmark') && addBookmark(id);
 
-	await downloader.download(downloadConfigs);
+  await downloader.download(downloadConfigs);
 
-	const historyData: HistoryData = {
-		pid: Number(id),
-		user: artist,
-		title,
-		tags
-	};
-	historyDb.add(historyData);
+  const historyData: HistoryData = {
+    pid: Number(id),
+    user: artist,
+    title,
+    tags
+  };
+  historyDb.add(historyData);
 }

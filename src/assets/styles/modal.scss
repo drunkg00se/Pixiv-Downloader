@@ -48,7 +48,8 @@
       background-color: transparent;
       transform: rotate(45deg);
       transition: 0.25s background-color;
-      background: linear-gradient(rgb(125, 125, 125) 0%, rgb(125, 125, 125) 100%) center/18px 2px no-repeat,
+      background:
+        linear-gradient(rgb(125, 125, 125) 0%, rgb(125, 125, 125) 100%) center/18px 2px no-repeat,
         linear-gradient(rgb(125, 125, 125) 0%, rgb(125, 125, 125) 100%) center/2px 18px no-repeat;
 
       &:hover {

@@ -101,7 +101,12 @@
 
     /* 进度条 */
     &:not(:empty):after {
-      background: conic-gradient(#01b468 0, #01b468 var(--pdl-progress), transparent var(--pdl-progress), transparent);
+      background: conic-gradient(
+        #01b468 0,
+        #01b468 var(--pdl-progress),
+        transparent var(--pdl-progress),
+        transparent
+      );
       transition: --pdl-progress 0.2s ease;
     }
 

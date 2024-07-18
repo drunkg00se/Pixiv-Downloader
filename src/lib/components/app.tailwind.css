@@ -4,18 +4,18 @@
 @tailwind variants;
 
 @layer components {
-	.modal
-		*:focus:not([tabindex='-1']):not(.input):not(.textarea):not(.select):not(.input-group):not(
-			.input-group input
-		) {
-		@apply outline outline-1 outline-surface-900;
-	}
+  .modal
+    *:focus:not([tabindex='-1']):not(.input):not(.textarea):not(.select):not(.input-group):not(
+      .input-group input
+    ) {
+    @apply outline outline-1 outline-surface-900;
+  }
 
-	.dark
-		.modal
-		*:focus:not([tabindex='-1']):not(.input):not(.textarea):not(.select):not(.input-group):not(
-			.input-group input
-		) {
-		@apply outline-surface-50;
-	}
+  .dark
+    .modal
+    *:focus:not([tabindex='-1']):not(.input):not(.textarea):not(.select):not(.input-group):not(
+      .input-group input
+    ) {
+    @apply outline-surface-50;
+  }
 }

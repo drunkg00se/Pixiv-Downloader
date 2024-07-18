@@ -7,23 +7,23 @@ import { config } from '@/lib/config';
 import { ThumbnailButton } from '../../lib/components/Button/thumbnailButton';
 
 export async function downloadArtwork(btn: ThumbnailButton) {
-	downloader.dirHandleCheck();
+  downloader.dirHandleCheck();
 
-	const id = btn.getAttribute('pdl-id')!;
-	const mediaMeta = await rule34Parser.parse(id);
-	const { tags, artist, title } = mediaMeta;
+  const id = btn.getAttribute('pdl-id')!;
+  const mediaMeta = await rule34Parser.parse(id);
+  const { tags, artist, title } = mediaMeta;
 
-	const downloadConfigs = new Rule34DownloadConfig(mediaMeta).getDownloadConfig(btn);
+  const downloadConfigs = new Rule34DownloadConfig(mediaMeta).getDownloadConfig(btn);
 
-	config.get('addBookmark') && addBookmark(id);
+  config.get('addBookmark') && addBookmark(id);
 
-	await downloader.download(downloadConfigs);
+  await downloader.download(downloadConfigs);
 
-	const historyData: HistoryData = {
-		pid: Number(id),
-		user: artist,
-		title,
-		tags
-	};
-	historyDb.add(historyData);
+  const historyData: HistoryData = {
+    pid: Number(id),
+    user: artist,
+    title,
+    tags
+  };
+  historyDb.add(historyData);
 }

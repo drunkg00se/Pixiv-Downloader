@@ -12,7 +12,9 @@
     height: 2px;
     background-color: #0096fa;
     z-index: 1;
-    transition: width 0.2s, transform 0.2s;
+    transition:
+      width 0.2s,
+      transform 0.2s;
   }
 
   .pdl-tab-item {

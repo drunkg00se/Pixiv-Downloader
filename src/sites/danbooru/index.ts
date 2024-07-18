@@ -4,103 +4,103 @@ import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumb
 import { downloadPoolArtwork } from './downloadPoolArtwork';
 
 export class Danbooru extends SiteInject {
-	protected inject(): void {
-		super.inject();
-		this.pageAction();
-	}
+  protected inject(): void {
+    super.inject();
+    this.pageAction();
+  }
 
-	protected createThumbnailBtn() {
-		const btnContainers = document.querySelectorAll<HTMLAnchorElement>(
-			'article a.post-preview-link'
-		);
-		if (!btnContainers.length) return;
+  protected createThumbnailBtn() {
+    const btnContainers = document.querySelectorAll<HTMLAnchorElement>(
+      'article a.post-preview-link'
+    );
+    if (!btnContainers.length) return;
 
-		btnContainers.forEach((el) => {
-			const id = /(?<=\/posts\/)\d+/.exec(el.href)?.[0];
-			if (!id) return;
+    btnContainers.forEach((el) => {
+      const id = /(?<=\/posts\/)\d+/.exec(el.href)?.[0];
+      if (!id) return;
 
-			const btn = new ThumbnailButton({
-				id,
-				onClick: downloadArtwork
-			});
+      const btn = new ThumbnailButton({
+        id,
+        onClick: downloadArtwork
+      });
 
-			el.appendChild(btn);
-		});
-	}
+      el.appendChild(btn);
+    });
+  }
 
-	protected createArtworkBtn(id: string) {
-		const btnContainer = document.querySelector<HTMLElement>('section.image-container')!;
+  protected createArtworkBtn(id: string) {
+    const btnContainer = document.querySelector<HTMLElement>('section.image-container')!;
 
-		const btn = new ThumbnailButton({
-			id,
-			type: ThumbnailBtnType.Gallery,
-			onClick: downloadArtwork
-		});
+    const btn = new ThumbnailButton({
+      id,
+      type: ThumbnailBtnType.Gallery,
+      onClick: downloadArtwork
+    });
 
-		const wrapper = document.createElement('div');
-		wrapper.classList.add('pdl-wrap-artworks');
-		wrapper.appendChild(btn);
-		btnContainer.appendChild(wrapper);
-	}
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('pdl-wrap-artworks');
+    wrapper.appendChild(btn);
+    btnContainer.appendChild(wrapper);
+  }
 
-	protected createPoolThumbnailBtn() {
-		const btnContainers = document.querySelectorAll<HTMLAnchorElement>(
-			'article a.post-preview-link'
-		);
-		if (!btnContainers.length) return;
+  protected createPoolThumbnailBtn() {
+    const btnContainers = document.querySelectorAll<HTMLAnchorElement>(
+      'article a.post-preview-link'
+    );
+    if (!btnContainers.length) return;
 
-		btnContainers.forEach((el) => {
-			const poolId = /(?<=\/pools\/)\d+/.exec(el.href)?.[0];
-			if (!poolId) return;
+    btnContainers.forEach((el) => {
+      const poolId = /(?<=\/pools\/)\d+/.exec(el.href)?.[0];
+      if (!poolId) return;
 
-			const btn = new ThumbnailButton({
-				id: poolId,
-				type: ThumbnailBtnType.DanbooruPool,
-				onClick: downloadPoolArtwork
-			});
+      const btn = new ThumbnailButton({
+        id: poolId,
+        type: ThumbnailBtnType.DanbooruPool,
+        onClick: downloadPoolArtwork
+      });
 
-			el.appendChild(btn);
-		});
-	}
+      el.appendChild(btn);
+    });
+  }
 
-	protected pageAction() {
-		const path = location.pathname;
-		if (/^\/posts\/\d+/.test(path)) {
-			const imageContainer = document.querySelector(
-				'section.image-container:not(.blacklisted-active)'
-			);
-			if (!imageContainer) return;
+  protected pageAction() {
+    const path = location.pathname;
+    if (/^\/posts\/\d+/.test(path)) {
+      const imageContainer = document.querySelector(
+        'section.image-container:not(.blacklisted-active)'
+      );
+      if (!imageContainer) return;
 
-			const id = imageContainer.getAttribute('data-id')!;
-			this.createArtworkBtn(id);
-			this.createThumbnailBtn();
-		} else if (/^\/pools\/gallery/.test(path)) {
-			// TODO: 下载pool
-			this.createPoolThumbnailBtn();
-		} else {
-			this.createThumbnailBtn();
-		}
-	}
+      const id = imageContainer.getAttribute('data-id')!;
+      this.createArtworkBtn(id);
+      this.createThumbnailBtn();
+    } else if (/^\/pools\/gallery/.test(path)) {
+      // TODO: 下载pool
+      this.createPoolThumbnailBtn();
+    } else {
+      this.createThumbnailBtn();
+    }
+  }
 
-	protected observeColorScheme() {
-		const query = window.matchMedia('(prefers-color-scheme: dark)');
-		let uaPreferDark = query.matches;
+  protected observeColorScheme() {
+    const query = window.matchMedia('(prefers-color-scheme: dark)');
+    let uaPreferDark = query.matches;
 
-		const siteSetting = document.body.getAttribute('data-current-user-theme') as
-			| 'dark'
-			| 'auto'
-			| 'light';
-		const sitePreferDark = siteSetting === 'dark';
+    const siteSetting = document.body.getAttribute('data-current-user-theme') as
+      | 'dark'
+      | 'auto'
+      | 'light';
+    const sitePreferDark = siteSetting === 'dark';
 
-		if (sitePreferDark || (siteSetting === 'auto' && uaPreferDark)) {
-			this.setModalDarkMode();
-		}
+    if (sitePreferDark || (siteSetting === 'auto' && uaPreferDark)) {
+      this.setModalDarkMode();
+    }
 
-		if (siteSetting === 'auto') {
-			query.addEventListener('change', (e) => {
-				uaPreferDark = e.matches;
-				uaPreferDark ? this.setModalDarkMode() : this.setModalLightMode();
-			});
-		}
-	}
+    if (siteSetting === 'auto') {
+      query.addEventListener('change', (e) => {
+        uaPreferDark = e.matches;
+        uaPreferDark ? this.setModalDarkMode() : this.setModalLightMode();
+      });
+    }
+  }
 }

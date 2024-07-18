@@ -9,31 +9,31 @@ const require = createRequire(import.meta.url);
 
 /** @type {import('tailwindcss').Config} */
 export default {
-	darkMode: 'class',
-	content: [
-		'src/**/*.{js,ts,html,svelte}',
-		join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')
-	],
-	theme: {
-		extend: {
-			transitionProperty: {
-				height: 'height'
-			}
-		}
-	},
-	plugins: [
-		forms,
-		typography,
-		skeleton({
-			themes: {
-				preset: [
-					{
-						name: 'skeleton',
-						enhancements: true
-					}
-				]
-			}
-		}),
-		scrollbar()
-	]
+  darkMode: 'class',
+  content: [
+    'src/**/*.{js,ts,html,svelte}',
+    join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')
+  ],
+  theme: {
+    extend: {
+      transitionProperty: {
+        height: 'height'
+      }
+    }
+  },
+  plugins: [
+    forms,
+    typography,
+    skeleton({
+      themes: {
+        preset: [
+          {
+            name: 'skeleton',
+            enhancements: true
+          }
+        ]
+      }
+    }),
+    scrollbar()
+  ]
 };
