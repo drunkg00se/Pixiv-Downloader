@@ -1,0 +1,71 @@
+/* theme */
+@mixin color-scheme-dark {
+  --pdl-bg1: rgb(31, 31, 31);
+  --pdl-bg2-hover: rgba(255, 255, 255, 0.1);
+  --pdl-bg3-hover: rgb(155, 155, 155);
+
+  --pdl-btn1: rgba(255, 255, 255, 0.4);
+  --pdl-btn1-hover: rgba(255, 255, 255, 0.6);
+
+  --pdl-border1: rgba(255, 255, 255, 0.3);
+
+  --pdl-text1: rgb(245, 245, 245);
+}
+
+@mixin color-scheme-light {
+  --pdl-bg1: #fff;
+  --pdl-bg2-hover: rgba(0, 0, 0, 0.05);
+  --pdl-bg3-hover: rgb(31, 31, 31);
+
+  --pdl-btn1: rgba(0, 0, 0, 0.04);
+  --pdl-btn1-hover: rgba(0, 0, 0, 0.12);
+
+  --pdl-border1: rgba(0, 0, 0, 0.1);
+
+  --pdl-text1: rgb(31, 31, 31);
+}
+
+:root {
+  @include color-scheme-light();
+
+  &[data-theme='default'],
+  body[data-current-user-theme='light'] {
+    @include color-scheme-light();
+  }
+
+  @media (prefers-color-scheme: light) {
+    @include color-scheme-light();
+  }
+
+  &[data-theme='dark'],
+  body[data-current-user-theme='dark'] {
+    @include color-scheme-dark();
+  }
+
+  @media (prefers-color-scheme: dark) {
+    @include color-scheme-dark();
+  }
+}
+
+pdl-button {
+  --pdl-green1: #01b468;
+  --pdl-black1: #3c3c3c;
+  --pdl-red1: #ea0000;
+  --pdl-fill-svg: var(--pdl-black1);
+
+  &[status='init'] {
+    --pdl-fill-svg: var(--pdl-black1);
+  }
+
+  &[type='pixiv-toolbar'] {
+    --pdl-fill-svg: var(--pdl-text1);
+  }
+
+  &[status] {
+    --pdl-fill-svg: var(--pdl-green1);
+  }
+
+  &[status='error'] {
+    --pdl-fill-svg: var(--pdl-red1);
+  }
+}

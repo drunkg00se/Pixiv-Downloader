@@ -1,0 +1,214 @@
+/* tabs */
+.pdl-tabs-nav {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #dcdfe6;
+  position: relative;
+
+  .pdl-tabs__active-bar {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background-color: #0096fa;
+    z-index: 1;
+    transition: width 0.2s, transform 0.2s;
+  }
+
+  .pdl-tab-item {
+    padding: 0px 16px;
+    line-height: 2.5;
+    cursor: pointer;
+    transition: 0.2s color;
+
+    &:hover {
+      color: #0096fa;
+    }
+
+    &.active {
+      color: #0096fa;
+      font-weight: 700;
+    }
+
+    &:nth-child(2) {
+      padding-left: 0px;
+    }
+
+    &:last-child {
+      padding-right: 0px;
+    }
+  }
+}
+
+.pdl-tabs-content {
+  padding: 16px;
+  min-height: 200px;
+
+  .option-header {
+    font-weight: 700;
+  }
+
+  /* 文件名页 */
+  #pdl-setting-filename {
+    .pdl-input-wrap,
+    .tags-option {
+      display: flex;
+      align-items: center;
+      margin: 12px 0;
+      gap: 12px;
+    }
+
+    .pdl-input-wrap label,
+    .tags-option .tags-title {
+      cursor: default;
+      font-weight: 700;
+      min-width: 5em;
+    }
+
+    .pdl-input-wrap {
+      input[type='text'] {
+        height: auto;
+        padding: 0.5em;
+        font-size: 16px;
+        line-height: 1.5;
+        flex: 1;
+        border: 1px solid #333;
+
+        &:focus {
+          background-color: #fff !important;
+        }
+      }
+
+      button {
+        line-height: 1.5;
+      }
+    }
+
+    .tags-option {
+      .tags-content {
+        flex: 1;
+        display: flex;
+        gap: 20px;
+      }
+    }
+
+    /* FSA开关 */
+    .pdl-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 0.6em 0;
+
+      &:hover {
+        background-color: var(--pdl-bg2-hover);
+      }
+    }
+  }
+
+  /* ugoira */
+  #pdl-setting-ugoira {
+    #pdl-ugoira-format-wrap {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      margin: 1.5em 1em;
+
+      .pdl-ugoira-format-item {
+        label {
+          padding-left: 4px;
+        }
+      }
+    }
+  }
+
+  /* history */
+  #pdl-setting-history {
+    div {
+      text-align: center;
+      margin: 1em 0;
+
+      .btn-history {
+        width: 80%;
+      }
+    }
+  }
+
+  /* others setting */
+  #pdl-setting-others {
+    .pdl-options {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      cursor: pointer;
+      transition: 0.2s background-color;
+      padding: 1em 0.5em;
+      border-radius: 4px;
+
+      &:hover {
+        background-color: var(--pdl-bg2-hover);
+      }
+
+      &.sub-option {
+        padding: 0.5em;
+        padding-inline-start: 2em;
+      }
+    }
+  }
+
+  /* donate */
+  #pdl-setting-donate {
+    text-align: center;
+
+    p {
+      margin: 0.5em 0;
+    }
+  }
+
+  /* adjust button position */
+  .pdl-adjust-button {
+    display: flex;
+    justify-content: space-between;
+    gap: 32px;
+
+    .pdl-adjust-content {
+      flex: 2;
+
+      .pdl-adjust-item {
+        margin-bottom: 1em;
+
+        .pdl-adjust-title {
+          font-weight: 700;
+          margin-bottom: 0.8em;
+        }
+
+        .pdl-adjust-select {
+          display: flex;
+          align-items: center;
+          margin: 0.6em 0;
+          padding: 0 0.4em;
+          gap: 20px;
+
+          input[type='range'] {
+            flex: 1 1;
+            max-width: 450px;
+          }
+        }
+      }
+    }
+
+    .pdl-adjust-preview {
+      display: flex;
+      flex: 1;
+      align-self: center;
+
+      .pdl-thumbnail-sample {
+        position: relative;
+        width: 184px;
+        height: 184px;
+        background-color: rgba(0, 150, 250, 0.15);
+        border-radius: 4px;
+      }
+    }
+  }
+}

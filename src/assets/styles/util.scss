@@ -1,0 +1,16 @@
+/* util */
+.pdl-hide {
+  display: none !important;
+}
+
+.pdl-unavailable {
+  pointer-events: none !important;
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+.pdl-spacer {
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
