@@ -48,7 +48,7 @@
 </script>
 
 {#if $modalStore[0]}
-  <div data-theme="skeleton" class="relative rounded-container-token shadow-xl {classes}">
+  <div data-theme="skeleton" class="relative rounded-container-token shadow-xl bg-scroll {classes}">
     <section bind:this={content} class="overflow-hidden h-full">
       <slot></slot>
     </section>
