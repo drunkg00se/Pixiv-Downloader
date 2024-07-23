@@ -81,3 +81,14 @@ export function readBlobAsDataUrl(blob: Blob): Promise<string> {
     reader.readAsDataURL(blob);
   });
 }
+
+export async function addStyleToShadow(shadowRoot: ShadowRoot) {
+  if (import.meta.env.DEV) {
+    const modalStyle = (await import('./components/app.tailwind.css?inline')).default;
+    const style = new CSSStyleSheet();
+    style.replaceSync(modalStyle);
+    shadowRoot.adoptedStyleSheets = [style];
+  } else {
+    shadowRoot.adoptedStyleSheets = [(window as any)._pdlShadowStyle];
+  }
+}

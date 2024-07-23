@@ -1,4 +1,5 @@
 import downloadSvg from '@/assets/download.svg?src';
+import { addStyleToShadow } from '@/lib/util';
 import type { Category, BookmarksRest } from '@/sites/pixiv/types';
 
 interface TagProps {
@@ -89,14 +90,7 @@ export class ArtworkTagButton extends HTMLElement {
 
   private async render() {
     const shadowRoot = this.attachShadow({ mode: 'open' });
-    if (import.meta.env.DEV) {
-      const modalStyle = (await import('../app.tailwind.css?inline')).default;
-      const style = new CSSStyleSheet();
-      style.replaceSync(modalStyle);
-      shadowRoot.adoptedStyleSheets = [style];
-    } else {
-      shadowRoot.adoptedStyleSheets = [(window as any)._pdlShadowStyle];
-    }
+    addStyleToShadow(shadowRoot);
 
     shadowRoot.innerHTML = `  <button class="flex h-full items-center pr-2 rounded-e-[4px] disabled:cursor-wait disabled:opacity-70">
     <hr class="!border-t-0 border-l h-6 pr-2" />

@@ -2,6 +2,7 @@ import { Rule34 } from './sites/rule34';
 import { Danbooru } from './sites/danbooru';
 import { Pixiv } from './sites/pixiv';
 import { SiteInject } from './sites/base';
+import './lib/components/app.tailwind.css';
 
 type SiteInjectConstructor = new () => SiteInject;
 function getSiteInjector(host: string): SiteInjectConstructor | void {

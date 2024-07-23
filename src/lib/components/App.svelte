@@ -7,6 +7,7 @@
   import cog from '@/assets/cog.svg?src';
   import store from './Modal/Config/store';
   import t from '../lang';
+  import { addStyleToShadow } from '../util';
 
   initializeStores();
 
@@ -42,16 +43,7 @@
   let root: HTMLDivElement;
   onMount(async () => {
     const shadow = root.getRootNode() as ShadowRoot;
-
-    // Inject css
-    if (import.meta.env.DEV) {
-      const modalStyle = (await import('./app.tailwind.css?inline')).default;
-      const style = new CSSStyleSheet();
-      style.replaceSync(modalStyle);
-      shadow.adoptedStyleSheets = [style];
-    } else {
-      shadow.adoptedStyleSheets = [(window as any)._pdlShadowStyle];
-    }
+    addStyleToShadow(shadow);
 
     if (updated) {
       showChangelog();
@@ -117,8 +109,3 @@
     </button>
   {/if}
 </div>
-
-<!-- DEV SERVER时注释style -->
-<style>
-  @import './app.tailwind.css';
-</style>
