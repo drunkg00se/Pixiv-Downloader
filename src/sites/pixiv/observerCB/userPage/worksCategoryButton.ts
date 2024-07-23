@@ -3,14 +3,12 @@ import { getSelfId } from '@/sites/pixiv/helpers/getSelfId';
 import { createPdlBtn } from '@/lib/components/Button/pdlButton';
 import type { Category, BookmarksRest } from '../../types';
 import { regexp } from '@/lib/regExp';
-import { logger } from '@/lib/logger';
+import { ArtworkTagButton } from '@/lib/components/Pixiv/artworkTagButton';
 
 //根据location.search来判断需要查询的tag种类
 export type TagsCategory = 'artworks' | 'illustrations' | 'manga' | 'bookmarks';
 export function createTagsBtn(userId: string, category: TagsCategory) {
-  const tagsEles = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[status]')).map(
-    (el) => el.parentElement!
-  );
+  const tagsEles = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[status]'));
   if (!tagsEles.length) return;
 
   let cate: Category;
@@ -25,48 +23,15 @@ export function createTagsBtn(userId: string, category: TagsCategory) {
     rest = 'hide';
 
   tagsEles.forEach((ele) => {
-    const tagBtn = ele.querySelector('.pdl-btn');
-    if (tagBtn) {
-      // 个人页面收藏tag，公开，不公开的tag共用，需要重新设置rest
-      const btnRest = tagBtn.getAttribute('rest') as BookmarksRest;
-      if (rest !== btnRest) tagBtn.setAttribute('rest', rest);
-      return;
-    }
-    let tag;
-    const tagLink = ele.querySelector('a');
-    //数组末尾可能是更多按钮，更多按钮无a标签
-    if (!tagLink) return;
+    if (ele.nextElementSibling?.tagName === 'PDL-ARTWORK-TAG') return;
 
-    if (tagLink.getAttribute('status') !== 'active') {
-      // 处理个人页面rest为hide时 链接带rest参数的情况
-      if (rest === 'hide') {
-        tag = tagLink.href.slice(tagLink.href.lastIndexOf('/') + 1, tagLink.href.lastIndexOf('?'));
-      } else {
-        tag = tagLink.href.slice(tagLink.href.lastIndexOf('/') + 1);
-      }
-    } else {
-      const tagTextEles = ele.querySelectorAll('div[title]');
-      if (!tagTextEles.length) return logger.info('No Tags Element found.');
-      //忽略开头#
-      tag = tagTextEles[tagTextEles.length - 1].getAttribute('title')!.slice(1);
-    }
+    const artworkTagBtn = new ArtworkTagButton(ele);
+    artworkTagBtn.addEventListener('click', downloadBookmarksOrTags);
 
-    const attrs = {
-      attrs: { 'pdl-userId': userId, category: cate, tag, rest },
-      classList: ['pdl-btn', 'pdl-tag']
-    };
-    //下载时点击tags两次会重新生成其他tag，需要进行识别。收藏页面无此情况
-    if (isDownloading) attrs.classList.push('pdl-tag-hide');
+    // 下载中切换tag页面而重新生成的tag不应该可点击，收藏页面不会重新生成tag
+    if (isDownloading) artworkTagBtn.setAttribute('disabled', '');
 
-    const dlBtn = createPdlBtn(attrs);
-
-    if (!(tagLink.href.includes('bookmarks') && tagLink.getAttribute('status') !== 'active')) {
-      //50%透明度
-      dlBtn.style.backgroundColor = tagLink.getAttribute('color') + '80';
-    }
-
-    dlBtn.addEventListener('click', downloadBookmarksOrTags);
-    ele.appendChild(dlBtn);
+    ele.parentElement!.appendChild(artworkTagBtn);
   });
 
   //标签搜索对话框
