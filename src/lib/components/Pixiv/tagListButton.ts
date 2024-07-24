@@ -49,8 +49,8 @@ export class TagListButton extends HTMLElement {
 
     shadowRoot.innerHTML = ` 
   <div class=" flex items-center">    
-    <hr class="!border-t-0 border-l h-6 ml-2" />
-    <button class=" h-[38px] flex items-center rounded [&:not([disabled])]:hover:bg-slate-500/20 disabled:cursor-wait disabled:opacity-70">
+    <hr class="!border-t-0 border-l h-6 ml-4 mr-2" />
+    <button class=" h-[38px] w-[38px] btn-icon [&:not([disabled])]:hover:bg-slate-400/30 disabled:cursor-wait disabled:opacity-70">
       <i class="text-sm w-6 fill-current mx-2">
       ${downloadSvg}
       </i>
