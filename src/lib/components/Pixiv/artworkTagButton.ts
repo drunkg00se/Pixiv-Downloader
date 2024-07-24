@@ -45,10 +45,9 @@ export class ArtworkTagButton extends HTMLElement {
     // ignore '#' at the beginning except the first bookmark tag '未分類'
     const tag = tagStr.startsWith('#') ? tagStr.slice(1) : '未分類';
 
-    // tagElement.href return full url
-    const [, , userId, urlCategory, ...tagAndRest] = this.tagElement
-      .getAttribute('href')!
-      .split('/');
+    const url = new URL(this.tagElement.href);
+    const { searchParams, pathname } = url;
+    const [, , userId, urlCategory] = pathname.split('/');
 
     let category: Category;
 
@@ -59,18 +58,11 @@ export class ArtworkTagButton extends HTMLElement {
       category = urlCategory as 'manga' | 'bookmarks';
     }
 
-    let rest: BookmarksRest;
-    if (tagAndRest.length && tagAndRest.join().includes('rest=hide')) {
-      rest = 'hide';
-    } else {
-      rest = 'show';
-    }
-
     return {
       userId,
       category,
       tag,
-      rest
+      rest: searchParams.get('rest') === 'hide' ? 'hide' : 'show'
     } as TagProps;
   }
 
