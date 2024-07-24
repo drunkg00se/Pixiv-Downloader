@@ -1,7 +1,7 @@
 import { createThumbnailBtn } from './thumbnailBtn';
 import { fixPixivPreviewer } from '../helpers/fixPixivPreviewer';
 import { regexp } from '@/lib/regExp';
-import { createTagsBtn, type TagsCategory } from './userPage/worksCategoryButton';
+import { createTagListBtn, type TagsCategory } from './userPage/tagListButton';
 import {
   createDownloadBar,
   createFollowLatestDownloadBar,
@@ -13,6 +13,7 @@ import { createWorkScrollBtn } from './artworksPage/workScrollButton';
 import { createPresentationBtn } from './artworksPage/presentationButton';
 import { createPreviewModalBtn } from './artworksPage/previewModalButton';
 import { createMangaViewerBtn } from './artworksPage/mangaViewerButton';
+import { createFrequentTagBtn } from './userPage/frequentTagButton';
 
 function pageActions() {
   const pathname = location.pathname;
@@ -33,7 +34,8 @@ function pageActions() {
       createDownloadBar(id);
       const matchTag = regexp.userPageTags.exec(pathname);
       if (matchTag) {
-        createTagsBtn(id, matchTag[1] as TagsCategory);
+        createFrequentTagBtn();
+        createTagListBtn(id, matchTag[1] as TagsCategory);
       }
       break;
     }

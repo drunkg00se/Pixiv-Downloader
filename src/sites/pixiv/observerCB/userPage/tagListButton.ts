@@ -1,26 +1,10 @@
 import { isDownloading, downloadBookmarksOrTags } from '@/sites/pixiv/helpers/batchDownload';
 import { regexp } from '@/lib/regExp';
-import { ArtworkTagButton } from '@/lib/components/Pixiv/artworkTagButton';
 import { TagListButton } from '@/lib/components/Pixiv/tagListButton';
 
 //根据location.search来判断需要查询的tag种类
 export type TagsCategory = 'artworks' | 'illustrations' | 'manga' | 'bookmarks';
-export function createTagsBtn(userId: string, category: TagsCategory) {
-  const tagsEles = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[status]'));
-  if (!tagsEles.length) return;
-
-  tagsEles.forEach((ele) => {
-    if (ele.nextElementSibling?.tagName === 'PDL-ARTWORK-TAG') return;
-
-    const artworkTagBtn = new ArtworkTagButton(ele);
-    artworkTagBtn.addEventListener('click', downloadBookmarksOrTags);
-
-    // 下载中切换tag页面而重新生成的tag不应该可点击，收藏页面不会重新生成tag
-    if (isDownloading) artworkTagBtn.setAttribute('disabled', '');
-
-    ele.parentElement!.appendChild(artworkTagBtn);
-  });
-
+export function createTagListBtn(userId: string, category: TagsCategory) {
   let modalTagsEles: NodeListOf<HTMLAnchorElement>;
   let modal: HTMLDivElement | null;
   if (category === 'bookmarks') {
