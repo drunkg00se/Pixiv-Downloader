@@ -2,7 +2,7 @@ import downloadSvg from '@/assets/download.svg?src';
 import { addStyleToShadow } from '@/lib/util';
 import type { Category, BookmarksRest } from '@/sites/pixiv/types';
 
-interface TagProps {
+export interface TagProps {
   userId: string;
   category: Category;
   tag: string;

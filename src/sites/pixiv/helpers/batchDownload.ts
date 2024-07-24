@@ -13,6 +13,7 @@ import { downloadByIds } from './downloadByIds';
 import { logger } from '@/lib/logger';
 import { downloader } from '@/lib/downloader';
 import { ArtworkTagButton } from '@/lib/components/Pixiv/artworkTagButton';
+import type { TagListButton } from '@/lib/components/Pixiv/tagListButton';
 
 function onProgressCB(progressData: ProgressData | string) {
   if (typeof progressData === 'string') {
@@ -184,9 +185,9 @@ export async function downloadBookmarksOrTags(evt: MouseEvent) {
   let tag: string;
   let rest: PdlRest;
 
-  const btn = evt.target as HTMLButtonElement | ArtworkTagButton;
+  const btn = evt.currentTarget as HTMLButtonElement | ArtworkTagButton | TagListButton;
 
-  if (btn instanceof ArtworkTagButton) {
+  if (btn.dataset.userId) {
     userId = btn.dataset.userId!;
     category = btn.dataset.category as Category;
     tag = btn.dataset.tag!;
