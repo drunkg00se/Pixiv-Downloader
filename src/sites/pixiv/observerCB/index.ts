@@ -1,7 +1,7 @@
 import { createThumbnailBtn } from './thumbnailBtn';
 import { fixPixivPreviewer } from '../helpers/fixPixivPreviewer';
 import { regexp } from '@/lib/regExp';
-import { createTagListBtn, type TagsCategory } from './userPage/tagListButton';
+import { createTagListBtn } from './userPage/tagListButton';
 import {
   createDownloadBar,
   createFollowLatestDownloadBar,
@@ -32,10 +32,10 @@ function pageActions() {
       // 正则匹配项不同，param[1]可能是undefined
       const id = param[1] || param[2];
       createDownloadBar(id);
-      const matchTag = regexp.userPageTags.exec(pathname);
-      if (matchTag) {
+      const matchTagPage = regexp.userPageTags.exec(pathname);
+      if (matchTagPage) {
         createFrequentTagBtn();
-        createTagListBtn(id, matchTag[1] as TagsCategory);
+        createTagListBtn();
       }
       break;
     }
