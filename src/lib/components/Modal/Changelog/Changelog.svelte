@@ -14,12 +14,10 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
   <article class="modal-body mt-4">
     <ul class="list-disc list-inside leading-loose">
-      <li>重写了设置界面，变好看了</li>
-      <li>现在可以将动图转换为<strong>MP4</strong>格式（Firefox目前仅Nightly版本支持）</li>
-      <li>现在可以设置动图转换的质量</li>
-      <li>以Zip格式保存的动图现在会将每帧动画时间添加到注释中</li>
-      <li>Firefox现在可以将动图，打包漫画/插画保存到子目录</li>
-      <li>不再支持导入txt记录</li>
+      <li>Pixiv作品标签下载按钮调整，现在会跟踪标签颜色变化。</li>
+      <li>修复无法批量下载搜索结果的问题。</li>
+      <li>修复滚动页面时设置背景改变的问题。</li>
+      <li>重新适配Pixiv Previewer。</li>
     </ul>
   </article>
   <footer class="modal-footer relative mt-4 text-sm">
