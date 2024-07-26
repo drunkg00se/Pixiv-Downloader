@@ -89,3 +89,10 @@
   right: 4px;
   left: auto;
 }
+
+// yande browse
+:host([type='yande-browse'])::part(button) {
+  top: 320px;
+  right: 4px;
+  left: auto;
+}

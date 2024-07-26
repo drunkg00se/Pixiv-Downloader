@@ -38,9 +38,14 @@ export default defineConfig({
             'Pixiv | Danbooru | Rule34. 一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。',
           en: 'Pixiv | Danbooru | Rule34. Download artworks with one click. Batch download artworks or download by tags. Convert ugoira formats: Gif | Apng | Webp | Webm | MP4. Customize image file name, save path. Save / export download history.'
         },
-        match: ['https://www.pixiv.net/*', 'https://rule34.xxx/*', 'https://danbooru.donmai.us/*'],
+        match: [
+          'https://www.pixiv.net/*',
+          'https://rule34.xxx/*',
+          'https://danbooru.donmai.us/*',
+          'https://yande.re/*'
+        ],
         noframes: true,
-        connect: ['i.pximg.net', 'rule34.xxx', 'donmai.us']
+        connect: ['i.pximg.net', 'rule34.xxx', 'donmai.us', 'yande.re']
       },
       build: {
         cssSideEffects: () => {
