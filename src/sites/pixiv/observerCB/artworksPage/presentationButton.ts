@@ -25,7 +25,7 @@ export const createPresentationBtn: (id: string) => void = (() => {
       }
       return;
     }
-    if (containers.querySelector('.pdl-btn')) return;
+    if (containers.querySelector('pdl-button')) return;
 
     // 避免匹配到侧边栏pixiv图标: a > img
     const img = containers.querySelector<HTMLImageElement>('div > img');
