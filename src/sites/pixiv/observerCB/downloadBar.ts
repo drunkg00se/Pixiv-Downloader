@@ -341,7 +341,7 @@ export function changeDlbarDisplay(): void {
   document.querySelector('.pdl-dlbar .pdl-stop')?.classList.toggle('pdl-hide');
 
   document.querySelectorAll('pdl-artwork-tag, pdl-tag-list-button').forEach((ele) => {
-    if (ele.getAttribute('disabled') !== null) {
+    if (ele.hasAttribute('disabled')) {
       ele.removeAttribute('disabled');
     } else {
       ele.setAttribute('disabled', '');
