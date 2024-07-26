@@ -217,39 +217,41 @@
         </div>
       </li>
 
-      <li>
-        <div class="flex-auto">
-          <p>{t('setting.save_to.options.tag_language')}</p>
-          <p class={descritionText}>{t('setting.save_to.options.tag_language_tips')}</p>
-        </div>
+      {#if env.isPixiv()}
+        <li>
+          <div class="flex-auto">
+            <p>{t('setting.save_to.options.tag_language')}</p>
+            <p class={descritionText}>{t('setting.save_to.options.tag_language_tips')}</p>
+          </div>
 
-        <RadioGroup class=" shrink-0">
-          <RadioItem
-            name="tagLang"
-            class="text-sm"
-            bind:group={$store.tagLang}
-            value={TagLanguage.JAPANESE}>日本語</RadioItem
-          >
-          <RadioItem
-            name="tagLang"
-            class="text-sm"
-            bind:group={$store.tagLang}
-            value={TagLanguage.CHINESE}>简中</RadioItem
-          >
-          <RadioItem
-            name="tagLang"
-            class="text-sm"
-            bind:group={$store.tagLang}
-            value={TagLanguage.TRADITIONAL_CHINESE}>繁中</RadioItem
-          >
-          <RadioItem
-            name="tagLang"
-            class="text-sm"
-            bind:group={$store.tagLang}
-            value={TagLanguage.ENGLISH}>En</RadioItem
-          >
-        </RadioGroup>
-      </li>
+          <RadioGroup class=" shrink-0">
+            <RadioItem
+              name="tagLang"
+              class="text-sm"
+              bind:group={$store.tagLang}
+              value={TagLanguage.JAPANESE}>日本語</RadioItem
+            >
+            <RadioItem
+              name="tagLang"
+              class="text-sm"
+              bind:group={$store.tagLang}
+              value={TagLanguage.CHINESE}>简中</RadioItem
+            >
+            <RadioItem
+              name="tagLang"
+              class="text-sm"
+              bind:group={$store.tagLang}
+              value={TagLanguage.TRADITIONAL_CHINESE}>繁中</RadioItem
+            >
+            <RadioItem
+              name="tagLang"
+              class="text-sm"
+              bind:group={$store.tagLang}
+              value={TagLanguage.ENGLISH}>En</RadioItem
+            >
+          </RadioGroup>
+        </li>
+      {/if}
     </ul>
   </section>
 </div>
