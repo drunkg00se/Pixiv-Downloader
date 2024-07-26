@@ -12,6 +12,8 @@ import type { ProgressData, FailedDownloadResult, FilteredIds } from './download
 import { downloadByIds } from './downloadByIds';
 import { logger } from '@/lib/logger';
 import { downloader } from '@/lib/downloader';
+import { ArtworkTagButton } from '@/lib/components/Pixiv/artworkTagButton';
+import type { TagListButton } from '@/lib/components/Pixiv/tagListButton';
 
 function onProgressCB(progressData: ProgressData | string) {
   if (typeof progressData === 'string') {
@@ -178,11 +180,24 @@ export async function downloadBookmarksOrTags(evt: MouseEvent) {
   evt.stopPropagation();
   if (isDownloading) return;
 
-  const btn = evt.target as HTMLButtonElement;
-  const userId = btn.getAttribute('pdl-userid') as string;
-  const category = btn.getAttribute('category') as Category;
-  const tag = btn.getAttribute('tag') || '';
-  const rest = (btn.getAttribute('rest') || 'show') as PdlRest;
+  let userId: string;
+  let category: Category;
+  let tag: string;
+  let rest: PdlRest;
+
+  const btn = evt.currentTarget as HTMLButtonElement | ArtworkTagButton | TagListButton;
+
+  if (btn.dataset.userId) {
+    userId = btn.dataset.userId!;
+    category = btn.dataset.category as Category;
+    tag = btn.dataset.tag!;
+    rest = btn.dataset.bookmarkRest as PdlRest;
+  } else {
+    userId = btn.getAttribute('pdl-userid') as string;
+    category = btn.getAttribute('category') as Category;
+    tag = btn.getAttribute('tag') || '';
+    rest = (btn.getAttribute('rest') || 'show') as PdlRest;
+  }
 
   downloader.dirHandleCheck();
 

@@ -340,8 +340,12 @@ export function changeDlbarDisplay(): void {
 
   document.querySelector('.pdl-dlbar .pdl-stop')?.classList.toggle('pdl-hide');
 
-  document.querySelectorAll('.pdl-tag').forEach((ele) => {
-    ele.classList.toggle('pdl-tag-hide');
+  document.querySelectorAll('pdl-artwork-tag, pdl-tag-list-button').forEach((ele) => {
+    if (ele.hasAttribute('disabled')) {
+      ele.removeAttribute('disabled');
+    } else {
+      ele.setAttribute('disabled', '');
+    }
   });
 
   document.querySelector('.pdl-filter-wrap')?.classList.toggle('pdl-unavailable');

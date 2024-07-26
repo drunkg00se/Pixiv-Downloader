@@ -1,7 +1,7 @@
 import { createThumbnailBtn } from './thumbnailBtn';
 import { fixPixivPreviewer } from '../helpers/fixPixivPreviewer';
 import { regexp } from '@/lib/regExp';
-import { createTagsBtn, type TagsCategory } from './userPage/worksCategoryButton';
+import { createTagListBtn } from './userPage/tagListButton';
 import {
   createDownloadBar,
   createFollowLatestDownloadBar,
@@ -13,6 +13,7 @@ import { createWorkScrollBtn } from './artworksPage/workScrollButton';
 import { createPresentationBtn } from './artworksPage/presentationButton';
 import { createPreviewModalBtn } from './artworksPage/previewModalButton';
 import { createMangaViewerBtn } from './artworksPage/mangaViewerButton';
+import { createFrequentTagBtn } from './userPage/frequentTagButton';
 
 function pageActions() {
   const pathname = location.pathname;
@@ -31,9 +32,10 @@ function pageActions() {
       // 正则匹配项不同，param[1]可能是undefined
       const id = param[1] || param[2];
       createDownloadBar(id);
-      const matchTag = regexp.userPageTags.exec(pathname);
-      if (matchTag) {
-        createTagsBtn(id, matchTag[1] as TagsCategory);
+      const matchTagPage = regexp.userPageTags.exec(pathname);
+      if (matchTagPage) {
+        createFrequentTagBtn();
+        createTagListBtn();
       }
       break;
     }
