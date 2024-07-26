@@ -255,7 +255,7 @@ export async function downloadSearchResult(evt: MouseEvent) {
   evt.stopPropagation();
   if (isDownloading) return;
 
-  const pdlNodes = document.querySelectorAll<HTMLButtonElement>('section ul li button.pdl-btn-sub');
+  const pdlNodes = document.querySelectorAll<HTMLButtonElement>('section ul li pdl-button');
   if (!pdlNodes.length) return;
 
   let ids = Array.prototype.map.call(pdlNodes, (node: HTMLButtonElement) =>
