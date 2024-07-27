@@ -22,7 +22,10 @@
   export let sectionSpace = `space-y-4`;
   export let sectionTitle = 'font-bold';
 
-  export let pattern: string[] = [];
+  export let templates: string[] = [];
+
+  let directoryRef: HTMLInputElement;
+  let filenameRef: HTMLInputElement;
 
   let directory = $store.folderPattern;
   let filename = $store.filenamePattern;
@@ -59,6 +62,24 @@
     console.log(fsaDirectory);
   }
 
+  function insertDirTemplateAtCursor(template: string) {
+    return () => {
+      directory =
+        directory.slice(0, directoryRef.selectionStart!) +
+        template +
+        directory.slice(directoryRef.selectionEnd!);
+    };
+  }
+
+  function insertFilenameTemplateAtCursor(template: string) {
+    return () => {
+      filename =
+        filename.slice(0, filenameRef.selectionStart!) +
+        template +
+        filename.slice(filenameRef.selectionEnd!);
+    };
+  }
+
   $: subDirectoryAvailable = $store.useFileSystemAccess || env.isSupportSubpath();
   $: folderBtnDisabled = directory === $store.folderPattern;
   $: filenameBtnDisabled = filename === $store.filenamePattern;
@@ -89,7 +110,12 @@
           </button>
 
           {#if subDirectoryAvailable}
-            <input type="text" placeholder={directoryPlaceholder} bind:value={directory} />
+            <input
+              bind:this={directoryRef}
+              type="text"
+              placeholder={directoryPlaceholder}
+              bind:value={directory}
+            />
           {:else}
             <input type="text" disabled placeholder={directoryPlaceholder} />
           {/if}
@@ -107,13 +133,13 @@
         </div>
 
         <div class=" self-start space-x-2">
-          {#each pattern as p}
+          {#each templates as template}
             <button
               class="chip variant-soft hover:variant-filled"
               disabled={!subDirectoryAvailable}
-              on:click={() => (directory += ' ' + p)}
+              on:click={insertDirTemplateAtCursor(template)}
             >
-              <span>{p}</span>
+              <span>{template}</span>
             </button>
           {/each}
         </div>
@@ -187,6 +213,7 @@
           </button>
 
           <input
+            bind:this={filenameRef}
             type="text"
             required
             placeholder={t('setting.save_to.placeholder.filename_requried')}
@@ -206,12 +233,12 @@
         </div>
 
         <div class=" self-start space-x-2">
-          {#each pattern as p}
+          {#each templates as template}
             <button
               class="chip variant-soft hover:variant-filled"
-              on:click={() => (filename += ' ' + p)}
+              on:click={insertFilenameTemplateAtCursor(template)}
             >
-              <span>{p}</span>
+              <span>{template}</span>
             </button>
           {/each}
         </div>
