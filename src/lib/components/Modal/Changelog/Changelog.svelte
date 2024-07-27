@@ -14,10 +14,7 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
   <article class="modal-body mt-4">
     <ul class="list-disc list-inside leading-loose">
-      <li>Pixiv作品标签下载按钮调整，现在会跟踪标签颜色变化。</li>
-      <li>修复无法批量下载搜索结果的问题。</li>
-      <li>修复滚动页面时设置背景改变的问题。</li>
-      <li>重新适配Pixiv Previewer。</li>
+      <li>Danbooru：修复Firefox下载图片时请求被cf拒绝的问题。</li>
     </ul>
   </article>
   <footer class="modal-footer relative mt-4 text-sm">
