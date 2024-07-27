@@ -9,6 +9,7 @@
   import store from '../store';
   import { env } from '@/lib/env';
   import { downloader } from '@/lib/downloader';
+  import { tick } from 'svelte';
 
   export let bg = 'bg-white/30 dark:bg-black/15';
   export let border = 'divide-y-[1px] *:border-surface-300-600-token';
@@ -49,12 +50,23 @@
     }
   }
 
-  function resetFolder() {
+  async function resetFolder() {
     directory = $store.folderPattern;
+
+    // Chromium sets `selectionStart` and `selectionEnd` to 0 after changing `input.value`
+    await tick();
+    const pos = directory.length;
+    directoryRef.focus();
+    directoryRef.setSelectionRange(pos, pos);
   }
 
-  function resetFilename() {
+  async function resetFilename() {
     filename = $store.filenamePattern;
+
+    await tick();
+    const pos = filename.length;
+    filenameRef.focus();
+    filenameRef.setSelectionRange(pos, pos);
   }
 
   async function updatefsaDir() {
@@ -63,20 +75,28 @@
   }
 
   function insertDirTemplateAtCursor(template: string) {
-    return () => {
-      directory =
-        directory.slice(0, directoryRef.selectionStart!) +
-        template +
-        directory.slice(directoryRef.selectionEnd!);
+    return async () => {
+      const start = directoryRef.selectionStart!;
+      const end = directoryRef.selectionEnd!;
+      directory = directory.slice(0, start) + template + directory.slice(end);
+
+      await tick();
+      const newStart = start + template.length;
+      directoryRef.focus();
+      directoryRef.setSelectionRange(newStart, newStart);
     };
   }
 
   function insertFilenameTemplateAtCursor(template: string) {
-    return () => {
-      filename =
-        filename.slice(0, filenameRef.selectionStart!) +
-        template +
-        filename.slice(filenameRef.selectionEnd!);
+    return async () => {
+      const start = filenameRef.selectionStart!;
+      const end = filenameRef.selectionEnd!;
+      filename = filename.slice(0, start) + template + filename.slice(end);
+
+      await tick();
+      const newStart = start + template.length;
+      filenameRef.focus();
+      filenameRef.setSelectionRange(newStart, newStart);
     };
   }
 
@@ -111,9 +131,9 @@
 
           {#if subDirectoryAvailable}
             <input
-              bind:this={directoryRef}
               type="text"
               placeholder={directoryPlaceholder}
+              bind:this={directoryRef}
               bind:value={directory}
             />
           {:else}
@@ -213,10 +233,10 @@
           </button>
 
           <input
-            bind:this={filenameRef}
             type="text"
             required
             placeholder={t('setting.save_to.placeholder.filename_requried')}
+            bind:this={filenameRef}
             bind:value={filename}
           />
 
