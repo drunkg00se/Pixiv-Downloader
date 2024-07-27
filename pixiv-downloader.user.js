@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.0.1
+// @version            1.0.2
 // @author             ruaruarua
 // @description        Pixiv | Danbooru | Rule34. 一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。
 // @description:zh-TW  Pixiv | Danbooru | Rule34. 一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。
@@ -465,7 +465,7 @@
   })(TagLanguage || {});
   function loadConfig(siteConfig2) {
     const defaultConfig = Object.freeze({
-      version: "1.0.1",
+      version: "1.0.2",
       ugoiraFormat: "zip",
       folderPattern: "pixiv/{artist}",
       filenamePattern: "{artist}_{title}_{id}_p{page}",
@@ -8646,34 +8646,34 @@
     let header;
     let t2;
     let article;
-    let t10;
+    let t4;
     let footer;
     let details;
     let summary;
-    let t11;
-    let t12;
+    let t5;
+    let t6;
     let div;
-    let t15;
+    let t9;
     let a;
-    let t16;
+    let t10;
     return {
       c() {
         header = element("header");
-        header.textContent = `Pixiv Downloader ${"1.0.1"}`;
+        header.textContent = `Pixiv Downloader ${"1.0.2"}`;
         t2 = space();
         article = element("article");
-        article.innerHTML = `<ul class="list-disc list-inside leading-loose"><li>Pixiv作品标签下载按钮调整，现在会跟踪标签颜色变化。</li> <li>修复无法批量下载搜索结果的问题。</li> <li>修复滚动页面时设置背景改变的问题。</li> <li>重新适配Pixiv Previewer。</li></ul>`;
-        t10 = space();
+        article.innerHTML = `<ul class="list-disc list-inside leading-loose"><li>Danbooru：修复Firefox下载图片时请求被cf拒绝的问题。</li></ul>`;
+        t4 = space();
         footer = element("footer");
         details = element("details");
         summary = element("summary");
-        t11 = text("脚本还行？请我喝杯可乐吧！");
-        t12 = space();
+        t5 = text("脚本还行？请我喝杯可乐吧！");
+        t6 = space();
         div = element("div");
         div.innerHTML = `<img src="${creditCode}" alt="credit" class="rounded-full"/> <p class="mt-2">想喝香草味冰可乐</p>`;
-        t15 = space();
+        t9 = space();
         a = element("a");
-        t16 = text("有问题or想建议？这里反馈");
+        t10 = text("有问题or想建议？这里反馈");
         attr(header, "class", "modal-header text-2xl font-bold");
         attr(article, "class", "modal-body mt-4");
         attr(summary, "class", "inline-block cursor-pointer " + /*anchor*/
@@ -8689,16 +8689,16 @@
         insert(target, header, anchor);
         insert(target, t2, anchor);
         insert(target, article, anchor);
-        insert(target, t10, anchor);
+        insert(target, t4, anchor);
         insert(target, footer, anchor);
         append(footer, details);
         append(details, summary);
-        append(summary, t11);
-        append(details, t12);
+        append(summary, t5);
+        append(details, t6);
         append(details, div);
-        append(footer, t15);
+        append(footer, t9);
         append(footer, a);
-        append(a, t16);
+        append(a, t10);
       },
       p: noop,
       d(detaching) {
@@ -8706,7 +8706,7 @@
           detach(header);
           detach(t2);
           detach(article);
-          detach(t10);
+          detach(t4);
           detach(footer);
         }
       }
@@ -14547,8 +14547,6 @@
         path: this.buildFilePath(),
         source: this.meta,
         timeout: this.isImage() ? 6e4 : void 0,
-        // GM_download下载带cf_clearance cookie
-        directSave: downloader.fileSystemAccessEnabled ? false : true,
         onProgress: artworkProgressFactory(btn)
       };
     }
