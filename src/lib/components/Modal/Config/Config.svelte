@@ -27,7 +27,8 @@
     },
     {
       name: t('setting.ugoira.title'),
-      component: UgoiraConvert
+      component: UgoiraConvert,
+      show: env.isPixiv()
     },
     {
       name: t('setting.history.title'),
@@ -65,10 +66,12 @@
     <ListBox
       class="pt-4 pr-6 row-start-1 row-span-2 {sidebarWidth} transition-[transform] {transform}"
     >
-      {#each optionList as { name }, idx}
-        <ListBoxItem bind:group={slected} name="option" value={idx} class="rounded-token"
-          >{name}</ListBoxItem
-        >
+      {#each optionList as option, idx}
+        {#if !('show' in option) || option.show}
+          <ListBoxItem bind:group={slected} name="option" value={idx} class="rounded-token"
+            >{option.name}</ListBoxItem
+          >
+        {/if}
       {/each}
     </ListBox>
 

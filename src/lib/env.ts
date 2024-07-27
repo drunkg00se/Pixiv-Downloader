@@ -54,5 +54,9 @@ export const env = {
 
   isPixiv() {
     return location.hostname === 'www.pixiv.net';
+  },
+
+  isYande() {
+    return location.hostname === 'yande.re';
   }
 };

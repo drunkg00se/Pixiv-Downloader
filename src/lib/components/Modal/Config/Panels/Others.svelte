@@ -23,37 +23,41 @@
       <p class="flex-auto">{t('setting.others.options.show_setting_button')}</p>
       <SlideToggle name="fsa-enable" bind:checked={$store.showPopupButton} size="sm"></SlideToggle>
     </li>
-    <li>
-      <p class="flex-auto">{t('setting.others.options.bundle_multipage_illust')}</p>
-      <SlideToggle name="fsa-enable" bind:checked={$store.bundleIllusts} size="sm"></SlideToggle>
-    </li>
-    <li>
-      <p class="flex-auto">{t('setting.others.options.bundle_manga')}</p>
-      <SlideToggle name="fsa-enable" bind:checked={$store.bundleManga} size="sm"></SlideToggle>
-    </li>
-    <li class="flex-col !items-stretch">
-      <div class="flex items-center">
-        <p class="flex-auto">{t('setting.others.options.add_bookmark_when_download')}</p>
-        <SlideToggle name="fsa-enable" bind:checked={$store.addBookmark} size="sm"></SlideToggle>
-      </div>
-      {#if $store.addBookmark && env.isPixiv()}
-        <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
-          <li>
-            <label class="label flex flex-grow items-center justify-center">
-              <p class="flex-auto">{t('setting.others.options.add_bookmark_with_tags')}</p>
-              <SlideToggle name="fsa-enable" bind:checked={$store.addBookmarkWithTags} size="sm"
-              ></SlideToggle>
-            </label>
-          </li>
-          <li>
-            <label class="label flex flex-grow items-center justify-center">
-              <p class="flex-auto">{t('setting.others.options.add_bookmark_private_r18')}</p>
-              <SlideToggle name="fsa-enable" bind:checked={$store.privateR18} size="sm"
-              ></SlideToggle>
-            </label>
-          </li>
-        </ul>
-      {/if}
-    </li>
+    {#if env.isPixiv()}
+      <li>
+        <p class="flex-auto">{t('setting.others.options.bundle_multipage_illust')}</p>
+        <SlideToggle name="fsa-enable" bind:checked={$store.bundleIllusts} size="sm"></SlideToggle>
+      </li>
+      <li>
+        <p class="flex-auto">{t('setting.others.options.bundle_manga')}</p>
+        <SlideToggle name="fsa-enable" bind:checked={$store.bundleManga} size="sm"></SlideToggle>
+      </li>
+    {/if}
+    {#if !env.isYande()}
+      <li class="flex-col !items-stretch">
+        <div class="flex items-center">
+          <p class="flex-auto">{t('setting.others.options.add_bookmark_when_download')}</p>
+          <SlideToggle name="fsa-enable" bind:checked={$store.addBookmark} size="sm"></SlideToggle>
+        </div>
+        {#if $store.addBookmark && env.isPixiv()}
+          <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
+            <li>
+              <label class="label flex flex-grow items-center justify-center">
+                <p class="flex-auto">{t('setting.others.options.add_bookmark_with_tags')}</p>
+                <SlideToggle name="fsa-enable" bind:checked={$store.addBookmarkWithTags} size="sm"
+                ></SlideToggle>
+              </label>
+            </li>
+            <li>
+              <label class="label flex flex-grow items-center justify-center">
+                <p class="flex-auto">{t('setting.others.options.add_bookmark_private_r18')}</p>
+                <SlideToggle name="fsa-enable" bind:checked={$store.privateR18} size="sm"
+                ></SlideToggle>
+              </label>
+            </li>
+          </ul>
+        {/if}
+      </li>
+    {/if}
   </ul>
 </div>

@@ -60,12 +60,35 @@ interface Config {
   update(config: ConfigData): void;
 }
 
-function loadConfig(siteConfig?: Partial<ConfigData>): Config {
+function loadConfig(): Config {
+  const getDefaultFolder = () => {
+    switch (location.hostname) {
+      case 'www.pixiv.net':
+        return 'pixiv/{artist}';
+      case 'danbooru.donmai.us':
+        return 'danbooru/{artist}';
+      case 'rule34.xxx':
+        return 'rule34/{artist}';
+      case 'yande.re':
+        return 'yande/{artist}';
+      default:
+        return '';
+    }
+  };
+
+  const getDefaultFilename = () => {
+    if (location.hostname === 'www.pixiv.net') {
+      return '{artist}_{title}_{id}_p{page}';
+    } else {
+      return '{id}_{artist}_{character}';
+    }
+  };
+
   const defaultConfig: Readonly<ConfigData> = Object.freeze({
     version: __VERSION__,
     ugoiraFormat: UgoiraFormat.ZIP,
-    folderPattern: 'pixiv/{artist}',
-    filenamePattern: '{artist}_{title}_{id}_p{page}',
+    folderPattern: getDefaultFolder(),
+    filenamePattern: getDefaultFilename(),
     tagLang: TagLanguage.JAPANESE,
     showMsg: true,
     filterExcludeDownloaded: false,
@@ -89,8 +112,7 @@ function loadConfig(siteConfig?: Partial<ConfigData>): Config {
     'pdl-btn-self-bookmark-left': 100,
     'pdl-btn-self-bookmark-top': 76,
     'pdl-btn-left': 0,
-    'pdl-btn-top': 100,
-    ...siteConfig
+    'pdl-btn-top': 100
   });
 
   let config: ConfigData;
@@ -141,18 +163,4 @@ function loadConfig(siteConfig?: Partial<ConfigData>): Config {
   };
 }
 
-const hostname = location.hostname;
-let siteConfig: Partial<ConfigData> | undefined;
-if (hostname === 'rule34.xxx') {
-  siteConfig = {
-    folderPattern: 'rule34/{artist}',
-    filenamePattern: '{id}_{artist}_{character}'
-  };
-} else if (hostname === 'danbooru.donmai.us') {
-  siteConfig = {
-    folderPattern: 'danbooru/{artist}',
-    filenamePattern: '{id}_{artist}_{character}'
-  };
-}
-
-export const config = loadConfig(siteConfig);
+export const config = loadConfig();
