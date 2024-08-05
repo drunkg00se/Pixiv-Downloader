@@ -54,10 +54,10 @@
   function exportAsCSV() {
     historyDb.getAll().then((datas) => {
       const csvData: string[][] = datas.map((historyData) => {
-        const { pid, userId = '', user = '', title = '', tags = '' } = historyData;
-        return [String(pid), String(userId), user, title, tags ? tags.join(',') : tags];
+        const { pid, userId = '', user = '', title = '', tags = '', comment = '' } = historyData;
+        return [String(pid), String(userId), user, title, comment, tags ? tags.join(',') : tags];
       });
-      csvData.unshift(['id', 'userId', 'user', 'title', 'tags']);
+      csvData.unshift(['id', 'userId', 'user', 'title', 'comment', 'tags']);
       const csv = generateCsv(csvData);
 
       const dlEle = document.createElement('a');

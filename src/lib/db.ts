@@ -6,6 +6,7 @@ export interface HistoryData {
   userId?: number;
   user?: string;
   title?: string;
+  comment?: string;
   tags?: string[];
 }
 
@@ -14,8 +15,8 @@ class HistoryDb extends Dexie {
 
   public constructor() {
     super('PdlHistory');
-    this.version(2).stores({
-      history: 'pid, userId, user, title, *tags'
+    this.version(3).stores({
+      history: 'pid, userId, user, title, comment, *tags'
     });
   }
 }

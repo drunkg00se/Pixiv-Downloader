@@ -14,7 +14,7 @@ import type {
 import type { FilterOption } from '@/sites/pixiv/observerCB/downloadBar';
 import type { MediaMeta, SiteParser } from '../interface';
 import type { FilteredIds } from './helpers/downloadByIds';
-import { sleep } from '@/lib/util';
+import { getElementText, sleep } from '@/lib/util';
 import { IllustType } from './types';
 import { api } from '@/sites/pixiv/service';
 import { regexp } from '@/lib/regExp';
@@ -31,6 +31,7 @@ interface PixivMetaBase extends MediaMeta {
   illustType: IllustType;
   tagsTranslated: string[];
   pageCount: number;
+  comment: string;
   token: string;
   bookmarkData: PreloadIllustData['bookmarkData'];
 }
@@ -120,6 +121,7 @@ export const pixivParser: PixivParser = {
       userName,
       userId,
       illustTitle,
+      illustComment,
       tags,
       pageCount,
       createDate,
@@ -135,6 +137,14 @@ export const pixivParser: PixivParser = {
       tagsTranslatedArr.push(tagData.translation?.en || tagData.tag);
     });
 
+    // Coment
+    const unescapeComment = illustComment
+      .replaceAll(/&lt;|&amp;lt;/g, '<')
+      .replaceAll(/&gt;|&amp;gt;/g, '>');
+    const p = document.createElement('p');
+    p.innerHTML = unescapeComment;
+    const comment = getElementText(p);
+
     const meta = {
       id: illustId,
       src: urls.original,
@@ -145,6 +155,7 @@ export const pixivParser: PixivParser = {
       tagsTranslated: tagsTranslatedArr,
       userId,
       pageCount,
+      comment,
       bookmarkData,
       createDate,
       token

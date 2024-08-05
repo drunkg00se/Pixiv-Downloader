@@ -92,3 +92,71 @@ export async function addStyleToShadow(shadowRoot: ShadowRoot) {
     shadowRoot.adoptedStyleSheets = [(window as any)._pdlShadowStyle];
   }
 }
+
+export function getElementText(el: HTMLElement): string {
+  el.normalize();
+
+  if (el.childNodes.length === 0) return '';
+
+  const blockNode = [
+    'ADDRESS',
+    'ARTICLE',
+    'ASIDE',
+    'BLOCKQUOTE',
+    'DD',
+    'DIV',
+    'DL',
+    'DT',
+    'FIELDSET',
+    'FIGCAPTION',
+    'FIGURE',
+    'FOOTER',
+    'FORM',
+    'H1',
+    'H2',
+    'H3',
+    'H4',
+    'H5',
+    'H6',
+    'HEADER',
+    'HR',
+    'LI',
+    'MAIN',
+    'NAV',
+    'OL',
+    'P',
+    'PRE',
+    'SECTION',
+    'TABLE',
+    'UL'
+  ];
+
+  let str = '';
+
+  for (let i = 0; i < el.childNodes.length; i++) {
+    const node = el.childNodes[i];
+
+    if (node.nodeType === Node.TEXT_NODE) {
+      const val = node.nodeValue;
+      val?.trim() && (str += val);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.nodeName === 'BR') {
+        str += '\n';
+        continue;
+      }
+
+      if (!blockNode.includes(node.nodeName)) {
+        const childText = getElementText(node as HTMLElement);
+        childText && (str += childText);
+      } else {
+        const childText = getElementText(node as HTMLElement);
+
+        if (childText) {
+          str ? (str += '\n' + childText) : (str += childText);
+        }
+      }
+    }
+  }
+
+  return str;
+}

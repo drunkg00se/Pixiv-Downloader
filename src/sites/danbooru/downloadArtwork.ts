@@ -11,7 +11,6 @@ export async function downloadArtwork(btn: ThumbnailButton) {
 
   const id = btn.getAttribute('pdl-id')!;
   const mediaMeta = await danbooruParser.parse(id);
-  const { tags, artist, title } = mediaMeta;
 
   const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
 
@@ -19,10 +18,12 @@ export async function downloadArtwork(btn: ThumbnailButton) {
 
   await downloader.download(downloadConfigs);
 
+  const { tags, artist, title, comment } = mediaMeta;
   const historyData: HistoryData = {
     pid: Number(id),
     user: artist,
     title,
+    comment,
     tags
   };
   historyDb.add(historyData);
