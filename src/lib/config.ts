@@ -153,11 +153,11 @@ function loadConfig(): Config {
     },
 
     getAll(): ConfigData {
-      return config;
+      return { ...config };
     },
 
     update(newConfig: ConfigData) {
-      config = newConfig;
+      config = { ...newConfig };
       localStorage.pdlSetting = JSON.stringify(config);
     }
   };
