@@ -117,13 +117,14 @@ export async function downloadByIds(
             pixivParser
               .parse(id)
               .then((pixivMeta) => {
-                const { id, tags, artist, userId, title } = pixivMeta;
+                const { id, tags, artist, userId, title, comment } = pixivMeta;
 
                 historyData = {
                   pid: Number(id),
                   user: artist,
                   userId: Number(userId),
                   title,
+                  comment,
                   tags
                 };
 
