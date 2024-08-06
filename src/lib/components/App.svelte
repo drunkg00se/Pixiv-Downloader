@@ -43,7 +43,9 @@
   let root: HTMLDivElement;
   onMount(async () => {
     const shadow = root.getRootNode() as ShadowRoot;
+
     addStyleToShadow(shadow);
+    shadow.host.setAttribute('style', 'position:fixed; z-index:99999');
 
     if (updated) {
       showChangelog();

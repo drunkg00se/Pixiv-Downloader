@@ -58,7 +58,6 @@ export abstract class SiteInject {
       )
     );
     const modal = document.createElement('pdl-app') as AppElement;
-    modal.setAttribute('style', 'position:fixed; z-index:99999');
     document.body.append(modal);
 
     this.modal = modal;
