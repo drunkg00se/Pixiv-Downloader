@@ -11,7 +11,7 @@ export async function downloadArtwork(btn: ThumbnailButton) {
   const id = btn.getAttribute('pdl-id')!;
   const pixivMeta = await pixivParser.parse(id);
 
-  const { bookmarkData, token, tags, artist, userId, title } = pixivMeta;
+  const { comment, bookmarkData, token, tags, artist, userId, title } = pixivMeta;
 
   if (!bookmarkData) {
     addBookmark(btn, id, token, tags);
@@ -26,6 +26,7 @@ export async function downloadArtwork(btn: ThumbnailButton) {
     user: artist,
     userId: Number(userId),
     title,
+    comment,
     tags
   };
   historyDb.add(historyData);

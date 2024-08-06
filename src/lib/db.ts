@@ -1,11 +1,13 @@
 import Dexie, { type Table } from 'dexie';
 import { logger } from './logger';
+import { generateCsv } from './util';
 
 export interface HistoryData {
   pid: number;
   userId?: number;
   user?: string;
   title?: string;
+  comment?: string;
   tags?: string[];
 }
 
@@ -14,8 +16,8 @@ class HistoryDb extends Dexie {
 
   public constructor() {
     super('PdlHistory');
-    this.version(2).stores({
-      history: 'pid, userId, user, title, *tags'
+    this.version(3).stores({
+      history: 'pid, userId, user, title, comment, *tags'
     });
   }
 }
@@ -57,6 +59,18 @@ function createHistoryDb() {
 
     getAll(): Promise<HistoryData[]> {
       return db.history.toArray();
+    },
+
+    generateCsv(): Promise<Blob> {
+      return this.getAll().then((datas) => {
+        const csvData: string[][] = datas.map((historyData) => {
+          const { pid, userId = '', user = '', title = '', tags = '', comment = '' } = historyData;
+          return [String(pid), String(userId), user, title, comment, tags ? tags.join(',') : tags];
+        });
+        csvData.unshift(['id', 'userId', 'user', 'title', 'comment', 'tags']);
+
+        return generateCsv(csvData);
+      });
     },
 
     clear() {

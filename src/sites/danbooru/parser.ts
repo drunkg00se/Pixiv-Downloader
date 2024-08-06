@@ -1,8 +1,8 @@
 import { RequestError } from '@/lib/error';
 import type { MediaMeta, SiteParser } from '../interface';
-import { sleep } from '@/lib/util';
+import { getElementText, sleep } from '@/lib/util';
 
-export type DanbooruMeta = MediaMeta & { character: string };
+export type DanbooruMeta = MediaMeta & { comment: string; character: string };
 
 interface DanbooruParser extends SiteParser<DanbooruMeta> {
   getDoc(url: string): Promise<Document>;
@@ -74,6 +74,11 @@ export const danbooruParser: DanbooruParser = {
     const source = doc.querySelector<HTMLAnchorElement>('li#post-info-source > a')?.href;
     if (source) tags.push('source:' + source);
 
+    // Comment
+    let comment: string = '';
+    const commentEl = doc.querySelector<HTMLElement>('#original-artist-commentary');
+    commentEl && (comment = getElementText(commentEl));
+
     return {
       id,
       src,
@@ -81,6 +86,7 @@ export const danbooruParser: DanbooruParser = {
       artist: artists.join(',') || 'UnknownArtist',
       character: characters.join(',') || 'UnknownCharacter',
       title,
+      comment,
       tags,
       createDate: postDate
     };

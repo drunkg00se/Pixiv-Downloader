@@ -1,6 +1,5 @@
 <script lang="ts">
   import { historyDb, type HistoryData } from '@/lib/db';
-  import { generateCsv } from '@/lib/util';
   import { FileButton } from '@skeletonlabs/skeleton';
   import t from '@/lib/lang';
 
@@ -52,14 +51,7 @@
   }
 
   function exportAsCSV() {
-    historyDb.getAll().then((datas) => {
-      const csvData: string[][] = datas.map((historyData) => {
-        const { pid, userId = '', user = '', title = '', tags = '' } = historyData;
-        return [String(pid), String(userId), user, title, tags ? tags.join(',') : tags];
-      });
-      csvData.unshift(['id', 'userId', 'user', 'title', 'tags']);
-      const csv = generateCsv(csvData);
-
+    historyDb.generateCsv().then((csv) => {
       const dlEle = document.createElement('a');
       dlEle.href = URL.createObjectURL(csv);
       dlEle.download = 'Pixiv Downloader ' + new Date().toLocaleString() + '.csv';
