@@ -14,7 +14,7 @@
   import { env } from '@/lib/env';
 
   export let parent: SvelteComponent;
-  const pattern = env.isPixiv()
+  const templates = env.isPixiv()
     ? ['{artist}', '{artistID}', '{title}', '{id}', '{page}', '{tags}', '{date}']
     : ['{artist}', '{character}', '{id}', '{date}'];
 
@@ -23,7 +23,7 @@
     {
       name: t('setting.save_to.title'),
       component: SaveTo,
-      props: { pattern }
+      props: { templates }
     },
     {
       name: t('setting.ugoira.title'),

@@ -9,6 +9,7 @@
   import store from '../store';
   import { env } from '@/lib/env';
   import { downloader } from '@/lib/downloader';
+  import { tick } from 'svelte';
 
   export let bg = 'bg-white/30 dark:bg-black/15';
   export let border = 'divide-y-[1px] *:border-surface-300-600-token';
@@ -22,7 +23,10 @@
   export let sectionSpace = `space-y-4`;
   export let sectionTitle = 'font-bold';
 
-  export let pattern: string[] = [];
+  export let templates: string[] = [];
+
+  let directoryRef: HTMLInputElement;
+  let filenameRef: HTMLInputElement;
 
   let directory = $store.folderPattern;
   let filename = $store.filenamePattern;
@@ -46,17 +50,54 @@
     }
   }
 
-  function resetFolder() {
+  async function resetFolder() {
     directory = $store.folderPattern;
+
+    // Chromium sets `selectionStart` and `selectionEnd` to 0 after changing `input.value`
+    await tick();
+    const pos = directory.length;
+    directoryRef.focus();
+    directoryRef.setSelectionRange(pos, pos);
   }
 
-  function resetFilename() {
+  async function resetFilename() {
     filename = $store.filenamePattern;
+
+    await tick();
+    const pos = filename.length;
+    filenameRef.focus();
+    filenameRef.setSelectionRange(pos, pos);
   }
 
   async function updatefsaDir() {
     fsaDirectory = await downloader.updateDirHandle();
     console.log(fsaDirectory);
+  }
+
+  function insertDirTemplateAtCursor(template: string) {
+    return async () => {
+      const start = directoryRef.selectionStart!;
+      const end = directoryRef.selectionEnd!;
+      directory = directory.slice(0, start) + template + directory.slice(end);
+
+      await tick();
+      const newStart = start + template.length;
+      directoryRef.focus();
+      directoryRef.setSelectionRange(newStart, newStart);
+    };
+  }
+
+  function insertFilenameTemplateAtCursor(template: string) {
+    return async () => {
+      const start = filenameRef.selectionStart!;
+      const end = filenameRef.selectionEnd!;
+      filename = filename.slice(0, start) + template + filename.slice(end);
+
+      await tick();
+      const newStart = start + template.length;
+      filenameRef.focus();
+      filenameRef.setSelectionRange(newStart, newStart);
+    };
   }
 
   $: subDirectoryAvailable = $store.useFileSystemAccess || env.isSupportSubpath();
@@ -89,7 +130,12 @@
           </button>
 
           {#if subDirectoryAvailable}
-            <input type="text" placeholder={directoryPlaceholder} bind:value={directory} />
+            <input
+              type="text"
+              placeholder={directoryPlaceholder}
+              bind:this={directoryRef}
+              bind:value={directory}
+            />
           {:else}
             <input type="text" disabled placeholder={directoryPlaceholder} />
           {/if}
@@ -107,13 +153,13 @@
         </div>
 
         <div class=" self-start space-x-2">
-          {#each pattern as p}
+          {#each templates as template}
             <button
               class="chip variant-soft hover:variant-filled"
               disabled={!subDirectoryAvailable}
-              on:click={() => (directory += ' ' + p)}
+              on:click={insertDirTemplateAtCursor(template)}
             >
-              <span>{p}</span>
+              <span>{template}</span>
             </button>
           {/each}
         </div>
@@ -190,6 +236,7 @@
             type="text"
             required
             placeholder={t('setting.save_to.placeholder.filename_requried')}
+            bind:this={filenameRef}
             bind:value={filename}
           />
 
@@ -206,12 +253,12 @@
         </div>
 
         <div class=" self-start space-x-2">
-          {#each pattern as p}
+          {#each templates as template}
             <button
               class="chip variant-soft hover:variant-filled"
-              on:click={() => (filename += ' ' + p)}
+              on:click={insertFilenameTemplateAtCursor(template)}
             >
-              <span>{p}</span>
+              <span>{template}</span>
             </button>
           {/each}
         </div>
