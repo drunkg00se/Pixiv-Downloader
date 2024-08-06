@@ -1,4 +1,4 @@
-import { GM_download, GM_xmlhttpRequest } from '$';
+import { GM_xmlhttpRequest } from '$';
 import { logger } from '@/lib/logger';
 import { sleep } from '@/lib/util';
 import { CancelError, RequestError } from '@/lib/error';
@@ -6,13 +6,8 @@ import { fileSaveAdapters } from './fileSaveAdapters';
 
 export interface DownloaderHooks<T> {
   onProgress?: (progress: number, config: DownloadConfig<T>) => void;
-
-  // 仅GM_xmlhttpRequest
   onXhrLoaded?: (config: DownloadConfig<T>) => void;
-
-  // 仅GM_xmlhttpRequest
   beforeFileSave?: (blob: Blob, config: DownloadConfig<T>) => Promise<Blob | void>;
-
   onFileSaved?: (config: DownloadConfig<T>) => void;
   onError?: (err: Error, config: DownloadConfig<T>) => void;
   onAbort?: (config: DownloadConfig<T>) => void;
@@ -27,19 +22,7 @@ interface DownloadConfigBase<T> {
   headers?: Record<string, string>;
 }
 
-interface DirectSaveConfig<T> extends DownloadConfigBase<T> {
-  directSave: true;
-  onProgress?: DownloaderHooks<T>['onProgress'];
-  onFileSaved?: DownloaderHooks<T>['onFileSaved'];
-  onError?: DownloaderHooks<T>['onError'];
-  onAbort?: DownloaderHooks<T>['onAbort'];
-}
-
-interface XhrConfig<T> extends DownloadConfigBase<T>, DownloaderHooks<T> {
-  directSave?: false;
-}
-
-export type DownloadConfig<T> = DirectSaveConfig<T> | XhrConfig<T>;
+export type DownloadConfig<T> = DownloadConfigBase<T> & DownloaderHooks<T>;
 
 export interface DownloadMeta<T = DownloadConfig<any>> {
   taskId: string;
@@ -134,40 +117,7 @@ function createDownloader(): Downloader {
     };
   };
 
-  const gmDownload = (
-    downloadMeta: DownloadMeta<DirectSaveConfig<any>>,
-    errHandler: ErrorHandler
-  ) => {
-    const { taskId, config } = downloadMeta;
-    const { ontimeout, onerror } = errHandler;
-
-    return GM_download({
-      url: config.src,
-      name: config.path,
-      headers: config.headers,
-      ontimeout,
-      onerror,
-
-      // Firefox 参数只包含loaded, toal, estimatedEndTime(Chrome没有此参数), 且触发次数非常少
-      onprogress(res) {
-        if (res.loaded > 0 && res.total > 0) {
-          const progress = Math.floor((res.loaded / res.total) * 100);
-          config.onProgress?.(progress, config);
-        }
-      },
-
-      onload() {
-        cleanAndStartNext(downloadMeta);
-
-        config.onFileSaved?.(config);
-
-        downloadMeta.resolve(taskId);
-        logger.info('Download complete:', taskId, config.path);
-      }
-    });
-  };
-
-  const xhr = (downloadMeta: DownloadMeta<XhrConfig<any>>, errHandler: ErrorHandler) => {
+  const xhr = (downloadMeta: DownloadMeta<any>, errHandler: ErrorHandler) => {
     const { taskId, config, timeout } = downloadMeta;
     const { ontimeout, onerror } = errHandler;
     const saveFile = fileSaveAdapters.getAdapter();
@@ -231,23 +181,11 @@ function createDownloader(): Downloader {
     });
   };
 
-  const isDirectSaveConfig = (
-    downloadMeta: DownloadMeta
-  ): downloadMeta is DownloadMeta<DirectSaveConfig<any>> => {
-    return !!downloadMeta.config.directSave;
-  };
-
   const dispatchDownload = (downloadMeta: DownloadMeta): void => {
     logger.info('Start download:', downloadMeta.config.src);
 
-    let abortObj: ReturnType<typeof GM_download | typeof GM_xmlhttpRequest>;
     const errHandler = errorHandlerFactory(downloadMeta);
-
-    if (isDirectSaveConfig(downloadMeta)) {
-      abortObj = gmDownload(downloadMeta, errHandler);
-    } else {
-      abortObj = xhr(downloadMeta as DownloadMeta<XhrConfig<any>>, errHandler);
-    }
+    const abortObj = xhr(downloadMeta, errHandler);
 
     downloadMeta.abort = abortObj.abort;
   };
