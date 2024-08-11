@@ -17,8 +17,8 @@ class HistoryDb extends Dexie {
 
   constructor() {
     super('PdlHistory');
-    this.version(3).stores({
-      history: 'pid, userId, user, title, comment, *tags'
+    this.version(2).stores({
+      history: 'pid, userId, user, title, *tags'
     });
 
     logger.time('loadDb');
