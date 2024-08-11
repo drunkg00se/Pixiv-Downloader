@@ -45,6 +45,8 @@ class HistoryDb extends Dexie {
 
   public async has(pid: number | string): Promise<boolean> {
     if (typeof pid === 'string') pid = Number(pid);
+    if (!Number.isInteger(pid) || pid < 0) throw logger.error('Invalid Pid');
+
     if (this.record) {
       return this.record.has(pid);
     } else {
