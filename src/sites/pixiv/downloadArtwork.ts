@@ -8,9 +8,9 @@ import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 export async function downloadArtwork(btn: ThumbnailButton) {
   downloader.dirHandleCheck();
 
-  const id = btn.dataset.id!;
-  const pixivMeta = await pixivParser.parse(id);
+  const { id, page } = btn.dataset as { id: string; page?: string };
 
+  const pixivMeta = await pixivParser.parse(id);
   const { comment, bookmarkData, token, tags, artist, userId, title } = pixivMeta;
 
   if (!bookmarkData) {
@@ -29,5 +29,10 @@ export async function downloadArtwork(btn: ThumbnailButton) {
     comment,
     tags
   };
+
+  if (page !== undefined) {
+    historyData.page = Number(page);
+  }
+
   historyDb.add(historyData);
 }

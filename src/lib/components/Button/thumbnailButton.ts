@@ -188,13 +188,21 @@ export class ThumbnailButton extends HTMLElement {
     </button>`;
 
     // Danbooru pool的id不作记录
-    this.type !== ThumbnailBtnType.DanbooruPool &&
-      historyDb.has(this.mediaId).then((downloaded: boolean) => {
-        downloaded && this.setStatus(ThumbnailBtnStatus.Complete);
-      });
+    if (this.type !== ThumbnailBtnType.DanbooruPool) {
+      if (this.page !== undefined) {
+        this.dataset.page = String(this.page);
+
+        historyDb.hasPage(this.mediaId, this.page).then((pageDownloaded) => {
+          pageDownloaded && this.setStatus(ThumbnailBtnStatus.Complete);
+        });
+      } else {
+        historyDb.has(this.mediaId).then((hasId: boolean) => {
+          hasId && this.setStatus(ThumbnailBtnStatus.Complete);
+        });
+      }
+    }
 
     this.dataset.id = String(this.mediaId);
-    this.page !== undefined && !Number.isNaN(this.page) && (this.dataset.page = String(this.page));
     this.type && (this.dataset.type = this.type);
   }
 

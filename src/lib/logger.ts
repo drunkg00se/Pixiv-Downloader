@@ -32,6 +32,9 @@ function getLogger() {
     },
     timeEnd(label: string) {
       console.timeEnd(namePrefix + label);
+    },
+    throw(msg: string) {
+      throw new Error(`[Pixiv Downloader] ${msg}`);
     }
   };
 }
