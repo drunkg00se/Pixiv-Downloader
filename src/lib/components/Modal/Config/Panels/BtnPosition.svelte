@@ -47,12 +47,12 @@
 
   let buttonContainer: HTMLDivElement;
   const sampleBtn = new ThumbnailButton({
-    id: 'sample',
+    id: '0',
     onClick: () => void 0
   });
 
   const sampleBookmarkBtn = new ThumbnailButton({
-    id: 'sample-bookmark',
+    id: '0',
     type: ThumbnailBtnType.PixivMyBookmark,
     onClick: () => void 0
   });
