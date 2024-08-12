@@ -35,11 +35,6 @@ export interface DownloadMeta<T = DownloadConfig<any>> {
   abort?: () => void;
 }
 
-interface ErrorHandler {
-  ontimeout: () => void;
-  onerror: (error: { error: string }) => void;
-}
-
 interface Downloader {
   fileSystemAccessEnabled: Readonly<boolean>;
   dirHandleCheck: () => void;
@@ -72,54 +67,8 @@ function createDownloader(): Downloader {
     });
   };
 
-  const errorHandlerFactory = (downloadMeta: DownloadMeta): ErrorHandler => {
-    return {
-      ontimeout(): void {
-        const { taskId, config, isAborted } = downloadMeta;
-        if (isAborted) return;
-
-        downloadMeta.retry++;
-        logger.error('Download timeout', downloadMeta.retry, ':', config.src);
-
-        if (downloadMeta.retry > MAX_RETRY) {
-          const err = new Error(`Download failed: ${taskId} | ${config.src}`);
-
-          config.onError?.(err, config);
-          downloadMeta.reject(err);
-
-          cleanAndStartNext(downloadMeta);
-        } else {
-          logger.info('Download retry:', downloadMeta.retry, config.src);
-          cleanAndStartNext(downloadMeta, downloadMeta);
-        }
-      },
-
-      /* GM_download().abort() 会触发 onerror */
-      onerror(error: { error: string }): void {
-        const { taskId, config, isAborted } = downloadMeta;
-        if (isAborted) return;
-
-        let err;
-        // GmResponseEventBase
-        if ('status' in error && error.status === 429) {
-          err = new RequestError('Too many request', error);
-        } else {
-          //GmDownloadErrorEvent
-          err = new Error(`Download failed. ID: ${taskId}. Reason: ${error.error}.`);
-          logger.error(error);
-        }
-
-        config.onError?.(err, config);
-        downloadMeta.reject(err);
-
-        cleanAndStartNext(downloadMeta);
-      }
-    };
-  };
-
-  const xhr = (downloadMeta: DownloadMeta<any>, errHandler: ErrorHandler) => {
+  const xhr = (downloadMeta: DownloadMeta<any>) => {
     const { taskId, config, timeout } = downloadMeta;
-    const { ontimeout, onerror } = errHandler;
     const saveFile = fileSaveAdapters.getAdapter();
 
     return GM_xmlhttpRequest({
@@ -128,8 +77,44 @@ function createDownloader(): Downloader {
       method: 'GET',
       headers: config.headers,
       responseType: 'blob',
-      ontimeout,
-      onerror,
+
+      ontimeout() {
+        const { taskId, config, isAborted } = downloadMeta;
+        if (isAborted) return;
+
+        downloadMeta.retry++;
+        logger.warn('Download timeout', downloadMeta.retry, ':', config.src);
+
+        if (downloadMeta.retry > MAX_RETRY) {
+          const err = new Error(`Download timout. ${taskId} | ${config.src}`);
+
+          config.onError?.(err, config);
+          downloadMeta.reject(err);
+
+          cleanAndStartNext(downloadMeta);
+        } else {
+          logger.info('Retry download:', downloadMeta.retry, config.src);
+          cleanAndStartNext(downloadMeta, downloadMeta);
+        }
+      },
+
+      onerror(error) {
+        const { taskId, config, isAborted } = downloadMeta;
+        if (isAborted) return;
+
+        let err;
+        if (error.status === 429) {
+          err = new RequestError('Too many request', error);
+        } else {
+          err = new Error(`Download failed. ID: ${taskId}.`);
+          logger.error(error);
+        }
+
+        config.onError?.(err, config);
+        downloadMeta.reject(err);
+
+        cleanAndStartNext(downloadMeta);
+      },
 
       onprogress: (res) => {
         if (res.loaded > 0 && res.total > 0) {
@@ -184,9 +169,7 @@ function createDownloader(): Downloader {
   const dispatchDownload = (downloadMeta: DownloadMeta): void => {
     logger.info('Start download:', downloadMeta.config.src);
 
-    const errHandler = errorHandlerFactory(downloadMeta);
-    const abortObj = xhr(downloadMeta, errHandler);
-
+    const abortObj = xhr(downloadMeta);
     downloadMeta.abort = abortObj.abort;
   };
 
