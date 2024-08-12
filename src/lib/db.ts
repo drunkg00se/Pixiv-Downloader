@@ -14,6 +14,7 @@ interface HistoryItemBase {
 type HistoryItem = HistoryItemBase & { page?: Uint8Array };
 
 export type HistoryData = HistoryItemBase & { page?: number };
+export type HistoryImportObject = HistoryItemBase & { page?: Record<string, number> };
 
 class HistoryDb extends Dexie {
   private history!: Table<HistoryItem, number>;
@@ -91,12 +92,19 @@ class HistoryDb extends Dexie {
     });
   }
 
-  // TODO: import history
-  public bulkAdd(historyDatas: HistoryItem[]) {
-    historyDatas.forEach((data) => {
+  public import(objArr: HistoryImportObject[]) {
+    const historyItems = objArr.map((historyObj) => {
+      if (historyObj.page) {
+        return { ...historyObj, page: new Uint8Array(Object.values(historyObj.page)) };
+      } else {
+        return historyObj;
+      }
+    }) as HistoryItem[];
+
+    historyItems.forEach((data) => {
       this.caches.set(data.pid, data.page || null);
     });
-    return this.history.bulkPut(historyDatas);
+    return this.history.bulkPut(historyItems);
   }
 
   public async has(pid: number | string): Promise<boolean> {
@@ -128,6 +136,7 @@ class HistoryDb extends Dexie {
 
     if (this.caches) {
       const cachesData = this.caches.get(pid);
+
       if (cachesData === null) {
         return true;
       } else if (cachesData) {
@@ -139,6 +148,7 @@ class HistoryDb extends Dexie {
       return false;
     } else {
       const historyItem = await this.history.get(pid);
+
       if (!historyItem) {
         return false;
       } else if (!historyItem.page) {
