@@ -2,6 +2,7 @@ import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
 import type { ConvertMeta } from '..';
 import { CancelError } from '@/lib/error';
 import { logger } from '@/lib/logger';
+import { config } from '@/lib/config';
 
 export async function mp4(frames: Blob[], convertMeta: ConvertMeta): Promise<Blob> {
   const p = frames.map((frame) => createImageBitmap(frame));
@@ -36,7 +37,7 @@ export async function mp4(frames: Blob[], convertMeta: ConvertMeta): Promise<Blo
     codec: 'avc1.420034',
     width,
     height,
-    bitrate: 2e7
+    bitrate: config.get('mp4Bitrate') * 1e6
   });
 
   const delays = convertMeta.source.delays.map((delay) => (delay *= 1000));

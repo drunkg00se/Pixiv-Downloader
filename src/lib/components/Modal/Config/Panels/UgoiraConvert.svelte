@@ -10,7 +10,7 @@
   export let padding = 'px-4 *:py-4';
   export let margin = 'mt-2 *:!m-0';
   export let rounded = 'rounded-container-token *:!rounded-none';
-  export let descritionText = 'text-sm text-surface-400';
+  export let descriptionText = 'text-sm text-surface-400';
   export let inputRounded = 'rounded-full';
   export let inputWidth = 'w-32';
 
@@ -76,21 +76,8 @@
     <ul class={ulClasses}>
       <li>
         <div class="flex-auto">
-          <p>Gif</p>
-          <p class={descritionText}>
-            {t('setting.ugoira.options.gif_tips')}
-          </p>
-        </div>
-        <select class="select {inputClasses}" bind:value={$store.gifQuality}>
-          {#each Array.from({ length: 20 }, (_, idx) => idx) as quality}
-            <option value={quality + 1}>{quality + 1}</option>
-          {/each}
-        </select>
-      </li>
-      <li>
-        <div class="flex-auto">
           <p>Webm</p>
-          <p class={descritionText}>{t('setting.ugoira.options.webm_tips')}</p>
+          <p class={descriptionText}>{t('setting.ugoira.options.webm_tips')}</p>
         </div>
         <input
           type="number"
@@ -99,6 +86,20 @@
           max="99"
           step="1"
           bind:value={$store.webmQuality}
+        />
+      </li>
+      <li>
+        <div class="flex-auto">
+          <p>Mp4</p>
+          <p class={descriptionText}>Bitrate (Mbps)</p>
+        </div>
+        <input
+          type="number"
+          class=" input {inputClasses}"
+          min="1"
+          max="99"
+          step="1"
+          bind:value={$store.mp4Bitrate}
         />
       </li>
       <li class=" flex-col !items-stretch">
@@ -113,7 +114,7 @@
           <li class=" items-center">
             <div class="flex-auto">
               <p>{t('setting.ugoira.options.webp_quality')}</p>
-              <p class={descritionText}>{t('setting.ugoira.options.webp_quality_tips')}</p>
+              <p class={descriptionText}>{t('setting.ugoira.options.webp_quality_tips')}</p>
             </div>
             <input
               type="number"
@@ -127,7 +128,7 @@
           <li class=" items-center">
             <div class="flex-auto">
               <p>{t('setting.ugoira.options.webp_method')}</p>
-              <p class={descritionText}>{t('setting.ugoira.options.webp_method_tips')}</p>
+              <p class={descriptionText}>{t('setting.ugoira.options.webp_method_tips')}</p>
             </div>
 
             <select class="select {inputClasses}" bind:value={$store.webpMehtod}>
@@ -140,8 +141,21 @@
       </li>
       <li>
         <div class="flex-auto">
+          <p>Gif</p>
+          <p class={descriptionText}>
+            {t('setting.ugoira.options.gif_tips')}
+          </p>
+        </div>
+        <select class="select {inputClasses}" bind:value={$store.gifQuality}>
+          {#each Array.from({ length: 20 }, (_, idx) => idx) as quality}
+            <option value={quality + 1}>{quality + 1}</option>
+          {/each}
+        </select>
+      </li>
+      <li>
+        <div class="flex-auto">
           <p>Png</p>
-          <p class={descritionText}>{t('setting.ugoira.options.png_tips')}</p>
+          <p class={descriptionText}>{t('setting.ugoira.options.png_tips')}</p>
         </div>
         <input
           type="number"

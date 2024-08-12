@@ -43,6 +43,7 @@ export interface ConfigData {
   showPopupButton: boolean;
   gifQuality: number;
   webmQuality: number;
+  mp4Bitrate: number;
   losslessWebp: boolean;
   webpQuality: number;
   webpMehtod: number;
@@ -105,6 +106,7 @@ function loadConfig(): Config {
     showPopupButton: true,
     gifQuality: 10,
     webmQuality: 95,
+    mp4Bitrate: 20,
     losslessWebp: false,
     webpQuality: 95,
     webpMehtod: 4,
