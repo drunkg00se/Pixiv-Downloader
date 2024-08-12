@@ -2,7 +2,7 @@ import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumb
 import { downloadArtwork } from '../../downloadArtwork';
 
 // 多图"展开全部"后各图片下载按钮
-export function createWorkScrollBtn(id: string): void {
+export function createWorkExpanedViewBtn(id: string): void {
   const works = document.querySelectorAll<HTMLAnchorElement>(
     'figure a.gtm-expand-full-size-illust'
   );

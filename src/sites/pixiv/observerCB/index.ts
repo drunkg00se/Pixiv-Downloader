@@ -9,7 +9,7 @@ import {
   removeDownloadBar
 } from './downloadBar';
 import { createToolbarBtn } from './artworksPage/toolbarButton';
-import { createWorkScrollBtn } from './artworksPage/workScrollButton';
+import { createWorkExpanedViewBtn } from './artworksPage/workExpanedViewButton';
 import { createPresentationBtn } from './artworksPage/presentationButton';
 import { createPreviewModalBtn } from './artworksPage/previewModalButton';
 import { createMangaViewerBtn } from './artworksPage/mangaViewerButton';
@@ -22,7 +22,7 @@ function pageActions() {
     case !!(param = regexp.artworksPage.exec(pathname)): {
       const id = param[1];
       createToolbarBtn(id);
-      createWorkScrollBtn(id);
+      createWorkExpanedViewBtn(id);
       createPresentationBtn(id);
       createPreviewModalBtn();
       createMangaViewerBtn(id);
