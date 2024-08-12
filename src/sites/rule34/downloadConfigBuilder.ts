@@ -1,5 +1,5 @@
 import { DownloadConfigBuilder } from '../base/downloadConfigBuilder';
-import { type DownloadConfig, downloader } from '@/lib/downloader';
+import { type DownloadConfig } from '@/lib/downloader';
 import type { Rule34Meta } from './parser';
 import { ThumbnailButton } from '../../lib/components/Button/thumbnailButton';
 
@@ -25,8 +25,6 @@ export class Rule34DownloadConfig extends DownloadConfigBuilder<Rule34Meta> {
       path: this.buildFilePath(),
       source: this.meta,
       timeout: this.isImage() ? 60000 : undefined,
-      // GM_download下载带cf_clearance cookie
-      directSave: downloader.fileSystemAccessEnabled ? false : true,
       onProgress: artworkProgressFactory(btn)
     };
   }

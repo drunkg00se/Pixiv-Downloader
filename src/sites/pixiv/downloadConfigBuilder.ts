@@ -4,7 +4,6 @@ import { DownloadConfigBuilder } from '@/sites/base/downloadConfigBuilder';
 import dayjs from 'dayjs';
 import { config, type UgoiraFormat } from '@/lib/config';
 import { IllustType } from './types';
-import { env } from '@/lib/env';
 import { compressor } from '@/lib/compressor';
 import { type ConvertFormat, converter } from '@/lib/converter';
 import { ThumbnailButton, ThumbnailBtnStatus } from '@/lib/components/Button/thumbnailButton';
@@ -192,16 +191,6 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
     return config.get('tagLang') !== 'ja';
   }
 
-  // directSave使firefox下载图片时支持子目录
-  protected useDirectSave(): boolean {
-    return (
-      !!this.getFolderPattern() &&
-      !this.needBundle() &&
-      !this.needConvert() &&
-      (!env.isBlobDlAvaliable() || (env.isViolentmonkey() && !this.isFsaEnable()))
-    );
-  }
-
   protected supportSubpath(): boolean {
     return this.isBrowserApi() || this.isFsaEnable();
   }
@@ -241,7 +230,6 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
 
     const taskId = id + '_' + Math.random().toString(36).slice(2);
     const headers = this.headers;
-    const directSave = this.useDirectSave();
     const supportSubPath = this.supportSubpath();
     const downloadConfigs: DownloadConfig<PixivSource>[] = [];
 
@@ -265,12 +253,11 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
         order: downloadPage ?? 0
       };
 
-      const downloadConfig = {
+      const downloadConfig: DownloadConfig<PixivSource> = {
         taskId,
         src: imgSrc,
         path,
         source,
-        directSave,
         headers,
         timeout: this.timeout,
         ...hooks
@@ -317,7 +304,7 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
             order: page
           };
 
-          const downloadConfig = {
+          const downloadConfig: DownloadConfig<PixivSource> = {
             taskId,
             src: imgSrc,
             path,
@@ -353,7 +340,7 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
             order: page
           };
 
-          const downloadConfig = {
+          const downloadConfig: DownloadConfig<PixivSource> = {
             taskId,
             src: imgSrc,
             path,
@@ -382,12 +369,11 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
             order: page
           };
 
-          const downloadConfig = {
+          const downloadConfig: DownloadConfig<PixivSource> = {
             taskId,
             src: imgSrc,
             path,
             source,
-            directSave,
             headers,
             timeout: this.timeout,
             ...hooks
