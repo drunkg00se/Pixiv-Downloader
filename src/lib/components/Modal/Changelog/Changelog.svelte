@@ -14,7 +14,7 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
   <article class="modal-body mt-4">
     <ul class="list-disc list-inside leading-loose">
-      <li>Danbooru：修复Firefox下载图片时请求被cf拒绝的问题。</li>
+      <li>修复（Pixiv）：Pixiv更新导致“已关注用户的作品”页不显示下载器的问题。</li>
     </ul>
   </article>
   <footer class="modal-footer relative mt-4 text-sm">
