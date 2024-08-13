@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.0.2
+// @version            1.0.3
 // @author             ruaruarua
 // @description        Pixiv | Danbooru | Rule34. 一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。
 // @description:zh-TW  Pixiv | Danbooru | Rule34. 一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。
@@ -465,7 +465,7 @@
   })(TagLanguage || {});
   function loadConfig(siteConfig2) {
     const defaultConfig = Object.freeze({
-      version: "1.0.2",
+      version: "1.0.3",
       ugoiraFormat: "zip",
       folderPattern: "pixiv/{artist}",
       filenamePattern: "{artist}_{title}_{id}_p{page}",
@@ -8659,10 +8659,10 @@
     return {
       c() {
         header = element("header");
-        header.textContent = `Pixiv Downloader ${"1.0.2"}`;
+        header.textContent = `Pixiv Downloader ${"1.0.3"}`;
         t2 = space();
         article = element("article");
-        article.innerHTML = `<ul class="list-disc list-inside leading-loose"><li>Danbooru：修复Firefox下载图片时请求被cf拒绝的问题。</li></ul>`;
+        article.innerHTML = `<ul class="list-disc list-inside leading-loose"><li>修复（Pixiv）：Pixiv更新导致“已关注用户的作品”页不显示下载器的问题。</li></ul>`;
         t4 = space();
         footer = element("footer");
         details = element("details");
@@ -18596,10 +18596,19 @@ If you want to offset all timestamps of a track such that the first one is zero,
       updateFollowLatestDownloadBarBtnText(prevDlBtn, prevDlAllBtn);
       return;
     }
-    const nav = document.querySelector("nav");
-    if (!nav || nav.parentElement.childElementCount === 1) return;
-    const navBar = nav.parentElement;
-    const modeSwitch = nav.nextElementSibling;
+    const navBar = document.querySelector("section > div:nth-child(3)");
+    if (!navBar || navBar.childElementCount !== 2) {
+      logger.warn("Can not find container for download bar.");
+      return;
+    }
+    const baseClassesEl = document.querySelector(
+      "section > div:first-child a:not([aria-current])"
+    );
+    if (!baseClassesEl) {
+      logger.warn("Can not find styled element for download bar.");
+      return;
+    }
+    const modeSwitch = navBar.children[1];
     const filter = createFilter();
     navBar.parentElement.insertBefore(filter, navBar);
     const dlBar = document.createElement("div");
@@ -18608,7 +18617,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
     const statusBar = document.createElement("div");
     statusBar.classList.add("pdl-dlbar-status_bar");
     dlBarRef.statusBar = dlBar.appendChild(statusBar);
-    const baseClasses = nav.querySelector("a:not([aria-current])").classList;
+    const baseClasses = baseClassesEl.classList;
     dlBarRef.abortBtn = dlBar.appendChild(
       createPdlBtn({
         attrs: { "pdl-userid": "" },
