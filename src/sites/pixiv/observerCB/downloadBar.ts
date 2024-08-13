@@ -8,6 +8,7 @@ import {
 } from '../helpers/batchDownload';
 import { config, type ConfigData } from '@/lib/config';
 import { getSelfId } from '@/sites/pixiv/helpers/getSelfId';
+import { logger } from '@/lib/logger';
 
 export type FilterOption = Pick<
   ConfigData,
@@ -247,11 +248,21 @@ export function createFollowLatestDownloadBar() {
     return;
   }
 
-  const nav = document.querySelector('nav');
-  if (!nav || nav.parentElement!.childElementCount === 1) return;
+  const navBar = document.querySelector<HTMLDivElement>('section > div:nth-child(3)');
+  if (!navBar || navBar.childElementCount !== 2) {
+    logger.warn('Can not find container for download bar.');
+    return;
+  }
 
-  const navBar = nav.parentElement as HTMLDivElement;
-  const modeSwitch = nav.nextElementSibling as HTMLDivElement;
+  const baseClassesEl = document.querySelector<HTMLAnchorElement>(
+    'section > div:first-child a:not([aria-current])'
+  );
+  if (!baseClassesEl) {
+    logger.warn('Can not find styled element for download bar.');
+    return;
+  }
+
+  const modeSwitch = navBar.children[1] as HTMLDivElement;
   const filter = createFilter();
   navBar.parentElement!.insertBefore(filter, navBar);
 
@@ -264,7 +275,7 @@ export function createFollowLatestDownloadBar() {
   dlBarRef.statusBar = dlBar.appendChild(statusBar);
 
   //下载按钮
-  const baseClasses = nav.querySelector<HTMLAnchorElement>('a:not([aria-current])')!.classList;
+  const baseClasses = baseClassesEl.classList;
 
   dlBarRef.abortBtn = dlBar.appendChild(
     createPdlBtn({
