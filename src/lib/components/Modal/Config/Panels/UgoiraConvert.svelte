@@ -19,6 +19,44 @@
 
   export let sectionSpace = `space-y-4`;
   export let sectionTitle = 'font-bold';
+
+  type NumberKeys<T> = {
+    [K in keyof T]: T[K] extends number ? K : never;
+  }[keyof T];
+
+  function validateNumber<T extends typeof $store>(
+    evt: Event & { currentTarget: EventTarget & HTMLInputElement },
+    key: NumberKeys<T>
+  ) {
+    const el = evt.currentTarget as HTMLInputElement;
+    if (el.type !== 'number') throw new Error('input.type must be number.');
+
+    if (!el.checkValidity()) {
+      if (/^[0-9]+$/.test(el.value)) {
+        store.update((config) => {
+          return { ...config, [key]: +el.max };
+        });
+      } else {
+        store.update((config) => {
+          return { ...config };
+        });
+      }
+    }
+  }
+
+  function setDefaultValueIfEmpty<T extends typeof $store>(
+    evt: Event & { currentTarget: EventTarget & HTMLInputElement },
+    key: NumberKeys<T>
+  ) {
+    const el = evt.currentTarget as HTMLInputElement;
+    if (el.type !== 'number') throw new Error('input.type must be number.');
+
+    if (el.value === '') {
+      store.update((config) => {
+        return { ...config, [key]: +el.min };
+      });
+    }
+  }
 </script>
 
 <div class={sectionSpace}>
@@ -81,10 +119,12 @@
         </div>
         <input
           type="number"
-          class=" input {inputClasses}"
+          class="input {inputClasses}"
           min="0"
           max="99"
           step="1"
+          on:input={(evt) => validateNumber(evt, 'webmQuality')}
+          on:blur={(evt) => setDefaultValueIfEmpty(evt, 'webmQuality')}
           bind:value={$store.webmQuality}
         />
       </li>
@@ -95,14 +135,16 @@
         </div>
         <input
           type="number"
-          class=" input {inputClasses}"
+          class="input {inputClasses}"
           min="1"
           max="99"
           step="1"
+          on:input={(evt) => validateNumber(evt, 'mp4Bitrate')}
+          on:blur={(evt) => setDefaultValueIfEmpty(evt, 'mp4Bitrate')}
           bind:value={$store.mp4Bitrate}
         />
       </li>
-      <li class=" flex-col !items-stretch">
+      <li class="flex-col !items-stretch">
         <p>Webp</p>
         <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
           <li class="items-center">
@@ -111,21 +153,23 @@
             ></SlideToggle>
           </li>
 
-          <li class=" items-center">
+          <li class="items-center">
             <div class="flex-auto">
               <p>{t('setting.ugoira.options.webp_quality')}</p>
               <p class={descriptionText}>{t('setting.ugoira.options.webp_quality_tips')}</p>
             </div>
             <input
               type="number"
-              class=" input {inputClasses}"
+              class="input {inputClasses}"
               min="0"
               max="100"
               step="1"
+              on:input={(evt) => validateNumber(evt, 'webpQuality')}
+              on:blur={(evt) => setDefaultValueIfEmpty(evt, 'webpQuality')}
               bind:value={$store.webpQuality}
             />
           </li>
-          <li class=" items-center">
+          <li class="items-center">
             <div class="flex-auto">
               <p>{t('setting.ugoira.options.webp_method')}</p>
               <p class={descriptionText}>{t('setting.ugoira.options.webp_method_tips')}</p>
@@ -159,10 +203,12 @@
         </div>
         <input
           type="number"
-          class=" input {inputClasses}"
+          class="input {inputClasses}"
           min="0"
           max="256"
           step="1"
+          on:input={(evt) => validateNumber(evt, 'pngColor')}
+          on:blur={(evt) => setDefaultValueIfEmpty(evt, 'pngColor')}
           bind:value={$store.pngColor}
         />
       </li>
