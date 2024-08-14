@@ -156,6 +156,9 @@ export class ThumbnailButton extends HTMLElement {
   private updateIcon(status: string | null) {
     if (status === null) {
       status = ThumbnailBtnStatus.Init;
+    } else if (status === ThumbnailBtnStatus.Init) {
+      delete this.dataset.status;
+      return;
     } else if (!(status in iconTypeMap)) {
       this.dataset.status = this.status;
       return;
