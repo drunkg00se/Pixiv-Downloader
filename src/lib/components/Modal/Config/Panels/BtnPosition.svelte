@@ -4,7 +4,7 @@
   import t from '@/lib/lang';
   import { env } from '@/lib/env';
   import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
 
   export let bg = 'bg-white/30 dark:bg-black/15';
   export let border = 'divide-y-[1px] *:border-surface-300-600-token';
@@ -59,12 +59,14 @@
 
   sampleBtn.setAttribute('disabled', '');
   sampleBookmarkBtn.setAttribute('disabled', '');
-  sampleBookmarkBtn.dataset.status = 'complete';
 
-  onMount(() => {
+  onMount(async () => {
     buttonContainer.appendChild(sampleBtn);
     if (env.isPixiv()) {
       buttonContainer.appendChild(sampleBookmarkBtn);
+
+      await tick();
+      sampleBookmarkBtn.dataset.status = 'complete';
     }
   });
 </script>
