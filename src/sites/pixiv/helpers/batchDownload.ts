@@ -14,6 +14,7 @@ import { logger } from '@/lib/logger';
 import { downloader } from '@/lib/downloader';
 import { ArtworkTagButton } from '@/lib/components/Pixiv/artworkTagButton';
 import type { TagListButton } from '@/lib/components/Pixiv/tagListButton';
+import type { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 
 function onProgressCB(progressData: ProgressData | string) {
   if (typeof progressData === 'string') {
@@ -255,11 +256,12 @@ export async function downloadSearchResult(evt: MouseEvent) {
   evt.stopPropagation();
   if (isDownloading) return;
 
-  const pdlNodes = document.querySelectorAll<HTMLButtonElement>('section ul li pdl-button');
+  const pdlNodes = document.querySelectorAll<ThumbnailButton>('section ul li pdl-button');
   if (!pdlNodes.length) return;
 
-  let ids = Array.prototype.map.call(pdlNodes, (node: HTMLButtonElement) =>
-    node.getAttribute('pdl-id')
+  let ids = Array.prototype.map.call(
+    pdlNodes,
+    (node: ThumbnailButton) => node.dataset.id
   ) as string[];
 
   if (getFilterOption().filterExcludeDownloaded) {

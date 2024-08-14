@@ -12,11 +12,6 @@ import { logger } from '@/lib/logger';
 import { config } from '@/lib/config';
 import { RequestError, JsonDataError } from '@/lib/error';
 
-/**
- * Get sentry-release
- * window.__SENTRY__.hub._stack[0].scope._session.release;
- */
-
 function createService() {
   async function _requestJson<T>(url: string, init?: RequestInit): Promise<T> {
     logger.info('fetch url:', url);

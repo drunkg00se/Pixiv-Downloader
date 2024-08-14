@@ -68,11 +68,12 @@ type BookmarkButtonRef = MainBookMark | SubBookmark | RankBookmark;
 function findBookmarkBtn(btn: ThumbnailButton): BookmarkButtonRef | void {
   const bookmarkBtnRef = {} as BookmarkButtonRef;
 
-  if (!btn.getAttribute('type')) {
+  if (!btn.dataset.type) {
     const favBtn =
       btn.parentElement?.nextElementSibling?.querySelector<HTMLButtonElement>(
         'button[type="button"]'
       );
+
     if (favBtn) {
       bookmarkBtnRef.kind = BookmarkType.sub;
       bookmarkBtnRef.button = favBtn;
@@ -85,10 +86,11 @@ function findBookmarkBtn(btn: ThumbnailButton): BookmarkButtonRef | void {
       }
     }
     // 动态页无收藏按钮
-  } else if (btn.getAttribute('type') === ThumbnailBtnType.PixivToolbar) {
+  } else if (btn.dataset.type === ThumbnailBtnType.PixivToolbar) {
     const favBtn = btn.parentElement?.parentElement?.querySelector<HTMLButtonElement>(
       'button.gtm-main-bookmark'
     );
+
     if (favBtn) {
       bookmarkBtnRef.kind = BookmarkType.main;
       bookmarkBtnRef.button = favBtn;

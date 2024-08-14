@@ -59,7 +59,7 @@
 
   sampleBtn.setAttribute('disabled', '');
   sampleBookmarkBtn.setAttribute('disabled', '');
-  sampleBookmarkBtn.setAttribute('status', 'complete');
+  sampleBookmarkBtn.dataset.status = 'complete';
 
   onMount(() => {
     buttonContainer.appendChild(sampleBtn);

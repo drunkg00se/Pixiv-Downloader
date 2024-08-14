@@ -53,19 +53,19 @@ pdl-button {
   --pdl-red1: #ea0000;
   --pdl-fill-svg: var(--pdl-black1);
 
-  &[status='init'] {
+  &[data-status='init'] {
     --pdl-fill-svg: var(--pdl-black1);
   }
 
-  &[type='pixiv-toolbar'] {
+  &[data-type='pixiv-toolbar'] {
     --pdl-fill-svg: var(--pdl-text1);
   }
 
-  &[status] {
+  &[data-status] {
     --pdl-fill-svg: var(--pdl-green1);
   }
 
-  &[status='error'] {
+  &[data-status='error'] {
     --pdl-fill-svg: var(--pdl-red1);
   }
 }

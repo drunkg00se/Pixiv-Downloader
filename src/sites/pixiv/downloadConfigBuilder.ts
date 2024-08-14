@@ -220,7 +220,7 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
 
   public getDownloadConfig(btn?: ThumbnailButton): DownloadConfig<PixivSource>[] {
     const { illustType, src, id, pageCount, extendName } = this.meta;
-    const pageAttr = btn?.getAttribute('page');
+    const pageAttr = btn?.dataset.page;
     const downloadPage = pageAttr ? Number(pageAttr) : undefined;
 
     if (downloadPage && (downloadPage > pageCount - 1 || downloadPage < 0))

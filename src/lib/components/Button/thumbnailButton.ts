@@ -72,22 +72,22 @@ export class ThumbnailButton extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['pdl-id', 'status', 'page', 'disabled'];
+    return ['data-id', 'data-status', 'data-page', 'disabled'];
   }
 
   private attributeChangedCallback(
-    name: 'pdl-id' | 'status' | 'page' | 'disabled',
+    name: 'data-id' | 'data-status' | 'data-page' | 'disabled',
     oldValue: string | null,
     newValue: string | null
   ) {
     switch (name) {
-      case 'pdl-id':
+      case 'data-id':
         this.updateId(newValue);
         break;
-      case 'status':
+      case 'data-status':
         this.updateIcon(newValue);
         break;
-      case 'page':
+      case 'data-page':
         this.updatePage(newValue);
         break;
       case 'disabled':
@@ -100,11 +100,11 @@ export class ThumbnailButton extends HTMLElement {
 
   private updateId(id: string | null) {
     try {
-      if (id === null) throw new Error('Attribute "pdl-id" is required.');
+      if (id === null) throw new Error('Attribute "data-id" is required.');
       this.mediaId = this.checkNumberValidity(id);
     } catch (error) {
       logger.error(error);
-      this.setAttribute('pdl-id', String(this.mediaId));
+      this.dataset.id = String(this.mediaId);
     }
   }
 
@@ -127,9 +127,9 @@ export class ThumbnailButton extends HTMLElement {
     } catch (error) {
       logger.error(error);
       if (this.page === undefined) {
-        this.removeAttribute('page');
+        delete this.dataset.page;
       } else {
-        this.setAttribute('page', String(this.page));
+        this.dataset.page = String(this.page);
       }
     }
   }
@@ -138,7 +138,7 @@ export class ThumbnailButton extends HTMLElement {
     if (status === null) {
       status = ThumbnailBtnStatus.Init;
     } else if (!(status in iconTypeMap)) {
-      this.setAttribute('status', this.status);
+      this.dataset.status = this.status;
       return;
     }
 
@@ -177,11 +177,9 @@ export class ThumbnailButton extends HTMLElement {
         downloaded && this.setStatus(ThumbnailBtnStatus.Complete);
       });
 
-    this.setAttribute('pdl-id', String(this.mediaId));
-    this.page !== undefined &&
-      !Number.isNaN(this.page) &&
-      this.setAttribute('page', String(this.page));
-    this.type && this.setAttribute('type', this.type);
+    this.dataset.id = String(this.mediaId);
+    this.page !== undefined && !Number.isNaN(this.page) && (this.dataset.page = String(this.page));
+    this.type && (this.dataset.type = this.type);
   }
 
   private connectedCallback() {
@@ -215,7 +213,7 @@ export class ThumbnailButton extends HTMLElement {
     const span = shadowRoot.querySelector('span')!;
 
     if (this.status !== ThumbnailBtnStatus.Progress) {
-      this.setAttribute('status', ThumbnailBtnStatus.Progress);
+      this.dataset.status = ThumbnailBtnStatus.Progress;
       span.classList.toggle('show');
     }
 
@@ -247,8 +245,7 @@ export class ThumbnailButton extends HTMLElement {
     );
 
     svg.style.removeProperty('stroke-dashoffset');
-    if (this.status === ThumbnailBtnStatus.Progress)
-      this.setAttribute('status', ThumbnailBtnStatus.Init);
+    if (this.status === ThumbnailBtnStatus.Progress) this.dataset.status = ThumbnailBtnStatus.Init;
   }
 
   public setStatus(status: ThumbnailBtnStatus) {
@@ -262,7 +259,7 @@ export class ThumbnailButton extends HTMLElement {
         this.removeProgress();
       }
 
-      this.setAttribute('status', status);
+      this.dataset.status = status;
     }
   }
 }

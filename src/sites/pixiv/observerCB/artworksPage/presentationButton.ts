@@ -10,7 +10,7 @@ export const createPresentationBtn: (id: string) => void = (() => {
     const newImg = mutationList[1]['addedNodes'][0] as HTMLImageElement;
     const [pageNum] = regexp.originSrcPageNum.exec(newImg.src) ?? [];
     if (!pageNum) throw new Error('[Error]Invalid Image Element.');
-    btn?.setAttribute('page', String(pageNum));
+    btn!.dataset.page = String(pageNum);
   }
 
   return (id: string): void => {

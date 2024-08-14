@@ -50,25 +50,25 @@
 }
 
 // 画廊页按钮
-:host([type='gallery'])::part(button) {
+:host([data-type='gallery'])::part(button) {
   position: sticky;
   top: 40px;
   left: 0px;
 }
 
 // pixiv个人收藏
-:host([type='pixiv-my-bookmark'])::part(button) {
+:host([data-type='pixiv-my-bookmark'])::part(button) {
   top: calc((100% - 32px) * var(--pdl-btn-self-bookmark-top) / 100);
   left: calc((100% - 32px) * var(--pdl-btn-self-bookmark-left) / 100);
 }
 
 // pixiv历史记录
-:host([type='pixiv-history'])::part(button) {
+:host([data-type='pixiv-history'])::part(button) {
   z-index: auto; // 避免覆盖“相关图片”
 }
 
 // pixiv presentation
-:host([type='pixiv-presentation'])::part(button) {
+:host([data-type='pixiv-presentation'])::part(button) {
   position: fixed;
   top: 50px;
   right: 20px;
@@ -76,7 +76,7 @@
 }
 
 // pixiv toolbar
-:host([type='pixiv-toolbar'])::part(button) {
+:host([data-type='pixiv-toolbar'])::part(button) {
   position: relative;
   top: auto;
   left: auto;
@@ -84,14 +84,14 @@
 }
 
 // pixiv manga viewer
-:host([type='pixiv-manga-viewer'])::part(button) {
+:host([data-type='pixiv-manga-viewer'])::part(button) {
   top: 80%;
   right: 4px;
   left: auto;
 }
 
 // yande browse
-:host([type='yande-browse'])::part(button) {
+:host([data-type='yande-browse'])::part(button) {
   top: 320px;
   right: 4px;
   left: auto;

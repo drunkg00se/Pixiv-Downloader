@@ -18,7 +18,7 @@ export class Yande extends SiteInject {
 
       const oldBtn = el.querySelector<ThumbnailButton>('pdl-button');
       if (oldBtn) {
-        if (oldBtn.getAttribute('pdl-id') === id) return;
+        if (oldBtn.dataset.id === id) return;
 
         oldBtn.remove();
       } else {

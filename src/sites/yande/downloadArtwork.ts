@@ -6,7 +6,7 @@ import { YandeDownloadConfig } from './downloadConfigBuilder';
 
 export async function downloadArtwork(btn: ThumbnailButton) {
   downloader.dirHandleCheck();
-  const id = btn.getAttribute('pdl-id')!;
+  const id = btn.dataset.id!;
   const mediaMeta = await yandeParser.parse(id);
   const { tags, artist, title } = mediaMeta;
   const downloadConfigs = new YandeDownloadConfig(mediaMeta).getDownloadConfig(btn);

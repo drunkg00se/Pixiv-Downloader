@@ -8,7 +8,7 @@ import { logger } from '@/lib/logger';
 export async function downloadPoolArtwork(btn: ThumbnailButton) {
   downloader.dirHandleCheck();
 
-  const poolId = btn.getAttribute('pdl-id')!;
+  const poolId = btn.dataset.id!;
   const promises: Promise<void>[] = [];
 
   const postCount = await danbooruParser.getPoolPostCount(poolId);

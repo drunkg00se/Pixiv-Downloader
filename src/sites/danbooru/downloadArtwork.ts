@@ -9,7 +9,7 @@ import { DanbooruDownloadConfig } from './downloadConfigBuilder';
 export async function downloadArtwork(btn: ThumbnailButton) {
   downloader.dirHandleCheck();
 
-  const id = btn.getAttribute('pdl-id')!;
+  const id = btn.dataset.id!;
   const mediaMeta = await danbooruParser.parse(id);
 
   const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);

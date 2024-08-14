@@ -13,18 +13,6 @@ export class Pixiv extends SiteInject {
       childList: true,
       subtree: true
     });
-
-    // document.addEventListener('keydown', (e) => {
-    // 	if (e.ctrlKey && e.key === 'q') {
-    // 		const pdlMainBtn = document.querySelector('.pdl-btn-main');
-    // 		if (pdlMainBtn) {
-    // 			e.preventDefault();
-    // 			if (!e.repeat) {
-    // 				pdlMainBtn.dispatchEvent(new MouseEvent('click'));
-    // 			}
-    // 		}
-    // 	}
-    // });
   }
 
   protected injectStyle(): void {

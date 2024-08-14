@@ -8,7 +8,7 @@ import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 export async function downloadArtwork(btn: ThumbnailButton) {
   downloader.dirHandleCheck();
 
-  const id = btn.getAttribute('pdl-id')!;
+  const id = btn.dataset.id!;
   const pixivMeta = await pixivParser.parse(id);
 
   const { comment, bookmarkData, token, tags, artist, userId, title } = pixivMeta;
