@@ -8,6 +8,9 @@
   padding: 0;
   height: 32px;
   width: 32px;
+  top: calc((100% - 32px) * var(--pdl-btn-top) / 100);
+  left: calc((100% - 32px) * var(--pdl-btn-left) / 100);
+
   border: none;
   border-radius: 4px;
 
@@ -15,15 +18,14 @@
   white-space: nowrap;
   user-select: none;
 
-  font-family: 'win-bug-omega, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif';
+  font-family: system-ui;
   font-size: 13px;
   font-weight: bold;
 
-  color: var(--pdl-green1);
+  color: #262626;
   background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
 
-  top: calc((100% - 32px) * var(--pdl-btn-top) / 100);
-  left: calc((100% - 32px) * var(--pdl-btn-left) / 100);
   z-index: 1;
   cursor: pointer;
 
@@ -35,8 +37,8 @@
     position: absolute;
     width: 85%;
     height: 85%;
-    fill: var(--pdl-fill-svg);
-    stroke: var(--pdl-fill-svg);
+    fill: currentColor;
+    stroke: currentColor;
   }
 
   & > span {
@@ -47,52 +49,61 @@
       opacity: 1;
     }
   }
-}
 
-// 画廊页按钮
-:host([data-type='gallery'])::part(button) {
-  position: sticky;
-  top: 40px;
-  left: 0px;
-}
+  // 画廊页按钮
+  :host([data-type='gallery']) & {
+    position: sticky;
+    top: 40px;
+    left: 0px;
+  }
 
-// pixiv个人收藏
-:host([data-type='pixiv-my-bookmark'])::part(button) {
-  top: calc((100% - 32px) * var(--pdl-btn-self-bookmark-top) / 100);
-  left: calc((100% - 32px) * var(--pdl-btn-self-bookmark-left) / 100);
-}
+  // pixiv个人收藏
+  :host([data-type='pixiv-my-bookmark']) & {
+    top: calc((100% - 32px) * var(--pdl-btn-self-bookmark-top) / 100);
+    left: calc((100% - 32px) * var(--pdl-btn-self-bookmark-left) / 100);
+  }
 
-// pixiv历史记录
-:host([data-type='pixiv-history'])::part(button) {
-  z-index: auto; // 避免覆盖“相关图片”
-}
+  // pixiv历史记录
+  :host([data-type='pixiv-history']) & {
+    z-index: auto; // 避免覆盖“相关图片”
+  }
 
-// pixiv presentation
-:host([data-type='pixiv-presentation'])::part(button) {
-  position: fixed;
-  top: 50px;
-  right: 20px;
-  left: auto;
-}
+  // pixiv presentation
+  :host([data-type='pixiv-presentation']) & {
+    position: fixed;
+    top: 50px;
+    right: 20px;
+    left: auto;
+  }
 
-// pixiv toolbar
-:host([data-type='pixiv-toolbar'])::part(button) {
-  position: relative;
-  top: auto;
-  left: auto;
-  background-color: transparent;
-}
+  // pixiv toolbar
+  :host([data-type='pixiv-toolbar']) & {
+    position: relative;
+    top: auto;
+    left: auto;
+    color: inherit;
+    background-color: transparent;
+  }
 
-// pixiv manga viewer
-:host([data-type='pixiv-manga-viewer'])::part(button) {
-  top: 80%;
-  right: 4px;
-  left: auto;
-}
+  // pixiv manga viewer
+  :host([data-type='pixiv-manga-viewer']) & {
+    top: 80%;
+    right: 4px;
+    left: auto;
+  }
 
-// yande browse
-:host([data-type='yande-browse'])::part(button) {
-  top: 320px;
-  right: 4px;
-  left: auto;
+  // yande browse
+  :host([data-type='yande-browse']) & {
+    top: 320px;
+    right: 4px;
+    left: auto;
+  }
+
+  :host([data-status]) & {
+    color: #16a34a;
+  }
+
+  :host([data-status='error']) & {
+    color: #ef4444;
+  }
 }

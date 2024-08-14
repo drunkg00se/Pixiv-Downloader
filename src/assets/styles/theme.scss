@@ -46,26 +46,3 @@
     @include color-scheme-dark();
   }
 }
-
-pdl-button {
-  --pdl-green1: #01b468;
-  --pdl-black1: #3c3c3c;
-  --pdl-red1: #ea0000;
-  --pdl-fill-svg: var(--pdl-black1);
-
-  &[data-status='init'] {
-    --pdl-fill-svg: var(--pdl-black1);
-  }
-
-  &[data-type='pixiv-toolbar'] {
-    --pdl-fill-svg: var(--pdl-text1);
-  }
-
-  &[data-status] {
-    --pdl-fill-svg: var(--pdl-green1);
-  }
-
-  &[data-status='error'] {
-    --pdl-fill-svg: var(--pdl-red1);
-  }
-}

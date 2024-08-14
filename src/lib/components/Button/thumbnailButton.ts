@@ -205,7 +205,7 @@ export class ThumbnailButton extends HTMLElement {
 
   private render() {
     const shadowRoot = this.attachShadow({ mode: 'open' });
-    shadowRoot.innerHTML = `    <style>${btnStyle}</style>${svgGroup}<button part="button" class="pdl-thumbnail">
+    shadowRoot.innerHTML = `    <style>${btnStyle}</style>${svgGroup}<button class="pdl-thumbnail">
       <svg xmlns="http://www.w3.org/2000/svg" class="pdl-icon">
         <use xlink:href="#pdl-download"></use>
       </svg>
