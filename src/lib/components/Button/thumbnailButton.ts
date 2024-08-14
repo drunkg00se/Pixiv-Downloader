@@ -118,6 +118,7 @@ export class ThumbnailButton extends HTMLElement {
     try {
       if (id === null) throw new Error('Attribute "data-id" is required.');
       this.mediaId = this.checkNumberValidity(id);
+      this.updateDownloadStatus();
     } catch (error) {
       logger.error(error);
       this.dataset.id = String(this.mediaId);
@@ -140,6 +141,8 @@ export class ThumbnailButton extends HTMLElement {
       } else {
         this.page = this.checkNumberValidity(page);
       }
+
+      this.updateDownloadStatus();
     } catch (error) {
       logger.error(error);
       if (this.page === undefined) {
@@ -178,6 +181,25 @@ export class ThumbnailButton extends HTMLElement {
     );
   }
 
+  private updateDownloadStatus() {
+    // Danbooru pool的id不作记录
+    if (this.type !== ThumbnailBtnType.DanbooruPool) {
+      if (this.page !== undefined) {
+        historyDb.hasPage(this.mediaId, this.page).then((pageDownloaded) => {
+          pageDownloaded
+            ? this.setStatus(ThumbnailBtnStatus.Complete)
+            : this.setStatus(ThumbnailBtnStatus.Init);
+        });
+      } else {
+        historyDb.has(this.mediaId).then((hasId: boolean) => {
+          hasId
+            ? this.setStatus(ThumbnailBtnStatus.Complete)
+            : this.setStatus(ThumbnailBtnStatus.Init);
+        });
+      }
+    }
+  }
+
   private render() {
     const shadowRoot = this.attachShadow({ mode: 'open' });
     shadowRoot.innerHTML = `    <style>${btnStyle}</style>${svgGroup}<button part="button" class="pdl-thumbnail">
@@ -187,23 +209,11 @@ export class ThumbnailButton extends HTMLElement {
       <span></span>
     </button>`;
 
-    // Danbooru pool的id不作记录
-    if (this.type !== ThumbnailBtnType.DanbooruPool) {
-      if (this.page !== undefined) {
-        this.dataset.page = String(this.page);
-
-        historyDb.hasPage(this.mediaId, this.page).then((pageDownloaded) => {
-          pageDownloaded && this.setStatus(ThumbnailBtnStatus.Complete);
-        });
-      } else {
-        historyDb.has(this.mediaId).then((hasId: boolean) => {
-          hasId && this.setStatus(ThumbnailBtnStatus.Complete);
-        });
-      }
-    }
+    this.updateDownloadStatus();
 
     this.dataset.id = String(this.mediaId);
     this.type && (this.dataset.type = this.type);
+    this.page !== undefined && (this.dataset.page = String(this.page));
   }
 
   private connectedCallback() {
@@ -274,6 +284,11 @@ export class ThumbnailButton extends HTMLElement {
 
   public setStatus(status: ThumbnailBtnStatus) {
     if (status !== this.status) {
+      if (status === ThumbnailBtnStatus.Init) {
+        delete this.dataset.status;
+        return;
+      }
+
       if (status === ThumbnailBtnStatus.Progress) {
         this.setProgress(0);
         return;
