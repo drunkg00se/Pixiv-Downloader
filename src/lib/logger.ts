@@ -33,8 +33,12 @@ function getLogger() {
     timeEnd(label: string) {
       console.timeEnd(namePrefix + label);
     },
-    throw(msg: string) {
-      throw new Error(`[Pixiv Downloader] ${msg}`);
+    throw(msg: string, Err?: typeof Error) {
+      if (Err) {
+        throw new Err(`${namePrefix}${msg}`);
+      } else {
+        throw new Error(`${namePrefix}${msg}`);
+      }
     }
   };
 }

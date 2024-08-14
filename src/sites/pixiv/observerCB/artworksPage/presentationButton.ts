@@ -44,7 +44,7 @@ export function createPresentationBtn(id: string) {
     // mutationList[0] is the record that removes the img
     const newImg = mutationList[1]['addedNodes'][0] as HTMLImageElement;
     const [pageNum] = regexp.originSrcPageNum.exec(newImg.src) ?? [];
-    if (!pageNum) logger.throw('Invalid image element.');
+    if (!pageNum) return logger.throw('Invalid image element.');
 
     btn?.remove();
     btn = new ThumbnailButton({

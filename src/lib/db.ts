@@ -33,10 +33,20 @@ class HistoryDb extends Dexie {
     });
   }
 
-  private throwIfInvalidNumber(num: number): void {
-    if (!(Number.isSafeInteger(num) && num >= 0)) {
-      logger.throw(`Invalid number:${num}, must be a non-negative integer.`);
+  private throwIfInvalidNumber(num: number | string): number {
+    if (typeof num === 'string') {
+      if (num !== '') {
+        num = +num;
+      } else {
+        return logger.throw('Invalid argument: can not be "".', RangeError);
+      }
     }
+
+    if (num < 0 || !Number.isSafeInteger(num)) {
+      logger.throw(`Invalid number: ${num}, must be a non-negative integer.`, RangeError);
+    }
+
+    return num;
   }
 
   private async updatePageArray(page: number, pageArray?: Uint8Array): Promise<Uint8Array> {
@@ -108,8 +118,7 @@ class HistoryDb extends Dexie {
   }
 
   public async has(pid: number | string): Promise<boolean> {
-    if (typeof pid === 'string') pid = Number(pid);
-    this.throwIfInvalidNumber(pid);
+    pid = this.throwIfInvalidNumber(pid);
 
     if (this.caches) {
       return this.caches.has(pid);
@@ -126,9 +135,7 @@ class HistoryDb extends Dexie {
    * @returns {boolean}
    */
   public async hasPage(pid: number | string, page: number): Promise<boolean> {
-    if (typeof pid === 'string') pid = Number(pid);
-
-    this.throwIfInvalidNumber(pid);
+    pid = this.throwIfInvalidNumber(pid);
     this.throwIfInvalidNumber(page);
 
     const byteIndex = Math.floor(page / 8);

@@ -60,12 +60,12 @@ export class ThumbnailButton extends HTMLElement {
       if (num !== '') {
         num = +num;
       } else {
-        throw new RangeError('Argument can not be "".');
+        return logger.throw('Invalid argument: can not be "".', RangeError);
       }
     }
 
     if (num < 0 || !Number.isSafeInteger(num)) {
-      throw new RangeError(`Invalid number: ${num}, must be a non-negative integer.`);
+      return logger.throw(`Invalid number: ${num}, must be a non-negative integer.`, RangeError);
     }
 
     return num;
