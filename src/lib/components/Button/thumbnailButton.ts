@@ -31,7 +31,7 @@ export const enum ThumbnailBtnType {
 }
 
 interface ThumbnailBtnProp {
-  id: string;
+  id: string | number;
   page?: number;
   type?: ThumbnailBtnType;
   onClick: (btn: ThumbnailButton) => any;
@@ -39,7 +39,7 @@ interface ThumbnailBtnProp {
 
 export class ThumbnailButton extends HTMLElement {
   private status: ThumbnailBtnStatus;
-  private mediaId: string;
+  private mediaId: number;
   private page?: number;
   private type?: ThumbnailBtnType;
   private onClick: ThumbnailBtnProp['onClick'];
@@ -47,29 +47,64 @@ export class ThumbnailButton extends HTMLElement {
   constructor(props: ThumbnailBtnProp) {
     super();
     this.status = ThumbnailBtnStatus.Init;
-    this.mediaId = props.id;
-    this.page = props.page;
+    this.mediaId = this.checkNumberValidity(props.id);
+    props.page !== undefined && (this.page = this.checkNumberValidity(props.page));
     this.type = props.type;
     this.onClick = props.onClick;
 
     this.render();
   }
 
+  private checkNumberValidity(num: number | string): number {
+    if (typeof num === 'string') {
+      if (num !== '') {
+        num = +num;
+      } else {
+        throw new RangeError('Argument can not be "".');
+      }
+    }
+
+    if (num < 0 || !Number.isSafeInteger(num)) {
+      throw new RangeError(`Invalid number: ${num}, must be a non-negative integer.`);
+    }
+
+    return num;
+  }
+
   static get observedAttributes() {
-    return ['status', 'page', 'disabled'];
+    return ['pdl-id', 'status', 'page', 'disabled'];
   }
 
   private attributeChangedCallback(
-    name: 'status' | 'page' | 'disabled',
+    name: 'pdl-id' | 'status' | 'page' | 'disabled',
     oldValue: string | null,
     newValue: string | null
   ) {
-    if (name === 'status') {
-      this.updateIcon(newValue);
-    } else if (name === 'page') {
-      this.updatePage(newValue);
-    } else {
-      this.updateDisableStatus(newValue);
+    switch (name) {
+      case 'pdl-id':
+        this.updateId(newValue);
+        break;
+      case 'status':
+        this.updateIcon(newValue);
+        break;
+      case 'page':
+        this.updatePage(newValue);
+        break;
+      case 'disabled':
+        this.updateDisableStatus(newValue);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private updateId(id: string | null) {
+    try {
+      if (id === null) throw new Error('Attribute "pdl-id" is required.');
+      this.mediaId = this.checkNumberValidity(id);
+    } catch (error) {
+      logger.error(error);
+      this.setAttribute('pdl-id', String(this.mediaId));
     }
   }
 
@@ -83,14 +118,29 @@ export class ThumbnailButton extends HTMLElement {
   }
 
   private updatePage(page: string | null) {
-    const pageNum = Number(page);
-    if (!Number.isNaN(pageNum) && pageNum >= 0) {
-      this.page = pageNum;
+    try {
+      if (page === null) {
+        this.page = undefined;
+      } else {
+        this.page = this.checkNumberValidity(page);
+      }
+    } catch (error) {
+      logger.error(error);
+      if (this.page === undefined) {
+        this.removeAttribute('page');
+      } else {
+        this.setAttribute('page', String(this.page));
+      }
     }
   }
 
   private updateIcon(status: string | null) {
-    if (status === null || !(status in iconTypeMap)) return;
+    if (status === null) {
+      status = ThumbnailBtnStatus.Init;
+    } else if (!(status in iconTypeMap)) {
+      this.setAttribute('status', this.status);
+      return;
+    }
 
     const useEl = this.shadowRoot!.querySelector('use')!;
 
@@ -127,7 +177,7 @@ export class ThumbnailButton extends HTMLElement {
         downloaded && this.setStatus(ThumbnailBtnStatus.Complete);
       });
 
-    this.setAttribute('pdl-id', this.mediaId);
+    this.setAttribute('pdl-id', String(this.mediaId));
     this.page !== undefined &&
       !Number.isNaN(this.page) &&
       this.setAttribute('page', String(this.page));
