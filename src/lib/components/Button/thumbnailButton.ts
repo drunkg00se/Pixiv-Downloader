@@ -72,11 +72,11 @@ export class ThumbnailButton extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['data-id', 'data-status', 'data-page', 'disabled'];
+    return ['data-id', 'data-status', 'data-page', 'data-type', 'disabled'];
   }
 
   private attributeChangedCallback(
-    name: 'data-id' | 'data-status' | 'data-page' | 'disabled',
+    name: 'data-id' | 'data-status' | 'data-page' | 'data-type' | 'disabled',
     oldValue: string | null,
     newValue: string | null
   ) {
@@ -90,11 +90,27 @@ export class ThumbnailButton extends HTMLElement {
       case 'data-page':
         this.updatePage(newValue);
         break;
+      case 'data-type':
+        this.resetType(newValue);
+        break;
       case 'disabled':
         this.updateDisableStatus(newValue);
         break;
       default:
         break;
+    }
+  }
+
+  private resetType(newVal: string | null) {
+    if (newVal === null && this.type === undefined) return;
+
+    if (newVal !== this.type) {
+      if (this.type === undefined) {
+        delete this.dataset.type;
+      } else {
+        this.dataset.type = this.type;
+      }
+      logger.error('Changes to "data-type" is not allowed.');
     }
   }
 
