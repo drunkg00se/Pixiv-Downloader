@@ -2,7 +2,7 @@ import Dexie, { type Table } from 'dexie';
 import { logger } from './logger';
 import { generateCsv } from './util';
 
-export interface HistoryData {
+interface HistoryItemBase {
   pid: number;
   userId?: number;
   user?: string;
@@ -11,9 +11,14 @@ export interface HistoryData {
   tags?: string[];
 }
 
+type HistoryItem = HistoryItemBase & { page?: Uint8Array };
+
+export type HistoryData = HistoryItemBase & { page?: number };
+export type HistoryImportObject = HistoryItemBase & { page?: Record<string, number> };
+
 class HistoryDb extends Dexie {
-  private history!: Table<HistoryData, number>;
-  private record!: Set<number>;
+  private history!: Table<HistoryItem, number>;
+  private caches!: Map<number, Uint8Array | null>;
 
   constructor() {
     super('PdlHistory');
@@ -23,38 +28,148 @@ class HistoryDb extends Dexie {
 
     logger.time('loadDb');
     this.history.toArray().then((datas) => {
-      this.record = new Set(datas.map((data) => data.pid));
+      this.caches = new Map(datas.map((data) => [data.pid, data.page || null]));
       logger.timeEnd('loadDb');
     });
   }
 
-  public async add(historyData: HistoryData) {
-    if (!(await this.has(historyData.pid))) {
-      this.history.put(historyData);
-      this.record.add(historyData.pid);
+  private throwIfInvalidNumber(num: number | string): number {
+    if (typeof num === 'string') {
+      if (num !== '') {
+        num = +num;
+      } else {
+        return logger.throw('Invalid argument: can not be "".', RangeError);
+      }
+    }
+
+    if (num < 0 || !Number.isSafeInteger(num)) {
+      logger.throw(`Invalid number: ${num}, must be a non-negative integer.`, RangeError);
+    }
+
+    return num;
+  }
+
+  private async updatePageArray(page: number, pageArray?: Uint8Array): Promise<Uint8Array> {
+    const byteIndex = Math.floor(page / 8);
+    const bitIndex = page % 8;
+
+    if (!pageArray) {
+      const newArr = new Uint8Array(byteIndex + 1);
+      newArr[byteIndex] |= 1 << bitIndex;
+
+      return newArr;
+    } else if (byteIndex > pageArray.length - 1) {
+      const newArr = new Uint8Array(byteIndex + 1);
+      newArr.set(pageArray);
+      newArr[byteIndex] |= 1 << bitIndex;
+
+      return newArr;
+    } else {
+      pageArray[byteIndex] |= 1 << bitIndex;
+      return pageArray;
     }
   }
 
-  public bulkAdd(historyDatas: HistoryData[]) {
-    const result = this.history.bulkPut(historyDatas);
-    historyDatas.forEach((data) => {
-      this.record.add(data.pid);
+  public async add(historyData: HistoryData) {
+    const { pid, page } = historyData;
+    this.throwIfInvalidNumber(pid);
+
+    return this.transaction('rw', this.history, async () => {
+      if (page !== undefined) {
+        this.throwIfInvalidNumber(page);
+
+        const historyItem = await this.history.get(pid);
+
+        if (historyItem?.page) {
+          // not fully downloaded
+          const u8arr = await this.updatePageArray(page, historyItem.page);
+          this.history.put({ ...historyData, page: u8arr });
+          this.caches.set(pid, u8arr);
+        } else if (historyItem) {
+          // fully downloaded
+          delete historyData.page;
+          this.history.put(historyData as HistoryItem);
+        } else {
+          // new download
+          const u8arr = await this.updatePageArray(page);
+          this.history.put({ ...historyData, page: u8arr });
+          this.caches.set(pid, u8arr);
+        }
+      } else {
+        this.history.put(historyData as HistoryItem);
+        this.caches.set(pid, null);
+      }
     });
-    return result;
+  }
+
+  public import(objArr: HistoryImportObject[]) {
+    const historyItems = objArr.map((historyObj) => {
+      if (historyObj.page) {
+        return { ...historyObj, page: new Uint8Array(Object.values(historyObj.page)) };
+      } else {
+        return historyObj;
+      }
+    }) as HistoryItem[];
+
+    historyItems.forEach((data) => {
+      this.caches.set(data.pid, data.page || null);
+    });
+    return this.history.bulkPut(historyItems);
   }
 
   public async has(pid: number | string): Promise<boolean> {
-    if (typeof pid === 'string') pid = Number(pid);
-    if (!Number.isInteger(pid) || pid < 0) throw logger.error('Invalid Pid');
+    pid = this.throwIfInvalidNumber(pid);
 
-    if (this.record) {
-      return this.record.has(pid);
+    if (this.caches) {
+      return this.caches.has(pid);
     } else {
       return !!(await this.history.get(pid));
     }
   }
 
-  public getAll(): Promise<HistoryData[]> {
+  /**
+   * Returns `true` if the page has been downloaded, `false` if it hasn't,
+   *
+   * @param {number | string} pid
+   * @param {number} page
+   * @returns {boolean}
+   */
+  public async hasPage(pid: number | string, page: number): Promise<boolean> {
+    pid = this.throwIfInvalidNumber(pid);
+    this.throwIfInvalidNumber(page);
+
+    const byteIndex = Math.floor(page / 8);
+    const bitIndex = page % 8;
+
+    if (this.caches) {
+      const cachesData = this.caches.get(pid);
+
+      if (cachesData === null) {
+        return true;
+      } else if (cachesData) {
+        return (
+          !(byteIndex > cachesData.length - 1) && (cachesData[byteIndex] & (1 << bitIndex)) !== 0
+        );
+      }
+
+      return false;
+    } else {
+      const historyItem = await this.history.get(pid);
+
+      if (!historyItem) {
+        return false;
+      } else if (!historyItem.page) {
+        return true;
+      }
+
+      return (
+        !(byteIndex > historyItem.page.length - 1) &&
+        (historyItem.page[byteIndex] & (1 << bitIndex)) !== 0
+      );
+    }
+  }
+
+  public getAll(): Promise<HistoryItem[]> {
     return this.history.toArray();
   }
 
@@ -71,7 +186,7 @@ class HistoryDb extends Dexie {
   }
 
   public clear() {
-    this.record && (this.record = new Set());
+    this.caches && this.caches.clear();
     return this.history.clear();
   }
 }

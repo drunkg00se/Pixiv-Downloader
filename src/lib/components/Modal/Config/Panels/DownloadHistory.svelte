@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { historyDb, type HistoryData } from '@/lib/db';
+  import { historyDb, type HistoryImportObject } from '@/lib/db';
   import { FileButton } from '@skeletonlabs/skeleton';
   import t from '@/lib/lang';
 
@@ -14,7 +14,10 @@
   export let sectionSpace = `space-y-4`;
   export let sectionTitle = 'font-bold';
 
-  function readHistoryFile(type: 'application/json', file: File): Promise<Array<HistoryData>> {
+  function readHistoryFile(
+    type: 'application/json',
+    file: File
+  ): Promise<Array<HistoryImportObject>> {
     return new Promise((resolve) => {
       if (file.type !== type) throw new Error('Invalid file');
       const reader = new FileReader();
@@ -34,7 +37,7 @@
     const file = (evt.currentTarget as HTMLInputElement).files?.[0];
     if (!file) return;
     readHistoryFile('application/json', file)
-      .then((data) => historyDb.bulkAdd(data))
+      .then((data) => historyDb.import(data))
       .then(() => location.reload())
       .catch((err) => alert(err?.message));
   }
