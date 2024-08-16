@@ -131,7 +131,7 @@ export function mixPngEffect(
         logger.timeEnd(convertMeta.id);
 
         if (!e.data) {
-          return reject(new Error('Mix Effect convert Failed' + convertMeta.id));
+          return reject(new Error('Mix Effect convert Failed ' + convertMeta.id));
         }
 
         resolve(e.data as EffectReturn);

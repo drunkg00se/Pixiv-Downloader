@@ -313,26 +313,38 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
 
       // src 默认为p0地址，downloadPage为0时不需更改
       const imgSrc = downloadPage ? this.getImgSrc(downloadPage) : src;
-      const pathPattern = supportSubPath
-        ? this.getFullpathPattern()
-        : this.getFilenamePattern() + '.' + extendName;
 
-      const path = this.buildPattern(pathPattern, downloadPage ? downloadPage : 0);
-      const filename = path.slice(path.lastIndexOf('/') + 1);
-
+      let path: string;
       let hooks: ReturnType<(typeof downloaderHooks)['getHooks']>;
       let source: PixivSource;
 
       if (config.get('mixEffect') && btn) {
+        const effectExt = this.getMixEffectFormat();
+        const pathPatternNoExt = supportSubPath
+          ? this.getFullpathPattern().slice(0, -4)
+          : this.getFilenamePattern();
+
+        const pathPattern = pathPatternNoExt + '.' + effectExt;
+
+        path = this.buildPattern(pathPattern, downloadPage ? downloadPage : 0);
+        const filename = path.slice(path.lastIndexOf('/') + 1);
+
         hooks = downloaderHooks.getHooks({ ...this.meta, pageCount: 1 }, 'mixEffect', btn);
         source = {
           ...this.meta,
           pageCount: 1,
-          extendName: this.getMixEffectFormat(),
+          extendName: effectExt,
           filename,
           order: downloadPage ?? 0
         };
       } else {
+        const pathPattern = supportSubPath
+          ? this.getFullpathPattern()
+          : this.getFilenamePattern() + '.' + extendName;
+
+        path = this.buildPattern(pathPattern, downloadPage ? downloadPage : 0);
+        const filename = path.slice(path.lastIndexOf('/') + 1);
+
         hooks = downloaderHooks.getHooks({ ...this.meta, pageCount: 1 }, 'download', btn);
         source = {
           ...this.meta,
