@@ -39,13 +39,13 @@ type PngWorkerEffectConfig =
       delay: number[];
     };
 
-export type PngWorkerConfig =
-  | PngWorkerEffectConfig
-  | {
-      frames: Blob[];
-      delay: number[];
-      cnum: number;
-    };
+type EncodeApngConfig = {
+  frames: Blob[] | ImageBitmap[];
+  delay: number[];
+  cnum: number;
+};
+
+export type PngWorkerConfig = PngWorkerEffectConfig | EncodeApngConfig;
 
 export function png(
   frames: Blob[] | ImageBitmap[],
@@ -84,7 +84,7 @@ export function png(
     };
 
     const delay = convertMeta.source.delays;
-    const cfg = { frames, delay, cnum: config.get('pngColor') };
+    const cfg: EncodeApngConfig = { frames, delay, cnum: config.get('pngColor') };
     worker.postMessage(
       cfg,
       cfg.frames[0] instanceof ImageBitmap ? (cfg.frames as ImageBitmap[]) : []

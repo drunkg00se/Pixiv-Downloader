@@ -16,14 +16,30 @@ type HistoryItem = HistoryItemBase & { page?: Uint8Array };
 export type HistoryData = HistoryItemBase & { page?: number };
 export type HistoryImportObject = HistoryItemBase & { page?: Record<string, number> };
 
+interface EffectImageItem {
+  id: string;
+  data: Uint8ClampedArray[];
+  width: number;
+  height: number;
+  delays: number[];
+}
+
+interface EffectImageData {
+  id: string;
+  imageDatas: ImageData[];
+  delays: number[];
+}
+
 class HistoryDb extends Dexie {
   private history!: Table<HistoryItem, number>;
+  private imageEffect!: Table<EffectImageItem, string>;
   private caches!: Map<number, Uint8Array | null>;
 
   constructor() {
     super('PdlHistory');
-    this.version(2).stores({
-      history: 'pid, userId, user, title, *tags'
+    this.version(3).stores({
+      history: 'pid, userId, user, title, *tags',
+      imageEffect: 'id'
     });
 
     logger.time('loadDb');
@@ -188,6 +204,35 @@ class HistoryDb extends Dexie {
   public clear() {
     this.caches && this.caches.clear();
     return this.history.clear();
+  }
+
+  // Firefox does not support storing `ImageData`, so it will always return `undefined`.
+  public async getImageEffect(effectId: string): Promise<EffectImageData | undefined> {
+    const item = await this.imageEffect.get(effectId);
+    if (!item) return item;
+
+    const { id, data, width, height, delays } = item;
+    const imageDatas = data.map((u8arr) => new ImageData(u8arr, width, height));
+
+    return {
+      id,
+      imageDatas,
+      delays
+    };
+  }
+
+  public addImageEffect(effectData: EffectImageData) {
+    const { imageDatas, id, delays } = effectData;
+    const { width, height } = imageDatas[0];
+    const data = imageDatas.map((imageData) => imageData.data);
+
+    return this.imageEffect.add({
+      id,
+      data,
+      width,
+      height,
+      delays
+    });
   }
 }
 

@@ -7,8 +7,8 @@ import { IllustType } from './types';
 import { compressor } from '@/lib/compressor';
 import { type ConvertFormat, converter } from '@/lib/converter';
 import { ThumbnailButton, ThumbnailBtnStatus } from '@/lib/components/Button/thumbnailButton';
-import { logger } from '@/lib/logger';
 import { GM_xmlhttpRequest } from '$';
+import { historyDb } from '@/lib/db';
 
 interface PixivIllustSource extends PixivIllustMeta {
   filename: string;
@@ -122,34 +122,57 @@ const pixivHooks = {
         imgBlob: Blob,
         pixivConfig: DownloadConfig<PixivSource>
       ): Promise<Blob | void> {
+        const effectId = 'pixivGlow2024';
         const url =
           'https://source.pixiv.net/special/seasonal-effect-tag/pixiv-glow-2024/effect.png';
+
         const { taskId } = pixivConfig;
+        const effectData = await historyDb.getImageEffect(effectId);
 
-        const effctBlob = await new Promise<Blob>((resolve, reject) => {
-          GM_xmlhttpRequest({
-            url,
-            headers: {
-              referer: 'https://www.pixiv.net'
-            },
-            responseType: 'blob',
-            onload(e) {
-              resolve(e.response);
-            },
-            onerror: reject,
-            ontimeout: () => reject(new Error('Timeout'))
+        if (effectData) {
+          const { imageDatas, delays } = effectData;
+
+          const { blob } = await converter.appendPixivEffect(
+            taskId,
+            pixivConfig.source.extendName,
+            imgBlob,
+            { frames: imageDatas, delays },
+            onProgress
+          );
+
+          return blob;
+        } else {
+          const effctBlob = await new Promise<Blob>((resolve, reject) => {
+            GM_xmlhttpRequest({
+              url,
+              headers: {
+                referer: 'https://www.pixiv.net'
+              },
+              responseType: 'blob',
+              onload(e) {
+                resolve(e.response);
+              },
+              onerror: reject,
+              ontimeout: () => reject(new Error('Timeout'))
+            });
           });
-        });
 
-        const { blob } = await converter.appendPixivEffect(
-          taskId,
-          pixivConfig.source.extendName,
-          imgBlob,
-          effctBlob,
-          onProgress
-        );
+          const { blob, frames, delays } = await converter.appendPixivEffect(
+            taskId,
+            pixivConfig.source.extendName,
+            imgBlob,
+            effctBlob,
+            onProgress
+          );
 
-        return blob;
+          historyDb.addImageEffect({
+            id: effectId,
+            imageDatas: frames,
+            delays
+          });
+
+          return blob;
+        }
       };
     },
 
