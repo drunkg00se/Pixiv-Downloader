@@ -33,6 +33,7 @@ export interface ConfigData {
   filterIllusts: boolean;
   filterManga: boolean;
   filterUgoira: boolean;
+  mixEffect: boolean;
   bundleIllusts: boolean;
   bundleManga: boolean;
   addBookmark: boolean;
@@ -96,6 +97,7 @@ function loadConfig(): Config {
     filterIllusts: true,
     filterManga: true,
     filterUgoira: true,
+    mixEffect: false,
     bundleIllusts: false,
     bundleManga: false,
     addBookmark: false,

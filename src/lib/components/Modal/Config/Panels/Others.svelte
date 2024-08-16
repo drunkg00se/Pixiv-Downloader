@@ -9,11 +9,12 @@
   export let padding = 'px-4 *:py-4';
   export let margin = 'mt-2 *:!m-0';
   export let rounded = 'rounded-container-token *:!rounded-none';
+  export let descritionText = 'text-sm text-surface-400';
 
   $: ulClasses = `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${$$props.class ?? ''}`;
 
   export let sectionSpace = `space-y-4`;
-  // export let sectionTitle = 'font-bold';
+  export let sectionTitle = 'font-bold';
 </script>
 
 <!-- svelte-ignore a11y-label-has-associated-control -->
@@ -21,16 +22,18 @@
   <ul class={ulClasses}>
     <li>
       <p class="flex-auto">{t('setting.others.options.show_setting_button')}</p>
-      <SlideToggle name="fsa-enable" bind:checked={$store.showPopupButton} size="sm"></SlideToggle>
+      <SlideToggle name="show-popup-button" bind:checked={$store.showPopupButton} size="sm"
+      ></SlideToggle>
     </li>
     {#if env.isPixiv()}
       <li>
         <p class="flex-auto">{t('setting.others.options.bundle_multipage_illust')}</p>
-        <SlideToggle name="fsa-enable" bind:checked={$store.bundleIllusts} size="sm"></SlideToggle>
+        <SlideToggle name="bundle-illusts" bind:checked={$store.bundleIllusts} size="sm"
+        ></SlideToggle>
       </li>
       <li>
         <p class="flex-auto">{t('setting.others.options.bundle_manga')}</p>
-        <SlideToggle name="fsa-enable" bind:checked={$store.bundleManga} size="sm"></SlideToggle>
+        <SlideToggle name="bundle-manga" bind:checked={$store.bundleManga} size="sm"></SlideToggle>
       </li>
     {/if}
     {#if !env.isYande()}
@@ -60,4 +63,20 @@
       </li>
     {/if}
   </ul>
+  {#if env.isPixiv()}
+    <section>
+      <p class={sectionTitle}>实验性功能</p>
+      <ul class={ulClasses}>
+        <li>
+          <div class="flex-auto">
+            <p>为单页插图增加 #pixivGlow2024 效果</p>
+            <p class="{descritionText} !text-error-500">
+              * 根据插图尺寸不同，可能占用大量内存 / 转换失败
+            </p>
+          </div>
+          <SlideToggle name="mix-effect" bind:checked={$store.mixEffect} size="sm"></SlideToggle>
+        </li>
+      </ul>
+    </section>
+  {/if}
 </div>

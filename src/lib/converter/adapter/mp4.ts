@@ -1,11 +1,20 @@
 import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
-import type { ConvertMeta } from '..';
+import type { ConvertMeta, ConvertUgoiraSource } from '..';
 import { CancelError } from '@/lib/error';
 import { logger } from '@/lib/logger';
 import { config } from '@/lib/config';
 
-export async function mp4(frames: Blob[], convertMeta: ConvertMeta): Promise<Blob> {
-  const p = frames.map((frame) => createImageBitmap(frame));
+export async function mp4(
+  frames: Blob[] | ImageBitmap[],
+  convertMeta: ConvertMeta<ConvertUgoiraSource>
+): Promise<Blob> {
+  const p = frames.map((frame) => {
+    if (frame instanceof Blob) {
+      return createImageBitmap(frame);
+    } else {
+      return frame;
+    }
+  });
   const bitmaps = await Promise.all(p);
 
   if (convertMeta.isAborted) throw new CancelError();
@@ -47,15 +56,17 @@ export async function mp4(frames: Blob[], convertMeta: ConvertMeta): Promise<Blo
   for (let i = 0; i < bitmaps.length; i++) {
     const frame = new VideoFrame(bitmaps[i], { duration: delays[i], timestamp });
     videoFrames.push(frame);
+    bitmaps[i].close();
 
-    videoEncoder.encode(frame, {
-      keyFrame: true
-    });
+    videoEncoder.encode(frame);
     timestamp += delays[i];
   }
 
   await videoEncoder.flush();
-  if (convertMeta.isAborted) throw new CancelError();
+  if (convertMeta.isAborted) {
+    videoFrames.forEach((frame) => frame.close());
+    throw new CancelError();
+  }
 
   muxer.finalize();
   const { buffer } = muxer.target;

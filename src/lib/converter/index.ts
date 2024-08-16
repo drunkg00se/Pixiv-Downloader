@@ -3,58 +3,120 @@ import { CancelError, RequestError } from '@/lib/error';
 import { type ConvertFormat, convertAdapter } from './adapter';
 export type { ConvertFormat } from './adapter';
 
-interface ConvertSource {
+export interface ConvertUgoiraSource {
   id: string;
-  data: Blob[];
+  data: Blob[] | ImageBitmap[];
   delays: number[];
 }
 
-export interface ConvertMeta {
+export type ConvertImageEffectSource = {
+  id: string;
+  illust: Blob;
+  data: Blob | EffectData;
+};
+
+type ConvertSource = ConvertUgoiraSource | ConvertImageEffectSource;
+export interface ConvertMeta<T = ConvertSource> {
   id: string;
   format: ConvertFormat;
-  source: ConvertSource;
+  source: T;
   isAborted: boolean;
-  resolve: (val: Blob) => void;
+  resolve: (val: T extends ConvertUgoiraSource ? Blob : EffectResult) => void;
   reject: (reason: TypeError | RequestError | CancelError) => void;
   abort: () => void;
   onProgress?: (val: number) => void;
 }
+
+export interface EffectData {
+  frames: ImageData[];
+  delays: number[];
+}
+
+export type EffectReturn = EffectData & {
+  bitmaps: ImageBitmap[];
+};
+
+type EffectResult = EffectData & {
+  blob: Blob;
+};
 
 interface Converter {
   addFrame(taskId: string, data: Blob, delay: number, order?: number): void;
   convert(
     taskId: string,
     format: ConvertFormat,
-    onProgress?: ConvertMeta['onProgress']
+    onProgress?: ConvertMeta<ConvertSource>['onProgress']
   ): Promise<Blob>;
   del: (taskIds: string | string[]) => void;
   framesCount(taskId: string): number;
+  appendPixivEffect(
+    taskId: string,
+    format: ConvertFormat,
+    illust: Blob,
+    effect: EffectData | Blob,
+    onProgress?: ConvertMeta<ConvertImageEffectSource>['onProgress']
+  ): Promise<EffectResult>;
 }
 
 function createConverter(): Converter {
   const MAX_CONVERT = 2;
-  const framesData: Record<string, ConvertSource> = {};
+  const framesData: Record<string, ConvertUgoiraSource> = {};
 
   let isStop = false;
-  let queue: ConvertMeta[] = [];
-  let active: ConvertMeta[] = [];
+  let queue: ConvertMeta<ConvertSource>[] = [];
+  let active: ConvertMeta<ConvertSource>[] = [];
 
-  const doConvert = (convertMeta: ConvertMeta) => {
-    const { id, format, source, resolve, reject } = convertMeta;
+  const isConvertSource = (
+    meta: ConvertMeta<ConvertSource>
+  ): meta is ConvertMeta<ConvertUgoiraSource> => {
+    return Array.isArray(meta.source.data) && meta.source.data[0] instanceof Blob;
+  };
+
+  const doConvert = (convertMeta: ConvertMeta<ConvertSource>) => {
+    const { id, format, resolve, reject } = convertMeta;
 
     active.push(convertMeta);
     convertMeta.onProgress?.(0);
-
-    // 清理framesData
-    delete framesData[id];
-
     const adapter = convertAdapter.getAdapter(format);
-    adapter(source.data, convertMeta)
-      .then(resolve, reject)
-      .finally(() => {
-        active.splice(active.indexOf(convertMeta), 1);
-        if (queue.length) doConvert(queue.shift() as ConvertMeta);
-      });
+
+    if (!isConvertSource(convertMeta)) {
+      const mixEffect = convertAdapter.getMixEffectFn();
+      let imageFrames: ImageData[];
+      let imageDelays: number[];
+
+      mixEffect(convertMeta as ConvertMeta<ConvertImageEffectSource>)
+        .then(({ bitmaps, frames, delays }) => {
+          const meta: ConvertMeta<ConvertUgoiraSource> = {
+            ...convertMeta,
+            source: {
+              id,
+              data: bitmaps,
+              delays
+            }
+          };
+          imageFrames = frames;
+          imageDelays = delays;
+
+          return adapter(meta.source.data, meta);
+        })
+        .then((blob) => {
+          resolve({ frames: imageFrames, delays: imageDelays, blob });
+        }, reject)
+        .finally(() => {
+          active.splice(active.indexOf(convertMeta), 1);
+          if (queue.length) doConvert(queue.shift() as ConvertMeta<ConvertSource>);
+        });
+    } else {
+      // 清理framesData
+      delete framesData[id];
+
+      adapter(convertMeta.source.data, convertMeta)
+        .then(resolve, reject)
+        .finally(() => {
+          active.splice(active.indexOf(convertMeta), 1);
+          if (queue.length) doConvert(queue.shift() as ConvertMeta<ConvertSource>);
+        });
+    }
   };
 
   return {
@@ -91,7 +153,7 @@ function createConverter(): Converter {
       isStop = false;
 
       while (active.length < MAX_CONVERT && queue.length) {
-        doConvert(queue.shift() as ConvertMeta);
+        doConvert(queue.shift() as ConvertMeta<ConvertSource>);
       }
     },
 
@@ -104,8 +166,9 @@ function createConverter(): Converter {
         };
       }
       if (order === undefined) {
-        framesData[taskId]['data'].push(data);
-        framesData[taskId]['delays'].push(delay);
+        const length = framesData[taskId].data.length;
+        framesData[taskId]['data'][length] = data;
+        framesData[taskId]['delays'][length] = delay;
       } else {
         framesData[taskId]['data'][order] = data;
         framesData[taskId]['delays'][order] = delay;
@@ -121,10 +184,10 @@ function createConverter(): Converter {
     convert(
       taskId: string,
       format: ConvertFormat,
-      onProgress?: ConvertMeta['onProgress']
+      onProgress?: ConvertMeta<ConvertUgoiraSource>['onProgress']
     ): Promise<Blob> {
       return new Promise<Blob>((resolve, reject) => {
-        const meta: ConvertMeta = {
+        const meta: ConvertMeta<ConvertUgoiraSource> = {
           id: taskId,
           format,
           source: framesData[taskId],
@@ -142,7 +205,42 @@ function createConverter(): Converter {
         queue.push(meta);
 
         while (active.length < MAX_CONVERT && queue.length && !isStop) {
-          doConvert(queue.shift() as ConvertMeta);
+          doConvert(queue.shift() as ConvertMeta<ConvertSource>);
+        }
+      });
+    },
+
+    async appendPixivEffect(
+      taskId: string,
+      format: ConvertFormat,
+      illust: Blob,
+      effect: EffectData | Blob,
+      onProgress?: ConvertMeta<ConvertImageEffectSource>['onProgress']
+    ): Promise<EffectResult> {
+      return new Promise<EffectResult>((resolve, reject) => {
+        const meta: ConvertMeta<ConvertImageEffectSource> = {
+          id: taskId,
+          format,
+          source: {
+            id: taskId,
+            illust,
+            data: effect
+          },
+          isAborted: false,
+          onProgress,
+          resolve,
+          reject,
+          abort() {
+            this.isAborted = true;
+          }
+        };
+
+        logger.info('Converter add', taskId);
+
+        queue.push(meta);
+
+        while (active.length < MAX_CONVERT && queue.length && !isStop) {
+          doConvert(queue.shift() as ConvertMeta<ConvertSource>);
         }
       });
     }

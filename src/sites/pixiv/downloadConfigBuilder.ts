@@ -1,12 +1,14 @@
 import type { PixivMeta, PixivIllustMeta, PixivUgoiraMeta } from './parser';
-import type { DownloadConfig } from '@/lib/downloader';
+import { type DownloadConfig } from '@/lib/downloader';
 import { DownloadConfigBuilder } from '@/sites/base/downloadConfigBuilder';
 import dayjs from 'dayjs';
-import { config, type UgoiraFormat } from '@/lib/config';
+import { config, UgoiraFormat } from '@/lib/config';
 import { IllustType } from './types';
 import { compressor } from '@/lib/compressor';
 import { type ConvertFormat, converter } from '@/lib/converter';
 import { ThumbnailButton, ThumbnailBtnStatus } from '@/lib/components/Button/thumbnailButton';
+import { logger } from '@/lib/logger';
+import { GM_xmlhttpRequest } from '$';
 
 interface PixivIllustSource extends PixivIllustMeta {
   filename: string;
@@ -113,6 +115,44 @@ const pixivHooks = {
       };
     },
 
+    mixGlowEffect(btn?: ThumbnailButton) {
+      const onProgress = btn ? this.convertProgressFactory(btn) : undefined;
+
+      return async function beforeFileSave(
+        imgBlob: Blob,
+        pixivConfig: DownloadConfig<PixivSource>
+      ): Promise<Blob | void> {
+        const url =
+          'https://source.pixiv.net/special/seasonal-effect-tag/pixiv-glow-2024/effect.png';
+        const { taskId } = pixivConfig;
+
+        const effctBlob = await new Promise<Blob>((resolve, reject) => {
+          GM_xmlhttpRequest({
+            url,
+            headers: {
+              referer: 'https://www.pixiv.net'
+            },
+            responseType: 'blob',
+            onload(e) {
+              resolve(e.response);
+            },
+            onerror: reject,
+            ontimeout: () => reject(new Error('Timeout'))
+          });
+        });
+
+        const { blob } = await converter.appendPixivEffect(
+          taskId,
+          pixivConfig.source.extendName,
+          imgBlob,
+          effctBlob,
+          onProgress
+        );
+
+        return blob;
+      };
+    },
+
     onError(err: Error, config: DownloadConfig<PixivSource>) {
       converter.del(config.taskId);
     },
@@ -126,7 +166,7 @@ const pixivHooks = {
 const downloaderHooks = {
   getHooks(
     meta: PixivMeta,
-    downloadType: 'download' | 'bundle' | 'convert',
+    downloadType: 'download' | 'bundle' | 'convert' | 'mixEffect',
     button?: ThumbnailButton
   ) {
     switch (downloadType) {
@@ -145,6 +185,12 @@ const downloaderHooks = {
         return {
           onXhrLoaded: pixivHooks.download.mulityArtworksProgressFactory(button, meta.pageCount),
           beforeFileSave: pixivHooks.convert.beforeFileSaveFactory(button),
+          onError: pixivHooks.convert.onError
+        };
+      case 'mixEffect':
+        return {
+          onProgress: pixivHooks.download.singleArtworkProgressFactory(button, meta.pageCount),
+          beforeFileSave: pixivHooks.convert.mixGlowEffect(button),
           onError: pixivHooks.convert.onError
         };
     }
@@ -170,6 +216,12 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
 
   protected getConvertFormat(): UgoiraFormat {
     return config.get('ugoiraFormat');
+  }
+
+  protected getMixEffectFormat(): Exclude<UgoiraFormat, 'zip'> {
+    const format = this.getConvertFormat();
+    if (format === 'zip') return UgoiraFormat.WEBM;
+    return format;
   }
 
   protected needConvert(): boolean {
@@ -244,14 +296,28 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
 
       const path = this.buildPattern(pathPattern, downloadPage ? downloadPage : 0);
       const filename = path.slice(path.lastIndexOf('/') + 1);
-      const hooks = downloaderHooks.getHooks({ ...this.meta, pageCount: 1 }, 'download', btn);
 
-      const source: PixivSource = {
-        ...this.meta,
-        pageCount: 1,
-        filename,
-        order: downloadPage ?? 0
-      };
+      let hooks: ReturnType<(typeof downloaderHooks)['getHooks']>;
+      let source: PixivSource;
+
+      if (config.get('mixEffect') && btn) {
+        hooks = downloaderHooks.getHooks({ ...this.meta, pageCount: 1 }, 'mixEffect', btn);
+        source = {
+          ...this.meta,
+          pageCount: 1,
+          extendName: this.getMixEffectFormat(),
+          filename,
+          order: downloadPage ?? 0
+        };
+      } else {
+        hooks = downloaderHooks.getHooks({ ...this.meta, pageCount: 1 }, 'download', btn);
+        source = {
+          ...this.meta,
+          pageCount: 1,
+          filename,
+          order: downloadPage ?? 0
+        };
+      }
 
       const downloadConfig: DownloadConfig<PixivSource> = {
         taskId,

@@ -1,7 +1,7 @@
-import type { ConvertMeta } from '..';
+import type { ConvertMeta, ConvertUgoiraSource } from '..';
 import { logger } from '@/lib/logger';
 import { CancelError } from '@/lib/error';
-import webpWorkerFragment from '../worker/webpWorkerFragment?raw';
+import webpWorkerFragment from '../worker/webpWorkerFragment?rawjs';
 import webpWasm from '../wasm/toWebpWorker?raw';
 import { config } from '@/lib/config';
 
@@ -11,7 +11,10 @@ const workerUrl = URL.createObjectURL(
 
 const freeWebpWorkers: Worker[] = [];
 
-export function webp(frames: Blob[], convertMeta: ConvertMeta): Promise<Blob> {
+export function webp(
+  frames: Blob[] | ImageBitmap[],
+  convertMeta: ConvertMeta<ConvertUgoiraSource>
+): Promise<Blob> {
   return new Promise<Worker>((resolve, reject) => {
     logger.time(convertMeta.id);
 
@@ -60,13 +63,16 @@ export function webp(frames: Blob[], convertMeta: ConvertMeta): Promise<Blob> {
       };
 
       const delays = convertMeta.source.delays;
-      worker.postMessage({
-        frames,
-        delays,
-        lossless: Number(config.get('losslessWebp')),
-        quality: config.get('webpQuality'),
-        method: config.get('webpMehtod')
-      });
+      worker.postMessage(
+        {
+          frames,
+          delays,
+          lossless: Number(config.get('losslessWebp')),
+          quality: config.get('webpQuality'),
+          method: config.get('webpMehtod')
+        },
+        frames[0] instanceof ImageBitmap ? (frames as ImageBitmap[]) : []
+      );
     });
   });
 }

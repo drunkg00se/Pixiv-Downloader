@@ -1,9 +1,15 @@
-import type { ConvertMeta } from '..';
+import type {
+  ConvertMeta,
+  ConvertUgoiraSource,
+  EffectData,
+  EffectReturn,
+  ConvertImageEffectSource
+} from '..';
 import { logger } from '@/lib/logger';
 import { CancelError } from '@/lib/error';
-import pngWorkerFragment from '../worker/pngWorkerFragment?raw';
+import pngWorkerFragment from '../worker/pngWorkerFragment?rawjs';
 import UPNG from 'upng-js?raw';
-import pako from 'pako?raw';
+import pako from 'pako/dist/pako.js?raw';
 import { config } from '@/lib/config';
 
 const workerUrl = URL.createObjectURL(
@@ -21,7 +27,30 @@ const workerUrl = URL.createObjectURL(
 
 const freeApngWorkers: Worker[] = [];
 
-export function png(frames: Blob[], convertMeta: ConvertMeta): Promise<Blob> {
+type PngWorkerEffectConfig =
+  | {
+      illust: Blob;
+      effect: ArrayBuffer;
+      delay?: undefined;
+    }
+  | {
+      illust: Blob;
+      effect: ImageData[];
+      delay: number[];
+    };
+
+export type PngWorkerConfig =
+  | PngWorkerEffectConfig
+  | {
+      frames: Blob[];
+      delay: number[];
+      cnum: number;
+    };
+
+export function png(
+  frames: Blob[] | ImageBitmap[],
+  convertMeta: ConvertMeta<ConvertUgoiraSource>
+): Promise<Blob> {
   return new Promise<Blob>((resolve, reject) => {
     logger.info('Start convert:', convertMeta.id);
     logger.time(convertMeta.id);
@@ -56,6 +85,70 @@ export function png(frames: Blob[], convertMeta: ConvertMeta): Promise<Blob> {
 
     const delay = convertMeta.source.delays;
     const cfg = { frames, delay, cnum: config.get('pngColor') };
-    worker.postMessage(cfg);
+    worker.postMessage(
+      cfg,
+      cfg.frames[0] instanceof ImageBitmap ? (cfg.frames as ImageBitmap[]) : []
+    );
+  });
+}
+
+export function mixPngEffect(
+  convertMeta: ConvertMeta<ConvertImageEffectSource>
+): Promise<EffectReturn> {
+  logger.info('Start convert:', convertMeta.id);
+  logger.time(convertMeta.id);
+
+  const { illust, data } = convertMeta.source;
+
+  let p: Promise<ArrayBuffer | EffectData>;
+
+  if (data instanceof Blob) {
+    p = data.arrayBuffer();
+  } else {
+    p = Promise.resolve(data);
+  }
+
+  return p.then((effect) => {
+    return new Promise((resolve, reject) => {
+      let worker: Worker;
+      if (freeApngWorkers.length) {
+        worker = freeApngWorkers.shift() as Worker;
+        logger.info('Reuse apng workers.');
+      } else {
+        worker = new Worker(workerUrl);
+      }
+
+      convertMeta.abort = () => {
+        logger.timeEnd(convertMeta.id);
+        logger.warn('Convert stop manually. ' + convertMeta.id);
+        reject(new CancelError());
+        convertMeta.isAborted = true;
+        worker.terminate();
+      };
+
+      worker.onmessage = function (e) {
+        freeApngWorkers.push(worker);
+        logger.timeEnd(convertMeta.id);
+
+        if (!e.data) {
+          return reject(new Error('Mix Effect convert Failed' + convertMeta.id));
+        }
+
+        resolve(e.data as EffectReturn);
+      };
+
+      let cfg: PngWorkerConfig;
+
+      if (effect instanceof ArrayBuffer) {
+        cfg = { illust, effect };
+        worker.postMessage(cfg, [cfg.effect]);
+      } else {
+        cfg = { illust, delay: effect.delays, effect: effect.frames };
+        worker.postMessage(
+          cfg,
+          cfg.effect.map((arr) => arr.data.buffer)
+        );
+      }
+    });
   });
 }

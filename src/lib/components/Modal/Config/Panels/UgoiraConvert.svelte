@@ -149,7 +149,7 @@
         <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
           <li class="items-center">
             <p class="flex-auto">{t('setting.ugoira.options.webp_lossy')}</p>
-            <SlideToggle name="fsa-enable" bind:checked={$store.losslessWebp} size="sm"
+            <SlideToggle name="lossless-webp" bind:checked={$store.losslessWebp} size="sm"
             ></SlideToggle>
           </li>
 

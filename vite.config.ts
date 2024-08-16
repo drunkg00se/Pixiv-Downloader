@@ -3,6 +3,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { purgeCss } from 'vite-plugin-tailwind-purgecss';
 import monkey, { cdn } from 'vite-plugin-monkey';
 import svg from '@poppanator/sveltekit-svg';
+import ts from 'typescript';
 import { version } from './package.json';
 import path from 'path';
 
@@ -20,6 +21,17 @@ export default defineConfig({
   },
   plugins: [
     svelte(),
+    {
+      name: 'compile-raw-ts',
+      transform(code, id) {
+        if (id.endsWith('?rawjs')) {
+          const jsCode = ts.transpileModule(code, {
+            compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ESNext }
+          }).outputText;
+          return `export default ${JSON.stringify(jsCode)}`;
+        }
+      }
+    },
     svg({
       svgoOptions: false
     }),
@@ -45,7 +57,7 @@ export default defineConfig({
           'https://yande.re/*'
         ],
         noframes: true,
-        connect: ['i.pximg.net', 'rule34.xxx', 'donmai.us', 'yande.re']
+        connect: ['i.pximg.net', 'source.pixiv.net', 'rule34.xxx', 'donmai.us', 'yande.re']
       },
       build: {
         cssSideEffects: () => {
@@ -68,10 +80,10 @@ export default defineConfig({
             //@ts-expect-error no declaration
             loader: () => GM_getResourceText('gif.js/dist/gif.worker?raw')
           },
-          'pako?raw': {
-            resourceUrl: 'https://unpkg.com/pako@2.0.4/dist/pako.min.js',
+          'pako/dist/pako.js?raw': {
+            resourceUrl: 'https://unpkg.com/pako@2.1.0/dist/pako.min.js',
             //@ts-expect-error no declaration
-            loader: () => GM_getResourceText('pako?raw')
+            loader: () => GM_getResourceText('pako/dist/pako.js?raw')
           },
           'upng-js?raw': {
             resourceUrl: 'https://unpkg.com/upng-js@2.1.0/UPNG.js',

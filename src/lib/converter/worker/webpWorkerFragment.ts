@@ -1,3 +1,5 @@
+/// <reference lib="webworker" />
+
 // Lossless encoding (0=lossy(default), 1=lossless).
 // quality: between 0 and 100. For lossy, 0 gives the smallest
 // size and 100 the largest. For lossless, this
@@ -6,7 +8,9 @@
 // files compared to the slowest, but best, 100.
 // method: quality/speed trade-off (0=fast, 6=slower-better)
 
-let webpApi = {};
+declare const Module: any;
+
+let webpApi = {} as any;
 Module.onRuntimeInitialized = () => {
   webpApi = {
     init: Module.cwrap('init', '', ['number', 'number', 'number']),
@@ -26,7 +30,15 @@ onmessage = async (evt) => {
 
   webpApi.init(lossless, quality, method);
 
-  const bitmaps = await Promise.all(frames.map((blob) => createImageBitmap(blob)));
+  const bitmaps: ImageBitmap[] = await Promise.all(
+    frames.map((frame: ImageBitmap | Blob) => {
+      if (frame instanceof Blob) {
+        return createImageBitmap(frame);
+      } else {
+        return frame;
+      }
+    })
+  );
   const width = bitmaps[0].width;
   const height = bitmaps[0].height;
   const canvas = new OffscreenCanvas(width, height);
@@ -34,6 +46,8 @@ onmessage = async (evt) => {
 
   for (let i = 0; i < bitmaps.length; i++) {
     ctx?.drawImage(bitmaps[i], 0, 0);
+    bitmaps[i].close();
+
     const webpBlob = await canvas.convertToBlob({
       type: 'image/webp',
       quality: lossless ? 1 : quality / 100
@@ -51,6 +65,9 @@ onmessage = async (evt) => {
   const resultPointer = webpApi.getResultPointer();
   const resultSize = webpApi.getResultSize();
   const result = new Uint8Array(Module.HEAP8.buffer, resultPointer, resultSize);
+
+  // ArrayBuffer at index 0 is not detachable and could not be transferred.
   postMessage(result);
+
   webpApi.freeResult();
 };

@@ -1,12 +1,23 @@
-import type { ConvertMeta } from '..';
+import type { ConvertMeta, ConvertUgoiraSource } from '..';
 import { default as WebMWriter } from 'webm-writer';
 import { CancelError } from '@/lib/error';
 import { config } from '@/lib/config';
 import { readBlobAsDataUrl } from '@/lib/util';
 
-export function webm(frames: Blob[], convertMeta: ConvertMeta): Promise<Blob> {
+export function webm(
+  frames: Blob[] | ImageBitmap[],
+  convertMeta: ConvertMeta<ConvertUgoiraSource>
+): Promise<Blob> {
   const quality = config.get('webmQuality') / 100;
-  return Promise.all(frames.map((frame) => createImageBitmap(frame)))
+  return Promise.all(
+    frames.map((frame) => {
+      if (frame instanceof Blob) {
+        return createImageBitmap(frame);
+      } else {
+        return frame;
+      }
+    })
+  )
     .then((bitmaps: ImageBitmap[]) => {
       if (convertMeta.isAborted) throw new CancelError();
 
@@ -18,6 +29,7 @@ export function webm(frames: Blob[], convertMeta: ConvertMeta): Promise<Blob> {
       const dataUrls: Promise<string>[] = [];
       for (let i = 0; i < frames.length; i++) {
         ctx.drawImage(bitmaps[i], 0, 0);
+        bitmaps[i].close();
         const url = canvas.convertToBlob({ type: 'image/webp', quality }).then(readBlobAsDataUrl);
         dataUrls.push(url);
       }

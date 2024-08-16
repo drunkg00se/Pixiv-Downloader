@@ -7,3 +7,8 @@
 declare const __VERSION__: string;
 
 declare module 'webm-writer';
+
+declare module '*?rawjs' {
+  const content: string;
+  export default content;
+}
