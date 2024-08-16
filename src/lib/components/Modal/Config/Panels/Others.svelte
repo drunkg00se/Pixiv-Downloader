@@ -71,7 +71,7 @@
           <div class="flex-auto">
             <p>为单页插图增加 #pixivGlow2024 效果</p>
             <p class="{descritionText} !text-error-500">
-              * 根据插图尺寸不同，可能占用大量内存 / 转换失败
+              * 转换至动图格式。如果插图尺寸过大，可能占用大量内存 / 转换失败
             </p>
           </div>
           <SlideToggle name="mix-effect" bind:checked={$store.mixEffect} size="sm"></SlideToggle>
