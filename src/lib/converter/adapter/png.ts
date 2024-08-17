@@ -127,7 +127,6 @@ export function mixPngEffect(
       };
 
       worker.onmessage = function (e) {
-        freeApngWorkers.push(worker);
         logger.timeEnd(convertMeta.id);
 
         if (!e.data) {
@@ -135,6 +134,7 @@ export function mixPngEffect(
         }
 
         resolve(e.data as EffectReturn);
+        worker.terminate();
       };
 
       let cfg: PngWorkerConfig;
