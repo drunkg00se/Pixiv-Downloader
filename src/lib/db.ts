@@ -18,15 +18,9 @@ export type HistoryImportObject = HistoryItemBase & { page?: Record<string, numb
 
 interface EffectImageItem {
   id: string;
-  data: Uint8ClampedArray[];
+  data: ArrayBuffer[];
   width: number;
   height: number;
-  delays: number[];
-}
-
-interface EffectImageData {
-  id: string;
-  imageDatas: ImageData[];
   delays: number[];
 }
 
@@ -207,32 +201,15 @@ class HistoryDb extends Dexie {
   }
 
   // Firefox does not support storing `ImageData`, so it will always return `undefined`.
-  public async getImageEffect(effectId: string): Promise<EffectImageData | undefined> {
+  public async getImageEffect(effectId: string): Promise<EffectImageItem | undefined> {
     const item = await this.imageEffect.get(effectId);
     if (!item) return item;
 
-    const { id, data, width, height, delays } = item;
-    const imageDatas = data.map((u8arr) => new ImageData(u8arr, width, height));
-
-    return {
-      id,
-      imageDatas,
-      delays
-    };
+    return item;
   }
 
-  public addImageEffect(effectData: EffectImageData) {
-    const { imageDatas, id, delays } = effectData;
-    const { width, height } = imageDatas[0];
-    const data = imageDatas.map((imageData) => imageData.data);
-
-    return this.imageEffect.add({
-      id,
-      data,
-      width,
-      height,
-      delays
-    });
+  public addImageEffect(effectData: EffectImageItem) {
+    return this.imageEffect.put(effectData);
   }
 }
 

@@ -129,14 +129,16 @@ const pixivHooks = {
         const { taskId } = pixivConfig;
         const effectData = await historyDb.getImageEffect(effectId);
 
-        if (effectData) {
-          const { imageDatas, delays } = effectData;
-
+        if (
+          effectData &&
+          effectData.data[0] instanceof ArrayBuffer // check whether data is legacy type.
+        ) {
+          const { data, delays, width, height } = effectData;
           const { blob } = await converter.appendPixivEffect(
             taskId,
             pixivConfig.source.extendName,
             imgBlob,
-            { frames: imageDatas, delays },
+            { frames: data, delays, width, height },
             onProgress
           );
 
@@ -157,7 +159,7 @@ const pixivHooks = {
             });
           });
 
-          const { blob, frames, delays } = await converter.appendPixivEffect(
+          const { blob, frames, delays, width, height } = await converter.appendPixivEffect(
             taskId,
             pixivConfig.source.extendName,
             imgBlob,
@@ -167,8 +169,10 @@ const pixivHooks = {
 
           historyDb.addImageEffect({
             id: effectId,
-            imageDatas: frames,
-            delays
+            data: frames,
+            delays,
+            width,
+            height
           });
 
           return blob;

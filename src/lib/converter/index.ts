@@ -12,7 +12,7 @@ export interface ConvertUgoiraSource {
 export type ConvertImageEffectSource = {
   id: string;
   illust: Blob;
-  data: Blob | EffectData;
+  data: Blob | EffectImageDecodedData;
 };
 
 type ConvertSource = ConvertUgoiraSource | ConvertImageEffectSource;
@@ -21,22 +21,24 @@ export interface ConvertMeta<T = ConvertSource> {
   format: ConvertFormat;
   source: T;
   isAborted: boolean;
-  resolve: (val: T extends ConvertUgoiraSource ? Blob : EffectResult) => void;
+  resolve: (val: T extends ConvertUgoiraSource ? Blob : MixEffectResult) => void;
   reject: (reason: TypeError | RequestError | CancelError) => void;
   abort: () => void;
   onProgress?: (val: number) => void;
 }
 
-export interface EffectData {
-  frames: ImageData[];
+export interface EffectImageDecodedData {
+  frames: ArrayBuffer[];
+  width: number;
+  height: number;
   delays: number[];
 }
 
-export type EffectReturn = EffectData & {
+export type MixEffectEncodedData = EffectImageDecodedData & {
   bitmaps: ImageBitmap[];
 };
 
-type EffectResult = EffectData & {
+type MixEffectResult = EffectImageDecodedData & {
   blob: Blob;
 };
 
@@ -53,9 +55,9 @@ interface Converter {
     taskId: string,
     format: ConvertFormat,
     illust: Blob,
-    effect: EffectData | Blob,
+    effect: EffectImageDecodedData | Blob,
     onProgress?: ConvertMeta<ConvertImageEffectSource>['onProgress']
-  ): Promise<EffectResult>;
+  ): Promise<MixEffectResult>;
 }
 
 function createConverter(): Converter {
@@ -81,11 +83,9 @@ function createConverter(): Converter {
 
     if (!isConvertSource(convertMeta)) {
       const mixEffect = convertAdapter.getMixEffectFn();
-      let imageFrames: ImageData[];
-      let imageDelays: number[];
 
       mixEffect(convertMeta as ConvertMeta<ConvertImageEffectSource>)
-        .then(({ bitmaps, frames, delays }) => {
+        .then(({ bitmaps, frames, delays, width, height }) => {
           const meta: ConvertMeta<ConvertUgoiraSource> = {
             ...convertMeta,
             source: {
@@ -94,13 +94,11 @@ function createConverter(): Converter {
               delays
             }
           };
-          imageFrames = frames;
-          imageDelays = delays;
 
-          return adapter(meta.source.data, meta);
+          return Promise.all([adapter(meta.source.data, meta), frames, delays, width, height]);
         })
-        .then((blob) => {
-          resolve({ frames: imageFrames, delays: imageDelays, blob });
+        .then(([blob, frames, delays, width, height]) => {
+          resolve({ blob, frames, delays, width, height });
         }, reject)
         .finally(() => {
           active.splice(active.indexOf(convertMeta), 1);
@@ -214,10 +212,10 @@ function createConverter(): Converter {
       taskId: string,
       format: ConvertFormat,
       illust: Blob,
-      effect: EffectData | Blob,
+      effect: EffectImageDecodedData | Blob,
       onProgress?: ConvertMeta<ConvertImageEffectSource>['onProgress']
-    ): Promise<EffectResult> {
-      return new Promise<EffectResult>((resolve, reject) => {
+    ): Promise<MixEffectResult> {
+      return new Promise<MixEffectResult>((resolve, reject) => {
         const meta: ConvertMeta<ConvertImageEffectSource> = {
           id: taskId,
           format,
