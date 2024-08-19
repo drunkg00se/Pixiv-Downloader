@@ -1,6 +1,7 @@
 import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadArtwork } from './downloadArtwork';
+import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 
 export class Yande extends SiteInject {
   protected inject() {
@@ -67,17 +68,13 @@ export class Yande extends SiteInject {
     btnContainer.style.position = 'relative';
     btnContainer.style.width = 'max-content';
 
-    const wrapper = document.createElement('div');
-    wrapper.classList.add('pdl-wrap-artworks', 'yande');
-
-    const btn = new ThumbnailButton({
-      id,
-      type: ThumbnailBtnType.Gallery,
-      onClick: downloadArtwork
-    });
-
-    wrapper.appendChild(btn);
-    btnContainer.appendChild(wrapper);
+    btnContainer.appendChild(
+      new ArtworkButton({
+        id,
+        site: 'yande',
+        onClick: downloadArtwork
+      })
+    );
   }
 
   protected createScrollerBtn() {

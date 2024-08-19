@@ -2,6 +2,7 @@ import { downloadArtwork } from './downloadArtwork';
 import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadPoolArtwork } from './downloadPoolArtwork';
+import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 
 export class Danbooru extends SiteInject {
   protected inject(): void {
@@ -30,17 +31,12 @@ export class Danbooru extends SiteInject {
 
   protected createArtworkBtn(id: string) {
     const btnContainer = document.querySelector<HTMLElement>('section.image-container')!;
-
-    const btn = new ThumbnailButton({
-      id,
-      type: ThumbnailBtnType.Gallery,
-      onClick: downloadArtwork
-    });
-
-    const wrapper = document.createElement('div');
-    wrapper.classList.add('pdl-wrap-artworks');
-    wrapper.appendChild(btn);
-    btnContainer.appendChild(wrapper);
+    btnContainer.appendChild(
+      new ArtworkButton({
+        id,
+        onClick: downloadArtwork
+      })
+    );
   }
 
   protected createPoolThumbnailBtn() {
@@ -75,7 +71,6 @@ export class Danbooru extends SiteInject {
       this.createArtworkBtn(id);
       this.createThumbnailBtn();
     } else if (/^\/pools\/gallery/.test(path)) {
-      // TODO: 下载pool
       this.createPoolThumbnailBtn();
     } else {
       this.createThumbnailBtn();

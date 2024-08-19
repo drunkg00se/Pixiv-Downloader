@@ -30,7 +30,7 @@ export const enum ThumbnailBtnType {
   YandeBrowse = 'yande-browse'
 }
 
-interface ThumbnailBtnProp {
+export interface ThumbnailBtnProp {
   id: string | number;
   page?: number;
   type?: ThumbnailBtnType;

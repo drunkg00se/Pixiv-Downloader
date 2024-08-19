@@ -1,5 +1,5 @@
-import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadArtwork } from '../../downloadArtwork';
+import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 
 // 多图"展开全部"后各图片下载按钮
 export function createWorkExpanedViewBtn(id: string): void {
@@ -13,21 +13,18 @@ export function createWorkExpanedViewBtn(id: string): void {
   );
 
   //避免重复增加按钮
-  const elementToAppend = Array.from(containers).filter((el) => !el.querySelector('pdl-button'));
+  const elementToAppend = Array.from(containers).filter(
+    (el) => !el.querySelector('pdl-artwork-button')
+  );
   if (!elementToAppend.length) return;
 
   elementToAppend.forEach((node, idx) => {
-    const wrapper = document.createElement('div');
-    wrapper.classList.add('pdl-wrap-artworks');
-
-    wrapper.appendChild(
-      new ThumbnailButton({
+    node.appendChild(
+      new ArtworkButton({
         id,
         page: idx,
-        type: ThumbnailBtnType.Gallery,
         onClick: downloadArtwork
       })
     );
-    node.appendChild(wrapper);
   });
 }

@@ -1,6 +1,7 @@
 import { downloadArtwork } from './downloadArtwork';
 import { SiteInject } from '../base';
-import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
+import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
+import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 
 export class Rule34 extends SiteInject {
   protected inject() {
@@ -46,17 +47,13 @@ export class Rule34 extends SiteInject {
     const btnContainer = document.querySelector<HTMLDivElement>('div.flexi > div')!;
     btnContainer.style.position = 'relative';
 
-    const wrapper = document.createElement('div');
-    wrapper.classList.add('pdl-wrap-artworks', 'rule34');
-
-    const btn = new ThumbnailButton({
-      id,
-      type: ThumbnailBtnType.Gallery,
-      onClick: downloadArtwork
-    });
-
-    wrapper.appendChild(btn);
-    btnContainer.appendChild(wrapper);
+    btnContainer.appendChild(
+      new ArtworkButton({
+        id,
+        site: 'rule34',
+        onClick: downloadArtwork
+      })
+    );
   }
 
   protected pageAction() {
