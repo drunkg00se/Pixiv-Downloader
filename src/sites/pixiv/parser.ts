@@ -383,7 +383,7 @@ export const pixivParser: PixivParser = {
   },
 
   async *illustMangaGenerator(
-    pageRange: [start: number | null, end: number | null] | null,
+    pageRange: [start: number, end: number] | null,
     checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
     userId: string
   ) {
@@ -453,7 +453,7 @@ export const pixivParser: PixivParser = {
   },
 
   async *bookmarkGenerator(
-    pageRange: [start: number | null, end: number | null] | null,
+    pageRange: [start: number, end: number] | null,
     checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
     userId: string,
     bookmarkRest: 'show' | 'hide' = 'show',
@@ -527,7 +527,7 @@ export const pixivParser: PixivParser = {
   },
 
   async *followLatestGenerator(
-    pageRange: [start: number | null, end: number | null] | null,
+    pageRange: [start: number, end: number] | null,
     checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
     mode = 'all'
   ) {
@@ -640,7 +640,7 @@ export const pixivParser: PixivParser = {
 
   // TODO: add page range support
   async *taggedArtworkGenerator(
-    _: [start: number | null, end: number | null] | null,
+    _: [start: number, end: number] | null,
     checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
     userId: string,
     category: Category,

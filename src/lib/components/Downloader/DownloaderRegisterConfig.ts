@@ -7,7 +7,7 @@ interface YieldArtworkId {
 }
 
 export type GenerateIdWithValidation<T, K extends string | string[] = []> = (
-  pageRange: [start: number | null, end: number | null] | null,
+  pageRange: [start: number, end: number] | null,
   checkValidity: (meta: Partial<T>) => Promise<boolean>,
   ...restArgs: K extends string ? K[] : K
 ) => Generator<YieldArtworkId, void, undefined> | AsyncGenerator<YieldArtworkId, void, undefined>;

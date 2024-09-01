@@ -50,8 +50,9 @@ export function defineBatchDownload(downloaderConfig: RegisterConfig<any, true |
     log: readonly(log)
   };
 
-  let $pageStart!: number | null;
-  let $pageEnd!: number | null;
+  let $pageStart!: number;
+  let $pageEnd!: number;
+  let $downloadAllPages: boolean;
   let $blacklistTag: string[] = [];
   let $whitelistTag: string[] = [];
 
@@ -64,13 +65,9 @@ export function defineBatchDownload(downloaderConfig: RegisterConfig<any, true |
   const watchPageRange = derived([downloadAllPages, pageStart, pageEnd], (data) => data);
   watchPageRange.subscribe(([downloadAllPages, pageStart, pageEnd]) => {
     // update page range
-    if (downloadAllPages) {
-      $pageStart = null;
-      $pageEnd = null;
-    } else {
-      $pageStart = pageStart;
-      $pageEnd = pageEnd;
-    }
+    $downloadAllPages = downloadAllPages;
+    $pageStart = pageStart;
+    $pageEnd = pageEnd;
   });
 
   selectedFilters.subscribe((selected) => {
@@ -312,11 +309,14 @@ export function defineBatchDownload(downloaderConfig: RegisterConfig<any, true |
     });
 
     if (!pageConfig || !genFn) throw new Error('Invalid generator id: ' + fnId);
+    if (!$downloadAllPages && $pageEnd < $pageStart)
+      throw new Error('End page must not be less than the start page.');
+
+    const pageRange: [start: number, end: number] | null = $downloadAllPages
+      ? null
+      : [$pageStart, $pageEnd];
 
     const { filterWhenGenerateIngPage } = downloaderConfig.filterOption;
-    const pageRange: [start: number | null, end: number | null] | null =
-      $pageStart === null && $pageEnd === null ? null : [$pageStart, $pageEnd];
-
     if (filterWhenGenerateIngPage) {
       generator = (genFn as GenPageId<any, any, true>)(pageRange, checkValidity, ...restArgs);
     } else {
