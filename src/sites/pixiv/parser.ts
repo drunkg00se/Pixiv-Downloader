@@ -403,16 +403,17 @@ export const pixivParser: PixivParser = {
     let sliceEnd: number;
 
     const [startPage = null, endPage = null] = pageRange ?? [];
+    let page = startPage ?? 1;
+
     startPage === null ? (sliceStart = 0) : (sliceStart = (startPage - 1) * ARTWORKS_PER_PAGE);
     endPage === null ? (sliceEnd = ids.length) : (sliceEnd = endPage * ARTWORKS_PER_PAGE);
 
     const selectedIds = ids.slice(sliceStart, sliceEnd);
-    if (!selectedIds.length) throw new RangeError('Page exceeds the limit.');
-    const total = selectedIds.length;
+    if (!selectedIds.length) throw new RangeError(`Page ${page} exceeds the limit.`);
 
     const baseUrl = `https://www.pixiv.net/ajax/user/${userId}/profile/illusts?`;
+    const total = selectedIds.length;
 
-    let page = startPage ?? 1;
     while (selectedIds.length > 0) {
       const chunk: string[] = selectedIds.splice(0, ARTWORKS_PER_PAGE);
       const queryStr =
@@ -460,10 +461,11 @@ export const pixivParser: PixivParser = {
     tag: string = ''
   ) {
     const ARTWORKS_PER_PAGE = 48;
-
     const [startPage = null, endPage = null] = pageRange ?? [];
+
     if (!userId) throw new Error('Require argument "userId".');
 
+    // TODO: need enhancement
     // get total with offset 0 to prevent `pageStart` from exceeding total.
     const requestUrl = `/ajax/user/${userId}/illusts/bookmarks?tag=${tag}&offset=${0}&limit=${ARTWORKS_PER_PAGE}&rest=${bookmarkRest}&lang=ja`;
     const firstPageData = await api.getJson<UserPageData>(requestUrl);
@@ -473,6 +475,8 @@ export const pixivParser: PixivParser = {
 
     let offsetStart: number;
     let offsetEnd: number;
+    let page = startPage ?? 1;
+
     startPage === null
       ? (offsetStart = 0)
       : (offsetStart =
@@ -483,10 +487,9 @@ export const pixivParser: PixivParser = {
       ? (offsetEnd = total)
       : (offsetEnd = endPage * ARTWORKS_PER_PAGE > total ? total : endPage * ARTWORKS_PER_PAGE);
 
-    if (offsetStart === total) throw new RangeError('Page exceeds the limit.');
+    if (offsetStart === total) throw new RangeError(`Page ${page} exceeds the limit.`);
 
     const seleted = offsetEnd - offsetStart;
-    let page = startPage ?? 1;
 
     for (let head = offsetStart; head < offsetEnd; head += ARTWORKS_PER_PAGE, page++) {
       let workDatas: UserPageData['works'];
@@ -538,11 +541,10 @@ export const pixivParser: PixivParser = {
     startPage === null && (startPage = 1);
     (endPage === null || endPage > PAGE_LIMIT) && (endPage = PAGE_LIMIT);
 
-    if (startPage > PAGE_LIMIT) throw new RangeError('Page exceeds the limit.');
+    if (startPage > PAGE_LIMIT) throw new RangeError(`Page ${startPage} exceeds the limit.`);
 
     let earliestId: number;
     let total: number;
-    // let data: FollowLatest;
     let cache: FollowLatest;
     let page = startPage;
 
@@ -638,9 +640,8 @@ export const pixivParser: PixivParser = {
     yield* await yieldData(cache!, page - 1);
   },
 
-  // TODO: add page range support
   async *taggedArtworkGenerator(
-    _: [start: number, end: number] | null,
+    pageRange: [start: number, end: number] | null,
     checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
     userId: string,
     category: Category,
@@ -648,23 +649,40 @@ export const pixivParser: PixivParser = {
     bookmarkRest: 'hide' | 'show' = 'show'
   ) {
     if (category === 'bookmarks') {
-      yield* await this.bookmarkGenerator(null, checkValidity, userId, bookmarkRest, tag);
+      yield* await this.bookmarkGenerator(pageRange, checkValidity, userId, bookmarkRest, tag);
       return;
     }
 
     const ARTWORKS_PER_PAGE = 48;
-    let offset = 0;
-    let total = 0;
-    let page = 0;
+    const [startPage = null, endPage = null] = pageRange ?? [];
+
+    let offset: number;
+    let offsetEnd!: number;
+    let total!: number;
+    let page = startPage ?? 1;
+
+    startPage === null ? (offset = 0) : (offset = (startPage - 1) * ARTWORKS_PER_PAGE);
 
     do {
-      page++;
       const url = `/ajax/user/${userId}/${category}/tag?tag=${tag}&offset=${offset}&limit=${ARTWORKS_PER_PAGE}&lang=ja`;
       const userPageData = await api.getJson<UserPageData>(url);
       const { works, total: totalArtwork } = userPageData;
-      total = totalArtwork;
 
-      if (!total) throw new Error(`User ${userId} has no ${category} tagged with ${tag}.`);
+      if (totalArtwork === 0)
+        throw new Error(`User ${userId} has no ${category} tagged with ${tag}.`);
+
+      if (!offsetEnd) {
+        endPage === null
+          ? (offsetEnd = totalArtwork)
+          : (offsetEnd =
+              endPage * ARTWORKS_PER_PAGE > totalArtwork
+                ? totalArtwork
+                : endPage * ARTWORKS_PER_PAGE);
+
+        if (offsetEnd <= offset) throw new RangeError(`Page ${page} exceeds the limit.`);
+
+        total = offsetEnd - offset;
+      }
 
       const avaliable: string[] = [];
       const invalid: string[] = [];
@@ -690,6 +708,8 @@ export const pixivParser: PixivParser = {
         invalid,
         unavaliable
       };
-    } while ((offset += ARTWORKS_PER_PAGE) < total);
+
+      page++;
+    } while ((offset += ARTWORKS_PER_PAGE) < offsetEnd);
   }
 };
