@@ -13,6 +13,7 @@
   import playSvg from '@/assets/play-circle-outline.svg?src';
   import stopOutLineSvg from '@/assets/stop-circle-outline.svg?src';
   import downloadMultipleSvg from '@/assets/download-multiple.svg?src';
+  import { nonNegativeInt } from '../Actions/nonNegativeInt';
 
   type FunctionKeys<T> = {
     [K in keyof T]: T[K] extends Function ? K : never;
@@ -248,12 +249,13 @@
                         {@html playSvg}
                       </i>
                     </div>
-                    <!-- TODO: check validity -->
                     <input
                       class="w-20 pr-0 text-surface-700-200-token text-sm"
                       type="number"
-                      min="1"
+                      min={1}
+                      step="1"
                       disabled={$downloadAllPages}
+                      use:nonNegativeInt={pageStart}
                       bind:value={$pageStart}
                     />
                   </label>
@@ -270,7 +272,9 @@
                       class="w-20 pr-0 text-surface-700-200-token text-sm"
                       type="number"
                       min="1"
+                      step="1"
                       disabled={$downloadAllPages}
+                      use:nonNegativeInt={pageEnd}
                       bind:value={$pageEnd}
                     />
                   </label>
