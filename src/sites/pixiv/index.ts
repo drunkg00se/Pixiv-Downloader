@@ -192,7 +192,7 @@ export class Pixiv extends SiteInject {
               }
             },
             {
-              id: 'follow_latest_all',
+              id: 'follow_latest_r18',
               name: 'R-18',
               fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
                 return pixivParser.followLatestGenerator(...args, 'r18');
