@@ -208,7 +208,7 @@ export class Pixiv extends SiteInject {
               id: 'tagged_artwork',
               name: 'tagged_artwork',
               fn: (
-                _: [start: number | null, end: number | null] | null,
+                pageRange: [start: number, end: number] | null,
                 checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
                 userId: string,
                 category: Category,
@@ -217,7 +217,7 @@ export class Pixiv extends SiteInject {
               ) => {
                 if (category === 'bookmarks') {
                   return pixivParser.taggedArtworkGenerator(
-                    _,
+                    pageRange,
                     checkValidity,
                     userId,
                     category,
@@ -226,7 +226,7 @@ export class Pixiv extends SiteInject {
                   );
                 } else {
                   return pixivParser.taggedArtworkGenerator(
-                    _,
+                    pageRange,
                     checkValidity,
                     userId,
                     category,

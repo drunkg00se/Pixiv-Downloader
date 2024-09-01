@@ -64,13 +64,18 @@ interface PixivParser extends SiteParser<PixivMeta> {
   ): Promise<chunksGenerator>;
   getAllWorksGenerator(userId: string, filterOption: FilterOption): Promise<chunksGenerator>;
   illustMangaGenerator: GenerateIdWithValidation<PixivMeta, string>;
+  followLatestGenerator: GenerateIdWithValidation<PixivMeta, ['all' | 'r18']>;
+  chunkGenerator: GenerateIdWithValidation<
+    PixivMeta,
+    | [userId: string, category: 'bookmarks', tag: string, bookmarkRest: 'hide' | 'show']
+    | [userId: string, category: 'illusts' | 'manga', tag: string]
+  >;
   bookmarkGenerator: GenerateIdWithValidation<
     PixivMeta,
     | [userId: string]
     | [userId: string, bookmarkRest: 'hide' | 'show']
     | [userId: string, bookmarkRest: 'hide' | 'show', tag: string]
   >;
-  followLatestGenerator: GenerateIdWithValidation<PixivMeta, ['all' | 'r18']>;
   taggedArtworkGenerator: GenerateIdWithValidation<
     PixivMeta,
     | [
@@ -414,7 +419,7 @@ export const pixivParser: PixivParser = {
     const baseUrl = `https://www.pixiv.net/ajax/user/${userId}/profile/illusts?`;
     const total = selectedIds.length;
 
-    while (selectedIds.length > 0) {
+    do {
       const chunk: string[] = selectedIds.splice(0, ARTWORKS_PER_PAGE);
       const queryStr =
         chunk.map((id) => 'ids[]=' + id).join('&') +
@@ -448,66 +453,62 @@ export const pixivParser: PixivParser = {
         unavaliable
       };
 
-      selectedIds.length !== 0 && (await sleep(1500));
       page++;
-    }
+    } while (selectedIds.length > 0 && (await sleep(1500).then(() => true)));
   },
 
-  async *bookmarkGenerator(
+  async *chunkGenerator(
     pageRange: [start: number, end: number] | null,
     checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
     userId: string,
-    bookmarkRest: 'show' | 'hide' = 'show',
-    tag: string = ''
+    category: Category,
+    tag: string,
+    bookmarkRest: 'show' | 'hide' = 'show'
   ) {
     const ARTWORKS_PER_PAGE = 48;
     const [startPage = null, endPage = null] = pageRange ?? [];
 
     if (!userId) throw new Error('Require argument "userId".');
 
-    // TODO: need enhancement
-    // get total with offset 0 to prevent `pageStart` from exceeding total.
-    const requestUrl = `/ajax/user/${userId}/illusts/bookmarks?tag=${tag}&offset=${0}&limit=${ARTWORKS_PER_PAGE}&rest=${bookmarkRest}&lang=ja`;
-    const firstPageData = await api.getJson<UserPageData>(requestUrl);
-    const total = firstPageData.total;
-
-    if (!total) throw new Error(`User ${userId} has no bookmarks.`);
-
-    let offsetStart: number;
-    let offsetEnd: number;
+    let offset: number;
+    let offsetEnd!: number;
+    let total!: number;
     let page = startPage ?? 1;
 
-    startPage === null
-      ? (offsetStart = 0)
-      : (offsetStart =
-          (startPage - 1) * ARTWORKS_PER_PAGE > total
-            ? total
-            : (startPage - 1) * ARTWORKS_PER_PAGE);
-    endPage === null
-      ? (offsetEnd = total)
-      : (offsetEnd = endPage * ARTWORKS_PER_PAGE > total ? total : endPage * ARTWORKS_PER_PAGE);
+    startPage === null ? (offset = 0) : (offset = (startPage - 1) * ARTWORKS_PER_PAGE);
 
-    if (offsetStart === total) throw new RangeError(`Page ${page} exceeds the limit.`);
-
-    const seleted = offsetEnd - offsetStart;
-
-    for (let head = offsetStart; head < offsetEnd; head += ARTWORKS_PER_PAGE, page++) {
-      let workDatas: UserPageData['works'];
-
-      if (head === 0) {
-        workDatas = firstPageData.works; // bookmarks are already sorted.
+    do {
+      let requestUrl: string;
+      if (category === 'bookmarks') {
+        requestUrl = `/ajax/user/${userId}/illusts/bookmarks?tag=${tag}&offset=${offset}&limit=${ARTWORKS_PER_PAGE}&rest=${bookmarkRest}&lang=ja`;
       } else {
-        await sleep(1500);
-        const requestUrl = `/ajax/user/${userId}/illusts/bookmarks?tag=${tag}&offset=${head}&limit=${ARTWORKS_PER_PAGE}&rest=${bookmarkRest}&lang=ja`;
-        workDatas = (await api.getJson<UserPageData>(requestUrl)).works;
+        requestUrl = `/ajax/user/${userId}/${category}/tag?tag=${tag}&offset=${offset}&limit=${ARTWORKS_PER_PAGE}&lang=ja`;
+      }
+
+      const userPageData = await api.getJson<UserPageData>(requestUrl);
+      const { works, total: totalArtwork } = userPageData;
+      if (totalArtwork === 0)
+        throw new Error(`User ${userId} has no ${category} tagged with ${tag}.`);
+
+      if (!offsetEnd) {
+        endPage === null
+          ? (offsetEnd = totalArtwork)
+          : (offsetEnd =
+              endPage * ARTWORKS_PER_PAGE > totalArtwork
+                ? totalArtwork
+                : endPage * ARTWORKS_PER_PAGE);
+
+        if (offsetEnd <= offset) throw new RangeError(`Page ${page} exceeds the limit.`);
+
+        total = offsetEnd - offset;
       }
 
       const avaliable: string[] = [];
       const invalid: string[] = [];
       const unavaliable: string[] = [];
 
-      for (let i = 0; i < workDatas.length; i++) {
-        const work = workDatas[i];
+      for (let i = 0; i < works.length; i++) {
+        const work = works[i];
         const { id, isMasked } = work;
 
         if (isMasked) {
@@ -520,12 +521,39 @@ export const pixivParser: PixivParser = {
       }
 
       yield {
-        total: seleted,
+        total,
         page,
         avaliable,
         invalid,
         unavaliable
       };
+
+      page++;
+    } while ((offset += ARTWORKS_PER_PAGE) < offsetEnd && (await sleep(1500).then(() => true)));
+  },
+
+  async *bookmarkGenerator(
+    pageRange: [start: number, end: number] | null,
+    checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
+    userId: string,
+    bookmarkRest: 'show' | 'hide' = 'show',
+    tag: string = ''
+  ) {
+    yield* this.chunkGenerator(pageRange, checkValidity, userId, 'bookmarks', tag, bookmarkRest);
+  },
+
+  async *taggedArtworkGenerator(
+    pageRange: [start: number, end: number] | null,
+    checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
+    userId: string,
+    category: Category,
+    tag: string,
+    bookmarkRest: 'hide' | 'show' = 'show'
+  ) {
+    if (category === 'bookmarks') {
+      yield* this.bookmarkGenerator(pageRange, checkValidity, userId, bookmarkRest, tag);
+    } else {
+      yield* this.chunkGenerator(pageRange, checkValidity, userId, category, tag);
     }
   },
 
@@ -638,78 +666,5 @@ export const pixivParser: PixivParser = {
 
     // yield last page
     yield* await yieldData(cache!, page - 1);
-  },
-
-  async *taggedArtworkGenerator(
-    pageRange: [start: number, end: number] | null,
-    checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
-    userId: string,
-    category: Category,
-    tag: string,
-    bookmarkRest: 'hide' | 'show' = 'show'
-  ) {
-    if (category === 'bookmarks') {
-      yield* await this.bookmarkGenerator(pageRange, checkValidity, userId, bookmarkRest, tag);
-      return;
-    }
-
-    const ARTWORKS_PER_PAGE = 48;
-    const [startPage = null, endPage = null] = pageRange ?? [];
-
-    let offset: number;
-    let offsetEnd!: number;
-    let total!: number;
-    let page = startPage ?? 1;
-
-    startPage === null ? (offset = 0) : (offset = (startPage - 1) * ARTWORKS_PER_PAGE);
-
-    do {
-      const url = `/ajax/user/${userId}/${category}/tag?tag=${tag}&offset=${offset}&limit=${ARTWORKS_PER_PAGE}&lang=ja`;
-      const userPageData = await api.getJson<UserPageData>(url);
-      const { works, total: totalArtwork } = userPageData;
-
-      if (totalArtwork === 0)
-        throw new Error(`User ${userId} has no ${category} tagged with ${tag}.`);
-
-      if (!offsetEnd) {
-        endPage === null
-          ? (offsetEnd = totalArtwork)
-          : (offsetEnd =
-              endPage * ARTWORKS_PER_PAGE > totalArtwork
-                ? totalArtwork
-                : endPage * ARTWORKS_PER_PAGE);
-
-        if (offsetEnd <= offset) throw new RangeError(`Page ${page} exceeds the limit.`);
-
-        total = offsetEnd - offset;
-      }
-
-      const avaliable: string[] = [];
-      const invalid: string[] = [];
-      const unavaliable: string[] = [];
-
-      for (let i = 0; i < works.length; i++) {
-        const work = works[i];
-        const { id, isMasked } = work;
-
-        if (isMasked) {
-          unavaliable.push(String(id));
-          continue;
-        }
-
-        const isValid = await checkValidity(work);
-        isValid ? avaliable.push(id) : invalid.push(id);
-      }
-
-      yield {
-        total,
-        page,
-        avaliable,
-        invalid,
-        unavaliable
-      };
-
-      page++;
-    } while ((offset += ARTWORKS_PER_PAGE) < offsetEnd);
   }
 };
