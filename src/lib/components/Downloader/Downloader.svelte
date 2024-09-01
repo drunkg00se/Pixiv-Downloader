@@ -4,9 +4,12 @@
   import { TabGroup, Tab, ProgressRadial } from '@skeletonlabs/skeleton';
   import { InputChip } from '@skeletonlabs/skeleton';
   import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
-  import { type RegisterConfig } from './DownloaderRegisterConfig';
   import optionStore from './store';
-  import { defineBatchDownload, useBatchDownload } from './useBatchDownload';
+  import {
+    defineBatchDownload,
+    useBatchDownload,
+    type BatchDownloadConfig
+  } from './useBatchDownload';
   import { logger } from '@/lib/logger';
   import downloadSvg from '@/assets/download.svg?src';
   import stopSvg from '@/assets/close.svg?src';
@@ -19,9 +22,9 @@
     [K in keyof T]: T[K] extends Function ? K : never;
   }[keyof T];
 
-  export let downloaderConfig: RegisterConfig<any, true | undefined>;
+  export let downloaderConfig: BatchDownloadConfig<any, true | undefined>;
 
-  let pageConfig: RegisterConfig<any, true | undefined>['pageMatch'][number] | null;
+  let pageConfig: BatchDownloadConfig<any, true | undefined>['pageMatch'][number] | null;
 
   // dom binding
   let startDownloadEl: HTMLDivElement;

@@ -9,11 +9,11 @@ import { create_custom_element } from 'svelte/internal';
 import util from '@/assets/styles/util.scss?inline';
 import theme from '@/assets/styles/theme.scss?inline';
 import downloadButton from '@/assets/styles/downloadButton.scss?inline';
-import { type RegisterConfig } from '@/lib/components/Downloader/DownloaderRegisterConfig';
+import { type BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 
 type AppElement = HTMLElement & {
   dark: boolean;
-  downloaderConfig?: RegisterConfig<any, true | undefined>;
+  downloaderConfig?: BatchDownloadConfig<any, true | undefined>;
   updated: boolean;
   showChangelog(): void;
   showSetting(): void;
@@ -54,7 +54,7 @@ export abstract class SiteInject {
         return class extends customElementConstructor {
           constructor(props: {
             updated: boolean;
-            downloaderConfig?: RegisterConfig<any, true | undefined>;
+            downloaderConfig?: BatchDownloadConfig<any, true | undefined>;
           }) {
             super();
             this.updated = props.updated ?? false;
@@ -104,5 +104,7 @@ export abstract class SiteInject {
 
   protected abstract observeColorScheme(): void;
 
-  protected abstract getBatchDownloadConfig(): undefined | RegisterConfig<any, true | undefined>;
+  protected abstract getBatchDownloadConfig():
+    | undefined
+    | BatchDownloadConfig<any, true | undefined>;
 }

@@ -20,7 +20,7 @@ import { api } from '@/sites/pixiv/service';
 import { regexp } from '@/lib/regExp';
 import { logger } from '@/lib/logger';
 import { historyDb } from '@/lib/db';
-import type { GenerateIdWithValidation } from '@/lib/components/Downloader/DownloaderRegisterConfig';
+import type { GenerateIdWithValidation } from '@/lib/components/Downloader/useBatchDownload';
 
 export interface chunksGenerator {
   total: number;

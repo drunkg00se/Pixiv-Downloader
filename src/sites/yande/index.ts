@@ -2,6 +2,7 @@ import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadArtwork } from './downloadArtwork';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
+import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 
 export class Yande extends SiteInject {
   protected inject() {
@@ -151,5 +152,10 @@ export class Yande extends SiteInject {
     query.addEventListener('change', (e) => {
       e.matches ? this.setModalDarkMode() : this.setModalLightMode();
     });
+  }
+
+  protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any, true | undefined> {
+    // TODO
+    return undefined;
   }
 }

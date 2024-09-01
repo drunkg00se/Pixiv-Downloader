@@ -6,9 +6,9 @@ import checkbox from '@/assets/styles/checkbox.scss?inline';
 import { historyDb, type HistoryData } from '@/lib/db';
 import { pixivParser, type PixivMeta } from './parser';
 import type {
-  RegisterConfig,
+  BatchDownloadConfig,
   GenerateIdWithValidation
-} from '@/lib/components/Downloader/DownloaderRegisterConfig';
+} from '@/lib/components/Downloader/useBatchDownload';
 import { IllustType, type Category } from './types';
 import { downloader } from '@/lib/downloader';
 import { PixivDownloadConfig } from './downloadConfigBuilder';
@@ -54,7 +54,7 @@ export class Pixiv extends SiteInject {
     });
   }
 
-  protected getBatchDownloadConfig(): RegisterConfig<PixivMeta, true> {
+  protected getBatchDownloadConfig(): BatchDownloadConfig<PixivMeta, true> {
     return {
       async avatar(url: string) {
         const userIdMatch = /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/.exec(
