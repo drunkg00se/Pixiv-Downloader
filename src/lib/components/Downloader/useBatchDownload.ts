@@ -72,6 +72,10 @@ export function defineBatchDownload(downloaderConfig: RegisterConfig<any, true |
 
   selectedFilters.subscribe((selected) => {
     if (!selected) return;
+
+    includeFilters.length = 0;
+    excludeFilters.length = 0;
+
     selected.forEach((id) => {
       const filter = downloaderConfig.filterOption.filters.find((filter) => filter.id === id);
       if (filter) {
