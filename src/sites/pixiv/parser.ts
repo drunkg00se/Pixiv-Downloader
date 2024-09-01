@@ -454,7 +454,7 @@ export const pixivParser: PixivParser = {
       };
 
       page++;
-    } while (selectedIds.length > 0 && (await sleep(1500).then(() => true)));
+    } while (selectedIds.length > 0);
   },
 
   async *chunkGenerator(
@@ -529,7 +529,7 @@ export const pixivParser: PixivParser = {
       };
 
       page++;
-    } while ((offset += ARTWORKS_PER_PAGE) < offsetEnd && (await sleep(1500).then(() => true)));
+    } while ((offset += ARTWORKS_PER_PAGE) < offsetEnd);
   },
 
   async *bookmarkGenerator(
@@ -616,7 +616,7 @@ export const pixivParser: PixivParser = {
 
     // download only one page
     if (endPage === startPage) {
-      yield* await yieldData(data, startPage);
+      yield* yieldData(data, startPage);
       return;
     }
 
@@ -634,13 +634,13 @@ export const pixivParser: PixivParser = {
       }
     }
 
-    yield* await yieldData(data, startPage);
+    yield* yieldData(data, startPage);
 
     // 第二页无新作品
     if (total === ARTWORKS_PER_PAGE) return;
     // 只有两页
     if (total < ARTWORKS_PER_PAGE * 2 || endPage - startPage === 1) {
-      yield* await yieldData(cache!, page);
+      yield* yieldData(cache!, page);
       return;
     }
 
@@ -652,19 +652,18 @@ export const pixivParser: PixivParser = {
       if (pageEarliestId >= earliestId) {
         // 返回重复数据说明无新作品了
         logger.info('getFollowLatestGenerator: got duplicate works');
-        yield* await yieldData(cache!, page - 1);
+        yield* yieldData(cache!, page - 1);
         break;
       }
 
       earliestId = pageEarliestId;
       total += ids.length;
       //生成前一页数据，保证已知total一直大于已下载作品数，避免判断下载已完成。
-      yield* await yieldData(cache!, page - 1);
+      yield* yieldData(cache!, page - 1);
       cache = data;
-      await sleep(1500);
     }
 
     // yield last page
-    yield* await yieldData(cache!, page - 1);
+    yield* yieldData(cache!, page - 1);
   }
 };

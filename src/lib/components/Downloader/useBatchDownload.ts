@@ -335,11 +335,16 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     controller = new AbortController();
     const signal = controller.signal;
 
+    let generator!: ReturnType<typeof getGenerator>;
     try {
-      const generator = getGenerator(fnId, ...restArgs);
-      generator && (await dispatchDownload(generator, signal));
+      generator = getGenerator(fnId, ...restArgs);
+      await dispatchDownload(generator, signal);
       writeLog('Info', 'Download complete.');
     } catch (error) {
+      logger.error(error);
+
+      generator?.return();
+
       // unexpected error, call `controller.abort()` to abort unfinished download
       if (!signal.aborted) {
         controller.abort(error);
@@ -408,7 +413,7 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     signal.addEventListener(
       'abort',
       () => {
-        downloadAbort?.(new CancelError());
+        downloadAbort?.(signal.reason);
         downloaderConfig.onDownloadAbort(tasks);
       },
       { once: true }
@@ -420,9 +425,14 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     const dlPromise: Promise<void>[] = [];
     let status429: boolean = false;
 
-    // TODO: 处理生成器错误
-    // TODO: race waitUntilDownloadComplete while waiting for generator.next();
-    for await (const { total, avaliable, invalid, unavaliable } of generator) {
+    let result: IteratorResult<YieldArtworkId, void> | void;
+
+    while (
+      (result = await Promise.race([generator.next(), waitUntilDownloadComplete])) &&
+      !result.done
+    ) {
+      const { total, avaliable, invalid, unavaliable } = result.value;
+
       logger.info(total, avaliable, invalid, unavaliable);
 
       signal.throwIfAborted();
@@ -431,6 +441,9 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
       setArtworkCount(total);
       invalid.length && addExcluded(invalid);
       unavaliable.length && addFailed(unavaliable.map((id) => ({ id, reason: 'Masked.' })));
+
+      // Avoid frequent network requests by the generator.
+      if (!avaliable.length) await Promise.race([sleep(1500), waitUntilDownloadComplete]);
 
       for (const id of avaliable) {
         if (status429) {
