@@ -21,6 +21,22 @@ export enum BookmarkRestrict {
   private
 }
 
+export interface UserData {
+  userId: string;
+  name: string;
+  image: string;
+  imageBig: string;
+  premium: boolean;
+  isFollowed: boolean;
+  isMypixiv: boolean;
+  isBlocking: boolean;
+  background: null | string;
+  sketchLiveId: null;
+  partial: number;
+  sketchLives: [];
+  commission: null;
+}
+
 export interface PreloadTagsItemData {
   tag: string;
   locked: boolean;

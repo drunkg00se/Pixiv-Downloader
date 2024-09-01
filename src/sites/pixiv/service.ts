@@ -5,7 +5,8 @@ import type {
   AllProfile,
   UgoiraMeta,
   ArtworkDetail,
-  FollowLatestMode
+  FollowLatestMode,
+  UserData
 } from './types';
 import { BookmarkRestrict } from './types';
 import { logger } from '@/lib/logger';
@@ -81,6 +82,10 @@ function createService() {
       const tagLang = config.get('tagLang');
       if (tagLang !== 'ja') params = '?lang=' + tagLang;
       return _requestJson<ArtworkDetail>('/ajax/illust/' + illustId + params);
+    },
+
+    getUserData(userId: string): Promise<UserData> {
+      return _requestJson<UserData>('/ajax/user/' + userId);
     }
   };
 }

@@ -4,10 +4,12 @@
   import type { ModalSettings, ModalComponent } from '@skeletonlabs/skeleton';
   import Changelog from './Modal/Changelog/Changelog.svelte';
   import Config from './Modal/Config/Config.svelte';
+  import Downloader from './Downloader/Downloader.svelte';
   import cog from '@/assets/cog.svg?src';
   import store from './Modal/Config/store';
   import t from '../lang';
   import { addStyleToShadow } from '../util';
+  import type { RegisterConfig } from './Downloader/DownloaderRegisterConfig';
 
   initializeStores();
 
@@ -31,6 +33,8 @@
   export let dark = false;
 
   export let updated = false;
+
+  export let downloaderConfig: RegisterConfig<any, true | undefined> | undefined;
 
   export function showChangelog() {
     modalStore.trigger(changelogModal);
@@ -97,6 +101,10 @@
   data-theme="skeleton"
 >
   <Modal {components} class="!p-0" />
+
+  {#if downloaderConfig}
+    <Downloader {downloaderConfig} />
+  {/if}
 
   {#if $store.showPopupButton}
     <button
