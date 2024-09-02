@@ -18,7 +18,7 @@ export const enum FilenameConfigAction {
 export const enum TagLanguage {
   JAPANESE = 'ja',
   CHINESE = 'zh',
-  TRADITIONAL_CHINESE = 'zh-tw',
+  TRADITIONAL_CHINESE = 'zh_tw',
   ENGLISH = 'en'
 }
 
