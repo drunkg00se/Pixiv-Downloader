@@ -9,7 +9,7 @@
   import store from './Modal/Config/store';
   import t from '../lang';
   import { addStyleToShadow } from '../util';
-  import type { RegisterConfig } from './Downloader/DownloaderRegisterConfig';
+  import type { BatchDownloadConfig } from './Downloader/useBatchDownload';
 
   initializeStores();
 
@@ -34,7 +34,7 @@
 
   export let updated = false;
 
-  export let downloaderConfig: RegisterConfig<any, true | undefined> | undefined;
+  export let downloaderConfig: BatchDownloadConfig<any, true | undefined> | undefined;
 
   export function showChangelog() {
     modalStore.trigger(changelogModal);
@@ -80,7 +80,7 @@
       return;
     }
 
-    // stopWebSitPropagation
+    // stopWebSitePropagation
     if (!event.composedPath().includes(root)) {
       event.stopImmediatePropagation();
       event.preventDefault();

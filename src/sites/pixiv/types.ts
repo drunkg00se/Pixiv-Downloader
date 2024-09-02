@@ -4,9 +4,6 @@ export type Category = 'illusts' | 'manga' | 'bookmarks';
 // 收藏是否公开
 export type BookmarksRest = 'show' | 'hide';
 
-// 'all'表示下载全部收藏
-export type PdlRest = BookmarksRest | 'all';
-
 export type FollowLatestMode = 'all' | 'r18';
 
 // 作品分类

@@ -1,9 +1,14 @@
 <script lang="ts">
   import { fade, fly, slide } from 'svelte/transition';
-  import { ProgressBar } from '@skeletonlabs/skeleton';
-  import { TabGroup, Tab, ProgressRadial } from '@skeletonlabs/skeleton';
-  import { InputChip } from '@skeletonlabs/skeleton';
-  import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
+  import {
+    TabGroup,
+    Tab,
+    ProgressRadial,
+    InputChip,
+    RadioGroup,
+    RadioItem,
+    ProgressBar
+  } from '@skeletonlabs/skeleton';
   import optionStore from './store';
   import {
     defineBatchDownload,
@@ -11,13 +16,14 @@
     type BatchDownloadConfig
   } from './useBatchDownload';
   import { logger } from '@/lib/logger';
+  import { nonNegativeInt } from '../Actions/nonNegativeInt';
+  import t from '@/lib/lang';
+
   import downloadSvg from '@/assets/download.svg?src';
   import stopSvg from '@/assets/close.svg?src';
   import playSvg from '@/assets/play-circle-outline.svg?src';
   import stopOutLineSvg from '@/assets/stop-circle-outline.svg?src';
   import downloadMultipleSvg from '@/assets/download-multiple.svg?src';
-  import { nonNegativeInt } from '../Actions/nonNegativeInt';
-  import t from '@/lib/lang';
 
   type FunctionKeys<T> = {
     [K in keyof T]: T[K] extends Function ? K : never;
@@ -118,7 +124,7 @@
       let nextUrl: string;
 
       //@ts-expect-error navigation
-      navigation.addEventListener('navigatesuccess', (evt) => {
+      navigation.addEventListener('navigatesuccess', () => {
         // avoid updating when navigating to the same URL.
         prevUrl !== nextUrl && updatePageConfig(nextUrl);
       });

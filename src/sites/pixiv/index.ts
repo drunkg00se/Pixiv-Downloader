@@ -1,15 +1,12 @@
 import { SiteInject } from '../base';
 import { observerCallback } from './observerCB';
-import { GM_addStyle } from '$';
-import downloadBar from '@/assets/styles/downloadBar.scss?inline';
-import checkbox from '@/assets/styles/checkbox.scss?inline';
 import { historyDb, type HistoryData } from '@/lib/db';
 import { pixivParser, type PixivMeta } from './parser';
 import type {
   BatchDownloadConfig,
   GenerateIdWithValidation
 } from '@/lib/components/Downloader/useBatchDownload';
-import { IllustType, type Category } from './types';
+import { IllustType, type BookmarksRest, type Category } from './types';
 import { downloader } from '@/lib/downloader';
 import { PixivDownloadConfig } from './downloadConfigBuilder';
 import { getSelfId } from './helpers/getSelfId';
@@ -25,13 +22,6 @@ export class Pixiv extends SiteInject {
       childList: true,
       subtree: true
     });
-  }
-
-  protected injectStyle(): void {
-    super.injectStyle();
-
-    GM_addStyle(checkbox);
-    GM_addStyle(downloadBar);
   }
 
   protected observeColorScheme() {
@@ -205,7 +195,7 @@ export class Pixiv extends SiteInject {
                 userId: string,
                 category: Category,
                 tag: string,
-                bookmarkRest: 'hide' | 'show' = 'show'
+                bookmarkRest: BookmarksRest = 'show'
               ) => {
                 if (category === 'bookmarks') {
                   return pixivParser.taggedArtworkGenerator(

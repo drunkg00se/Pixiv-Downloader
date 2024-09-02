@@ -1,15 +1,11 @@
 import t from '@/lib/lang';
-import { GM_addStyle, GM_registerMenuCommand } from '$';
+import { GM_registerMenuCommand } from '$';
 import { type ConfigData, config } from '@/lib/config';
-
 import App from '@/lib/components/App.svelte';
+import { type BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
+
 // @ts-expect-error no-declaration
 import { create_custom_element } from 'svelte/internal';
-
-import util from '@/assets/styles/util.scss?inline';
-import theme from '@/assets/styles/theme.scss?inline';
-import downloadButton from '@/assets/styles/downloadButton.scss?inline';
-import { type BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 
 type AppElement = HTMLElement & {
   dark: boolean;
@@ -77,8 +73,6 @@ export abstract class SiteInject {
   }
 
   protected injectStyle() {
-    [util, theme, downloadButton].forEach((style) => GM_addStyle(style));
-
     (
       [
         'pdl-btn-self-bookmark-left',
