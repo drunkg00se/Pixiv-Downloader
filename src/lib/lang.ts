@@ -105,6 +105,38 @@ const zh = {
     }
   },
 
+  downloader: {
+    category: {
+      tab_name: '类别',
+      filter: {
+        exclude_downloaded: '排除已下载',
+        download_all_pages: '下载所有页',
+        download_selected_pages: '自定义页数',
+        pixiv_illust: '插画',
+        pixiv_manga: '漫画',
+        pixiv_ugoira: '动图'
+      }
+    },
+
+    tag_filter: {
+      tab_name: '标签',
+      placeholder: {
+        blacklist_tag: '黑名单，将排除含有以下标签的作品。',
+        whitelist_tag: '白名单，只下载包含以下标签的作品。'
+      }
+    },
+
+    download_type: {
+      stop: '停止',
+      pixiv_works: '作品',
+      pixiv_bookmark: '收藏',
+      pixiv_bookmark_public: '公开收藏',
+      pixiv_bookmark_private: '不公开收藏',
+      pixiv_follow_latest_all: '全部',
+      pixiv_follow_latest_r18: 'R-18'
+    }
+  },
+
   button: {
     setting: '设置',
     download_stop: '停止',
@@ -228,6 +260,36 @@ const en: typeof zh = {
         feedback_desc: `If you encounter any issues or have suggestions for improvements, feel free to provide feedback <a href="https://sleazyfork.org/zh-CN/scripts/432150-pixiv-downloader/feedback" target="_blank" class=" anchor">here</a>.`,
         donate_desc: '如果脚本有帮助到你，欢迎扫码请我喝杯可乐 ^_^'
       }
+    }
+  },
+
+  downloader: {
+    category: {
+      tab_name: 'Category',
+      filter: {
+        exclude_downloaded: 'Exclude Downloaded',
+        download_all_pages: 'All Pages',
+        download_selected_pages: 'Custom Pages',
+        pixiv_illust: 'Illustration',
+        pixiv_manga: 'Manga',
+        pixiv_ugoira: 'Ugoira'
+      }
+    },
+    tag_filter: {
+      tab_name: 'Tags',
+      placeholder: {
+        blacklist_tag: 'Blacklist: Exclude works with these tags.',
+        whitelist_tag: 'Whitelist: Only download works with these tags.'
+      }
+    },
+    download_type: {
+      stop: 'Stop',
+      pixiv_works: 'Works',
+      pixiv_bookmark: 'Bookmarks',
+      pixiv_bookmark_public: 'Public',
+      pixiv_bookmark_private: 'Private',
+      pixiv_follow_latest_all: 'All',
+      pixiv_follow_latest_r18: 'R-18'
     }
   },
 

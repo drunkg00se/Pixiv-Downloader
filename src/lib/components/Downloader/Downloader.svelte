@@ -17,6 +17,7 @@
   import stopOutLineSvg from '@/assets/stop-circle-outline.svg?src';
   import downloadMultipleSvg from '@/assets/download-multiple.svg?src';
   import { nonNegativeInt } from '../Actions/nonNegativeInt';
+  import t from '@/lib/lang';
 
   type FunctionKeys<T> = {
     [K in keyof T]: T[K] extends Function ? K : never;
@@ -198,8 +199,12 @@
     {#if !$downloading}
       <div transition:slide class="downloader-filter">
         <TabGroup regionList="text-surface-700-200-token" class="text-sm">
-          <Tab bind:group={tabSet} name="tab1" value={0}>类别</Tab>
-          <Tab bind:group={tabSet} name="tab2" value={1}>标签</Tab>
+          <Tab bind:group={tabSet} name="category" value={0}
+            >{t('downloader.category.tab_name')}</Tab
+          >
+          <Tab bind:group={tabSet} name="tag_filter" value={1}
+            >{t('downloader.tag_filter.tab_name')}</Tab
+          >
 
           <svelte:fragment slot="panel">
             {#if tabSet === 0}
@@ -232,13 +237,14 @@
                       class="text-sm !py-[7px]"
                       bind:group={$downloadAllPages}
                       name="justify"
-                      value={true}>下载所有页</RadioItem
+                      value={true}>{t('downloader.category.filter.download_all_pages')}</RadioItem
                     >
                     <RadioItem
                       class="text-sm !py-[7px]"
                       bind:group={$downloadAllPages}
                       name="justify"
-                      value={false}>自定义页数</RadioItem
+                      value={false}
+                      >{t('downloader.category.filter.download_selected_pages')}</RadioItem
                     >
                   </RadioGroup>
                 </div>
@@ -289,14 +295,14 @@
                 allowUpperCase
                 name="blacklist"
                 chips="variant-filled-primary"
-                placeholder="Blacklist..."
+                placeholder={t('downloader.tag_filter.placeholder.blacklist_tag')}
               />
               <InputChip
                 bind:value={$whitelistTag}
                 allowUpperCase
                 name="whitelist"
                 chips="variant-filled-primary"
-                placeholder="Whitelist..."
+                placeholder={t('downloader.tag_filter.placeholder.whitelist_tag')}
                 class="my-4"
               />
             {/if}
@@ -392,7 +398,7 @@
             <i class="w-5">
               {@html stopSvg}
             </i>
-            <span>停止</span>
+            <span>{t('downloader.download_type.stop')}</span>
           </button>
         </div>
       {/if}

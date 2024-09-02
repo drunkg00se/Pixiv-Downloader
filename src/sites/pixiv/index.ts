@@ -15,6 +15,7 @@ import { PixivDownloadConfig } from './downloadConfigBuilder';
 import { getSelfId } from './helpers/getSelfId';
 import { regexp } from '@/lib/regExp';
 import { api } from './service';
+import t from '@/lib/lang';
 
 export class Pixiv extends SiteInject {
   public inject(): void {
@@ -80,7 +81,7 @@ export class Pixiv extends SiteInject {
           {
             id: 'exclude_downloaded',
             type: 'exclude',
-            name: '排除已下载',
+            name: t('downloader.category.filter.exclude_downloaded'),
             checked: false,
             fn(meta) {
               return !!meta.id && historyDb.has(meta.id);
@@ -89,7 +90,7 @@ export class Pixiv extends SiteInject {
           {
             id: 'illust',
             type: 'include',
-            name: '插画',
+            name: t('downloader.category.filter.pixiv_illust'),
             checked: true,
             fn(meta) {
               return meta.illustType === IllustType.illusts;
@@ -98,7 +99,7 @@ export class Pixiv extends SiteInject {
           {
             id: 'manga',
             type: 'include',
-            name: '漫画',
+            name: t('downloader.category.filter.pixiv_manga'),
             checked: true,
             fn(meta) {
               return meta.illustType === IllustType.manga;
@@ -107,7 +108,7 @@ export class Pixiv extends SiteInject {
           {
             id: 'ugoira',
             type: 'include',
-            name: '动图',
+            name: t('downloader.category.filter.pixiv_ugoira'),
             checked: true,
             fn(meta) {
               return meta.illustType === IllustType.ugoira;
@@ -122,7 +123,7 @@ export class Pixiv extends SiteInject {
 
       pageMatch: [
         {
-          name: '个人页',
+          name: 'my_page',
           match(url) {
             const userIdMatch =
               /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/.exec(url);
@@ -134,14 +135,14 @@ export class Pixiv extends SiteInject {
           genPageId: [
             {
               id: 'self_bookmark_public',
-              name: '公开收藏',
+              name: t('downloader.download_type.pixiv_bookmark_public'),
               fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
                 return pixivParser.bookmarkGenerator(...args, getSelfId());
               }
             },
             {
               id: 'self_bookmark_private',
-              name: '不公开收藏',
+              name: t('downloader.download_type.pixiv_bookmark_private'),
               fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
                 return pixivParser.bookmarkGenerator(...args, getSelfId(), 'hide');
               }
@@ -149,12 +150,12 @@ export class Pixiv extends SiteInject {
           ]
         },
         {
-          name: '用户页',
+          name: 'user_page',
           match: /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/,
           genPageId: [
             {
               id: 'works',
-              name: '作品',
+              name: t('downloader.download_type.pixiv_works'),
               fn: (...args: Parameters<typeof pixivParser.illustMangaGenerator>) => {
                 const userIdMatch =
                   /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/.exec(
@@ -167,7 +168,7 @@ export class Pixiv extends SiteInject {
             },
             {
               id: 'bookmark',
-              name: '收藏',
+              name: t('downloader.download_type.pixiv_bookmark'),
               fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
                 const userIdMatch =
                   /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/.exec(
@@ -181,19 +182,19 @@ export class Pixiv extends SiteInject {
           ]
         },
         {
-          name: '已关注用户的作品',
+          name: 'follow_latest',
           match: regexp.followLatest,
           genPageId: [
             {
               id: 'follow_latest_all',
-              name: '全部',
+              name: t('downloader.download_type.pixiv_follow_latest_all'),
               fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
                 return pixivParser.followLatestGenerator(...args, 'all');
               }
             },
             {
               id: 'follow_latest_r18',
-              name: 'R-18',
+              name: t('downloader.download_type.pixiv_follow_latest_r18'),
               fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
                 return pixivParser.followLatestGenerator(...args, 'r18');
               }
