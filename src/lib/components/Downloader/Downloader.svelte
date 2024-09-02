@@ -50,7 +50,12 @@
     if (typeof downloaderConfig.avatar === 'string') {
       src = downloaderConfig.avatar;
     } else {
-      src = await downloaderConfig.avatar(url);
+      if (url in avatarCache) {
+        src = avatarCache[url];
+      } else {
+        src = await downloaderConfig.avatar(url);
+        avatarCache[url] = src;
+      }
     }
 
     // only update the avatar if the src has changed.
@@ -166,6 +171,7 @@
   let stopDownloadEl: HTMLDivElement;
   let avatarEl: HTMLImageElement;
 
+  const avatarCache: Record<string, string> = {};
   let avatarUpdated: Promise<string | null>;
   let updateAvatarAfterDownload: string;
 
