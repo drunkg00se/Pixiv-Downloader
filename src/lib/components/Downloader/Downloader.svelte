@@ -149,7 +149,7 @@
       };
 
       history.pushState = rewrite('pushState');
-      history.pushState = rewrite('replaceState');
+      history.replaceState = rewrite('replaceState');
     }
   }
 

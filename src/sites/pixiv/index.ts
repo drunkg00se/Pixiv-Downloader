@@ -13,6 +13,7 @@ import { getSelfId } from './helpers/getSelfId';
 import { regexp } from '@/lib/regExp';
 import { api } from './service';
 import t from '@/lib/lang';
+import { logger } from '@/lib/logger';
 
 export class Pixiv extends SiteInject {
   public inject(): void {
@@ -59,7 +60,7 @@ export class Pixiv extends SiteInject {
           const userData = await api.getUserData(userId);
           return userData.imageBig;
         } catch (error) {
-          console.log(error);
+          logger.error(error);
           return '';
         }
       },
@@ -103,9 +104,7 @@ export class Pixiv extends SiteInject {
             }
           }
         ],
-
         enableTagFilter: true,
-
         filterWhenGenerateIngPage: true
       },
 
@@ -119,6 +118,7 @@ export class Pixiv extends SiteInject {
             const userId = userIdMatch[1] || userIdMatch[2];
             return userId === getSelfId();
           },
+
           genPageId: [
             {
               id: 'self_bookmark_public',
@@ -127,6 +127,7 @@ export class Pixiv extends SiteInject {
                 return pixivParser.bookmarkGenerator(...args, getSelfId());
               }
             },
+
             {
               id: 'self_bookmark_private',
               name: t('downloader.download_type.pixiv_bookmark_private'),
@@ -136,6 +137,7 @@ export class Pixiv extends SiteInject {
             }
           ]
         },
+
         {
           name: 'user_page',
           match: regexp.userPage,
@@ -150,6 +152,7 @@ export class Pixiv extends SiteInject {
                 return pixivParser.illustMangaGenerator(...args, userId);
               }
             },
+
             {
               id: 'bookmark',
               name: t('downloader.download_type.pixiv_bookmark'),
@@ -162,6 +165,7 @@ export class Pixiv extends SiteInject {
             }
           ]
         },
+
         {
           name: 'follow_latest',
           match: regexp.followLatest,
@@ -173,6 +177,7 @@ export class Pixiv extends SiteInject {
                 return pixivParser.followLatestGenerator(...args, 'all');
               }
             },
+
             {
               id: 'follow_latest_r18',
               name: t('downloader.download_type.pixiv_follow_latest_r18'),
@@ -182,6 +187,7 @@ export class Pixiv extends SiteInject {
             }
           ]
         },
+
         {
           name: 'download_specific_tag',
           match: () => false, // use for user tag download
