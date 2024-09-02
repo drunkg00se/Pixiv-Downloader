@@ -228,7 +228,7 @@ export class Pixiv extends SiteInject {
       ],
 
       parseMetaByArtworkId(id) {
-        return pixivParser.parse(id);
+        return pixivParser.parse(id, true);
       },
 
       async downloadByArtworkId(meta, taskId) {

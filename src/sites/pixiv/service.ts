@@ -15,7 +15,7 @@ import { RequestError, JsonDataError } from '@/lib/error';
 
 function createService() {
   async function _requestJson<T>(url: string, init?: RequestInit): Promise<T> {
-    logger.info('fetch url:', url);
+    logger.info('Fetch url:', url);
     const res = await fetch(url, init);
     if (!res.ok) throw new RequestError(res.url, res.status);
 
@@ -31,13 +31,18 @@ function createService() {
 
     async getArtworkHtml(illustId: string): Promise<string> {
       logger.info('Fetch illust:', illustId);
-      let params = '';
-      const tagLang = config.get('tagLang');
-      if (tagLang !== 'ja') params = '?lang=' + tagLang;
+      const params = '?lang=' + config.get('tagLang');
 
       const res = await fetch('https://www.pixiv.net/artworks/' + illustId + params);
       if (!res.ok) throw new RequestError(res.url, res.status);
       return await res.text();
+    },
+
+    getArtworkDetail(illustId: string): Promise<ArtworkDetail> {
+      logger.info('Fetch illust:', illustId);
+      const params = '?lang=' + config.get('tagLang');
+
+      return _requestJson<ArtworkDetail>('/ajax/illust/' + illustId + params);
     },
 
     addBookmark(
@@ -74,13 +79,6 @@ function createService() {
 
     getUgoiraMeta(illustId: string): Promise<UgoiraMeta> {
       return _requestJson<UgoiraMeta>('/ajax/illust/' + illustId + '/ugoira_meta');
-    },
-
-    getArtworkDetail(illustId: string): Promise<ArtworkDetail> {
-      let params = '';
-      const tagLang = config.get('tagLang');
-      if (tagLang !== 'ja') params = '?lang=' + tagLang;
-      return _requestJson<ArtworkDetail>('/ajax/illust/' + illustId + params);
     },
 
     getUserData(userId: string): Promise<UserData> {

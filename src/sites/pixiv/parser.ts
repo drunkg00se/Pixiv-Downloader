@@ -8,7 +8,8 @@ import type {
   PreloadIllustData,
   Category,
   BookmarksRest,
-  FollowLatestMode
+  FollowLatestMode,
+  ArtworkDetail
 } from './types';
 import type { MediaMeta, SiteParser } from '../interface';
 import { getElementText } from '@/lib/util';
@@ -40,7 +41,7 @@ export interface PixivUgoiraMeta extends PixivMetaBase {
 export type PixivMeta = PixivIllustMeta | PixivUgoiraMeta;
 
 interface PixivParser extends SiteParser<PixivMeta> {
-  parse(id: string): Promise<PixivMeta>;
+  parse(id: string, ajax?: true): Promise<PixivMeta>;
   illustMangaGenerator: GenerateIdWithValidation<PixivMeta, string>;
   followLatestGenerator: GenerateIdWithValidation<PixivMeta, [FollowLatestMode]>;
   chunkGenerator: GenerateIdWithValidation<
@@ -67,18 +68,29 @@ interface PixivParser extends SiteParser<PixivMeta> {
 }
 
 export const pixivParser: PixivParser = {
-  async parse(illustId: string): Promise<PixivMeta> {
-    const htmlText = await api.getArtworkHtml(illustId);
+  async parse(illustId: string, ajax?: true): Promise<PixivMeta> {
+    let illustData: PreloadIllustData | ArtworkDetail;
+    let token: string;
 
-    const preloadDataText = htmlText.match(regexp.preloadData);
-    if (!preloadDataText) throw new Error('Fail to parse preload data: ' + illustId);
+    if (ajax) {
+      illustData = await api.getArtworkDetail(illustId);
+      token = '';
+    } else {
+      const htmlText = await api.getArtworkHtml(illustId);
 
-    const globalDataText = htmlText.match(regexp.globalData);
-    if (!globalDataText) throw new Error('Fail to parse global data: ' + illustId);
+      const preloadDataText = htmlText.match(regexp.preloadData);
+      if (!preloadDataText) throw new Error('Fail to parse preload data: ' + illustId);
 
-    const preloadData = JSON.parse(preloadDataText[1]) as PreloadData;
-    const globalData = JSON.parse(globalDataText[1]) as GlobalData;
-    const illustData = preloadData.illust[illustId];
+      const globalDataText = htmlText.match(regexp.globalData);
+      if (!globalDataText) throw new Error('Fail to parse global data: ' + illustId);
+
+      const preloadData = JSON.parse(preloadDataText[1]) as PreloadData;
+      const globalData = JSON.parse(globalDataText[1]) as GlobalData;
+
+      illustData = preloadData.illust[illustId];
+      token = globalData.token;
+    }
+
     const {
       illustType,
       userName,
@@ -91,7 +103,6 @@ export const pixivParser: PixivParser = {
       urls,
       bookmarkData
     } = illustData;
-    const { token } = globalData;
 
     const tagsArr: string[] = [];
     const tagsTranslatedArr: string[] = [];
