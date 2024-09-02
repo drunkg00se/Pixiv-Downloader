@@ -58,9 +58,7 @@ export class Pixiv extends SiteInject {
   protected getBatchDownloadConfig(): BatchDownloadConfig<PixivMeta, true> {
     return {
       async avatar(url: string) {
-        const userIdMatch = /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/.exec(
-          url
-        );
+        const userIdMatch = regexp.userPage.exec(url);
 
         let userId: string;
         userIdMatch ? (userId = userIdMatch[1] || userIdMatch[2]) : (userId = getSelfId() ?? '');
@@ -125,8 +123,7 @@ export class Pixiv extends SiteInject {
         {
           name: 'my_page',
           match(url) {
-            const userIdMatch =
-              /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/.exec(url);
+            const userIdMatch = regexp.userPage.exec(url);
             if (!userIdMatch) return false;
 
             const userId = userIdMatch[1] || userIdMatch[2];
@@ -151,16 +148,13 @@ export class Pixiv extends SiteInject {
         },
         {
           name: 'user_page',
-          match: /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/,
+          match: regexp.userPage,
           genPageId: [
             {
               id: 'works',
               name: t('downloader.download_type.pixiv_works'),
               fn: (...args: Parameters<typeof pixivParser.illustMangaGenerator>) => {
-                const userIdMatch =
-                  /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/.exec(
-                    location.href
-                  )!;
+                const userIdMatch = regexp.userPage.exec(location.href)!;
                 const userId = userIdMatch[1] || userIdMatch[2];
 
                 return pixivParser.illustMangaGenerator(...args, userId);
@@ -170,10 +164,7 @@ export class Pixiv extends SiteInject {
               id: 'bookmark',
               name: t('downloader.download_type.pixiv_bookmark'),
               fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
-                const userIdMatch =
-                  /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/.exec(
-                    location.href
-                  )!;
+                const userIdMatch = regexp.userPage.exec(location.href)!;
                 const userId = userIdMatch[1] || userIdMatch[2];
 
                 return pixivParser.bookmarkGenerator(...args, userId);
