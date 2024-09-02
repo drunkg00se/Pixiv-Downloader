@@ -29,25 +29,21 @@
     [K in keyof T]: T[K] extends Function ? K : never;
   }[keyof T];
 
-  export let downloaderConfig: BatchDownloadConfig<any, true | undefined>;
-
-  let pageConfig: BatchDownloadConfig<any, true | undefined>['pageMatch'][number] | null;
-
-  // dom binding
-  let startDownloadEl: HTMLDivElement;
-  let stopDownloadEl: HTMLDivElement;
-  let avatarEl: HTMLImageElement;
-
-  let avatarUpdated: Promise<string | null>;
-
-  let tabSet: number = 0;
-  let showDownloadMenu = false;
-
-  const { selectedFilters, blacklistTag, whitelistTag, downloadAllPages, pageStart, pageEnd } =
-    optionStore;
+  function initFilterStore() {
+    Array.isArray($selectedFilters) ||
+      ($selectedFilters = downloaderConfig.filterOption.filters
+        .filter((filter) => filter.checked)
+        .map((filter) => filter.id));
+  }
 
   async function updateAvatarSrc(url: string) {
     if (!downloaderConfig.avatar) return;
+
+    // don't update avatar during download.
+    if ($downloading) {
+      updateAvatarAfterDownload = url;
+      return;
+    }
 
     let src: string | null;
 
@@ -73,18 +69,7 @@
     };
   }
 
-  function registerConfig() {
-    // initial filters store
-    Array.isArray($selectedFilters) ||
-      ($selectedFilters = downloaderConfig.filterOption.filters
-        .filter((filter) => filter.checked)
-        .map((filter) => filter.id));
-
-    defineBatchDownload(downloaderConfig);
-    updatePageConfig(location.href);
-  }
-
-  function updatePageConfig(url: string) {
+  function onUrlChange(url: string) {
     logger.info('Navigating to ', url);
 
     if (!downloaderConfig) return;
@@ -116,6 +101,7 @@
     }
 
     pageConfig = null;
+    updateAvatarAfterDownload = '';
   }
 
   function watchUrlChange() {
@@ -126,7 +112,7 @@
       //@ts-expect-error navigation
       navigation.addEventListener('navigatesuccess', () => {
         // avoid updating when navigating to the same URL.
-        prevUrl !== nextUrl && updatePageConfig(nextUrl);
+        prevUrl !== nextUrl && onUrlChange(nextUrl);
       });
 
       //@ts-expect-error navigation
@@ -142,7 +128,7 @@
           const res = oriHistory.apply(this, args);
           const navigateUrl = location.href;
 
-          currentUrl !== navigateUrl && updatePageConfig(navigateUrl);
+          currentUrl !== navigateUrl && onUrlChange(navigateUrl);
 
           return res;
         };
@@ -168,18 +154,42 @@
     }
   }
 
-  registerConfig();
-  watchUrlChange();
+  export let downloaderConfig: BatchDownloadConfig<any, true | undefined>;
 
+  let pageConfig: BatchDownloadConfig<any, true | undefined>['pageMatch'][number] | null;
+
+  const { selectedFilters, blacklistTag, whitelistTag, downloadAllPages, pageStart, pageEnd } =
+    optionStore;
+
+  // dom binding
+  let startDownloadEl: HTMLDivElement;
+  let stopDownloadEl: HTMLDivElement;
+  let avatarEl: HTMLImageElement;
+
+  let avatarUpdated: Promise<string | null>;
+  let updateAvatarAfterDownload: string;
+
+  let tabSet: number = 0;
+  let showDownloadMenu = false;
+
+  initFilterStore();
+
+  defineBatchDownload(downloaderConfig);
   const { artworkCount, successd, failed, excluded, downloading, log, batchDownload, abort } =
     useBatchDownload();
 
-  // alert before unload while downloading
+  watchUrlChange();
+  onUrlChange(location.href);
+
   downloading.subscribe((val) => {
     if (val) {
+      // alert before unload while downloading
       window.addEventListener('beforeunload', beforeUnloadHandler);
     } else {
       window.removeEventListener('beforeunload', beforeUnloadHandler);
+
+      // update avatar if downloader still visible after download complete.
+      updateAvatarAfterDownload && pageConfig && updateAvatarSrc(updateAvatarAfterDownload);
     }
   });
 
