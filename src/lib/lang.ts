@@ -138,23 +138,9 @@ const zh = {
   },
 
   button: {
-    setting: '设置',
-    download_stop: '停止',
-    download_works: '作品',
-    download_bookmarks: '收藏',
-    download_bookmarks_public: '公开',
-    download_bookmarks_private: '不公开',
-    download_all_one_page: '全部（单页）',
-    download_all: '全部（批量）',
-    download_r18_one_page: 'R-18（单页）',
-    download_r18: 'R-18（批量）'
+    setting: '设置'
   },
-  checkbox: {
-    filter_exclude_downloaded: '排除已下载图片',
-    filter_illusts: '插画',
-    filter_manga: '漫画',
-    filter_ugoira: '动图'
-  },
+
   text: {
     confirm_clear_history: '真的要清除历史记录吗？'
   }
@@ -294,22 +280,7 @@ const en: typeof zh = {
   },
 
   button: {
-    setting: 'Setting',
-    download_stop: 'Stop',
-    download_works: 'Works',
-    download_bookmarks: 'Bookmarks',
-    download_bookmarks_public: 'Public',
-    download_bookmarks_private: 'Private',
-    download_all_one_page: 'All (one page)',
-    download_all: 'All',
-    download_r18_one_page: 'R-18 (one page)',
-    download_r18: 'R-18'
-  },
-  checkbox: {
-    filter_exclude_downloaded: 'Exclude downloaded',
-    filter_illusts: 'Illustrations',
-    filter_manga: 'Manga',
-    filter_ugoira: 'Ugoira'
+    setting: 'Setting'
   },
 
   text: {

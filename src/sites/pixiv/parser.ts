@@ -214,7 +214,7 @@ export const pixivParser: PixivParser = {
     userId: string,
     category: Category,
     tag: string,
-    bookmarkRest: 'show' | 'hide' = 'show'
+    bookmarkRest: BookmarksRest = 'show'
   ) {
     const ARTWORKS_PER_PAGE = 48;
     const [startPage = null, endPage = null] = pageRange ?? [];
@@ -287,7 +287,7 @@ export const pixivParser: PixivParser = {
     pageRange: [start: number, end: number] | null,
     checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
     userId: string,
-    bookmarkRest: 'show' | 'hide' = 'show',
+    bookmarkRest: BookmarksRest = 'show',
     tag: string = ''
   ) {
     yield* this.chunkGenerator(pageRange, checkValidity, userId, 'bookmarks', tag, bookmarkRest);
@@ -299,7 +299,7 @@ export const pixivParser: PixivParser = {
     userId: string,
     category: Category,
     tag: string,
-    bookmarkRest: 'hide' | 'show' = 'show'
+    bookmarkRest: BookmarksRest = 'show'
   ) {
     if (category === 'bookmarks') {
       yield* this.bookmarkGenerator(pageRange, checkValidity, userId, bookmarkRest, tag);

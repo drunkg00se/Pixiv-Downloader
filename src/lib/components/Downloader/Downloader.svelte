@@ -323,7 +323,9 @@
         <div
           bind:this={startDownloadEl}
           transition:fade={{ duration: 250 }}
-          on:introstart={() => startDownloadEl.classList.remove('absolute')}
+          on:introstart={() =>
+            // required when the transition reverses
+            startDownloadEl.classList.remove('absolute')}
           on:outrostart={() => startDownloadEl.classList.add('absolute')}
           class="flex justify-end flex-grow w-full gap-4"
         >
