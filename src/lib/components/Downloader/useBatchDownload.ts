@@ -226,8 +226,6 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
       if (reason instanceof Error || typeof reason === 'string') {
         writeLog('Fail', id, reason);
-      } else {
-        logger.error(id, reason);
       }
 
       return val;
@@ -423,9 +421,21 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     const { parseMetaByArtworkId, downloadByArtworkId } = downloaderConfig;
     const { filterWhenGenerateIngPage } = downloaderConfig.filterOption;
     const dlPromise: Promise<void>[] = [];
+    let result: IteratorResult<YieldArtworkId, void> | void;
     let status429: boolean = false;
 
-    let result: IteratorResult<YieldArtworkId, void> | void;
+    const failedHanlderFactory = (id: string) => {
+      return (reason: any) => {
+        if (!signal.aborted) {
+          addFailed({ id, reason });
+          reason && logger.error(reason);
+
+          if (reason instanceof RequestError && reason.status === 429) {
+            status429 = true;
+          }
+        }
+      };
+    };
 
     while (
       (result = await Promise.race([generator.next(), waitUntilDownloadComplete])) &&
@@ -447,19 +457,12 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
       for (const id of avaliable) {
         if (status429) {
-          writeLog('Error', new Error('Http status: 429'));
+          writeLog('Error', new Error('Http status: 429, wait for 30 seconds.'));
           await Promise.race([sleep(30000), waitUntilDownloadComplete]);
           status429 = false;
         }
 
-        const artworkMeta = await parseMetaByArtworkId(id).catch(function handleFailed(
-          reason: any
-        ) {
-          if (!signal.aborted) {
-            addFailed({ id, reason });
-            reason && logger.error(reason);
-          }
-        });
+        const artworkMeta = await parseMetaByArtworkId(id).catch(failedHanlderFactory(id));
 
         signal.throwIfAborted();
         if (!artworkMeta) continue;
@@ -476,21 +479,9 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
         const taskId = generateTaskID(id);
         const processDownload = downloadByArtworkId(artworkMeta, taskId)
-          .then(
-            function handleSucccess() {
-              !signal.aborted && addSuccessd(id);
-            },
-            function handleFailed(reason) {
-              if (!signal.aborted) {
-                addFailed({ id, reason });
-                reason && logger.error(reason);
-
-                if (reason instanceof RequestError && reason.response.status === 429) {
-                  status429 = true;
-                }
-              }
-            }
-          )
+          .then(function handleSucccess() {
+            !signal.aborted && addSuccessd(id);
+          }, failedHanlderFactory(id))
           .finally(function removeTask() {
             const idx = tasks.findIndex((storeId) => storeId === id);
             idx !== -1 && tasks.splice(idx, 1);

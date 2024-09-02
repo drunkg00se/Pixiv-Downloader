@@ -17,8 +17,7 @@ function createService() {
   async function _requestJson<T>(url: string, init?: RequestInit): Promise<T> {
     logger.info('fetch url:', url);
     const res = await fetch(url, init);
-    if (!res.ok)
-      throw new RequestError('Request ' + url + ' failed with status code ' + res.status, res);
+    if (!res.ok) throw new RequestError(res.url, res.status);
 
     const data: PixivAjaxResponse<T> = await res.json();
     if (data.error) throw new JsonDataError(data.message);
@@ -37,7 +36,7 @@ function createService() {
       if (tagLang !== 'ja') params = '?lang=' + tagLang;
 
       const res = await fetch('https://www.pixiv.net/artworks/' + illustId + params);
-      if (!res.ok) throw new RequestError('Request failed with status code ' + res.status, res);
+      if (!res.ok) throw new RequestError(res.url, res.status);
       return await res.text();
     },
 

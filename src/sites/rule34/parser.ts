@@ -6,7 +6,7 @@ export type Rule34Meta = MediaMeta & { character: string };
 export const rule34Parser: SiteParser<Rule34Meta> = {
   async parse(id: string): Promise<Rule34Meta> {
     const res = await fetch('index.php?page=post&s=view&id=' + id);
-    if (!res.ok) throw new RequestError('Request failed with status code ' + res.status, res);
+    if (!res.ok) throw new RequestError(res.url, res.status);
     const html = await res.text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
 

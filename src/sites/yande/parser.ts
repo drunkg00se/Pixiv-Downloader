@@ -59,7 +59,7 @@ export type YandeMeta = MediaMeta & { character: string };
 export const yandeParser: SiteParser<YandeMeta> = {
   async parse(id: string): Promise<YandeMeta> {
     const res = await fetch('/post/show/' + id);
-    if (!res.ok) throw new RequestError('Request failed with status code ' + res.status, res);
+    if (!res.ok) throw new RequestError(res.url, res.status);
     const html = await res.text();
 
     const matchImageData = html.match(/(?<=Post\.register_resp\().+(?=\);)/);
