@@ -2,6 +2,7 @@
   import type { SvelteComponent } from 'svelte';
   import creditCode from '@/assets/credit.png';
   import ModalWrapper from '../ModalWrapper.svelte';
+  import t from '@/lib/lang';
 
   const anchorFocus = `focus:!outline-none focus:decoration-wavy`;
   const anchor = `leading-loose anchor underline-offset-2 ${anchorFocus}`;
@@ -43,7 +44,7 @@
       class=" absolute right-0 top-0 {anchor}"
       target="_blank"
       href="https://sleazyfork.org/zh-CN/scripts/432150-pixiv-downloader/feedback"
-      >有问题or想建议？这里反馈</a
+      >{t('text.feedback')}</a
     >
   </footer>
 </ModalWrapper>

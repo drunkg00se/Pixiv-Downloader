@@ -142,7 +142,8 @@ const zh = {
   },
 
   text: {
-    confirm_clear_history: '真的要清除历史记录吗？'
+    confirm_clear_history: '真的要清除历史记录吗？',
+    feedback: '有问题or想建议？这里反馈'
   }
 };
 
@@ -284,7 +285,8 @@ const en: typeof zh = {
   },
 
   text: {
-    confirm_clear_history: 'Do you really want to clear history?'
+    confirm_clear_history: 'Do you really want to clear history?',
+    feedback: 'Feedback / Report an issue'
   }
 };
 
