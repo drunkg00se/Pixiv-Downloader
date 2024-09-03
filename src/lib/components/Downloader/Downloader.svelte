@@ -200,6 +200,11 @@
   });
 
   $: ifDownloaderCanShow = $downloading || !!pageConfig;
+  $: {
+    // prevent from showing menu again when avatar shows
+    if (!ifDownloaderCanShow) showDownloadMenu = false;
+  }
+
   $: btnOpacity = showDownloadMenu
     ? '[&>.avatar]:opacity-1'
     : '[&>.avatar]:opacity-50 [&>.avatar]:hover:opacity-80';
