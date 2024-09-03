@@ -6,11 +6,6 @@ import { replaceInvalidChar, unescapeHtml } from '@/lib/util';
 import dayjs from 'dayjs';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 
-// export interface BuildConfigOption {
-//   setBtnProgress: SetBtnProgress | ThumbnailButton['setProgress'];
-//   downloadPage?: number;
-// }
-
 export abstract class DownloadConfigBuilder<T extends MediaMeta> {
   constructor(protected meta: MediaMeta) {}
 

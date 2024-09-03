@@ -278,8 +278,8 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
     const { id, userId, artist, title, tags, tagsTranslated, createDate, pageCount } = this.meta;
     const currPage = page === undefined ? pageCount : page;
     const useTags = this.useTranslatedTags() ? tagsTranslated : tags;
-    const fArtist = this.normalizeString(artist);
-    const fTitle = this.normalizeString(title);
+    const fArtist = this.normalizeString(artist) || userId; // use userid as fallback when artist name is invalid, e.g. user 53928
+    const fTitle = this.normalizeString(title) || id;
     const fTags = this.normalizeString(useTags.join('_'));
 
     const replaceDate = (match: string, p1: string): string => {
