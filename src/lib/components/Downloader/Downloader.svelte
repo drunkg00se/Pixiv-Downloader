@@ -170,6 +170,8 @@
   let startDownloadEl: HTMLDivElement;
   let stopDownloadEl: HTMLDivElement;
   let avatarEl: HTMLImageElement;
+  let avatarProgressEl: HTMLDivElement;
+  let avatarDownloadIcon: HTMLElement;
 
   const avatarCache: Record<string, string> = {};
   let avatarUpdated: Promise<string | null>;
@@ -204,10 +206,6 @@
     // prevent from showing menu again when avatar shows
     if (!ifDownloaderCanShow) showDownloadMenu = false;
   }
-
-  $: btnOpacity = showDownloadMenu
-    ? '[&>.avatar]:opacity-1'
-    : '[&>.avatar]:opacity-50 [&>.avatar]:hover:opacity-80';
 
   $: processed = $successd.length + $failed.length + $excluded.length;
   $: downloadProgress = $artworkCount ? (processed / $artworkCount) * 100 : undefined;
@@ -438,19 +436,18 @@
 {#if ifDownloaderCanShow}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-
-  <!-- add `back-drop-0` to ensure `drop-shadow-xl` works properly on firefox -->
-  <!-- https://github.com/mdn/browser-compat-data/issues/17726 -->
   <div
     transition:fly={{ opacity: 0, x: 50 }}
-    class="size-14 rounded-full fixed bg-scroll right-4 top-36 drop-shadow-xl backdrop-blur-0 cursor-pointer {btnOpacity}"
+    class="size-14 rounded-full fixed right-4 top-36 drop-shadow-xl cursor-pointer hover:brightness-110 backdrop-blur-sm"
     on:click={() => {
       showDownloadMenu = !showDownloadMenu;
     }}
   >
     <div
       data-theme="skeleton"
-      class="avatar absolute -z-10 size-14 rounded-full overflow-hidden bg-scroll !bg-white/75 dark:!bg-surface-900/75 backdrop-blur-sm"
+      class="avatar absolute -z-10 size-14 rounded-full overflow-hidden bg-scroll transition-opacity duration-[250]"
+      class:opacity-70={!showDownloadMenu}
+      class:blur-[1px]={!showDownloadMenu}
     >
       {#await avatarUpdated then val}
         {#if val}
@@ -458,36 +455,53 @@
             bind:this={avatarEl}
             src={val}
             alt="batch download"
-            class=" object-cover object-center"
+            class="object-cover object-center"
           />
         {/if}
       {/await}
     </div>
 
     {#if $downloading && !showDownloadMenu}
-      <ProgressRadial
+      <div
+        transition:fade={{ duration: 250 }}
         class="!absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-        width="w-16"
-        stroke={32}
-        meter="stroke-primary-500"
-        track="stroke-primary-500/30"
-        fill="fill-primary-500"
-        strokeLinecap="butt"
-        value={downloadProgress}
-      ></ProgressRadial>
+      >
+        <ProgressRadial
+          width="w-16"
+          stroke={32}
+          meter="stroke-primary-500"
+          track="stroke-primary-500/30"
+          fill="fill-primary-500"
+          strokeLinecap="butt"
+          value={downloadProgress}
+        ></ProgressRadial>
+      </div>
     {/if}
 
-    <div
-      class="size-14 flex flex-col justify-center items-center px-3 font-bold text-[12px] leading-[14px] overflow-hidden text-surface-700-200-token"
-    >
+    <div class="size-14 flex justify-center items-center relative">
+      <!-- TODO: out-in transition -->
       {#if $downloading && $artworkCount && !showDownloadMenu}
-        <span class=" truncate max-w-full">{processed}</span>
-        <hr
-          class="!border-t-1 my-[1px] self-stretch !border-surface-700 dark:!border-surface-200"
-        />
-        <span class=" truncate max-w-full">{$artworkCount}</span>
+        <div
+          transition:fade={{ duration: 250 }}
+          bind:this={avatarProgressEl}
+          on:introstart={() => avatarProgressEl.classList.remove('absolute')}
+          on:outrostart={() => avatarProgressEl.classList.add('absolute')}
+          class="flex flex-col justify-center items-center px-3 font-bold text-[12px] leading-[14px] overflow-hidden text-surface-700-200-token"
+        >
+          <span class=" truncate max-w-full">{processed}</span>
+          <hr
+            class="!border-t-1 my-[1px] self-stretch !border-surface-700 dark:!border-surface-200"
+          />
+          <span class=" truncate max-w-full">{$artworkCount}</span>
+        </div>
       {:else if !showDownloadMenu}
-        <i class="w-6 fill-slate-700 dark:fill-slate-200 mt-4">
+        <i
+          transition:fade={{ duration: 250 }}
+          bind:this={avatarDownloadIcon}
+          on:introstart={() => avatarDownloadIcon.classList.remove('absolute')}
+          on:outrostart={() => avatarDownloadIcon.classList.add('absolute')}
+          class="w-6 fill-slate-700 dark:fill-slate-200 mix-blend-hard-light mt-4"
+        >
           {@html downloadMultipleSvg}
         </i>
       {/if}
