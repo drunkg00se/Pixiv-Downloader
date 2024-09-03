@@ -19,21 +19,15 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
   <article class="modal-body mt-4">
     <ul class="list-disc list-inside leading-loose">
-      <li>
-        新增: 支持新网站：<a class={anchor} href="https://yande.re/post" target="_blank">Yande.re</a
-        >。
-      </li>
-      <li>新增（Pixiv, Danbooru）: 现在会将作品简介保存到历史记录中。</li>
-      <li>新增（Pixiv）: 现在会单独记录多页插图每一页是否已下载。</li>
-      <li>新增（设置）: 现在可以调整Mp4格式动图的码率。</li>
-      <li>优化（设置）: 现在会在光标处插入文件名模板。</li>
-      <li>
-        <strong>实验性功能（Pixiv）：</strong>下载单页插图时为插图添加<a
-          class={anchor}
-          target="_blank"
-          href="https://www.pixiv.net/tags/pixivGlow2024">#pixivGlow2024</a
-        >动态效果，可在【设置】【其它】中开启。
-      </li>
+      <p>
+        重写了批量下载，请在Pixiv【用户页】【已关注用户的新作】点击页面右方头像进行下载。暂未支持下载搜索结果。
+      </p>
+      <li>新增: 现在批量下载支持自定义下载页数。</li>
+      <li>新增: 现在批量下载支持作品标签黑名单，白名单。</li>
+      <li>新增: 现在进行中断批量下载的页面跳转时会进行提示。</li>
+      <li>修复（Pixiv）: 无法下载【已关注用户的新作】最后一页的问题。</li>
+      <li>修复（Pixiv）: 无法正确获得繁体中文标签的问题。</li>
+      <li>修复（Pixiv）: 一些特殊字符导致保存失败的问题。</li>
     </ul>
   </article>
   <footer class="modal-footer mt-4 text-sm">
