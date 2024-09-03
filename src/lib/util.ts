@@ -4,22 +4,6 @@ export function sleep(delay: number): Promise<void> {
   });
 }
 
-export function wakeableSleep(delay: number): {
-  wake: () => void;
-  sleep: Promise<void>;
-} {
-  let wake: () => void = () => void {};
-  const sleep = new Promise<void>((r) => {
-    setTimeout(r, delay);
-    wake = r;
-  });
-
-  return {
-    wake,
-    sleep
-  };
-}
-
 export function replaceInvalidChar(str: string): string {
   if (typeof str !== 'string') throw new TypeError('expect string but got ' + typeof str);
   if (!str) return '';

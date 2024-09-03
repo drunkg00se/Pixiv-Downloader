@@ -2,12 +2,6 @@ import { createThumbnailBtn } from './thumbnailBtn';
 import { fixPixivPreviewer } from '../helpers/fixPixivPreviewer';
 import { regexp } from '@/lib/regExp';
 import { createTagListBtn } from './userPage/tagListButton';
-import {
-  createDownloadBar,
-  createFollowLatestDownloadBar,
-  createSearchDownloadbar,
-  removeDownloadBar
-} from './downloadBar';
 import { createToolbarBtn } from './artworksPage/toolbarButton';
 import { createWorkExpanedViewBtn } from './artworksPage/workExpanedViewButton';
 import { createPresentationBtn } from './artworksPage/presentationButton';
@@ -28,23 +22,9 @@ function pageActions() {
       createMangaViewerBtn(id);
       break;
     }
-    case !!(param = regexp.userPage.exec(pathname)): {
-      // 正则匹配项不同，param[1]可能是undefined
-      const id = param[1] || param[2];
-      createDownloadBar(id);
-      const matchTagPage = regexp.userPageTags.exec(pathname);
-      if (matchTagPage) {
-        createFrequentTagBtn();
-        createTagListBtn();
-      }
-      break;
-    }
-    case regexp.followLatest.test(pathname): {
-      createFollowLatestDownloadBar();
-      break;
-    }
-    case regexp.searchPage.test(pathname): {
-      createSearchDownloadbar();
+    case regexp.userPageTags.test(pathname): {
+      createFrequentTagBtn();
+      createTagListBtn();
       break;
     }
     case regexp.historyPage.test(pathname): {
@@ -52,7 +32,6 @@ function pageActions() {
       break;
     }
     default:
-      removeDownloadBar();
       break;
   }
 }

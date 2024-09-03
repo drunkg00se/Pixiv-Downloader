@@ -2,6 +2,7 @@ import downloadSvg from '@/assets/download.svg?src';
 import { addStyleToShadow } from '@/lib/util';
 import type { Category } from '@/sites/pixiv/types';
 import type { TagProps } from './artworkTagButton';
+import { useBatchDownload } from '../Downloader/useBatchDownload';
 
 export class TagListButton extends HTMLElement {
   constructor(
@@ -61,6 +62,24 @@ export class TagListButton extends HTMLElement {
     const btn = shadowRoot.querySelector('button')!;
     this.bindValue(btn, this.getTagProps());
     this.onClick && btn.addEventListener('click', this.onClick);
+
+    const { downloading, batchDownload } = useBatchDownload();
+
+    downloading.subscribe((val) => {
+      if (val) {
+        this.setAttribute('disabled', '');
+      } else {
+        this.removeAttribute('disabled');
+      }
+    });
+
+    this.addEventListener('click', (evt) => {
+      // prevent from navigating to specific tag page
+      evt.preventDefault();
+
+      const { userId, category, tag, rest } = this.getTagProps();
+      batchDownload('tagged_artwork', userId, category, tag, rest);
+    });
   }
 
   static get observedAttributes() {

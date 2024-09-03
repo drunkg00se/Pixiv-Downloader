@@ -1,4 +1,3 @@
-import { isDownloading, downloadBookmarksOrTags } from '@/sites/pixiv/helpers/batchDownload';
 import { TagListButton } from '@/lib/components/Pixiv/tagListButton';
 
 export function createTagListBtn() {
@@ -17,14 +16,11 @@ export function createTagListBtn() {
   tagElements.forEach((ele) => {
     if (ele.querySelector('pdl-tag-list-button')) return;
 
-    const btn = new TagListButton(ele.href, (evt) => {
+    const btn = new TagListButton(ele.href, () => {
       // 关闭modal
       closeBtn?.click();
-      downloadBookmarksOrTags(evt);
     });
 
-    // 如果正在下载，不显示hover样式和屏蔽点击事件
-    if (isDownloading) btn.setAttribute('disabled', '');
     ele.appendChild(btn);
   });
 }

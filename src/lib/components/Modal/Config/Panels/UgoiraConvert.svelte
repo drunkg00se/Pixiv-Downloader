@@ -4,6 +4,7 @@
   import store from '../store';
   import t from '@/lib/lang';
   import { env } from '@/lib/env';
+  import { nonNegativeInt } from '@/lib/components/Actions/nonNegativeInt';
 
   export let bg = 'bg-white/30 dark:bg-black/15';
   export let border = 'divide-y-[1px] *:border-surface-300-600-token';
@@ -19,44 +20,6 @@
 
   export let sectionSpace = `space-y-4`;
   export let sectionTitle = 'font-bold';
-
-  type NumberKeys<T> = {
-    [K in keyof T]: T[K] extends number ? K : never;
-  }[keyof T];
-
-  function validateNumber<T extends typeof $store>(
-    evt: Event & { currentTarget: EventTarget & HTMLInputElement },
-    key: NumberKeys<T>
-  ) {
-    const el = evt.currentTarget as HTMLInputElement;
-    if (el.type !== 'number') throw new Error('input.type must be number.');
-
-    if (!el.checkValidity()) {
-      if (/^[0-9]+$/.test(el.value)) {
-        store.update((config) => {
-          return { ...config, [key]: +el.max };
-        });
-      } else {
-        store.update((config) => {
-          return { ...config };
-        });
-      }
-    }
-  }
-
-  function setDefaultValueIfEmpty<T extends typeof $store>(
-    evt: Event & { currentTarget: EventTarget & HTMLInputElement },
-    key: NumberKeys<T>
-  ) {
-    const el = evt.currentTarget as HTMLInputElement;
-    if (el.type !== 'number') throw new Error('input.type must be number.');
-
-    if (el.value === '') {
-      store.update((config) => {
-        return { ...config, [key]: +el.min };
-      });
-    }
-  }
 </script>
 
 <div class={sectionSpace}>
@@ -123,8 +86,7 @@
           min="0"
           max="99"
           step="1"
-          on:input={(evt) => validateNumber(evt, 'webmQuality')}
-          on:blur={(evt) => setDefaultValueIfEmpty(evt, 'webmQuality')}
+          use:nonNegativeInt={{ store, key: 'webmQuality' }}
           bind:value={$store.webmQuality}
         />
       </li>
@@ -139,8 +101,7 @@
           min="1"
           max="99"
           step="1"
-          on:input={(evt) => validateNumber(evt, 'mp4Bitrate')}
-          on:blur={(evt) => setDefaultValueIfEmpty(evt, 'mp4Bitrate')}
+          use:nonNegativeInt={{ store, key: 'mp4Bitrate' }}
           bind:value={$store.mp4Bitrate}
         />
       </li>
@@ -164,8 +125,7 @@
               min="0"
               max="100"
               step="1"
-              on:input={(evt) => validateNumber(evt, 'webpQuality')}
-              on:blur={(evt) => setDefaultValueIfEmpty(evt, 'webpQuality')}
+              use:nonNegativeInt={{ store, key: 'webpQuality' }}
               bind:value={$store.webpQuality}
             />
           </li>
@@ -207,8 +167,7 @@
           min="0"
           max="256"
           step="1"
-          on:input={(evt) => validateNumber(evt, 'pngColor')}
-          on:blur={(evt) => setDefaultValueIfEmpty(evt, 'pngColor')}
+          use:nonNegativeInt={{ store, key: 'pngColor' }}
           bind:value={$store.pngColor}
         />
       </li>

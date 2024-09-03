@@ -2,6 +2,7 @@ import { downloadArtwork } from './downloadArtwork';
 import { SiteInject } from '../base';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
+import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 
 export class Rule34 extends SiteInject {
   protected inject() {
@@ -87,5 +88,10 @@ export class Rule34 extends SiteInject {
     query.addEventListener('change', (e) => {
       e.matches ? this.setModalDarkMode() : this.setModalLightMode();
     });
+  }
+
+  protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any, true | undefined> {
+    // TODO
+    return undefined;
   }
 }

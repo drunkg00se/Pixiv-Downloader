@@ -1,16 +1,18 @@
 export class RequestError extends Error {
-  public response: any;
+  public url: string;
+  public status: number;
 
-  constructor(message: string, response: any) {
-    super(message);
+  constructor(url: string, status: number) {
+    super(status + ' ' + url);
     this.name = 'RequestError';
-    this.response = response;
+    this.url = url;
+    this.status = status;
   }
 }
 
 export class CancelError extends Error {
   constructor() {
-    super('User aborted');
+    super('User aborted.');
     this.name = 'CancelError';
   }
 }

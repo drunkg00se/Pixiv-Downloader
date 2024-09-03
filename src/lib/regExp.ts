@@ -6,7 +6,6 @@ export const regexp = {
   bookmarkPage: /users\/(\d+)\/bookmarks\/artworks/,
   userPageTags: /users\/\d+\/(artworks|illustrations|manga|bookmarks(?=\/artworks))/,
   searchPage: /\/tags\/.*\/(artworks|illustrations|manga)/,
-  suscribePage: /bookmark_new_illust/,
   activityHref: /illust_id=(\d+)/,
   originSrcPageNum: /(?<=_p)\d+/,
   followLatest: /\/bookmark_new_illust(?:_r18)?\.php/,

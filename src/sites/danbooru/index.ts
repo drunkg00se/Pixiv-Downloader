@@ -3,6 +3,7 @@ import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadPoolArtwork } from './downloadPoolArtwork';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
+import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 
 export class Danbooru extends SiteInject {
   protected inject(): void {
@@ -97,5 +98,10 @@ export class Danbooru extends SiteInject {
         uaPreferDark ? this.setModalDarkMode() : this.setModalLightMode();
       });
     }
+  }
+
+  protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any, true | undefined> {
+    // TODO
+    return undefined;
   }
 }

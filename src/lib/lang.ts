@@ -105,24 +105,42 @@ const zh = {
     }
   },
 
+  downloader: {
+    category: {
+      tab_name: '类别',
+      filter: {
+        exclude_downloaded: '排除已下载',
+        download_all_pages: '下载所有页',
+        download_selected_pages: '自定义页数',
+        pixiv_illust: '插画',
+        pixiv_manga: '漫画',
+        pixiv_ugoira: '动图'
+      }
+    },
+
+    tag_filter: {
+      tab_name: '标签',
+      placeholder: {
+        blacklist_tag: '黑名单，将排除含有以下标签的作品。',
+        whitelist_tag: '白名单，只下载包含以下标签的作品。'
+      }
+    },
+
+    download_type: {
+      stop: '停止',
+      pixiv_works: '作品',
+      pixiv_bookmark: '收藏',
+      pixiv_bookmark_public: '公开收藏',
+      pixiv_bookmark_private: '不公开收藏',
+      pixiv_follow_latest_all: '全部',
+      pixiv_follow_latest_r18: 'R-18'
+    }
+  },
+
   button: {
-    setting: '设置',
-    download_stop: '停止',
-    download_works: '作品',
-    download_bookmarks: '收藏',
-    download_bookmarks_public: '公开',
-    download_bookmarks_private: '不公开',
-    download_all_one_page: '全部（单页）',
-    download_all: '全部（批量）',
-    download_r18_one_page: 'R-18（单页）',
-    download_r18: 'R-18（批量）'
+    setting: '设置'
   },
-  checkbox: {
-    filter_exclude_downloaded: '排除已下载图片',
-    filter_illusts: '插画',
-    filter_manga: '漫画',
-    filter_ugoira: '动图'
-  },
+
   text: {
     confirm_clear_history: '真的要清除历史记录吗？'
   }
@@ -231,23 +249,38 @@ const en: typeof zh = {
     }
   },
 
-  button: {
-    setting: 'Setting',
-    download_stop: 'Stop',
-    download_works: 'Works',
-    download_bookmarks: 'Bookmarks',
-    download_bookmarks_public: 'Public',
-    download_bookmarks_private: 'Private',
-    download_all_one_page: 'All (one page)',
-    download_all: 'All',
-    download_r18_one_page: 'R-18 (one page)',
-    download_r18: 'R-18'
+  downloader: {
+    category: {
+      tab_name: 'Category',
+      filter: {
+        exclude_downloaded: 'Exclude Downloaded',
+        download_all_pages: 'All Pages',
+        download_selected_pages: 'Custom Pages',
+        pixiv_illust: 'Illustration',
+        pixiv_manga: 'Manga',
+        pixiv_ugoira: 'Ugoira'
+      }
+    },
+    tag_filter: {
+      tab_name: 'Tags',
+      placeholder: {
+        blacklist_tag: 'Blacklist: Exclude works with these tags.',
+        whitelist_tag: 'Whitelist: Only download works with these tags.'
+      }
+    },
+    download_type: {
+      stop: 'Stop',
+      pixiv_works: 'Works',
+      pixiv_bookmark: 'Bookmarks',
+      pixiv_bookmark_public: 'Public',
+      pixiv_bookmark_private: 'Private',
+      pixiv_follow_latest_all: 'All',
+      pixiv_follow_latest_r18: 'R-18'
+    }
   },
-  checkbox: {
-    filter_exclude_downloaded: 'Exclude downloaded',
-    filter_illusts: 'Illustrations',
-    filter_manga: 'Manga',
-    filter_ugoira: 'Ugoira'
+
+  button: {
+    setting: 'Setting'
   },
 
   text: {

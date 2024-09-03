@@ -1,24 +1,11 @@
 import t from '@/lib/lang';
-import { GM_addStyle, GM_registerMenuCommand } from '$';
+import { GM_registerMenuCommand } from '$';
 import { type ConfigData, config } from '@/lib/config';
-
-import App from '@/lib/components/App.svelte';
-// @ts-expect-error no declare
-import { create_custom_element } from 'svelte/internal';
-
-import util from '@/assets/styles/util.scss?inline';
-import theme from '@/assets/styles/theme.scss?inline';
-import downloadButton from '@/assets/styles/downloadButton.scss?inline';
-
-type AppElement = HTMLElement & {
-  dark: boolean;
-  updated: boolean;
-  showChangelog(): void;
-  showSetting(): void;
-};
+import { type BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
+import { PdlApp } from '@/lib/components/App';
 
 export abstract class SiteInject {
-  private modal!: AppElement;
+  private modal!: PdlApp;
 
   constructor() {
     this.inject();
@@ -39,33 +26,21 @@ export abstract class SiteInject {
       },
       's'
     );
-
-    if (config.get('showMsg')) {
-      this.modal.setAttribute('updated', '');
-      config.set('showMsg', false);
-    }
   }
 
   protected injectApp() {
-    customElements.define(
-      'pdl-app',
-      create_custom_element(
-        App,
-        { dark: { type: 'Boolean' }, updated: { type: 'Boolean' } },
-        [],
-        ['showChangelog', 'showSetting'],
-        true
-      )
-    );
-    const modal = document.createElement('pdl-app') as AppElement;
+    const updated = config.get('showMsg');
+    updated && config.set('showMsg', false);
+
+    const downloaderConfig = this.getBatchDownloadConfig();
+
+    const modal = new PdlApp({ updated, downloaderConfig });
     document.body.append(modal);
 
     this.modal = modal;
   }
 
   protected injectStyle() {
-    [util, theme, downloadButton].forEach((style) => GM_addStyle(style));
-
     (
       [
         'pdl-btn-self-bookmark-left',
@@ -90,4 +65,8 @@ export abstract class SiteInject {
   }
 
   protected abstract observeColorScheme(): void;
+
+  protected abstract getBatchDownloadConfig():
+    | undefined
+    | BatchDownloadConfig<any, true | undefined>;
 }

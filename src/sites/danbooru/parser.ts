@@ -17,7 +17,7 @@ interface DanbooruParser extends SiteParser<DanbooruMeta> {
 export const danbooruParser: DanbooruParser = {
   async getDoc(url: string): Promise<Document> {
     const res = await fetch(url);
-    if (!res.ok) throw new RequestError('Request failed with status code ' + res.status, res);
+    if (!res.ok) throw new RequestError(res.url, res.status);
     const html = await res.text();
     return new DOMParser().parseFromString(html, 'text/html');
   },

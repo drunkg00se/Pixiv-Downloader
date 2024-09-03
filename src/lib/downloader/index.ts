@@ -104,7 +104,7 @@ function createDownloader(): Downloader {
 
         let err;
         if (error.status === 429) {
-          err = new RequestError('Too many request', error);
+          err = new RequestError(config.src, error.status);
         } else {
           err = new Error(`Download failed. ID: ${taskId}.`);
           logger.error(error);

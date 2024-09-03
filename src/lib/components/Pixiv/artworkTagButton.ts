@@ -1,6 +1,7 @@
 import downloadSvg from '@/assets/download.svg?src';
 import { addStyleToShadow } from '@/lib/util';
 import type { Category, BookmarksRest } from '@/sites/pixiv/types';
+import { useBatchDownload } from '../Downloader/useBatchDownload';
 
 export interface TagProps {
   userId: string;
@@ -92,6 +93,21 @@ export class ArtworkTagButton extends HTMLElement {
   </button>`;
 
     this.changeBtnColor();
+
+    const { downloading, batchDownload } = useBatchDownload();
+
+    downloading.subscribe((val) => {
+      if (val) {
+        this.setAttribute('disabled', '');
+      } else {
+        this.removeAttribute('disabled');
+      }
+    });
+
+    this.addEventListener('click', () => {
+      const { userId, category, tag, rest } = this.getTagProps();
+      batchDownload('tagged_artwork', userId, category, tag, rest);
+    });
   }
 
   connectedCallback() {

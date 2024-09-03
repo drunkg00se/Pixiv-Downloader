@@ -20,11 +20,8 @@ export function gmDownload(blob: Blob, downloadMeta: DownloadMeta): Promise<void
         if (downloadMeta.isAborted) {
           resolve();
         } else {
-          reject(
-            new Error(
-              `FileSave error: ${downloadMeta.config.path} because ${error.error} ${error.details ?? ''} `
-            )
-          );
+          console.error(error);
+          reject(new Error(`FileSave error: ${downloadMeta.config.path}`));
         }
       },
 

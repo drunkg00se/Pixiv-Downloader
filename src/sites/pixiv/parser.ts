@@ -1,6 +1,5 @@
 import type {
   UgoiraMeta,
-  UserPageWorksItem,
   UserPageData,
   UserPageIllustsData,
   PreloadData,
@@ -9,22 +8,16 @@ import type {
   PreloadIllustData,
   Category,
   BookmarksRest,
-  FollowLatestMode
+  FollowLatestMode,
+  ArtworkDetail
 } from './types';
-import type { FilterOption } from '@/sites/pixiv/observerCB/downloadBar';
 import type { MediaMeta, SiteParser } from '../interface';
-import type { FilteredIds } from './helpers/downloadByIds';
-import { getElementText, sleep } from '@/lib/util';
+import { getElementText } from '@/lib/util';
 import { IllustType } from './types';
 import { api } from '@/sites/pixiv/service';
 import { regexp } from '@/lib/regExp';
 import { logger } from '@/lib/logger';
-import { historyDb } from '@/lib/db';
-
-export interface chunksGenerator {
-  total: number;
-  generator: AsyncGenerator<FilteredIds, void, unknown>;
-}
+import type { GenerateIdWithValidation } from '@/lib/components/Downloader/useBatchDownload';
 
 interface PixivMetaBase extends MediaMeta {
   userId: string;
@@ -48,74 +41,56 @@ export interface PixivUgoiraMeta extends PixivMetaBase {
 export type PixivMeta = PixivIllustMeta | PixivUgoiraMeta;
 
 interface PixivParser extends SiteParser<PixivMeta> {
-  parse(id: string): Promise<PixivMeta>;
-  getFollowLatestGenerator(
-    filterOption: FilterOption,
-    mode: FollowLatestMode,
-    page?: number
-  ): Promise<chunksGenerator>;
-  getChunksGenerator(
-    userId: string,
-    category: Category,
-    tag: string,
-    rest: BookmarksRest,
-    filterOption: FilterOption
-  ): Promise<chunksGenerator>;
-  getAllWorksGenerator(userId: string, filterOption: FilterOption): Promise<chunksGenerator>;
-}
-
-function isValidIllustType(illustType: IllustType, option: FilterOption): boolean {
-  switch (illustType) {
-    case IllustType.illusts:
-      if (option.filterIllusts) return true;
-      break;
-    case IllustType.manga:
-      if (option.filterManga) return true;
-      break;
-    case IllustType.ugoira:
-      if (option.filterUgoira) return true;
-      break;
-    default:
-      throw new Error('Invalid filter type');
-  }
-  return false;
-}
-
-async function filterWorks(works: UserPageWorksItem[], option: FilterOption): Promise<FilteredIds> {
-  const obj: FilteredIds = {
-    unavaliable: [],
-    avaliable: [],
-    invalid: []
-  };
-
-  for (const work of works) {
-    if (!work.isBookmarkable) {
-      obj.unavaliable.push(work.id);
-    } else if (option.filterExcludeDownloaded && (await historyDb.has(work.id))) {
-      obj.invalid.push(work.id);
-    } else if (!isValidIllustType(work.illustType, option)) {
-      obj.invalid.push(work.id);
-    } else {
-      obj.avaliable.push(work.id);
-    }
-  }
-
-  return obj;
+  parse(id: string, ajax?: true): Promise<PixivMeta>;
+  illustMangaGenerator: GenerateIdWithValidation<PixivMeta, string>;
+  followLatestGenerator: GenerateIdWithValidation<PixivMeta, [FollowLatestMode]>;
+  chunkGenerator: GenerateIdWithValidation<
+    PixivMeta,
+    | [userId: string, category: 'bookmarks', tag: string, bookmarkRest: BookmarksRest]
+    | [userId: string, category: 'illusts' | 'manga', tag: string]
+  >;
+  bookmarkGenerator: GenerateIdWithValidation<
+    PixivMeta,
+    | [userId: string]
+    | [userId: string, bookmarkRest: BookmarksRest]
+    | [userId: string, bookmarkRest: BookmarksRest, tag: string]
+  >;
+  taggedArtworkGenerator: GenerateIdWithValidation<
+    PixivMeta,
+    | [
+        userId: string,
+        category: Extract<Category, 'bookmarks'>,
+        tag: string,
+        bookmarkRest: BookmarksRest
+      ]
+    | [userId: string, category: Exclude<Category, 'bookmarks'>, tag: string]
+  >;
 }
 
 export const pixivParser: PixivParser = {
-  async parse(illustId: string): Promise<PixivMeta> {
-    const htmlText = await api.getArtworkHtml(illustId);
+  async parse(illustId: string, ajax?: true): Promise<PixivMeta> {
+    let illustData: PreloadIllustData | ArtworkDetail;
+    let token: string;
 
-    const preloadDataText = htmlText.match(regexp.preloadData);
-    if (!preloadDataText) throw new Error('Fail to parse preload data.');
+    if (ajax) {
+      illustData = await api.getArtworkDetail(illustId);
+      token = '';
+    } else {
+      const htmlText = await api.getArtworkHtml(illustId);
 
-    const globalDataText = htmlText.match(regexp.globalData);
-    if (!globalDataText) throw new Error('Fail to parse global data.');
+      const preloadDataText = htmlText.match(regexp.preloadData);
+      if (!preloadDataText) throw new Error('Fail to parse preload data: ' + illustId);
 
-    const preloadData = JSON.parse(preloadDataText[1]) as PreloadData;
-    const globalData = JSON.parse(globalDataText[1]) as GlobalData;
-    const illustData = preloadData.illust[illustId];
+      const globalDataText = htmlText.match(regexp.globalData);
+      if (!globalDataText) throw new Error('Fail to parse global data: ' + illustId);
+
+      const preloadData = JSON.parse(preloadDataText[1]) as PreloadData;
+      const globalData = JSON.parse(globalDataText[1]) as GlobalData;
+
+      illustData = preloadData.illust[illustId];
+      token = globalData.token;
+    }
+
     const {
       illustType,
       userName,
@@ -128,7 +103,6 @@ export const pixivParser: PixivParser = {
       urls,
       bookmarkData
     } = illustData;
-    const { token } = globalData;
 
     const tagsArr: string[] = [];
     const tagsTranslatedArr: string[] = [];
@@ -175,191 +149,283 @@ export const pixivParser: PixivParser = {
     }
   },
 
-  async getFollowLatestGenerator(
-    filterOption: FilterOption,
-    mode: FollowLatestMode,
-    page?: number
-  ): Promise<chunksGenerator> {
-    const MAX_PAGE = 34;
-    const MAX_ILLUSTS_PER_PAGE = 60;
+  async *illustMangaGenerator(
+    pageRange: [start: number, end: number] | null,
+    checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
+    userId: string
+  ) {
+    const ARTWORKS_PER_PAGE = 48;
+    const profile = await api.getUserAllProfile(userId);
+    let ids: string[] = [];
 
-    let lastId: number;
-    let total: number;
-    let data: FollowLatest;
-    let cache: FollowLatest;
+    typeof profile.illusts === 'object' && ids.push(...Object.keys(profile.illusts));
+    typeof profile.manga === 'object' && ids.push(...Object.keys(profile.manga));
+    if (!ids.length) throw new Error(`User ${userId} has no illusts or mangas.`);
 
-    function findLastId(ids: string[]): number {
-      return Math.min(...ids.map((id) => Number(id)));
-    }
+    //Sort ids in descending order.
+    ids = ids.sort((a, b) => Number(b) - Number(a));
 
-    //关注作品少于60的情况,需要提前获得total
-    if (page === undefined) {
-      data = await api.getFollowLatestWorks(1, mode);
-      const ids = data.page.ids;
-      total = ids.length;
-      lastId = findLastId(ids);
+    // select page range id
+    let sliceStart: number;
+    let sliceEnd: number;
 
-      if (total === MAX_ILLUSTS_PER_PAGE) {
-        //可能作品数目刚好是60，所以需要检查第二页是否重复
-        const secondPageData = await api.getFollowLatestWorks(2, mode);
-        const secondIds = secondPageData.page.ids;
-        const secondLastId = findLastId(secondIds);
+    const [startPage = null, endPage = null] = pageRange ?? [];
+    let page = startPage ?? 1;
 
-        if (secondLastId < lastId) {
-          //非重复页
-          lastId = secondLastId;
-          cache = secondPageData;
-          total += secondIds.length;
+    startPage === null ? (sliceStart = 0) : (sliceStart = (startPage - 1) * ARTWORKS_PER_PAGE);
+    endPage === null ? (sliceEnd = ids.length) : (sliceEnd = endPage * ARTWORKS_PER_PAGE);
+
+    const selectedIds = ids.slice(sliceStart, sliceEnd);
+    if (!selectedIds.length) throw new RangeError(`Page ${page} exceeds the limit.`);
+
+    const baseUrl = `https://www.pixiv.net/ajax/user/${userId}/profile/illusts?`;
+    const total = selectedIds.length;
+
+    do {
+      const chunk: string[] = selectedIds.splice(0, ARTWORKS_PER_PAGE);
+      const queryStr =
+        chunk.map((id) => 'ids[]=' + id).join('&') +
+        `&work_category=illustManga&is_first_page=0&lang=ja`;
+
+      const data = await api.getJson<UserPageIllustsData>(baseUrl + queryStr);
+      const workDatas = Object.values(data.works).sort((a, b) => Number(b.id) - Number(a.id));
+
+      const avaliable: string[] = [];
+      const invalid: string[] = [];
+      const unavaliable: string[] = [];
+
+      for (let i = 0; i < workDatas.length; i++) {
+        const work = workDatas[i];
+        const { id, isMasked } = work;
+
+        if (isMasked) {
+          unavaliable.push(String(id)); // unavaliable id is number;
+          continue;
         }
+
+        const isValid = await checkValidity(work);
+        isValid ? avaliable.push(id) : invalid.push(id);
       }
-    } else {
-      data = await api.getFollowLatestWorks(page, mode);
-      total = data.page.ids.length;
-    }
 
-    async function* generateIds(): AsyncGenerator<FilteredIds & { total?: number }, void, unknown> {
-      yield await filterWorks(data.thumbnails.illust, filterOption);
+      yield {
+        total,
+        page,
+        avaliable,
+        invalid,
+        unavaliable
+      };
 
-      if (page === undefined) {
-        //第二页无新作品
-        if (total === MAX_ILLUSTS_PER_PAGE) return;
-        // 只有两页
-        if (total < MAX_ILLUSTS_PER_PAGE * 2) {
-          yield await filterWorks(cache.thumbnails.illust, filterOption);
-          return;
-        }
-
-        let currentPage = 3;
-        while (currentPage <= MAX_PAGE) {
-          const data = await api.getFollowLatestWorks(currentPage, mode);
-          const ids = data.page.ids;
-          const pageLastId = findLastId(ids);
-          if (pageLastId >= lastId) {
-            //返回重复数据说明无新作品了
-            logger.info('getFollowLatestGenerator: got duplicate works');
-            yield await filterWorks(cache.thumbnails.illust, filterOption);
-            break;
-          }
-
-          lastId = pageLastId;
-          total += ids.length;
-          //生成前一页数据，保证已知total一直大于已下载作品数，避免判断下载已完成。
-          yield { ...(await filterWorks(cache.thumbnails.illust, filterOption)), total };
-          cache = data;
-          currentPage++;
-          await sleep(3000);
-        }
-      }
-    }
-
-    return {
-      total,
-      generator: generateIds()
-    };
+      page++;
+    } while (selectedIds.length > 0);
   },
 
-  async getChunksGenerator(
+  async *chunkGenerator(
+    pageRange: [start: number, end: number] | null,
+    checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
     userId: string,
     category: Category,
     tag: string,
-    rest: BookmarksRest,
-    filterOption: FilterOption
-  ): Promise<chunksGenerator> {
-    const OFFSET = 48;
-    let requestUrl: string;
-    if (category === 'bookmarks') {
-      requestUrl = `https://www.pixiv.net/ajax/user/${userId}/illusts/bookmarks?tag=${tag}&offset=0&limit=${OFFSET}&rest=${rest}&lang=ja`;
-    } else {
-      requestUrl = `https://www.pixiv.net/ajax/user/${userId}/${category}/tag?tag=${tag}&offset=0&limit=${OFFSET}&lang=ja`;
-    }
-    let head = 0;
-    const firstPageData = await api.getJson<UserPageData>(requestUrl);
-    const total = firstPageData.total;
+    bookmarkRest: BookmarksRest = 'show'
+  ) {
+    const ARTWORKS_PER_PAGE = 48;
+    const [startPage = null, endPage = null] = pageRange ?? [];
 
-    async function* generateIds() {
-      yield await filterWorks(firstPageData.works, filterOption);
-      head += OFFSET;
-      while (head < total) {
-        const data = await api.getJson<UserPageData>(
-          requestUrl.replace('offset=0', 'offset=' + head)
-        );
-        head += OFFSET;
-        await sleep(3000);
-        yield await filterWorks(data.works, filterOption);
+    if (!userId) throw new Error('Require argument "userId".');
+
+    let offset: number;
+    let offsetEnd!: number;
+    let total!: number;
+    let page = startPage ?? 1;
+
+    startPage === null ? (offset = 0) : (offset = (startPage - 1) * ARTWORKS_PER_PAGE);
+
+    do {
+      let requestUrl: string;
+      if (category === 'bookmarks') {
+        requestUrl = `/ajax/user/${userId}/illusts/bookmarks?tag=${tag}&offset=${offset}&limit=${ARTWORKS_PER_PAGE}&rest=${bookmarkRest}&lang=ja`;
+      } else {
+        requestUrl = `/ajax/user/${userId}/${category}/tag?tag=${tag}&offset=${offset}&limit=${ARTWORKS_PER_PAGE}&lang=ja`;
       }
-    }
 
-    return {
-      total,
-      generator: generateIds()
-    };
+      const userPageData = await api.getJson<UserPageData>(requestUrl);
+      const { works, total: totalArtwork } = userPageData;
+      if (totalArtwork === 0)
+        throw new Error(`User ${userId} has no ${category} tagged with ${tag}.`);
+
+      if (!offsetEnd) {
+        endPage === null
+          ? (offsetEnd = totalArtwork)
+          : (offsetEnd =
+              endPage * ARTWORKS_PER_PAGE > totalArtwork
+                ? totalArtwork
+                : endPage * ARTWORKS_PER_PAGE);
+
+        if (offsetEnd <= offset) throw new RangeError(`Page ${page} exceeds the limit.`);
+
+        total = offsetEnd - offset;
+      }
+
+      const avaliable: string[] = [];
+      const invalid: string[] = [];
+      const unavaliable: string[] = [];
+
+      for (let i = 0; i < works.length; i++) {
+        const work = works[i];
+        const { id, isMasked } = work;
+
+        if (isMasked) {
+          unavaliable.push(String(id));
+          continue;
+        }
+
+        const isValid = await checkValidity(work);
+        isValid ? avaliable.push(id) : invalid.push(id);
+      }
+
+      yield {
+        total,
+        page,
+        avaliable,
+        invalid,
+        unavaliable
+      };
+
+      page++;
+    } while ((offset += ARTWORKS_PER_PAGE) < offsetEnd);
   },
 
-  async getAllWorksGenerator(userId: string, filterOption: FilterOption): Promise<chunksGenerator> {
-    const profile = await api.getUserAllProfile(userId);
+  async *bookmarkGenerator(
+    pageRange: [start: number, end: number] | null,
+    checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
+    userId: string,
+    bookmarkRest: BookmarksRest = 'show',
+    tag: string = ''
+  ) {
+    yield* this.chunkGenerator(pageRange, checkValidity, userId, 'bookmarks', tag, bookmarkRest);
+  },
 
-    let illustIds: string[] = [];
-    let mangaIds: string[] = [];
+  async *taggedArtworkGenerator(
+    pageRange: [start: number, end: number] | null,
+    checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
+    userId: string,
+    category: Category,
+    tag: string,
+    bookmarkRest: BookmarksRest = 'show'
+  ) {
+    if (category === 'bookmarks') {
+      yield* this.bookmarkGenerator(pageRange, checkValidity, userId, bookmarkRest, tag);
+    } else {
+      yield* this.chunkGenerator(pageRange, checkValidity, userId, category, tag);
+    }
+  },
 
-    if (
-      (filterOption.filterIllusts || filterOption.filterUgoira) &&
-      typeof profile.illusts === 'object'
-    ) {
-      illustIds.push(...Object.keys(profile.illusts).reverse());
+  async *followLatestGenerator(
+    pageRange: [start: number, end: number] | null,
+    checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
+    mode = 'all'
+  ) {
+    const PAGE_LIMIT = 34;
+    const ARTWORKS_PER_PAGE = 60;
+    let [startPage = null, endPage = null] = pageRange ?? [];
+
+    startPage === null && (startPage = 1);
+    (endPage === null || endPage > PAGE_LIMIT) && (endPage = PAGE_LIMIT);
+
+    if (startPage > PAGE_LIMIT) throw new RangeError(`Page ${startPage} exceeds the limit.`);
+
+    let earliestId: number;
+    let total: number;
+    let cache: FollowLatest;
+    let page = startPage;
+
+    function findEarliestId(ids: string[]): number {
+      return Math.min(...ids.map((id) => Number(id)));
     }
 
-    if (filterOption.filterManga && typeof profile.manga === 'object') {
-      mangaIds.push(...Object.keys(profile.manga).reverse());
+    async function* yieldData(data: FollowLatest, page: number) {
+      const avaliable: string[] = [];
+      const invalid: string[] = [];
+      const unavaliable: string[] = [];
+
+      const { illust } = data.thumbnails;
+
+      for (let i = 0; i < illust.length; i++) {
+        const work = illust[i];
+        const { id, isMasked } = work;
+
+        if (isMasked) {
+          unavaliable.push(String(id));
+          continue;
+        }
+
+        const isValid = await checkValidity(work);
+        isValid ? avaliable.push(id) : invalid.push(id);
+      }
+
+      yield {
+        total,
+        page,
+        avaliable,
+        invalid,
+        unavaliable
+      };
     }
 
-    if (filterOption.filterExcludeDownloaded) {
-      const filteredIllustIds: string[] = [];
-      for (const id of illustIds) {
-        const isDownloaded = await historyDb.has(id);
-        !isDownloaded && filteredIllustIds.push(id);
-      }
-      illustIds = filteredIllustIds;
+    const data = await api.getFollowLatestWorks(page, mode);
+    const ids = data.page.ids;
+    total = ids.length;
+    earliestId = findEarliestId(ids);
 
-      const filteredMangaIds: string[] = [];
-      for (const id of mangaIds) {
-        const isDownloaded = await historyDb.has(id);
-        !isDownloaded && filteredMangaIds.push(id);
-      }
-      mangaIds = filteredMangaIds;
+    // download only one page
+    if (endPage === startPage) {
+      yield* yieldData(data, startPage);
+      return;
     }
 
-    async function* generateIds() {
-      const OFFSET = 48;
-      const baseUrl = 'https://www.pixiv.net/ajax/user/' + userId + '/profile/illusts';
+    if (total === ARTWORKS_PER_PAGE) {
+      // 可能作品数目刚好是60，所以需要检查第二页是否重复
+      const secondPageData = await api.getFollowLatestWorks(++page, mode);
+      const secondIds = secondPageData.page.ids;
+      const secondPageEarliestId = findEarliestId(secondIds);
 
-      let workCategory = 'illust';
-      while (illustIds.length > 0) {
-        let searchStr = '?';
-        const chunk: string[] = illustIds.splice(0, OFFSET);
-        searchStr +=
-          chunk.map((id) => 'ids[]=' + id).join('&') +
-          `&work_category=${workCategory}&is_first_page=0&lang=ja`;
-        const data = await api.getJson<UserPageIllustsData>(baseUrl + searchStr);
-        await sleep(3000);
-        yield await filterWorks(Object.values(data.works).reverse(), filterOption);
-      }
-
-      workCategory = 'manga';
-      while (mangaIds.length > 0) {
-        let searchStr = '?';
-        const chunk: string[] = mangaIds.splice(0, OFFSET);
-        searchStr +=
-          chunk.map((id) => 'ids[]=' + id).join('&') +
-          `&work_category=${workCategory}&is_first_page=0&lang=ja`;
-        const data = await api.getJson<UserPageIllustsData>(baseUrl + searchStr);
-        await sleep(3000);
-        yield await filterWorks(Object.values(data.works).reverse(), filterOption);
+      if (secondPageEarliestId < earliestId) {
+        // 非重复页
+        earliestId = secondPageEarliestId;
+        cache = secondPageData;
+        total += secondIds.length;
       }
     }
 
-    return {
-      total: illustIds.length + mangaIds.length,
-      generator: generateIds()
-    };
+    yield* yieldData(data, startPage);
+
+    // 第二页无新作品
+    if (total === ARTWORKS_PER_PAGE) return;
+    // 只有两页
+    if (total < ARTWORKS_PER_PAGE * 2 || endPage - startPage === 1) {
+      yield* yieldData(cache!, page);
+      return;
+    }
+
+    while (++page <= endPage) {
+      const data = await api.getFollowLatestWorks(page, mode);
+      const ids = data.page.ids;
+      const pageEarliestId = findEarliestId(ids);
+
+      if (pageEarliestId >= earliestId) {
+        // 返回重复数据说明无新作品了
+        logger.info('getFollowLatestGenerator: got duplicate works');
+        yield* yieldData(cache!, page - 1);
+        break;
+      }
+
+      earliestId = pageEarliestId;
+      total += ids.length;
+      //生成前一页数据，保证已知total一直大于已下载作品数，避免判断下载已完成。
+      yield* yieldData(cache!, page - 1);
+      cache = data;
+    }
+
+    // yield last page
+    yield* yieldData(cache!, page - 1);
   }
 };

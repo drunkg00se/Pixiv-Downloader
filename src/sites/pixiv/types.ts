@@ -4,9 +4,6 @@ export type Category = 'illusts' | 'manga' | 'bookmarks';
 // 收藏是否公开
 export type BookmarksRest = 'show' | 'hide';
 
-// 'all'表示下载全部收藏
-export type PdlRest = BookmarksRest | 'all';
-
 export type FollowLatestMode = 'all' | 'r18';
 
 // 作品分类
@@ -19,6 +16,22 @@ export enum IllustType {
 export enum BookmarkRestrict {
   public = 0,
   private
+}
+
+export interface UserData {
+  userId: string;
+  name: string;
+  image: string;
+  imageBig: string;
+  premium: boolean;
+  isFollowed: boolean;
+  isMypixiv: boolean;
+  isBlocking: boolean;
+  background: null | string;
+  sketchLiveId: null;
+  partial: number;
+  sketchLives: [];
+  commission: null;
 }
 
 export interface PreloadTagsItemData {
