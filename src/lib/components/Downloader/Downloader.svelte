@@ -445,7 +445,7 @@
   >
     <div
       data-theme="skeleton"
-      class="avatar absolute -z-10 size-14 rounded-full overflow-hidden bg-scroll transition-opacity duration-[250]"
+      class="avatar absolute -z-10 size-14 rounded-full overflow-hidden bg-scroll transition-opacity duration-[250ms]"
       class:opacity-70={!showDownloadMenu}
       class:blur-[1px]={!showDownloadMenu}
     >
