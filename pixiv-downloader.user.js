@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.1.0
+// @version            1.2.0
 // @author             ruaruarua
 // @description        Pixiv | Danbooru | Rule34. 一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。
 // @description:zh-TW  Pixiv | Danbooru | Rule34. 一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。
@@ -24,7 +24,6 @@
 // @connect            rule34.xxx
 // @connect            donmai.us
 // @connect            yande.re
-// @grant              GM_addStyle
 // @grant              GM_download
 // @grant              GM_getResourceText
 // @grant              GM_info
@@ -34,7 +33,7 @@
 // @noframes
 // ==/UserScript==
 
-(t=>{const r=new CSSStyleSheet;r.replaceSync(t),window._pdlShadowStyle=r})(` .anim-indeterminate.svelte-12wvf64{transform-origin:0% 50%;animation:svelte-12wvf64-anim-indeterminate 2s infinite linear}@keyframes svelte-12wvf64-anim-indeterminate{0%{transform:translate(0) scaleX(0)}40%{transform:translate(0) scaleX(.4)}to{transform:translate(100%) scaleX(.5)}}*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}:before,:after{--tw-content: ""}:host [data-theme=skeleton],:host{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}:host [data-theme=skeleton]{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h3{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}button,input,optgroup,select{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}dl,dd,h1,h3,hr,figure,p{margin:0}fieldset{margin:0;padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}input::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}[type=text],input:where(:not([type])),[type=email],[type=url],[type=password],[type=number],[type=date],[type=datetime-local],[type=month],[type=search],[type=tel],[type=time],[type=week],[multiple],select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0;padding:8px 12px;font-size:16px;line-height:24px;--tw-shadow: 0 0 #0000}[type=text]:focus,input:where(:not([type])):focus,[type=email]:focus,[type=url]:focus,[type=password]:focus,[type=number]:focus,[type=date]:focus,[type=datetime-local]:focus,[type=month]:focus,[type=search]:focus,[type=tel]:focus,[type=time]:focus,[type=week]:focus,[multiple]:focus,select:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);border-color:#2563eb}input::-moz-placeholder{color:#6b7280;opacity:1}input::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 8px center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:initial;background-position:initial;background-repeat:unset;background-size:initial;padding-right:12px;-webkit-print-color-adjust:unset;print-color-adjust:unset}[type=checkbox],[type=radio]{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;flex-shrink:0;height:16px;width:16px;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow: 0 0 #0000}[type=checkbox]{border-radius:0}[type=radio]{border-radius:100%}[type=checkbox]:focus,[type=radio]:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 2px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}[type=checkbox]:checked,[type=radio]:checked{border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}[type=checkbox]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=checkbox]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=radio]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=radio]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:checked:hover,[type=checkbox]:checked:focus,[type=radio]:checked:hover,[type=radio]:checked:focus{border-color:transparent;background-color:currentColor}[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}@media (forced-colors: active){[type=checkbox]:indeterminate{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:indeterminate:hover,[type=checkbox]:indeterminate:focus{border-color:transparent;background-color:currentColor}[type=file]{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type=file]:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}:host [data-theme=skeleton]{background-color:rgb(var(--color-surface-50));font-size:16px;line-height:24px;font-family:var(--theme-font-family-base);color:rgba(var(--theme-font-color-base))}:host .dark [data-theme=skeleton]{background-color:rgb(var(--color-surface-900));color:rgba(var(--theme-font-color-dark))}::-moz-selection{background-color:rgb(var(--color-primary-500) / .3)}::selection{background-color:rgb(var(--color-primary-500) / .3)}:host [data-theme=skeleton]{-webkit-tap-highlight-color:rgba(128,128,128,.5);scrollbar-color:rgba(0,0,0,.2) rgba(255,255,255,.05)}:host [data-theme=skeleton]{scrollbar-color:rgba(128,128,128,.5) rgba(0,0,0,.1);scrollbar-width:thin}:host.dark{scrollbar-color:rgba(255,255,255,.1) rgba(0,0,0,.05)}hr:not(.divider){display:block;border-top-width:1px;border-style:solid;border-color:rgb(var(--color-surface-300))}.dark hr:not(.divider){border-color:rgb(var(--color-surface-600))}fieldset,label{display:block}::-moz-placeholder{color:rgb(var(--color-surface-500))}::placeholder{color:rgb(var(--color-surface-500))}.dark ::-moz-placeholder{color:rgb(var(--color-surface-400))}.dark ::placeholder{color:rgb(var(--color-surface-400))}:is(.dark input::-webkit-calendar-picker-indicator){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z'/%3E%3C/svg%3E") no-repeat 50% 50%;pointer-events:none;height:16px;width:16px;border-radius:9999px;background-size:contain;opacity:0}input[type=search]:focus::-webkit-search-cancel-button{pointer-events:auto;opacity:1}:is(.dark input[type=search]::-webkit-search-cancel-button){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}progress{webkit-appearance:none;-moz-appearance:none;-webkit-appearance:none;appearance:none;height:8px;width:100%;overflow:hidden;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-400))}.dark progress{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-400))}.dark progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-value{background-color:rgb(var(--color-surface-900))}.dark progress::-webkit-progress-value{background-color:rgb(var(--color-surface-50))}::-moz-progress-bar{background-color:rgb(var(--color-surface-900))}.dark ::-moz-progress-bar{background-color:rgb(var(--color-surface-50))}:indeterminate::-moz-progress-bar{width:0}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled{cursor:not-allowed;opacity:.5}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}input[type=file]:not(.file-dropzone-input)::file-selector-button{font-size:14px;line-height:20px;padding:6px 12px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50));margin-right:8px;border-width:0px}input[type=file]:not(.file-dropzone-input)::file-selector-button>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}input[type=file]:not(.file-dropzone-input)::file-selector-button:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.dark input[type=file]:not(.file-dropzone-input)::file-selector-button{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}[type=range]{width:100%;accent-color:rgb(var(--color-surface-900) / 1)}:is(.dark [type=range]){accent-color:rgb(var(--color-surface-50) / 1)}[data-sort]{cursor:pointer}[data-sort]:hover:hover,.dark [data-sort]:hover:hover{background-color:rgb(var(--color-primary-500) / .1)}[data-sort]:after{margin-left:8px!important;opacity:0;--tw-content: "\u2193" !important;content:var(--tw-content)!important}[data-popup]{position:absolute;top:0;left:0;display:none;transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}:host [data-theme=skeleton]{--theme-font-family-base: system-ui;--theme-font-family-heading: system-ui;--theme-font-color-base: 0 0 0;--theme-font-color-dark: 255 255 255;--theme-rounded-base: 9999px;--theme-rounded-container: 8px;--theme-border-base: 1px;--on-primary: 0 0 0;--on-secondary: 255 255 255;--on-tertiary: 0 0 0;--on-success: 0 0 0;--on-warning: 0 0 0;--on-error: 255 255 255;--on-surface: 255 255 255;--color-primary-50: 219 245 236;--color-primary-100: 207 241 230;--color-primary-200: 195 238 224;--color-primary-300: 159 227 205;--color-primary-400: 87 207 167;--color-primary-500: 15 186 129;--color-primary-600: 14 167 116;--color-primary-700: 11 140 97;--color-primary-800: 9 112 77;--color-primary-900: 7 91 63;--color-secondary-50: 229 227 251;--color-secondary-100: 220 218 250;--color-secondary-200: 211 209 249;--color-secondary-300: 185 181 245;--color-secondary-400: 132 126 237;--color-secondary-500: 79 70 229;--color-secondary-600: 71 63 206;--color-secondary-700: 59 53 172;--color-secondary-800: 47 42 137;--color-secondary-900: 39 34 112;--color-tertiary-50: 219 242 252;--color-tertiary-100: 207 237 251;--color-tertiary-200: 195 233 250;--color-tertiary-300: 159 219 246;--color-tertiary-400: 86 192 240;--color-tertiary-500: 14 165 233;--color-tertiary-600: 13 149 210;--color-tertiary-700: 11 124 175;--color-tertiary-800: 8 99 140;--color-tertiary-900: 7 81 114;--color-success-50: 237 247 220;--color-success-100: 230 245 208;--color-success-200: 224 242 197;--color-success-300: 206 235 162;--color-success-400: 169 219 92;--color-success-500: 132 204 22;--color-success-600: 119 184 20;--color-success-700: 99 153 17;--color-success-800: 79 122 13;--color-success-900: 65 100 11;--color-warning-50: 252 244 218;--color-warning-100: 251 240 206;--color-warning-200: 250 236 193;--color-warning-300: 247 225 156;--color-warning-400: 240 202 82;--color-warning-500: 234 179 8;--color-warning-600: 211 161 7;--color-warning-700: 176 134 6;--color-warning-800: 140 107 5;--color-warning-900: 115 88 4;--color-error-50: 249 221 234;--color-error-100: 246 209 228;--color-error-200: 244 198 221;--color-error-300: 238 163 200;--color-error-400: 225 94 159;--color-error-500: 212 25 118;--color-error-600: 191 23 106;--color-error-700: 159 19 89;--color-error-800: 127 15 71;--color-error-900: 104 12 58;--color-surface-50: 228 230 238;--color-surface-100: 219 222 233;--color-surface-200: 210 214 227;--color-surface-300: 182 189 210;--color-surface-400: 128 140 177;--color-surface-500: 73 90 143;--color-surface-600: 66 81 129;--color-surface-700: 55 68 107;--color-surface-800: 44 54 86;--color-surface-900: 36 44 70}[data-theme=skeleton] h1,[data-theme=skeleton] h3{font-weight:700}[data-theme=skeleton]{background-image:radial-gradient(at 0% 0%,rgba(var(--color-secondary-500) / .33) 0px,transparent 50%),radial-gradient(at 98% 1%,rgba(var(--color-error-500) / .33) 0px,transparent 50%);background-attachment:fixed;background-position:center;background-repeat:no-repeat;background-size:cover}*{scrollbar-color:initial;scrollbar-width:initial}*,:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.h3{font-size:20px;line-height:28px;font-family:var(--theme-font-family-heading)}.anchor{--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));text-decoration-line:underline}.anchor:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}:is(.dark .anchor){--tw-text-opacity: 1;color:rgb(var(--color-primary-500) / var(--tw-text-opacity))}.time{font-size:14px;line-height:20px;--tw-text-opacity: 1;color:rgb(var(--color-surface-500) / var(--tw-text-opacity))}:is(.dark .time){--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-size:12px;line-height:16px;--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .3);border-radius:4px;padding:2px 4px}:is(.dark .code){--tw-text-opacity: 1;color:rgb(var(--color-primary-400) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .2)}.del{position:relative;display:block;padding:2px 2px 2px 20px;text-decoration:none}.del:before{position:absolute;left:4px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.del:before{content:"\u2212"}.del{--tw-bg-opacity: 1;background-color:rgb(var(--color-error-500) / var(--tw-bg-opacity));font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;color:rgb(var(--on-error))}.alert{display:flex;flex-direction:column;align-items:flex-start;padding:16px;color:rgb(var(--color-surface-900));border-radius:var(--theme-rounded-container)}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.dark .alert{color:rgb(var(--color-surface-50))}.\\!btn:disabled{cursor:not-allowed!important;opacity:.5!important}.btn:disabled,.btn-icon:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!btn:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:disabled:hover,.btn-icon:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.btn:disabled:active,.btn-icon:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!btn{font-size:16px!important;line-height:24px!important;padding:9px 20px!important;white-space:nowrap!important;text-align:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important;border-radius:var(--theme-rounded-base)!important}.btn{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base)}.\\!btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.\\!btn:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:active{--tw-scale-x: 95% !important;--tw-scale-y: 95% !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important;--tw-brightness: brightness(.9) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-sm{padding:6px 12px;font-size:14px;line-height:20px}.btn-icon{font-size:16px;line-height:24px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;padding:0;aspect-ratio:1 / 1;width:43px;border-radius:9999px}.btn-icon>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-icon:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon-sm{aspect-ratio:1 / 1;width:33px;font-size:14px;line-height:20px}.card{background-color:rgb(var(--color-surface-100));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(23 23 23 / .05);border-radius:var(--theme-rounded-container)}.dark .card{background-color:rgb(var(--color-surface-800));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(250 250 250 / .05)}a.card{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}a.card:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.chip{cursor:pointer;white-space:nowrap;padding:6px 12px;text-align:center;font-size:12px;line-height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}a.chip:hover,button.chip:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.chip:disabled{cursor:not-allowed!important;opacity:.5!important}.chip:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.label>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.input,.select,.input-group{width:100%;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.2s;background-color:rgb(var(--color-surface-200));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .input,.dark .select,.dark .input-group{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.input:hover,.select:hover,.input-group:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.input:focus,.select:focus,.input-group:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.input:focus-within,.select:focus-within,.input-group:focus-within{--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.input,.input-group{border-radius:var(--theme-rounded-base)}.select{border-radius:var(--theme-rounded-container)}.select>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select{padding:8px 32px 8px 8px}.select[size]{background-image:none}.select optgroup>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select optgroup{font-weight:700}.select optgroup option{margin-left:0;padding-left:0}.select optgroup option:first-of-type{margin-top:12px}.select optgroup option:last-child{margin-bottom:12px!important}.select option{cursor:pointer;padding:8px 16px;background-color:rgb(var(--color-surface-200));border-radius:var(--theme-rounded-base)}.dark .select option{background-color:rgb(var(--color-surface-700))}.select option:checked{background:rgb(var(--color-primary-500)) linear-gradient(0deg,rgb(var(--color-primary-500)),rgb(var(--color-primary-500)));color:rgb(var(--on-primary))}.checkbox,.radio{height:20px;width:20px;cursor:pointer;border-radius:4px;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;background-color:rgb(var(--color-surface-200));border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .checkbox,.dark .radio{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.checkbox:hover,.radio:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.checkbox:focus,.radio:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.checkbox:checked,.checkbox:indeterminate,.radio:checked{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:hover,.checkbox:indeterminate:hover,.radio:checked:hover{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:focus,.checkbox:indeterminate:focus,.radio:checked:focus{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)}.radio{border-radius:var(--theme-rounded-base)}.input[type=file]{padding:4px}.input[type=color]{height:40px;width:40px;cursor:pointer;overflow:hidden;border-style:none;border-radius:var(--theme-rounded-base);-webkit-appearance:none}.input[type=color]::-webkit-color-swatch-wrapper{padding:0}.input[type=color]::-webkit-color-swatch{border-style:none}.input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.input[type=color]::-moz-color-swatch{border-style:none}.input:disabled,.select:disabled,.input-group>input:disabled,.input-group>select:disabled{cursor:not-allowed!important;opacity:.5!important}.input:disabled:hover,.select:disabled:hover,.input-group>input:disabled:hover,.input-group>select:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input[readonly],.select[readonly]{cursor:not-allowed!important;border-color:transparent!important}.input[readonly]:hover,.select[readonly]:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input-group{display:grid;overflow:hidden}.input-group input,.input-group select{border-width:0px;background-color:transparent;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.input-group select option{background-color:rgb(var(--color-surface-200))}.dark .input-group select option{background-color:rgb(var(--color-surface-700))}.input-group div,.input-group a,.input-group button{display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:16px}.input-group-divider input,.input-group-divider select,.input-group-divider div,.input-group-divider a{border-left-width:1px;border-color:rgb(var(--color-surface-400));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;min-width:-moz-fit-content!important;min-width:fit-content!important}.dark .input-group-divider input,.dark .input-group-divider select,.dark .input-group-divider div,.dark .input-group-divider a{border-color:rgb(var(--color-surface-500))}.input-group-divider input:focus,.input-group-divider select:focus,.input-group-divider div:focus,.input-group-divider a:focus{border-color:rgb(var(--color-surface-400))}.dark .input-group-divider input:focus,.dark .input-group-divider select:focus,.dark .input-group-divider div:focus,.dark .input-group-divider a:focus{border-color:rgb(var(--color-surface-500))}.input-group-divider *:first-child{border-left-width:0px!important}.list{list-style-type:none}.list>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.list li{display:flex;align-items:center;border-radius:var(--theme-rounded-base)}.list li>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.placeholder{height:20px;background-color:rgb(var(--color-surface-300));border-radius:var(--theme-rounded-base)}.dark .placeholder{background-color:rgb(var(--color-surface-600))}.w-modal{width:100%;max-width:640px}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-style:auto;outline-color:-webkit-focus-ring-color}.variant-filled{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .variant-filled{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.variant-ghost-surface{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .variant-ghost-surface){--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}.variant-soft,.variant-soft-surface{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .variant-soft,.dark .variant-soft-surface{color:rgb(var(--color-surface-200))}:is(.dark .variant-soft),:is(.dark .variant-soft-surface){background-color:rgb(var(--color-surface-500) / .2)}@media (min-width: 768px){.h3{font-size:24px;line-height:32px}}@media (min-width: 1024px){.alert{flex-direction:row;align-items:center}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(0px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0px * var(--tw-space-y-reverse));--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-width:0px!important}.visible{visibility:visible}.static{position:static}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.bottom-0{bottom:0}.bottom-24{bottom:96px}.left-0{left:0}.right-0{right:0}.right-2{right:8px}.top-0{top:0}.top-2{top:8px}.z-\\[999\\]{z-index:999}.row-span-2{grid-row:span 2 / span 2}.row-start-1{grid-row-start:1}.m-auto{margin:auto}.mx-2{margin-left:8px;margin-right:8px}.ml-1{margin-left:4px}.ml-3{margin-left:12px}.ml-4{margin-left:16px}.mr-2{margin-right:8px}.mr-6{margin-right:24px}.mt-2{margin-top:8px}.mt-4{margin-top:16px}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.contents{display:contents}.hidden{display:none}.h-0{height:0px}.h-10{height:40px}.h-2{height:8px}.h-48{height:192px}.h-6{height:24px}.h-8{height:32px}.h-\\[38px\\]{height:38px}.h-auto{height:auto}.h-fit{height:-moz-fit-content;height:fit-content}.h-full{height:100%}.h-screen{height:100vh}.max-h-\\[200px\\]{max-height:200px}.min-h-full{min-height:100%}.w-0{width:0px}.w-12{width:48px}.w-16{width:64px}.w-20{width:80px}.w-32{width:128px}.w-48{width:192px}.w-6{width:24px}.w-8{width:32px}.w-\\[140px\\]{width:140px}.w-\\[38px\\]{width:38px}.w-\\[50\\%\\]{width:50%}.w-full{width:100%}.w-screen{width:100vw}.flex-1{flex:1 1 0%}.flex-auto{flex:1 1 auto}.flex-none{flex:none}.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.-translate-x-full{--tw-translate-x: -100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-0{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-\\[calc\\(100\\%-44px\\)\\]{--tw-translate-x: calc(100% - 44px) ;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-full{--tw-translate-x: 100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-\\[0\\.8\\]{--tw-scale-x: .8;--tw-scale-y: .8;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes spin{to{transform:rotate(360deg)}}.\\!cursor-default{cursor:default!important}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-\\[0px_1fr\\]{grid-template-columns:0px 1fr}.grid-cols-\\[140px_1fr\\]{grid-template-columns:140px 1fr}.grid-cols-\\[auto_1fr_auto\\]{grid-template-columns:auto 1fr auto}.grid-cols-\\[auto_1fr_auto_auto\\]{grid-template-columns:auto 1fr auto auto}.grid-rows-\\[auto_1fr\\]{grid-template-rows:auto 1fr}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.items-center{align-items:center}.\\!items-stretch{align-items:stretch!important}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:4px}.gap-3{gap:12px}.gap-4{gap:16px}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(8px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(8px * var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.divide-y-\\[1px\\]>:not([hidden])~:not([hidden]){--tw-divide-y-reverse: 0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.self-start{align-self:flex-start}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.overflow-y-hidden{overflow-y:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded{border-radius:4px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:8px}.rounded-none{border-radius:0}.rounded-e-\\[4px\\]{border-start-end-radius:4px;border-end-end-radius:4px}.rounded-s-full{border-start-start-radius:9999px;border-end-start-radius:9999px}.border{border-width:1px}.\\!border-t-0{border-top-width:0px!important}.border-b{border-bottom-width:1px}.border-l{border-left-width:1px}.bg-surface-400{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-400) / var(--tw-bg-opacity))}.bg-surface-900{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-900) / var(--tw-bg-opacity))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity: 1;background-color:rgb(255 255 255 / var(--tw-bg-opacity))}.bg-white\\/30{background-color:#ffffff4d}.bg-white\\/75{background-color:#ffffffbf}.bg-scroll{background-attachment:scroll}.fill-current{fill:currentColor}.\\!p-0{padding:0!important}.p-1{padding:4px}.p-4{padding:16px}.px-4{padding-left:16px;padding-right:16px}.px-8{padding-left:32px;padding-right:32px}.py-1{padding-top:4px;padding-bottom:4px}.py-2{padding-top:8px;padding-bottom:8px}.py-6{padding-top:24px;padding-bottom:24px}.pb-6{padding-bottom:24px}.pl-6{padding-left:24px}.pr-2{padding-right:8px}.pr-4{padding-right:16px}.pr-6{padding-right:24px}.pt-4{padding-top:16px}.text-center{text-align:center}.text-2xl{font-size:24px;line-height:32px}.text-base{font-size:16px;line-height:24px}.text-sm{font-size:14px;line-height:20px}.text-xs{font-size:12px;line-height:16px}.font-bold{font-weight:700}.italic{font-style:italic}.leading-loose{line-height:2}.\\!text-error-500{--tw-text-opacity: 1 !important;color:rgb(var(--color-error-500) / var(--tw-text-opacity))!important}.text-surface-400{--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.underline-offset-2{text-underline-offset:2px}.accent-surface-900{accent-color:rgb(var(--color-surface-900) / 1)}.opacity-40{opacity:.4}.opacity-50{opacity:.5}.shadow{--tw-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);--tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.shadow-xl{--tw-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);--tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.-outline-offset-\\[3px\\]{outline-offset:-3px}.blur{--tw-blur: blur(8px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur: blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-columns\\]{transition-property:grid-template-columns;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[transform\\]{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.delay-100{transition-delay:.1s}.duration-\\[200ms\\]{transition-duration:.2s}.bg-surface-backdrop-token{background-color:rgb(var(--color-surface-400) / .7)}.dark .bg-surface-backdrop-token{background-color:rgb(var(--color-surface-900) / .7)}.bg-surface-100-800-token{background-color:rgb(var(--color-surface-100))}.dark .bg-surface-100-800-token{background-color:rgb(var(--color-surface-800))}.bg-surface-200-700-token{background-color:rgb(var(--color-surface-200))}.dark .bg-surface-200-700-token{background-color:rgb(var(--color-surface-700))}.border-token{border-width:var(--theme-border-base)}.border-surface-400-500-token{border-color:rgb(var(--color-surface-400))}.dark .border-surface-400-500-token{border-color:rgb(var(--color-surface-500))}.border-surface-800-100-token{border-color:rgb(var(--color-surface-800))}.dark .border-surface-800-100-token{border-color:rgb(var(--color-surface-100))}.rounded-token{border-radius:var(--theme-rounded-base)}.rounded-container-token{border-radius:var(--theme-rounded-container)}.scrollbar-thin::-webkit-scrollbar-track{background-color:var(--scrollbar-track);border-radius:var(--scrollbar-track-radius)}.scrollbar-thin::-webkit-scrollbar-track:hover{background-color:var(--scrollbar-track-hover, var(--scrollbar-track))}.scrollbar-thin::-webkit-scrollbar-track:active{background-color:var(--scrollbar-track-active, var(--scrollbar-track-hover, var(--scrollbar-track)))}.scrollbar-thin::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:var(--scrollbar-thumb-radius)}.scrollbar-thin::-webkit-scrollbar-thumb:hover{background-color:var(--scrollbar-thumb-hover, var(--scrollbar-thumb))}.scrollbar-thin::-webkit-scrollbar-thumb:active{background-color:var(--scrollbar-thumb-active, var(--scrollbar-thumb-hover, var(--scrollbar-thumb)))}.scrollbar-thin::-webkit-scrollbar-corner{background-color:var(--scrollbar-corner);border-radius:var(--scrollbar-corner-radius)}.scrollbar-thin::-webkit-scrollbar-corner:hover{background-color:var(--scrollbar-corner-hover, var(--scrollbar-corner))}.scrollbar-thin::-webkit-scrollbar-corner:active{background-color:var(--scrollbar-corner-active, var(--scrollbar-corner-hover, var(--scrollbar-corner)))}.scrollbar-thin{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb, initial) var(--scrollbar-track, initial)}.scrollbar-thin::-webkit-scrollbar{display:block;width:8px;height:8px}.scrollbar-track-transparent{--scrollbar-track: transparent !important}.scrollbar-thumb-slate-400\\/50{--scrollbar-thumb: rgb(148 163 184 / .5) !important}.scrollbar-corner-transparent{--scrollbar-corner: transparent !important}.hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.hover\\:variant-soft:hover,.hover\\:variant-soft-surface:hover{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .hover\\:variant-soft:hover,.dark .hover\\:variant-soft-surface:hover{color:rgb(var(--color-surface-200))}:is(.dark .hover\\:variant-soft:hover){background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .hover\\:variant-soft-surface:hover){background-color:rgb(var(--color-surface-500) / .2)}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){background-color:rgb(var(--color-primary-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-primary-700))}.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){color:rgb(var(--color-primary-200))}:is(.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled])){background-color:rgb(var(--color-primary-500) / .2)}.\\*\\:\\!m-0>*{margin:0!important}.\\*\\:items-center>*{align-items:center}.\\*\\:\\!rounded-none>*{border-radius:0!important}.\\*\\:py-4>*{padding-top:16px;padding-bottom:16px}.\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-300))}.dark .\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-600))}.hover\\:translate-x-0:hover{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\\:text-xl:hover{font-size:20px;line-height:28px}.hover\\:opacity-100:hover{opacity:1}.hover\\:brightness-\\[105\\%\\]:hover{--tw-brightness: brightness(105%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\\:decoration-wavy:focus{text-decoration-style:wavy}.focus\\:\\!outline-none:focus{outline:2px solid transparent!important;outline-offset:2px!important}.disabled\\:cursor-wait:disabled{cursor:wait}.disabled\\:opacity-70:disabled{opacity:.7}.dark\\:bg-black\\/15:is(.dark *){background-color:#00000026}.dark\\:bg-surface-300:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-300) / var(--tw-bg-opacity))}.dark\\:bg-surface-500\\/20:is(.dark *){background-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-surface-700:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-700) / var(--tw-bg-opacity))}.dark\\:accent-surface-50:is(.dark *){accent-color:rgb(var(--color-surface-50) / 1)}.dark\\:hover\\:brightness-110:hover:is(.dark *){--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}@media (min-width: 768px){.md\\:h-\\[600px\\]{height:600px}.md\\:max-w-screen-md{max-width:768px}.md\\:max-w-screen-sm{max-width:640px}.md\\:flex-row{flex-direction:row}.md\\:\\!items-baseline{align-items:baseline!important}}@media (min-width: 1024px){.lg\\:max-w-screen-md{max-width:768px}}@media (min-width: 1280px){.xl\\:max-w-screen-lg{max-width:1024px}}.\\[\\&\\:last-child\\]\\:\\*\\:pt-4>*:last-child{padding-top:16px}.\\[\\&\\:not\\(\\:last-child\\)\\]\\:\\*\\:py-4>*:not(:last-child){padding-top:16px;padding-bottom:16px}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:hover\\:bg-slate-400\\/30:hover:not([disabled]){background-color:#94a3b84d} `);
+(t=>{const r=new CSSStyleSheet;r.replaceSync(t),window._pdlShadowStyle=r})(` .anim-indeterminate.svelte-12wvf64{transform-origin:0% 50%;animation:svelte-12wvf64-anim-indeterminate 2s infinite linear}@keyframes svelte-12wvf64-anim-indeterminate{0%{transform:translate(0) scaleX(0)}40%{transform:translate(0) scaleX(.4)}to{transform:translate(100%) scaleX(.5)}}*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}:before,:after{--tw-content: ""}:host [data-theme=skeleton],:host{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}:host [data-theme=skeleton]{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h3{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}dl,dd,h1,h3,hr,figure,p{margin:0}fieldset{margin:0;padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}[type=text],input:where(:not([type])),[type=email],[type=url],[type=password],[type=number],[type=date],[type=datetime-local],[type=month],[type=search],[type=tel],[type=time],[type=week],[multiple],textarea,select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0;padding:8px 12px;font-size:16px;line-height:24px;--tw-shadow: 0 0 #0000}[type=text]:focus,input:where(:not([type])):focus,[type=email]:focus,[type=url]:focus,[type=password]:focus,[type=number]:focus,[type=date]:focus,[type=datetime-local]:focus,[type=month]:focus,[type=search]:focus,[type=tel]:focus,[type=time]:focus,[type=week]:focus,[multiple]:focus,textarea:focus,select:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);border-color:#2563eb}input::-moz-placeholder,textarea::-moz-placeholder{color:#6b7280;opacity:1}input::placeholder,textarea::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 8px center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:initial;background-position:initial;background-repeat:unset;background-size:initial;padding-right:12px;-webkit-print-color-adjust:unset;print-color-adjust:unset}[type=checkbox],[type=radio]{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;flex-shrink:0;height:16px;width:16px;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow: 0 0 #0000}[type=checkbox]{border-radius:0}[type=radio]{border-radius:100%}[type=checkbox]:focus,[type=radio]:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 2px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}[type=checkbox]:checked,[type=radio]:checked{border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}[type=checkbox]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=checkbox]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=radio]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=radio]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:checked:hover,[type=checkbox]:checked:focus,[type=radio]:checked:hover,[type=radio]:checked:focus{border-color:transparent;background-color:currentColor}[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}@media (forced-colors: active){[type=checkbox]:indeterminate{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:indeterminate:hover,[type=checkbox]:indeterminate:focus{border-color:transparent;background-color:currentColor}[type=file]{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type=file]:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}:host [data-theme=skeleton]{background-color:rgb(var(--color-surface-50));font-size:16px;line-height:24px;font-family:var(--theme-font-family-base);color:rgba(var(--theme-font-color-base))}:host .dark [data-theme=skeleton]{background-color:rgb(var(--color-surface-900));color:rgba(var(--theme-font-color-dark))}::-moz-selection{background-color:rgb(var(--color-primary-500) / .3)}::selection{background-color:rgb(var(--color-primary-500) / .3)}:host [data-theme=skeleton]{-webkit-tap-highlight-color:rgba(128,128,128,.5);scrollbar-color:rgba(0,0,0,.2) rgba(255,255,255,.05)}:host [data-theme=skeleton]{scrollbar-color:rgba(128,128,128,.5) rgba(0,0,0,.1);scrollbar-width:thin}:host.dark{scrollbar-color:rgba(255,255,255,.1) rgba(0,0,0,.05)}hr:not(.divider){display:block;border-top-width:1px;border-style:solid;border-color:rgb(var(--color-surface-300))}.dark hr:not(.divider){border-color:rgb(var(--color-surface-600))}fieldset,label{display:block}::-moz-placeholder{color:rgb(var(--color-surface-500))}::placeholder{color:rgb(var(--color-surface-500))}.dark ::-moz-placeholder{color:rgb(var(--color-surface-400))}.dark ::placeholder{color:rgb(var(--color-surface-400))}:is(.dark input::-webkit-calendar-picker-indicator){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z'/%3E%3C/svg%3E") no-repeat 50% 50%;pointer-events:none;height:16px;width:16px;border-radius:9999px;background-size:contain;opacity:0}input[type=search]:focus::-webkit-search-cancel-button{pointer-events:auto;opacity:1}:is(.dark input[type=search]::-webkit-search-cancel-button){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}progress{webkit-appearance:none;-moz-appearance:none;-webkit-appearance:none;appearance:none;height:8px;width:100%;overflow:hidden;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-400))}.dark progress{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-400))}.dark progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-value{background-color:rgb(var(--color-surface-900))}.dark progress::-webkit-progress-value{background-color:rgb(var(--color-surface-50))}::-moz-progress-bar{background-color:rgb(var(--color-surface-900))}.dark ::-moz-progress-bar{background-color:rgb(var(--color-surface-50))}:indeterminate::-moz-progress-bar{width:0}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled{cursor:not-allowed;opacity:.5}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}input[type=file]:not(.file-dropzone-input)::file-selector-button{font-size:14px;line-height:20px;padding:6px 12px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50));margin-right:8px;border-width:0px}input[type=file]:not(.file-dropzone-input)::file-selector-button>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}input[type=file]:not(.file-dropzone-input)::file-selector-button:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.dark input[type=file]:not(.file-dropzone-input)::file-selector-button{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}[type=range]{width:100%;accent-color:rgb(var(--color-surface-900) / 1)}:is(.dark [type=range]){accent-color:rgb(var(--color-surface-50) / 1)}[data-sort]{cursor:pointer}[data-sort]:hover:hover,.dark [data-sort]:hover:hover{background-color:rgb(var(--color-primary-500) / .1)}[data-sort]:after{margin-left:8px!important;opacity:0;--tw-content: "\u2193" !important;content:var(--tw-content)!important}[data-popup]{position:absolute;top:0;left:0;display:none;transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}:host [data-theme=skeleton]{--theme-font-family-base: system-ui;--theme-font-family-heading: system-ui;--theme-font-color-base: 0 0 0;--theme-font-color-dark: 255 255 255;--theme-rounded-base: 9999px;--theme-rounded-container: 8px;--theme-border-base: 1px;--on-primary: 0 0 0;--on-secondary: 255 255 255;--on-tertiary: 0 0 0;--on-success: 0 0 0;--on-warning: 0 0 0;--on-error: 255 255 255;--on-surface: 255 255 255;--color-primary-50: 219 245 236;--color-primary-100: 207 241 230;--color-primary-200: 195 238 224;--color-primary-300: 159 227 205;--color-primary-400: 87 207 167;--color-primary-500: 15 186 129;--color-primary-600: 14 167 116;--color-primary-700: 11 140 97;--color-primary-800: 9 112 77;--color-primary-900: 7 91 63;--color-secondary-50: 229 227 251;--color-secondary-100: 220 218 250;--color-secondary-200: 211 209 249;--color-secondary-300: 185 181 245;--color-secondary-400: 132 126 237;--color-secondary-500: 79 70 229;--color-secondary-600: 71 63 206;--color-secondary-700: 59 53 172;--color-secondary-800: 47 42 137;--color-secondary-900: 39 34 112;--color-tertiary-50: 219 242 252;--color-tertiary-100: 207 237 251;--color-tertiary-200: 195 233 250;--color-tertiary-300: 159 219 246;--color-tertiary-400: 86 192 240;--color-tertiary-500: 14 165 233;--color-tertiary-600: 13 149 210;--color-tertiary-700: 11 124 175;--color-tertiary-800: 8 99 140;--color-tertiary-900: 7 81 114;--color-success-50: 237 247 220;--color-success-100: 230 245 208;--color-success-200: 224 242 197;--color-success-300: 206 235 162;--color-success-400: 169 219 92;--color-success-500: 132 204 22;--color-success-600: 119 184 20;--color-success-700: 99 153 17;--color-success-800: 79 122 13;--color-success-900: 65 100 11;--color-warning-50: 252 244 218;--color-warning-100: 251 240 206;--color-warning-200: 250 236 193;--color-warning-300: 247 225 156;--color-warning-400: 240 202 82;--color-warning-500: 234 179 8;--color-warning-600: 211 161 7;--color-warning-700: 176 134 6;--color-warning-800: 140 107 5;--color-warning-900: 115 88 4;--color-error-50: 249 221 234;--color-error-100: 246 209 228;--color-error-200: 244 198 221;--color-error-300: 238 163 200;--color-error-400: 225 94 159;--color-error-500: 212 25 118;--color-error-600: 191 23 106;--color-error-700: 159 19 89;--color-error-800: 127 15 71;--color-error-900: 104 12 58;--color-surface-50: 228 230 238;--color-surface-100: 219 222 233;--color-surface-200: 210 214 227;--color-surface-300: 182 189 210;--color-surface-400: 128 140 177;--color-surface-500: 73 90 143;--color-surface-600: 66 81 129;--color-surface-700: 55 68 107;--color-surface-800: 44 54 86;--color-surface-900: 36 44 70}[data-theme=skeleton] h1,[data-theme=skeleton] h3{font-weight:700}[data-theme=skeleton]{background-image:radial-gradient(at 0% 0%,rgba(var(--color-secondary-500) / .33) 0px,transparent 50%),radial-gradient(at 98% 1%,rgba(var(--color-error-500) / .33) 0px,transparent 50%);background-attachment:fixed;background-position:center;background-repeat:no-repeat;background-size:cover}*{scrollbar-color:initial;scrollbar-width:initial}*,:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}.h3{font-size:20px;line-height:28px;font-family:var(--theme-font-family-heading)}.anchor{--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));text-decoration-line:underline}.anchor:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}:is(.dark .anchor){--tw-text-opacity: 1;color:rgb(var(--color-primary-500) / var(--tw-text-opacity))}.time{font-size:14px;line-height:20px;--tw-text-opacity: 1;color:rgb(var(--color-surface-500) / var(--tw-text-opacity))}:is(.dark .time){--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-size:12px;line-height:16px;--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .3);border-radius:4px;padding:2px 4px}:is(.dark .code){--tw-text-opacity: 1;color:rgb(var(--color-primary-400) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .2)}.del{position:relative;display:block;padding:2px 2px 2px 20px;text-decoration:none}.del:before{position:absolute;left:4px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.del:before{content:"\u2212"}.del{--tw-bg-opacity: 1;background-color:rgb(var(--color-error-500) / var(--tw-bg-opacity));font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;color:rgb(var(--on-error))}.alert{display:flex;flex-direction:column;align-items:flex-start;padding:16px;color:rgb(var(--color-surface-900));border-radius:var(--theme-rounded-container)}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.dark .alert{color:rgb(var(--color-surface-50))}.\\!btn:disabled{cursor:not-allowed!important;opacity:.5!important}.btn:disabled,.btn-icon:disabled,.btn-group>*:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!btn:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:disabled:hover,.btn-icon:disabled:hover,.btn-group>*:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.btn:disabled:active,.btn-icon:disabled:active,.btn-group>*:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!btn{font-size:16px!important;line-height:24px!important;padding:9px 20px!important;white-space:nowrap!important;text-align:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important;border-radius:var(--theme-rounded-base)!important}.btn{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base)}.\\!btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.\\!btn:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:active{--tw-scale-x: 95% !important;--tw-scale-y: 95% !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important;--tw-brightness: brightness(.9) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-sm{padding:6px 12px;font-size:14px;line-height:20px}.btn-icon{font-size:16px;line-height:24px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;padding:0;aspect-ratio:1 / 1;width:43px;border-radius:9999px}.btn-icon>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-icon:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon-sm{aspect-ratio:1 / 1;width:33px;font-size:14px;line-height:20px}.btn-group{display:inline-flex;flex-direction:row;overflow:hidden;border-radius:var(--theme-rounded-base);isolation:isolate}.btn-group>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(0px * var(--tw-space-x-reverse));margin-left:calc(0px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button,.btn-group a{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;color:inherit!important;text-decoration-line:none!important}.btn-group button>:not([hidden])~:not([hidden]),.btn-group a>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button:hover,.btn-group a:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);background-color:rgb(var(--color-surface-50) / 3%)}.btn-group button:active,.btn-group a:active{background-color:rgb(var(--color-surface-900) / 3%)}.btn-group>*+*{border-top-width:0px;border-left-width:1px;border-color:rgb(var(--color-surface-500) / .2)}.card{background-color:rgb(var(--color-surface-100));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(23 23 23 / .05);border-radius:var(--theme-rounded-container)}.dark .card{background-color:rgb(var(--color-surface-800));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(250 250 250 / .05)}a.card{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}a.card:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!chip{cursor:pointer!important;white-space:nowrap!important;padding:6px 12px!important;text-align:center!important;font-size:12px!important;line-height:16px!important;border-radius:4px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important}.chip{cursor:pointer;white-space:nowrap;padding:6px 12px;text-align:center;font-size:12px;line-height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.\\!chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}a.chip:hover,button.chip:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}a.\\!chip:hover,button.\\!chip:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!chip:disabled{cursor:not-allowed!important;opacity:.5!important}.chip:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!chip:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.chip:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.label>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.\\!input{width:100%!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.2s!important;background-color:rgb(var(--color-surface-200))!important;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base)!important;border-color:rgb(var(--color-surface-400))!important}.input,.textarea,.select,.input-group{width:100%;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.2s;background-color:rgb(var(--color-surface-200));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .input,.dark .textarea,.dark .select,.dark .input-group{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.dark .\\!input{background-color:rgb(var(--color-surface-700))!important;border-color:rgb(var(--color-surface-500))!important}.\\!input:hover{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:hover,.textarea:hover,.select:hover,.input-group:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:focus,.textarea:focus,.select:focus,.input-group:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus-within{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))!important}.input:focus-within,.textarea:focus-within,.select:focus-within,.input-group:focus-within{--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.\\!input{border-radius:var(--theme-rounded-base)!important}.input,.input-group{border-radius:var(--theme-rounded-base)}.textarea,.select{border-radius:var(--theme-rounded-container)}.select>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select{padding:8px 32px 8px 8px}.select[size]{background-image:none}.select optgroup>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select optgroup{font-weight:700}.select optgroup option{margin-left:0;padding-left:0}.select optgroup option:first-of-type{margin-top:12px}.select optgroup option:last-child{margin-bottom:12px!important}.select option{cursor:pointer;padding:8px 16px;background-color:rgb(var(--color-surface-200));border-radius:var(--theme-rounded-base)}.dark .select option{background-color:rgb(var(--color-surface-700))}.select option:checked{background:rgb(var(--color-primary-500)) linear-gradient(0deg,rgb(var(--color-primary-500)),rgb(var(--color-primary-500)));color:rgb(var(--on-primary))}.checkbox,.radio{height:20px;width:20px;cursor:pointer;border-radius:4px;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;background-color:rgb(var(--color-surface-200));border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .checkbox,.dark .radio{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.checkbox:hover,.radio:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.checkbox:focus,.radio:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.checkbox:checked,.checkbox:indeterminate,.radio:checked{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:hover,.checkbox:indeterminate:hover,.radio:checked:hover{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:focus,.checkbox:indeterminate:focus,.radio:checked:focus{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)}.radio{border-radius:var(--theme-rounded-base)}.\\!input[type=file]{padding:4px!important}.input[type=file]{padding:4px}.\\!input[type=color]{height:40px!important;width:40px!important;cursor:pointer!important;overflow:hidden!important;border-style:none!important;border-radius:var(--theme-rounded-base)!important;-webkit-appearance:none!important}.input[type=color]{height:40px;width:40px;cursor:pointer;overflow:hidden;border-style:none;border-radius:var(--theme-rounded-base);-webkit-appearance:none}.\\!input[type=color]::-webkit-color-swatch-wrapper{padding:0!important}.input[type=color]::-webkit-color-swatch-wrapper{padding:0}.\\!input[type=color]::-webkit-color-swatch{border-style:none!important}.input[type=color]::-webkit-color-swatch{border-style:none}.\\!input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input[type=color]::-moz-color-swatch{border-style:none!important}.input[type=color]::-moz-color-swatch{border-style:none}.\\!input:disabled{cursor:not-allowed!important;opacity:.5!important}.input:disabled,.textarea:disabled,.select:disabled,.input-group>input:disabled,.input-group>textarea:disabled,.input-group>select:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!input:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:disabled:hover,.textarea:disabled:hover,.select:disabled:hover,.input-group>input:disabled:hover,.input-group>textarea:disabled:hover,.input-group>select:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!input[readonly],.input[readonly],.textarea[readonly],.select[readonly]{cursor:not-allowed!important;border-color:transparent!important}.\\!input[readonly]:hover,.input[readonly]:hover,.textarea[readonly]:hover,.select[readonly]:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input-group{display:grid;overflow:hidden}.input-group input,.input-group select{border-width:0px;background-color:transparent;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.input-group select option{background-color:rgb(var(--color-surface-200))}.dark .input-group select option{background-color:rgb(var(--color-surface-700))}.input-group div,.input-group a,.input-group button{display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:16px}.input-group-divider input,.input-group-divider select,.input-group-divider div,.input-group-divider a{border-left-width:1px;border-color:rgb(var(--color-surface-400));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;min-width:-moz-fit-content!important;min-width:fit-content!important}.dark .input-group-divider input,.dark .input-group-divider select,.dark .input-group-divider div,.dark .input-group-divider a{border-color:rgb(var(--color-surface-500))}.input-group-divider input:focus,.input-group-divider select:focus,.input-group-divider div:focus,.input-group-divider a:focus{border-color:rgb(var(--color-surface-400))}.dark .input-group-divider input:focus,.dark .input-group-divider select:focus,.dark .input-group-divider div:focus,.dark .input-group-divider a:focus{border-color:rgb(var(--color-surface-500))}.input-group-divider *:first-child{border-left-width:0px!important}.input-group-shim{background-color:rgb(var(--color-surface-400) / .1);color:rgb(var(--color-surface-600))}.dark .input-group-shim{color:rgb(var(--color-surface-300))}.input-error{--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}:is(.dark .input-error){--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::-moz-placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.list{list-style-type:none}.list>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.list li{display:flex;align-items:center;border-radius:var(--theme-rounded-base)}.list li>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.placeholder{height:20px;background-color:rgb(var(--color-surface-300));border-radius:var(--theme-rounded-base)}.dark .placeholder{background-color:rgb(var(--color-surface-600))}.w-modal{width:100%;max-width:640px}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-style:auto;outline-color:-webkit-focus-ring-color}.variant-filled{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .variant-filled{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.\\!variant-filled-primary{--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-filled-primary{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .variant-filled-primary){--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .\\!variant-filled-primary){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-ghost-surface{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .variant-ghost-surface){--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}.variant-soft,.variant-soft-surface{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .variant-soft,.dark .variant-soft-surface{color:rgb(var(--color-surface-200))}:is(.dark .variant-soft),:is(.dark .variant-soft-surface){background-color:rgb(var(--color-surface-500) / .2)}@media (min-width: 768px){.h3{font-size:24px;line-height:32px}}@media (min-width: 1024px){.alert{flex-direction:row;align-items:center}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(0px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0px * var(--tw-space-y-reverse));--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-width:0px!important}.visible{visibility:visible}.static{position:static}.fixed{position:fixed}.\\!absolute{position:absolute!important}.absolute{position:absolute}.relative{position:relative}.bottom-0{bottom:0}.bottom-24{bottom:96px}.left-0{left:0}.left-1\\/2{left:50%}.right-0{right:0}.right-2{right:8px}.right-20{right:80px}.right-4{right:16px}.top-0{top:0}.top-1\\/2{top:50%}.top-2{top:8px}.top-36{top:144px}.-z-10{z-index:-10}.z-\\[999\\]{z-index:999}.row-span-2{grid-row:span 2 / span 2}.row-start-1{grid-row-start:1}.\\!m-0{margin:0!important}.m-auto{margin:auto}.mx-2{margin-left:8px;margin-right:8px}.my-4{margin-top:16px;margin-bottom:16px}.my-\\[1px\\]{margin-top:1px;margin-bottom:1px}.ml-1{margin-left:4px}.ml-3{margin-left:12px}.ml-4{margin-left:16px}.mr-2{margin-right:8px}.mr-6{margin-right:24px}.mt-2{margin-top:8px}.mt-4{margin-top:16px}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.contents{display:contents}.hidden{display:none}.size-14{width:56px;height:56px}.h-0{height:0px}.h-10{height:40px}.h-2{height:8px}.h-4{height:16px}.h-48{height:192px}.h-6{height:24px}.h-8{height:32px}.h-\\[38px\\]{height:38px}.h-auto{height:auto}.h-fit{height:-moz-fit-content;height:fit-content}.h-full{height:100%}.h-screen{height:100vh}.max-h-\\[200px\\]{max-height:200px}.min-h-0{min-height:0px}.min-h-full{min-height:100%}.w-0{width:0px}.w-12{width:48px}.w-16{width:64px}.w-20{width:80px}.w-32{width:128px}.w-36{width:144px}.w-48{width:192px}.w-5{width:20px}.w-6{width:24px}.w-8{width:32px}.w-\\[140px\\]{width:140px}.w-\\[38px\\]{width:38px}.w-\\[50\\%\\]{width:50%}.w-\\[600px\\]{width:600px}.w-full{width:100%}.w-screen{width:100vw}.max-w-full{max-width:100%}.flex-1{flex:1 1 0%}.flex-auto{flex:1 1 auto}.flex-none{flex:none}.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.basis-0{flex-basis:0px}.origin-\\[50\\%_50\\%\\]{transform-origin:50% 50%}.-translate-x-1\\/2{--tw-translate-x: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-x-full{--tw-translate-x: -100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\\/2{--tw-translate-y: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-0{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-\\[calc\\(100\\%-44px\\)\\]{--tw-translate-x: calc(100% - 44px) ;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-full{--tw-translate-x: 100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-90{--tw-rotate: -90deg;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-\\[0\\.8\\]{--tw-scale-x: .8;--tw-scale-y: .8;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!transform-none{transform:none!important}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.\\!cursor-default{cursor:default!important}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-\\[0px_1fr\\]{grid-template-columns:0px 1fr}.grid-cols-\\[140px_1fr\\]{grid-template-columns:140px 1fr}.grid-cols-\\[auto_1fr_auto\\]{grid-template-columns:auto 1fr auto}.grid-cols-\\[auto_1fr_auto_auto\\]{grid-template-columns:auto 1fr auto auto}.grid-rows-\\[0fr\\]{grid-template-rows:0fr}.grid-rows-\\[1fr\\]{grid-template-rows:1fr}.grid-rows-\\[auto_1fr\\]{grid-template-rows:auto 1fr}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.\\!items-stretch{align-items:stretch!important}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:4px}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.gap-6{gap:24px}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(8px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(8px * var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.divide-y-\\[1px\\]>:not([hidden])~:not([hidden]){--tw-divide-y-reverse: 0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.self-start{align-self:flex-start}.self-stretch{align-self:stretch}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-y-hidden{overflow-y:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded{border-radius:4px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:8px}.rounded-md{border-radius:6px}.rounded-none{border-radius:0}.rounded-e-\\[4px\\]{border-start-end-radius:4px;border-end-end-radius:4px}.rounded-s-full{border-start-start-radius:9999px;border-end-start-radius:9999px}.border{border-width:1px}.border-0{border-width:0px}.\\!border-t-0{border-top-width:0px!important}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l{border-left-width:1px}.\\!border-surface-700{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-700) / var(--tw-border-opacity))!important}.border-surface-400\\/20{border-color:rgb(var(--color-surface-400) / .2)}.bg-primary-500{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.bg-primary-500\\/30{background-color:rgb(var(--color-primary-500) / .3)}.bg-surface-400{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-400) / var(--tw-bg-opacity))}.bg-surface-400\\/20{background-color:rgb(var(--color-surface-400) / .2)}.bg-surface-900{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-900) / var(--tw-bg-opacity))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity: 1;background-color:rgb(255 255 255 / var(--tw-bg-opacity))}.bg-white\\/30{background-color:#ffffff4d}.bg-white\\/75{background-color:#ffffffbf}.bg-scroll{background-attachment:scroll}.fill-current{fill:currentColor}.fill-primary-500{fill:rgb(var(--color-primary-500) / 1)}.fill-slate-700{fill:#334155}.fill-transparent{fill:transparent}.stroke-primary-500{stroke:rgb(var(--color-primary-500) / 1)}.stroke-primary-500\\/30{stroke:rgb(var(--color-primary-500) / .3)}.stroke-surface-500\\/30{stroke:rgb(var(--color-surface-500) / .3)}.stroke-surface-900{stroke:rgb(var(--color-surface-900) / 1)}.object-cover{-o-object-fit:cover;object-fit:cover}.object-center{-o-object-position:center;object-position:center}.\\!p-0{padding:0!important}.p-0{padding:0}.p-1{padding:4px}.p-2{padding:8px}.p-4{padding:16px}.\\!px-1{padding-left:4px!important;padding-right:4px!important}.\\!py-2{padding-top:8px!important;padding-bottom:8px!important}.\\!py-\\[7px\\]{padding-top:7px!important;padding-bottom:7px!important}.px-3{padding-left:12px;padding-right:12px}.px-4{padding-left:16px;padding-right:16px}.px-8{padding-left:32px;padding-right:32px}.py-1{padding-top:4px;padding-bottom:4px}.py-2{padding-top:8px;padding-bottom:8px}.py-6{padding-top:24px;padding-bottom:24px}.pb-6{padding-bottom:24px}.pl-6{padding-left:24px}.pr-0{padding-right:0}.pr-2{padding-right:8px}.pr-4{padding-right:16px}.pr-6{padding-right:24px}.pt-4{padding-top:16px}.text-center{text-align:center}.text-2xl{font-size:24px;line-height:32px}.text-\\[12px\\]{font-size:12px}.text-base{font-size:16px;line-height:24px}.text-sm{font-size:14px;line-height:20px}.text-xs{font-size:12px;line-height:16px}.font-bold{font-weight:700}.italic{font-style:italic}.leading-\\[14px\\]{line-height:14px}.leading-loose{line-height:2}.\\!text-error-500{--tw-text-opacity: 1 !important;color:rgb(var(--color-error-500) / var(--tw-text-opacity))!important}.text-error-500{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.text-surface-400{--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.underline-offset-2{text-underline-offset:2px}.accent-surface-900{accent-color:rgb(var(--color-surface-900) / 1)}.opacity-40{opacity:.4}.opacity-50{opacity:.5}.opacity-70{opacity:.7}.mix-blend-hard-light{mix-blend-mode:hard-light}.shadow{--tw-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);--tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.shadow-xl{--tw-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);--tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.-outline-offset-\\[3px\\]{outline-offset:-3px}.\\!ring-0{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.blur{--tw-blur: blur(8px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\\[1px\\]{--tw-blur: blur(1px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-xl{--tw-drop-shadow: drop-shadow(0 20px 13px rgb(0 0 0 / .03)) drop-shadow(0 8px 5px rgb(0 0 0 / .08));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur: blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-columns\\]{transition-property:grid-template-columns;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-rows\\]{transition-property:grid-template-rows;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[stroke-dashoffset\\]{transition-property:stroke-dashoffset;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[transform\\]{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[width\\]{transition-property:width;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.delay-100{transition-delay:.1s}.duration-100{transition-duration:.1s}.duration-\\[200ms\\]{transition-duration:.2s}.duration-\\[250ms\\]{transition-duration:.25s}.duration-\\[400ms\\]{transition-duration:.4s}.bg-surface-backdrop-token{background-color:rgb(var(--color-surface-400) / .7)}.dark .bg-surface-backdrop-token{background-color:rgb(var(--color-surface-900) / .7)}.bg-surface-100-800-token{background-color:rgb(var(--color-surface-100))}.dark .bg-surface-100-800-token{background-color:rgb(var(--color-surface-800))}.bg-surface-200-700-token{background-color:rgb(var(--color-surface-200))}.dark .bg-surface-200-700-token{background-color:rgb(var(--color-surface-700))}.bg-surface-900-50-token{background-color:rgb(var(--color-surface-900))}.dark .bg-surface-900-50-token{background-color:rgb(var(--color-surface-50))}.border-token{border-width:var(--theme-border-base)}.border-surface-400-500-token{border-color:rgb(var(--color-surface-400))}.dark .border-surface-400-500-token{border-color:rgb(var(--color-surface-500))}.border-surface-900-50-token{border-color:rgb(var(--color-surface-900))}.dark .border-surface-900-50-token{border-color:rgb(var(--color-surface-50))}.border-surface-800-100-token{border-color:rgb(var(--color-surface-800))}.dark .border-surface-800-100-token{border-color:rgb(var(--color-surface-100))}.rounded-token{border-radius:var(--theme-rounded-base)}.rounded-container-token{border-radius:var(--theme-rounded-container)}.rounded-tl-container-token{border-top-left-radius:var(--theme-rounded-container)}.rounded-tr-container-token{border-top-right-radius:var(--theme-rounded-container)}.fill-token{fill:rgba(var(--theme-font-color-base))}.dark .fill-token{fill:rgba(var(--theme-font-color-dark))}.text-surface-700-200-token{color:rgb(var(--color-surface-700))}.dark .text-surface-700-200-token{color:rgb(var(--color-surface-200))}.scrollbar-thin::-webkit-scrollbar-track{background-color:var(--scrollbar-track);border-radius:var(--scrollbar-track-radius)}.scrollbar-thin::-webkit-scrollbar-track:hover{background-color:var(--scrollbar-track-hover, var(--scrollbar-track))}.scrollbar-thin::-webkit-scrollbar-track:active{background-color:var(--scrollbar-track-active, var(--scrollbar-track-hover, var(--scrollbar-track)))}.scrollbar-thin::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:var(--scrollbar-thumb-radius)}.scrollbar-thin::-webkit-scrollbar-thumb:hover{background-color:var(--scrollbar-thumb-hover, var(--scrollbar-thumb))}.scrollbar-thin::-webkit-scrollbar-thumb:active{background-color:var(--scrollbar-thumb-active, var(--scrollbar-thumb-hover, var(--scrollbar-thumb)))}.scrollbar-thin::-webkit-scrollbar-corner{background-color:var(--scrollbar-corner);border-radius:var(--scrollbar-corner-radius)}.scrollbar-thin::-webkit-scrollbar-corner:hover{background-color:var(--scrollbar-corner-hover, var(--scrollbar-corner))}.scrollbar-thin::-webkit-scrollbar-corner:active{background-color:var(--scrollbar-corner-active, var(--scrollbar-corner-hover, var(--scrollbar-corner)))}.scrollbar-thin{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb, initial) var(--scrollbar-track, initial)}.scrollbar-thin::-webkit-scrollbar{display:block;width:8px;height:8px}.scrollbar-track-transparent{--scrollbar-track: transparent !important}.scrollbar-thumb-slate-400\\/50{--scrollbar-thumb: rgb(148 163 184 / .5) !important}.scrollbar-corner-transparent{--scrollbar-corner: transparent !important}.has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}:is(.dark .has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked)){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.hover\\:variant-soft:hover,.hover\\:variant-soft-surface:hover{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .hover\\:variant-soft:hover,.dark .hover\\:variant-soft-surface:hover{color:rgb(var(--color-surface-200))}:is(.dark .hover\\:variant-soft:hover){background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .hover\\:variant-soft-surface:hover){background-color:rgb(var(--color-surface-500) / .2)}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){background-color:rgb(var(--color-primary-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-primary-700))}.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){color:rgb(var(--color-primary-200))}:is(.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled])){background-color:rgb(var(--color-primary-500) / .2)}.\\*\\:\\!m-0>*{margin:0!important}.\\*\\:items-center>*{align-items:center}.\\*\\:\\!rounded-none>*{border-radius:0!important}.\\*\\:py-4>*{padding-top:16px;padding-bottom:16px}.\\*\\:text-sm>*{font-size:14px;line-height:20px}.\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-300))}.dark .\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-600))}.hover\\:translate-x-0:hover{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\\:text-xl:hover{font-size:20px;line-height:28px}.hover\\:opacity-100:hover{opacity:1}.hover\\:brightness-110:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.hover\\:brightness-\\[105\\%\\]:hover{--tw-brightness: brightness(105%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\\:decoration-wavy:focus{text-decoration-style:wavy}.focus\\:\\!outline-none:focus{outline:2px solid transparent!important;outline-offset:2px!important}.disabled\\:cursor-wait:disabled{cursor:wait}.disabled\\:opacity-70:disabled{opacity:.7}.dark\\:\\!border-surface-200:is(.dark *){--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-200) / var(--tw-border-opacity))!important}.dark\\:border-surface-500\\/20:is(.dark *){border-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-black\\/15:is(.dark *){background-color:#00000026}.dark\\:bg-surface-300:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-300) / var(--tw-bg-opacity))}.dark\\:bg-surface-500\\/20:is(.dark *){background-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-surface-700:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-700) / var(--tw-bg-opacity))}.dark\\:fill-slate-200:is(.dark *){fill:#e2e8f0}.dark\\:stroke-surface-50:is(.dark *){stroke:rgb(var(--color-surface-50) / 1)}.dark\\:accent-surface-50:is(.dark *){accent-color:rgb(var(--color-surface-50) / 1)}.dark\\:hover\\:brightness-110:hover:is(.dark *){--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}@media (min-width: 768px){.md\\:h-\\[600px\\]{height:600px}.md\\:max-w-screen-md{max-width:768px}.md\\:max-w-screen-sm{max-width:640px}.md\\:flex-row{flex-direction:row}.md\\:\\!items-baseline{align-items:baseline!important}}@media (min-width: 1024px){.lg\\:max-w-screen-md{max-width:768px}}@media (min-width: 1280px){.xl\\:max-w-screen-lg{max-width:1024px}}.\\[\\&\\:last-child\\]\\:\\*\\:pt-4>*:last-child{padding-top:16px}.\\[\\&\\:not\\(\\:last-child\\)\\]\\:\\*\\:py-4>*:not(:last-child){padding-top:16px;padding-bottom:16px}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:hover\\:bg-slate-400\\/30:hover:not([disabled]){background-color:#94a3b84d}.\\[\\&\\>input\\]\\:\\!min-w-0>input{min-width:0px!important}.\\[\\&\\>input\\]\\:\\!border-transparent>input{border-color:transparent!important} `);
 
 (function (Dexie, dayjs, JSZip, GIF) {
   'use strict';
@@ -42,7 +41,6 @@
   var __defProp = Object.defineProperty;
   var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
   var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  var _GM_addStyle = /* @__PURE__ */ (() => typeof GM_addStyle != "undefined" ? GM_addStyle : void 0)();
   var _GM_download = /* @__PURE__ */ (() => typeof GM_download != "undefined" ? GM_download : void 0)();
   var _GM_info = /* @__PURE__ */ (() => typeof GM_info != "undefined" ? GM_info : void 0)();
   var _GM_registerMenuCommand = /* @__PURE__ */ (() => typeof GM_registerMenuCommand != "undefined" ? GM_registerMenuCommand : void 0)();
@@ -89,17 +87,6 @@
     return new Promise((resolve) => {
       setTimeout(resolve, delay);
     });
-  }
-  function wakeableSleep(delay) {
-    let wake = () => void 0;
-    const sleep2 = new Promise((r) => {
-      setTimeout(r, delay);
-      wake = r;
-    });
-    return {
-      wake,
-      sleep: sleep2
-    };
   }
   function replaceInvalidChar(str) {
     if (typeof str !== "string") throw new TypeError("expect string but got " + typeof str);
@@ -200,16 +187,18 @@
     return str;
   }
   class RequestError extends Error {
-    constructor(message, response) {
-      super(message);
-      __publicField(this, "response");
+    constructor(url2, status) {
+      super(status + " " + url2);
+      __publicField(this, "url");
+      __publicField(this, "status");
       this.name = "RequestError";
-      this.response = response;
+      this.url = url2;
+      this.status = status;
     }
   }
   class CancelError extends Error {
     constructor() {
-      super("User aborted");
+      super("User aborted.");
       this.name = "CancelError";
     }
   }
@@ -486,11 +475,8 @@
           if (downloadMeta.isAborted) {
             resolve();
           } else {
-            reject(
-              new Error(
-                `FileSave error: ${downloadMeta.config.path} because ${error.error} ${error.details ?? ""} `
-              )
-            );
+            console.error(error);
+            reject(new Error(`FileSave error: ${downloadMeta.config.path}`));
           }
         },
         onload: () => {
@@ -531,7 +517,7 @@
   var TagLanguage = /* @__PURE__ */ ((TagLanguage2) => {
     TagLanguage2["JAPANESE"] = "ja";
     TagLanguage2["CHINESE"] = "zh";
-    TagLanguage2["TRADITIONAL_CHINESE"] = "zh-tw";
+    TagLanguage2["TRADITIONAL_CHINESE"] = "zh_tw";
     TagLanguage2["ENGLISH"] = "en";
     return TagLanguage2;
   })(TagLanguage || {});
@@ -558,7 +544,7 @@
       }
     };
     const defaultConfig = Object.freeze({
-      version: "1.1.0",
+      version: "1.2.0",
       ugoiraFormat: "zip",
       folderPattern: getDefaultFolder(),
       filenamePattern: getDefaultFilename(),
@@ -750,7 +736,7 @@
           if (isAborted) return;
           let err;
           if (error.status === 429) {
-            err = new RequestError("Too many request", error);
+            err = new RequestError(config22.src, error.status);
           } else {
             err = new Error(`Download failed. ID: ${taskId2}.`);
             logger.error(error);
@@ -1022,34 +1008,19 @@
     async getImageEffect(effectId) {
       const item = await this.imageEffect.get(effectId);
       if (!item) return item;
-      const { id, data: data2, width, height, delays } = item;
-      const imageDatas = data2.map((u8arr) => new ImageData(u8arr, width, height));
-      return {
-        id,
-        imageDatas,
-        delays
-      };
+      return item;
     }
     addImageEffect(effectData) {
-      const { imageDatas, id, delays } = effectData;
-      const { width, height } = imageDatas[0];
-      const data2 = imageDatas.map((imageData) => imageData.data);
-      return this.imageEffect.add({
-        id,
-        data: data2,
-        width,
-        height,
-        delays
-      });
+      return this.imageEffect.put(effectData);
     }
   }
-  let instance$j;
+  let instance$p;
   const SingletonHistoryDb = new Proxy(HistoryDb, {
     construct(target) {
-      if (!instance$j) {
-        return instance$j = new target();
+      if (!instance$p) {
+        return instance$p = new target();
       }
-      return instance$j;
+      return instance$p;
     }
   });
   const historyDb = new SingletonHistoryDb();
@@ -1057,7 +1028,7 @@
     async parse(id) {
       var _a, _b, _c, _d, _e, _f;
       const res = await fetch("index.php?page=post&s=view&id=" + id);
-      if (!res.ok) throw new RequestError("Request failed with status code " + res.status, res);
+      if (!res.ok) throw new RequestError(res.url, res.status);
       const html = await res.text();
       const doc = new DOMParser().parseFromString(html, "text/html");
       const src = ((_a = doc.querySelector("#gelcomVideoPlayer > source")) == null ? void 0 : _a.src) || doc.querySelector('meta[property="og:image"]').getAttribute("content");
@@ -1645,26 +1616,41 @@
         }
       }
     },
-    button: {
-      setting: "设置",
-      download_stop: "停止",
-      download_works: "作品",
-      download_bookmarks: "收藏",
-      download_bookmarks_public: "公开",
-      download_bookmarks_private: "不公开",
-      download_all_one_page: "全部（单页）",
-      download_all: "全部（批量）",
-      download_r18_one_page: "R-18（单页）",
-      download_r18: "R-18（批量）"
+    downloader: {
+      category: {
+        tab_name: "类别",
+        filter: {
+          exclude_downloaded: "排除已下载",
+          download_all_pages: "下载所有页",
+          download_selected_pages: "自定义页数",
+          pixiv_illust: "插画",
+          pixiv_manga: "漫画",
+          pixiv_ugoira: "动图"
+        }
+      },
+      tag_filter: {
+        tab_name: "标签",
+        placeholder: {
+          blacklist_tag: "黑名单，将排除含有以下标签的作品。",
+          whitelist_tag: "白名单，只下载包含以下标签的作品。"
+        }
+      },
+      download_type: {
+        stop: "停止",
+        pixiv_works: "作品",
+        pixiv_bookmark: "收藏",
+        pixiv_bookmark_public: "公开收藏",
+        pixiv_bookmark_private: "不公开收藏",
+        pixiv_follow_latest_all: "全部",
+        pixiv_follow_latest_r18: "R-18"
+      }
     },
-    checkbox: {
-      filter_exclude_downloaded: "排除已下载图片",
-      filter_illusts: "插画",
-      filter_manga: "漫画",
-      filter_ugoira: "动图"
+    button: {
+      setting: "设置"
     },
     text: {
-      confirm_clear_history: "真的要清除历史记录吗？"
+      confirm_clear_history: "真的要清除历史记录吗？",
+      feedback: "有问题or想建议？这里反馈"
     }
   };
   const en = {
@@ -1768,26 +1754,41 @@
         }
       }
     },
-    button: {
-      setting: "Setting",
-      download_stop: "Stop",
-      download_works: "Works",
-      download_bookmarks: "Bookmarks",
-      download_bookmarks_public: "Public",
-      download_bookmarks_private: "Private",
-      download_all_one_page: "All (one page)",
-      download_all: "All",
-      download_r18_one_page: "R-18 (one page)",
-      download_r18: "R-18"
+    downloader: {
+      category: {
+        tab_name: "Category",
+        filter: {
+          exclude_downloaded: "Exclude Downloaded",
+          download_all_pages: "All Pages",
+          download_selected_pages: "Custom Pages",
+          pixiv_illust: "Illustration",
+          pixiv_manga: "Manga",
+          pixiv_ugoira: "Ugoira"
+        }
+      },
+      tag_filter: {
+        tab_name: "Tags",
+        placeholder: {
+          blacklist_tag: "Blacklist: Exclude works with these tags.",
+          whitelist_tag: "Whitelist: Only download works with these tags."
+        }
+      },
+      download_type: {
+        stop: "Stop",
+        pixiv_works: "Works",
+        pixiv_bookmark: "Bookmarks",
+        pixiv_bookmark_public: "Public",
+        pixiv_bookmark_private: "Private",
+        pixiv_follow_latest_all: "All",
+        pixiv_follow_latest_r18: "R-18"
+      }
     },
-    checkbox: {
-      filter_exclude_downloaded: "Exclude downloaded",
-      filter_illusts: "Illustrations",
-      filter_manga: "Manga",
-      filter_ugoira: "Ugoira"
+    button: {
+      setting: "Setting"
     },
     text: {
-      confirm_clear_history: "Do you really want to clear history?"
+      confirm_clear_history: "Do you really want to clear history?",
+      feedback: "Feedback / Report an issue"
     }
   };
   const messages = {
@@ -1817,6 +1818,10 @@
       /** @type {T & S} */
       tar
     );
+  }
+  function is_promise(value) {
+    return !!value && (typeof value === "object" || typeof value === "function") && typeof /** @type {any} */
+    value.then === "function";
   }
   function run(fn) {
     return fn();
@@ -2053,6 +2058,16 @@
       }
     }
   }
+  function get_binding_group_value(group, __value, checked) {
+    const value = /* @__PURE__ */ new Set();
+    for (let i = 0; i < group.length; i += 1) {
+      if (group[i].checked) value.add(group[i].__value);
+    }
+    if (!checked) {
+      value.delete(__value);
+    }
+    return Array.from(value);
+  }
   function init_binding_group(group) {
     let _inputs;
     return {
@@ -2083,7 +2098,9 @@
     input.value = value == null ? "" : value;
   }
   function set_style(node, key, value, important) {
-    {
+    if (value == null) {
+      node.style.removeProperty(key);
+    } else {
       node.style.setProperty(key, value, "");
     }
   }
@@ -2099,9 +2116,18 @@
       select.selectedIndex = -1;
     }
   }
+  function select_options(select, value) {
+    for (let i = 0; i < select.options.length; i += 1) {
+      const option = select.options[i];
+      option.selected = ~value.indexOf(option.__value);
+    }
+  }
   function select_value(select) {
     const selected_option = select.querySelector(":checked");
     return selected_option && selected_option.__value;
+  }
+  function select_multiple_value(select) {
+    return [].map.call(select.querySelectorAll(":checked"), (option) => option.__value);
   }
   function toggle_class(element2, name, toggle) {
     element2.classList.toggle(name, !!toggle);
@@ -2263,6 +2289,78 @@
       managed_styles.clear();
     });
   }
+  function create_animation(node, from, fn, params) {
+    if (!from) return noop;
+    const to = node.getBoundingClientRect();
+    if (from.left === to.left && from.right === to.right && from.top === to.top && from.bottom === to.bottom)
+      return noop;
+    const {
+      delay = 0,
+      duration = 300,
+      easing = identity,
+      // @ts-ignore todo: should this be separated from destructuring? Or start/end added to public api and documentation?
+      start: start_time = now() + delay,
+      // @ts-ignore todo:
+      end = start_time + duration,
+      tick: tick2 = noop,
+      css
+    } = fn(node, { from, to }, params);
+    let running = true;
+    let started = false;
+    let name;
+    function start() {
+      if (css) {
+        name = create_rule(node, 0, 1, duration, delay, easing, css);
+      }
+      if (!delay) {
+        started = true;
+      }
+    }
+    function stop() {
+      if (css) delete_rule(node, name);
+      running = false;
+    }
+    loop((now2) => {
+      if (!started && now2 >= start_time) {
+        started = true;
+      }
+      if (started && now2 >= end) {
+        tick2(1, 0);
+        stop();
+      }
+      if (!running) {
+        return false;
+      }
+      if (started) {
+        const p = now2 - start_time;
+        const t2 = 0 + 1 * easing(p / duration);
+        tick2(t2, 1 - t2);
+      }
+      return true;
+    });
+    start();
+    tick2(0, 1);
+    return stop;
+  }
+  function fix_position(node) {
+    const style = getComputedStyle(node);
+    if (style.position !== "absolute" && style.position !== "fixed") {
+      const { width, height } = style;
+      const a = node.getBoundingClientRect();
+      node.style.position = "absolute";
+      node.style.width = width;
+      node.style.height = height;
+      add_transform(node, a);
+    }
+  }
+  function add_transform(node, a) {
+    const b = node.getBoundingClientRect();
+    if (a.left !== b.left || a.top !== b.top) {
+      const style = getComputedStyle(node);
+      const transform = style.transform === "none" ? "" : style.transform;
+      node.style.transform = `${transform} translate(${a.left - b.left}px, ${a.top - b.top}px)`;
+    }
+  }
   let current_component;
   function set_current_component(component) {
     current_component = component;
@@ -2276,9 +2374,6 @@
   }
   function afterUpdate(fn) {
     get_current_component().$$.after_update.push(fn);
-  }
-  function onDestroy(fn) {
-    get_current_component().$$.on_destroy.push(fn);
   }
   function createEventDispatcher() {
     const component = get_current_component();
@@ -2696,8 +2791,162 @@
       }
     };
   }
+  function handle_promise(promise2, info) {
+    const token = info.token = {};
+    function update2(type, index, key, value) {
+      if (info.token !== token) return;
+      info.resolved = value;
+      let child_ctx = info.ctx;
+      if (key !== void 0) {
+        child_ctx = child_ctx.slice();
+        child_ctx[key] = value;
+      }
+      const block = type && (info.current = type)(child_ctx);
+      let needs_flush = false;
+      if (info.block) {
+        if (info.blocks) {
+          info.blocks.forEach((block2, i) => {
+            if (i !== index && block2) {
+              group_outros();
+              transition_out(block2, 1, 1, () => {
+                if (info.blocks[i] === block2) {
+                  info.blocks[i] = null;
+                }
+              });
+              check_outros();
+            }
+          });
+        } else {
+          info.block.d(1);
+        }
+        block.c();
+        transition_in(block, 1);
+        block.m(info.mount(), info.anchor);
+        needs_flush = true;
+      }
+      info.block = block;
+      if (info.blocks) info.blocks[index] = block;
+      if (needs_flush) {
+        flush();
+      }
+    }
+    if (is_promise(promise2)) {
+      const current_component2 = get_current_component();
+      promise2.then(
+        (value) => {
+          set_current_component(current_component2);
+          update2(info.then, 1, info.value, value);
+          set_current_component(null);
+        },
+        (error) => {
+          set_current_component(current_component2);
+          update2(info.catch, 2, info.error, error);
+          set_current_component(null);
+          if (!info.hasCatch) {
+            throw error;
+          }
+        }
+      );
+      if (info.current !== info.pending) {
+        update2(info.pending, 0);
+        return true;
+      }
+    } else {
+      if (info.current !== info.then) {
+        update2(info.then, 1, info.value, promise2);
+        return true;
+      }
+      info.resolved = /** @type {T} */
+      promise2;
+    }
+  }
+  function update_await_block_branch(info, ctx, dirty) {
+    const child_ctx = ctx.slice();
+    const { resolved } = info;
+    if (info.current === info.then) {
+      child_ctx[info.value] = resolved;
+    }
+    if (info.current === info.catch) {
+      child_ctx[info.error] = resolved;
+    }
+    info.block.p(child_ctx, dirty);
+  }
   function ensure_array_like(array_like_or_iterator) {
     return (array_like_or_iterator == null ? void 0 : array_like_or_iterator.length) !== void 0 ? array_like_or_iterator : Array.from(array_like_or_iterator);
+  }
+  function outro_and_destroy_block(block, lookup) {
+    transition_out(block, 1, 1, () => {
+      lookup.delete(block.key);
+    });
+  }
+  function fix_and_outro_and_destroy_block(block, lookup) {
+    block.f();
+    outro_and_destroy_block(block, lookup);
+  }
+  function update_keyed_each(old_blocks, dirty, get_key, dynamic, ctx, list, lookup, node, destroy, create_each_block2, next, get_context) {
+    let o = old_blocks.length;
+    let n = list.length;
+    let i = o;
+    const old_indexes = {};
+    while (i--) old_indexes[old_blocks[i].key] = i;
+    const new_blocks = [];
+    const new_lookup = /* @__PURE__ */ new Map();
+    const deltas = /* @__PURE__ */ new Map();
+    const updates = [];
+    i = n;
+    while (i--) {
+      const child_ctx = get_context(ctx, list, i);
+      const key = get_key(child_ctx);
+      let block = lookup.get(key);
+      if (!block) {
+        block = create_each_block2(key, child_ctx);
+        block.c();
+      } else {
+        updates.push(() => block.p(child_ctx, dirty));
+      }
+      new_lookup.set(key, new_blocks[i] = block);
+      if (key in old_indexes) deltas.set(key, Math.abs(i - old_indexes[key]));
+    }
+    const will_move = /* @__PURE__ */ new Set();
+    const did_move = /* @__PURE__ */ new Set();
+    function insert2(block) {
+      transition_in(block, 1);
+      block.m(node, next);
+      lookup.set(block.key, block);
+      next = block.first;
+      n--;
+    }
+    while (o && n) {
+      const new_block = new_blocks[n - 1];
+      const old_block = old_blocks[o - 1];
+      const new_key = new_block.key;
+      const old_key = old_block.key;
+      if (new_block === old_block) {
+        next = new_block.first;
+        o--;
+        n--;
+      } else if (!new_lookup.has(old_key)) {
+        destroy(old_block, lookup);
+        o--;
+      } else if (!lookup.has(new_key) || will_move.has(new_key)) {
+        insert2(new_block);
+      } else if (did_move.has(old_key)) {
+        o--;
+      } else if (deltas.get(new_key) > deltas.get(old_key)) {
+        did_move.add(new_key);
+        insert2(new_block);
+      } else {
+        will_move.add(old_key);
+        o--;
+      }
+    }
+    while (o--) {
+      const old_block = old_blocks[o];
+      if (!new_lookup.has(old_block.key)) destroy(old_block, lookup);
+    }
+    while (n) insert2(new_blocks[n - 1]);
+    run_all(updates);
+    return new_blocks;
   }
   function get_spread_update(levels, updates) {
     const update2 = {};
@@ -3057,6 +3306,9 @@
         }
       });
     });
+    if (extend) {
+      Class = extend(Class);
+    }
     Component.element = /** @type {any} */
     Class;
     return Class;
@@ -3115,8 +3367,6 @@
     }
   }
   const PUBLIC_VERSION = "4";
-  if (typeof window !== "undefined")
-    (window.__svelte || (window.__svelte = { v: /* @__PURE__ */ new Set() })).v.add(PUBLIC_VERSION);
   const subscriber_queue = [];
   function readable(value, start) {
     return {
@@ -3164,6 +3414,417 @@
     }
     return { set, update: update2, subscribe: subscribe2 };
   }
+  function derived(stores2, fn, initial_value) {
+    const single = !Array.isArray(stores2);
+    const stores_array = single ? [stores2] : stores2;
+    if (!stores_array.every(Boolean)) {
+      throw new Error("derived() expects stores as input, got a falsy value");
+    }
+    const auto = fn.length < 2;
+    return readable(initial_value, (set, update2) => {
+      let started = false;
+      const values = [];
+      let pending = 0;
+      let cleanup = noop;
+      const sync = () => {
+        if (pending) {
+          return;
+        }
+        cleanup();
+        const result = fn(single ? values[0] : values, set, update2);
+        if (auto) {
+          set(result);
+        } else {
+          cleanup = is_function(result) ? result : noop;
+        }
+      };
+      const unsubscribers = stores_array.map(
+        (store, i) => subscribe(
+          store,
+          (value) => {
+            values[i] = value;
+            pending &= ~(1 << i);
+            if (started) {
+              sync();
+            }
+          },
+          () => {
+            pending |= 1 << i;
+          }
+        )
+      );
+      started = true;
+      sync();
+      return function stop() {
+        run_all(unsubscribers);
+        cleanup();
+        started = false;
+      };
+    });
+  }
+  function readonly(store) {
+    return {
+      subscribe: store.subscribe.bind(store)
+    };
+  }
+  const defaultData = {
+    selectedFilters: null,
+    blacklistTag: [],
+    whitelistTag: [],
+    downloadAllPages: true,
+    pageStart: 1,
+    pageEnd: 1
+  };
+  const STORAGE_KEY = "pdl-downloader_option";
+  const saveData = localStorage.getItem(STORAGE_KEY);
+  const storeData = saveData ? JSON.parse(saveData) : defaultData;
+  function storeBuilder(data2) {
+    const obj = {};
+    Object.keys(data2).forEach((key) => {
+      obj[key] = writable(data2[key]);
+    });
+    return obj;
+  }
+  const optionStore = storeBuilder(storeData);
+  const watchStoreData = derived(Object.values(optionStore), (data2) => {
+    const obj = {};
+    Object.keys(optionStore).forEach((key, idx) => {
+      obj[key] = data2[idx];
+    });
+    return obj;
+  });
+  watchStoreData.subscribe((val) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
+  });
+  let useBatchDownload = () => {
+    throw new Error("You need to call `defineBatchDownload` before using `useBatchDownload`.");
+  };
+  function defineBatchDownload(downloaderConfig) {
+    const artworkCount = writable(0);
+    const successd = writable([]);
+    const failed = writable([]);
+    const excluded = writable([]);
+    const downloading = writable(false);
+    const log = writable();
+    const tasks2 = [];
+    let controller;
+    let downloadCompleted;
+    let downloadAbort;
+    const readonlyStore = {
+      artworkCount: readonly(artworkCount),
+      successd: readonly(successd),
+      failed: readonly(failed),
+      excluded: readonly(excluded),
+      downloading: readonly(downloading),
+      log: readonly(log)
+    };
+    let $pageStart;
+    let $pageEnd;
+    let $downloadAllPages;
+    let $blacklistTag = [];
+    let $whitelistTag = [];
+    const includeFilters = [];
+    const excludeFilters = [];
+    const { selectedFilters, blacklistTag, whitelistTag, downloadAllPages, pageStart, pageEnd } = optionStore;
+    const watchPageRange = derived([downloadAllPages, pageStart, pageEnd], (data2) => data2);
+    watchPageRange.subscribe(([downloadAllPages2, pageStart2, pageEnd2]) => {
+      $downloadAllPages = downloadAllPages2;
+      $pageStart = pageStart2;
+      $pageEnd = pageEnd2;
+    });
+    selectedFilters.subscribe((selected) => {
+      if (!selected) return;
+      includeFilters.length = 0;
+      excludeFilters.length = 0;
+      selected.forEach((id) => {
+        const filter = downloaderConfig.filterOption.filters.find((filter2) => filter2.id === id);
+        if (filter) {
+          if (filter.type === "include") {
+            includeFilters.push(filter.fn);
+          } else {
+            excludeFilters.push(filter.fn);
+          }
+        }
+      });
+    });
+    blacklistTag.subscribe((val) => {
+      $blacklistTag = [...val];
+    });
+    whitelistTag.subscribe((val) => {
+      $whitelistTag = [...val];
+    });
+    const checkIfDownloadCompleted = derived(
+      [artworkCount, successd, failed, excluded],
+      ([$artworkCount, $successd, $failed, $excluded]) => {
+        return $artworkCount === $successd.length + $failed.length + $excluded.length;
+      }
+    );
+    checkIfDownloadCompleted.subscribe((isDone) => {
+      isDone && (downloadCompleted == null ? void 0 : downloadCompleted());
+    });
+    function reset() {
+      artworkCount.set(null);
+      successd.set([]);
+      failed.set([]);
+      excluded.set([]);
+      tasks2.length = 0;
+      controller = null;
+      downloadCompleted = () => {
+      };
+      downloadAbort = () => {
+      };
+      writeLog("Info", "Reset store.");
+    }
+    function setDownloading(isDownloading) {
+      downloading.update((val) => {
+        if (val && isDownloading) throw new Error("Already downloading.");
+        return isDownloading;
+      });
+    }
+    function setArtworkCount(num) {
+      artworkCount.set(num);
+    }
+    function addSuccessd(id) {
+      successd.update((val) => {
+        if (Array.isArray(id)) {
+          val.push(...id);
+          writeLog("Complete", id[id.length - 1]);
+        } else {
+          val.push(id);
+          writeLog("Complete", id);
+        }
+        return val;
+      });
+    }
+    function addFailed(item) {
+      failed.update((val) => {
+        let id;
+        let reason;
+        if (Array.isArray(item)) {
+          val.push(...item);
+          const lastItem = item[item.length - 1];
+          id = lastItem.id;
+          reason = lastItem.reason;
+        } else {
+          val.push(item);
+          id = item.id;
+          reason = item.reason;
+        }
+        if (reason instanceof Error || typeof reason === "string") {
+          writeLog("Fail", id, reason);
+        }
+        return val;
+      });
+    }
+    function addExcluded(id) {
+      excluded.update((val) => {
+        if (Array.isArray(id)) {
+          val.push(...id);
+          writeLog("Info", `${id.length} was excluded...`);
+        } else {
+          val.push(id);
+          writeLog("Info", `${id} was excluded...`);
+        }
+        return val;
+      });
+    }
+    function writeLog(type, arg, error) {
+      const item = {
+        type,
+        message: ""
+      };
+      switch (type) {
+        case "Error":
+          if (!(arg instanceof Error))
+            throw new TypeError("error` is expected to be error, but got " + typeof arg);
+          item.message = `[${arg.name}] ${arg.message}`;
+          break;
+        case "Fail":
+          if (typeof arg !== "string")
+            throw new TypeError("`id` is expected to be string, but got " + typeof arg);
+          typeof error === "string" ? item.message = `[Fail] ${arg}...${error}` : item.message = `[Fail] ${arg}...${error ? error.name + ":" + error.message : ""}`;
+          break;
+        default:
+          item.message = `[${type}] ${arg}`;
+          break;
+      }
+      log.set(item);
+    }
+    function filterTag(partialMeta) {
+      if (!("tags" in partialMeta) || !Array.isArray(partialMeta.tags)) return true;
+      if ($whitelistTag.length) {
+        return $whitelistTag.some((tag) => partialMeta.tags.includes(tag));
+      }
+      if ($blacklistTag.length) {
+        return !$blacklistTag.some((tag) => partialMeta.tags.includes(tag));
+      }
+      return true;
+    }
+    async function checkValidity(partialMeta) {
+      try {
+        const { enableTagFilter } = downloaderConfig.filterOption;
+        if (enableTagFilter && !filterTag(partialMeta)) return false;
+        if (!includeFilters.length) return false;
+        for (let i = 0; i < excludeFilters.length; i++) {
+          const fn = excludeFilters[i];
+          const isExcluded = await fn(partialMeta);
+          if (isExcluded) return false;
+        }
+        for (let i = 0; i < includeFilters.length; i++) {
+          const fn = includeFilters[i];
+          const isValid = await fn(partialMeta);
+          if (isValid) return true;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+      return false;
+    }
+    async function batchDownload(fnId, ...restArgs) {
+      setDownloading(true);
+      writeLog("Info", "Start download...");
+      reset();
+      controller = new AbortController();
+      const signal = controller.signal;
+      let generator;
+      try {
+        generator = getGenerator(fnId, ...restArgs);
+        await dispatchDownload(generator, signal);
+        writeLog("Info", "Download complete.");
+      } catch (error) {
+        logger.error(error);
+        generator == null ? void 0 : generator.return();
+        if (!signal.aborted) {
+          controller.abort(error);
+        }
+        if (error instanceof Error) {
+          writeLog("Error", error);
+        }
+      }
+      setDownloading(false);
+    }
+    function getGenerator(fnId, ...restArgs) {
+      let genFn;
+      let generator;
+      const pageConfig = downloaderConfig.pageMatch.find((pageItem) => {
+        const { genPageId } = pageItem;
+        if (Array.isArray(genPageId)) {
+          const item = genPageId.find((item2) => item2.id === fnId);
+          if (item) {
+            genFn = item.fn;
+            return true;
+          }
+        } else {
+          if (genPageId.id === fnId) {
+            genFn = genPageId.fn;
+            return true;
+          }
+        }
+        return false;
+      });
+      if (!pageConfig || !genFn) throw new Error("Invalid generator id: " + fnId);
+      if (!$downloadAllPages && $pageEnd < $pageStart)
+        throw new Error("End page must not be less than the start page.");
+      const pageRange = $downloadAllPages ? null : [$pageStart, $pageEnd];
+      const { filterWhenGenerateIngPage } = downloaderConfig.filterOption;
+      if (filterWhenGenerateIngPage) {
+        generator = genFn(pageRange, checkValidity, ...restArgs);
+      } else {
+        generator = genFn(pageRange, ...restArgs);
+      }
+      return generator;
+    }
+    async function dispatchDownload(generator, signal) {
+      signal.throwIfAborted();
+      const waitUntilDownloadComplete = new Promise((resolve, reject) => {
+        downloadCompleted = resolve;
+        downloadAbort = reject;
+      });
+      signal.addEventListener(
+        "abort",
+        () => {
+          downloadAbort == null ? void 0 : downloadAbort(signal.reason);
+          downloaderConfig.onDownloadAbort(tasks2);
+        },
+        { once: true }
+      );
+      const THRESHOLD = 5;
+      const { parseMetaByArtworkId, downloadByArtworkId } = downloaderConfig;
+      const { filterWhenGenerateIngPage } = downloaderConfig.filterOption;
+      const dlPromise = [];
+      let result;
+      let status429 = false;
+      const failedHanlderFactory = (id) => {
+        return (reason) => {
+          if (!signal.aborted) {
+            addFailed({ id, reason });
+            reason && logger.error(reason);
+            if (reason instanceof RequestError && reason.status === 429) {
+              status429 = true;
+            }
+          }
+        };
+      };
+      while ((result = await Promise.race([generator.next(), waitUntilDownloadComplete])) && !result.done) {
+        const { total, avaliable, invalid, unavaliable } = result.value;
+        logger.info(total, avaliable, invalid, unavaliable);
+        signal.throwIfAborted();
+        setArtworkCount(total);
+        invalid.length && addExcluded(invalid);
+        unavaliable.length && addFailed(unavaliable.map((id) => ({ id, reason: "Masked." })));
+        if (!avaliable.length) await Promise.race([sleep(1500), waitUntilDownloadComplete]);
+        for (const id of avaliable) {
+          if (status429) {
+            writeLog("Error", new Error("Http status: 429, wait for 30 seconds."));
+            await Promise.race([sleep(3e4), waitUntilDownloadComplete]);
+            status429 = false;
+          }
+          const artworkMeta = await parseMetaByArtworkId(id).catch(failedHanlderFactory(id));
+          signal.throwIfAborted();
+          if (!artworkMeta) continue;
+          if (!filterWhenGenerateIngPage) {
+            const isValid = await checkValidity(artworkMeta);
+            if (!isValid) {
+              addExcluded(id);
+              continue;
+            }
+          }
+          writeLog("Add", id);
+          const taskId = generateTaskID(id);
+          const processDownload = downloadByArtworkId(artworkMeta, taskId).then(function handleSucccess() {
+            !signal.aborted && addSuccessd(id);
+          }, failedHanlderFactory(id)).finally(function removeTask() {
+            const idx = tasks2.findIndex((storeId) => storeId === id);
+            idx !== -1 && tasks2.splice(idx, 1);
+          });
+          tasks2.push(taskId);
+          dlPromise.push(processDownload);
+          if (dlPromise.length >= THRESHOLD) {
+            await Promise.race([...dlPromise, waitUntilDownloadComplete]);
+            dlPromise.length = 0;
+          } else {
+            await Promise.race([sleep(1e3), waitUntilDownloadComplete]);
+          }
+        }
+      }
+      return waitUntilDownloadComplete;
+    }
+    function abort() {
+      controller && controller.abort(new CancelError());
+    }
+    function generateTaskID(id) {
+      return id + "_" + Math.random().toString(36).slice(2);
+    }
+    useBatchDownload = () => {
+      return {
+        ...readonlyStore,
+        batchDownload,
+        abort
+      };
+    };
+  }
+  if (typeof window !== "undefined")
+    (window.__svelte || (window.__svelte = { v: /* @__PURE__ */ new Set() })).v.add(PUBLIC_VERSION);
   const DRAWER_STORE_KEY = "drawerStore";
   function initializeDrawerStore() {
     const drawerStore = drawerService();
@@ -3453,6 +4114,48 @@
 			opacity: ${target_opacity - od * u}`
     };
   }
+  function slide(node, { delay = 0, duration = 400, easing = cubicOut, axis = "y" } = {}) {
+    const style = getComputedStyle(node);
+    const opacity = +style.opacity;
+    const primary_property = axis === "y" ? "height" : "width";
+    const primary_property_value = parseFloat(style[primary_property]);
+    const secondary_properties = axis === "y" ? ["top", "bottom"] : ["left", "right"];
+    const capitalized_secondary_properties = secondary_properties.map(
+      (e) => `${e[0].toUpperCase()}${e.slice(1)}`
+    );
+    const padding_start_value = parseFloat(style[`padding${capitalized_secondary_properties[0]}`]);
+    const padding_end_value = parseFloat(style[`padding${capitalized_secondary_properties[1]}`]);
+    const margin_start_value = parseFloat(style[`margin${capitalized_secondary_properties[0]}`]);
+    const margin_end_value = parseFloat(style[`margin${capitalized_secondary_properties[1]}`]);
+    const border_width_start_value = parseFloat(
+      style[`border${capitalized_secondary_properties[0]}Width`]
+    );
+    const border_width_end_value = parseFloat(
+      style[`border${capitalized_secondary_properties[1]}Width`]
+    );
+    return {
+      delay,
+      duration,
+      easing,
+      css: (t2) => `overflow: hidden;opacity: ${Math.min(t2 * 20, 1) * opacity};${primary_property}: ${t2 * primary_property_value}px;padding-${secondary_properties[0]}: ${t2 * padding_start_value}px;padding-${secondary_properties[1]}: ${t2 * padding_end_value}px;margin-${secondary_properties[0]}: ${t2 * margin_start_value}px;margin-${secondary_properties[1]}: ${t2 * margin_end_value}px;border-${secondary_properties[0]}-width: ${t2 * border_width_start_value}px;border-${secondary_properties[1]}-width: ${t2 * border_width_end_value}px;`
+    };
+  }
+  function scale(node, { delay = 0, duration = 400, easing = cubicOut, start = 0, opacity = 0 } = {}) {
+    const style = getComputedStyle(node);
+    const target_opacity = +style.opacity;
+    const transform = style.transform === "none" ? "" : style.transform;
+    const sd = 1 - start;
+    const od = target_opacity * (1 - opacity);
+    return {
+      delay,
+      duration,
+      easing,
+      css: (_t, u) => `
+			transform: ${transform} scale(${1 - sd * u});
+			opacity: ${target_opacity - od * u}
+		`
+    };
+  }
   function dynamicTransition(node, dynParams) {
     const { transition, params, enabled } = dynParams;
     if (enabled)
@@ -3465,9 +4168,9 @@
   const get_headline_slot_context = (ctx) => ({});
   const get_trail_slot_changes$2 = (dirty) => ({});
   const get_trail_slot_context$2 = (ctx) => ({});
-  const get_lead_slot_changes$1 = (dirty) => ({});
-  const get_lead_slot_context$1 = (ctx) => ({});
-  function create_if_block_2$5(ctx) {
+  const get_lead_slot_changes$2 = (dirty) => ({});
+  const get_lead_slot_context$2 = (ctx) => ({});
+  function create_if_block_2$6(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -3480,7 +4183,7 @@
       ctx,
       /*$$scope*/
       ctx[21],
-      get_lead_slot_context$1
+      get_lead_slot_context$2
     );
     return {
       c() {
@@ -3514,9 +4217,9 @@
                 /*$$scope*/
                 ctx2[21],
                 dirty,
-                get_lead_slot_changes$1
+                get_lead_slot_changes$2
               ),
-              get_lead_slot_context$1
+              get_lead_slot_context$2
             );
           }
         }
@@ -3543,7 +4246,7 @@
       }
     };
   }
-  function create_if_block_1$6(ctx) {
+  function create_if_block_1$8(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -3619,7 +4322,7 @@
       }
     };
   }
-  function create_if_block$a(ctx) {
+  function create_if_block$f(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -3695,7 +4398,7 @@
       }
     };
   }
-  function create_fragment$i(ctx) {
+  function create_fragment$o(ctx) {
     let div2;
     let div1;
     let t0;
@@ -3708,7 +4411,7 @@
     let current;
     let if_block0 = (
       /*$$slots*/
-      ctx[8].lead && create_if_block_2$5(ctx)
+      ctx[8].lead && create_if_block_2$6(ctx)
     );
     const default_slot_template = (
       /*#slots*/
@@ -3723,11 +4426,11 @@
     );
     let if_block1 = (
       /*$$slots*/
-      ctx[8].trail && create_if_block_1$6(ctx)
+      ctx[8].trail && create_if_block_1$8(ctx)
     );
     let if_block2 = (
       /*$$slots*/
-      ctx[8].headline && create_if_block$a(ctx)
+      ctx[8].headline && create_if_block$f(ctx)
     );
     return {
       c() {
@@ -3789,7 +4492,7 @@
               transition_in(if_block0, 1);
             }
           } else {
-            if_block0 = create_if_block_2$5(ctx2);
+            if_block0 = create_if_block_2$6(ctx2);
             if_block0.c();
             transition_in(if_block0, 1);
             if_block0.m(div1, t0);
@@ -3840,7 +4543,7 @@
               transition_in(if_block1, 1);
             }
           } else {
-            if_block1 = create_if_block_1$6(ctx2);
+            if_block1 = create_if_block_1$8(ctx2);
             if_block1.c();
             transition_in(if_block1, 1);
             if_block1.m(div1, null);
@@ -3868,7 +4571,7 @@
               transition_in(if_block2, 1);
             }
           } else {
-            if_block2 = create_if_block$a(ctx2);
+            if_block2 = create_if_block$f(ctx2);
             if_block2.c();
             transition_in(if_block2, 1);
             if_block2.m(div2, null);
@@ -3930,13 +4633,13 @@
       }
     };
   }
-  const cBase$6 = "flex flex-col";
+  const cBase$a = "flex flex-col";
   const cRowMain = "grid items-center";
   const cRowHeadline = "";
   const cSlotLead = "flex-none flex justify-between items-center";
   const cSlotDefault = "flex-auto";
   const cSlotTrail = "flex-none flex items-center space-x-4";
-  function instance$i($$self, $$props, $$invalidate) {
+  function instance$o($$self, $$props, $$invalidate) {
     let classesBase;
     let classesRowMain;
     let classesRowHeadline;
@@ -3978,7 +4681,7 @@
       if ("$$scope" in $$new_props) $$invalidate(21, $$scope = $$new_props.$$scope);
     };
     $$self.$$.update = () => {
-      $$invalidate(7, classesBase = `${cBase$6} ${background} ${border} ${spacing} ${padding} ${shadow} ${$$props.class ?? ""}`);
+      $$invalidate(7, classesBase = `${cBase$a} ${background} ${border} ${spacing} ${padding} ${shadow} ${$$props.class ?? ""}`);
       if ($$self.$$.dirty & /*gridColumns, gap, regionRowMain*/
       114688) {
         $$invalidate(6, classesRowMain = `${cRowMain} ${gridColumns} ${gap} ${regionRowMain}`);
@@ -4030,7 +4733,7 @@
   class AppBar extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$i, create_fragment$i, safe_not_equal, {
+      init(this, options, instance$o, create_fragment$o, safe_not_equal, {
         background: 9,
         border: 10,
         padding: 11,
@@ -4064,7 +4767,7 @@
       }
     };
   }
-  function create_fragment$h(ctx) {
+  function create_fragment$n(ctx) {
     let div1;
     let div0;
     let input;
@@ -4244,7 +4947,7 @@
       }
     };
   }
-  function instance$h($$self, $$props, $$invalidate) {
+  function instance$n($$self, $$props, $$invalidate) {
     let classesBase;
     let classesButton;
     const omit_props_names = ["files", "fileInput", "name", "width", "button"];
@@ -4326,7 +5029,7 @@
   class FileButton extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$h, create_fragment$h, safe_not_equal, {
+      init(this, options, instance$n, create_fragment$n, safe_not_equal, {
         files: 0,
         fileInput: 1,
         name: 2,
@@ -4335,7 +5038,1030 @@
       });
     }
   }
-  function create_fragment$g(ctx) {
+  function flip(node, { from, to }, params = {}) {
+    const style = getComputedStyle(node);
+    const transform = style.transform === "none" ? "" : style.transform;
+    const [ox, oy] = style.transformOrigin.split(" ").map(parseFloat);
+    const dx = from.left + from.width * ox / to.width - (to.left + ox);
+    const dy = from.top + from.height * oy / to.height - (to.top + oy);
+    const { delay = 0, duration = (d) => Math.sqrt(d) * 120, easing = cubicOut } = params;
+    return {
+      delay,
+      duration: is_function(duration) ? duration(Math.sqrt(dx * dx + dy * dy)) : duration,
+      easing,
+      css: (t2, u) => {
+        const x = u * dx;
+        const y = u * dy;
+        const sx = t2 + u * from.width / to.width;
+        const sy = t2 + u * from.height / to.height;
+        return `transform: ${transform} translate(${x}px, ${y}px) scale(${sx}, ${sy});`;
+      }
+    };
+  }
+  function get_each_context$5(ctx, list, i) {
+    const child_ctx = ctx.slice();
+    child_ctx[65] = list[i].id;
+    child_ctx[66] = list[i].val;
+    child_ctx[68] = i;
+    return child_ctx;
+  }
+  function get_each_context_1$3(ctx, list, i) {
+    const child_ctx = ctx.slice();
+    child_ctx[69] = list[i];
+    return child_ctx;
+  }
+  function create_each_block_1$3(ctx) {
+    let option_1;
+    let t_value = (
+      /*option*/
+      ctx[69] + ""
+    );
+    let t2;
+    let option_1_value_value;
+    return {
+      c() {
+        option_1 = element("option");
+        t2 = text(t_value);
+        option_1.__value = option_1_value_value = /*option*/
+        ctx[69];
+        set_input_value(option_1, option_1.__value);
+      },
+      m(target, anchor) {
+        insert(target, option_1, anchor);
+        append(option_1, t2);
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*value*/
+        1 && t_value !== (t_value = /*option*/
+        ctx2[69] + "")) set_data(t2, t_value);
+        if (dirty[0] & /*value*/
+        1 && option_1_value_value !== (option_1_value_value = /*option*/
+        ctx2[69])) {
+          option_1.__value = option_1_value_value;
+          set_input_value(option_1, option_1.__value);
+        }
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(option_1);
+        }
+      }
+    };
+  }
+  function create_if_block$e(ctx) {
+    let div;
+    let each_blocks = [];
+    let each_1_lookup = /* @__PURE__ */ new Map();
+    let div_class_value;
+    let div_intro;
+    let div_outro;
+    let current;
+    let each_value = ensure_array_like(
+      /*chipValues*/
+      ctx[16]
+    );
+    const get_key = (ctx2) => (
+      /*id*/
+      ctx2[65]
+    );
+    for (let i = 0; i < each_value.length; i += 1) {
+      let child_ctx = get_each_context$5(ctx, each_value, i);
+      let key = get_key(child_ctx);
+      each_1_lookup.set(key, each_blocks[i] = create_each_block$5(key, child_ctx));
+    }
+    return {
+      c() {
+        div = element("div");
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          each_blocks[i].c();
+        }
+        attr(div, "class", div_class_value = "input-chip-list " + /*classesChipList*/
+        ctx[19]);
+      },
+      m(target, anchor) {
+        insert(target, div, anchor);
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          if (each_blocks[i]) {
+            each_blocks[i].m(div, null);
+          }
+        }
+        current = true;
+      },
+      p(new_ctx, dirty) {
+        ctx = new_ctx;
+        if (dirty[0] & /*chips, chipTransitionOut, chipTransitionOutParams, transitions, removeChipInternally, chipValues*/
+        8503456) {
+          each_value = ensure_array_like(
+            /*chipValues*/
+            ctx[16]
+          );
+          group_outros();
+          for (let i = 0; i < each_blocks.length; i += 1) each_blocks[i].r();
+          each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, div, fix_and_outro_and_destroy_block, create_each_block$5, null, get_each_context$5);
+          for (let i = 0; i < each_blocks.length; i += 1) each_blocks[i].a();
+          check_outros();
+        }
+        if (!current || dirty[0] & /*classesChipList*/
+        524288 && div_class_value !== (div_class_value = "input-chip-list " + /*classesChipList*/
+        ctx[19])) {
+          attr(div, "class", div_class_value);
+        }
+      },
+      i(local) {
+        if (current) return;
+        for (let i = 0; i < each_value.length; i += 1) {
+          transition_in(each_blocks[i]);
+        }
+        if (local) {
+          add_render_callback(() => {
+            if (!current) return;
+            if (div_outro) div_outro.end(1);
+            div_intro = create_in_transition(div, dynamicTransition, {
+              transition: (
+                /*listTransitionIn*/
+                ctx[8]
+              ),
+              params: (
+                /*listTransitionInParams*/
+                ctx[9]
+              ),
+              enabled: (
+                /*transitions*/
+                ctx[7]
+              )
+            });
+            div_intro.start();
+          });
+        }
+        current = true;
+      },
+      o(local) {
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          transition_out(each_blocks[i]);
+        }
+        if (div_intro) div_intro.invalidate();
+        if (local) {
+          div_outro = create_out_transition(div, dynamicTransition, {
+            transition: (
+              /*listTransitionOut*/
+              ctx[10]
+            ),
+            params: (
+              /*listTransitionOutParams*/
+              ctx[11]
+            ),
+            enabled: (
+              /*transitions*/
+              ctx[7]
+            )
+          });
+        }
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div);
+        }
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          each_blocks[i].d();
+        }
+        if (detaching && div_outro) div_outro.end();
+      }
+    };
+  }
+  function create_each_block$5(key_1, ctx) {
+    let div;
+    let button;
+    let span0;
+    let t0_value = (
+      /*val*/
+      ctx[66] + ""
+    );
+    let t0;
+    let t1;
+    let span1;
+    let button_class_value;
+    let button_intro;
+    let button_outro;
+    let t3;
+    let rect;
+    let stop_animation = noop;
+    let current;
+    let mounted;
+    let dispose;
+    function click_handler_1(...args) {
+      return (
+        /*click_handler_1*/
+        ctx[52](
+          /*i*/
+          ctx[68],
+          /*val*/
+          ctx[66],
+          ...args
+        )
+      );
+    }
+    return {
+      key: key_1,
+      first: null,
+      c() {
+        div = element("div");
+        button = element("button");
+        span0 = element("span");
+        t0 = text(t0_value);
+        t1 = space();
+        span1 = element("span");
+        span1.textContent = "✕";
+        t3 = space();
+        attr(button, "type", "button");
+        attr(button, "class", button_class_value = "chip " + /*chips*/
+        ctx[5]);
+        this.first = div;
+      },
+      m(target, anchor) {
+        insert(target, div, anchor);
+        append(div, button);
+        append(button, span0);
+        append(span0, t0);
+        append(button, t1);
+        append(button, span1);
+        append(div, t3);
+        current = true;
+        if (!mounted) {
+          dispose = [
+            listen(button, "click", click_handler_1),
+            listen(
+              button,
+              "click",
+              /*click_handler*/
+              ctx[42]
+            ),
+            listen(
+              button,
+              "keypress",
+              /*keypress_handler*/
+              ctx[43]
+            ),
+            listen(
+              button,
+              "keydown",
+              /*keydown_handler*/
+              ctx[44]
+            ),
+            listen(
+              button,
+              "keyup",
+              /*keyup_handler*/
+              ctx[45]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(new_ctx, dirty) {
+        ctx = new_ctx;
+        if ((!current || dirty[0] & /*chipValues*/
+        65536) && t0_value !== (t0_value = /*val*/
+        ctx[66] + "")) set_data(t0, t0_value);
+        if (!current || dirty[0] & /*chips*/
+        32 && button_class_value !== (button_class_value = "chip " + /*chips*/
+        ctx[5])) {
+          attr(button, "class", button_class_value);
+        }
+      },
+      r() {
+        rect = div.getBoundingClientRect();
+      },
+      f() {
+        fix_position(div);
+        stop_animation();
+      },
+      a() {
+        stop_animation();
+        stop_animation = create_animation(div, rect, flip, { duration: (
+          /*duration*/
+          ctx[3]
+        ) });
+      },
+      i(local) {
+        if (current) return;
+        if (local) {
+          add_render_callback(() => {
+            if (!current) return;
+            if (button_outro) button_outro.end(1);
+            button_intro = create_in_transition(button, dynamicTransition, {
+              transition: (
+                /*chipTransitionIn*/
+                ctx[12]
+              ),
+              params: (
+                /*chipTransitionInParams*/
+                ctx[13]
+              ),
+              enabled: (
+                /*transitions*/
+                ctx[7]
+              )
+            });
+            button_intro.start();
+          });
+        }
+        current = true;
+      },
+      o(local) {
+        if (button_intro) button_intro.invalidate();
+        if (local) {
+          button_outro = create_out_transition(button, dynamicTransition, {
+            transition: (
+              /*chipTransitionOut*/
+              ctx[14]
+            ),
+            params: (
+              /*chipTransitionOutParams*/
+              ctx[15]
+            ),
+            enabled: (
+              /*transitions*/
+              ctx[7]
+            )
+          });
+        }
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div);
+        }
+        if (detaching && button_outro) button_outro.end();
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_fragment$m(ctx) {
+    let div2;
+    let div0;
+    let select;
+    let t0;
+    let div1;
+    let input_1;
+    let input_1_placeholder_value;
+    let input_1_class_value;
+    let input_1_disabled_value;
+    let t1;
+    let div1_class_value;
+    let div2_class_value;
+    let current;
+    let mounted;
+    let dispose;
+    let each_value_1 = ensure_array_like(
+      /*value*/
+      ctx[0]
+    );
+    let each_blocks = [];
+    for (let i = 0; i < each_value_1.length; i += 1) {
+      each_blocks[i] = create_each_block_1$3(get_each_context_1$3(ctx, each_value_1, i));
+    }
+    let if_block = (
+      /*chipValues*/
+      ctx[16].length && create_if_block$e(ctx)
+    );
+    return {
+      c() {
+        div2 = element("div");
+        div0 = element("div");
+        select = element("select");
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          each_blocks[i].c();
+        }
+        t0 = space();
+        div1 = element("div");
+        input_1 = element("input");
+        t1 = space();
+        if (if_block) if_block.c();
+        attr(
+          select,
+          "name",
+          /*name*/
+          ctx[2]
+        );
+        select.multiple = true;
+        select.required = /*required*/
+        ctx[4];
+        attr(
+          select,
+          "aria-label",
+          /*label*/
+          ctx[6]
+        );
+        attr(select, "tabindex", "-1");
+        if (
+          /*value*/
+          ctx[0] === void 0
+        ) add_render_callback(() => (
+          /*select_change_handler*/
+          ctx[50].call(select)
+        ));
+        attr(div0, "class", "h-0 overflow-hidden");
+        attr(input_1, "type", "text");
+        attr(input_1, "placeholder", input_1_placeholder_value = /*$$restProps*/
+        ctx[24].placeholder ?? "Enter values...");
+        attr(input_1, "class", input_1_class_value = "input-chip-field " + /*classesInput*/
+        ctx[18]);
+        input_1.disabled = input_1_disabled_value = /*$$restProps*/
+        ctx[24].disabled;
+        attr(div1, "class", div1_class_value = "input-chip-wrapper " + /*classesChipWrapper*/
+        ctx[20]);
+        attr(div2, "class", div2_class_value = "input-chip " + /*classesBase*/
+        ctx[21]);
+        toggle_class(
+          div2,
+          "opacity-50",
+          /*$$restProps*/
+          ctx[24].disabled
+        );
+      },
+      m(target, anchor) {
+        insert(target, div2, anchor);
+        append(div2, div0);
+        append(div0, select);
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          if (each_blocks[i]) {
+            each_blocks[i].m(select, null);
+          }
+        }
+        ctx[49](select);
+        select_options(
+          select,
+          /*value*/
+          ctx[0]
+        );
+        append(div2, t0);
+        append(div2, div1);
+        append(div1, input_1);
+        set_input_value(
+          input_1,
+          /*input*/
+          ctx[1]
+        );
+        append(div1, t1);
+        if (if_block) if_block.m(div1, null);
+        current = true;
+        if (!mounted) {
+          dispose = [
+            listen(
+              select,
+              "change",
+              /*select_change_handler*/
+              ctx[50]
+            ),
+            listen(
+              input_1,
+              "input",
+              /*input_1_input_handler*/
+              ctx[51]
+            ),
+            listen(
+              input_1,
+              "keydown",
+              /*onKeyHandler*/
+              ctx[22]
+            ),
+            listen(
+              input_1,
+              "input",
+              /*input_handler*/
+              ctx[46]
+            ),
+            listen(
+              input_1,
+              "focus",
+              /*focus_handler*/
+              ctx[47]
+            ),
+            listen(
+              input_1,
+              "blur",
+              /*blur_handler*/
+              ctx[48]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*value*/
+        1) {
+          each_value_1 = ensure_array_like(
+            /*value*/
+            ctx2[0]
+          );
+          let i;
+          for (i = 0; i < each_value_1.length; i += 1) {
+            const child_ctx = get_each_context_1$3(ctx2, each_value_1, i);
+            if (each_blocks[i]) {
+              each_blocks[i].p(child_ctx, dirty);
+            } else {
+              each_blocks[i] = create_each_block_1$3(child_ctx);
+              each_blocks[i].c();
+              each_blocks[i].m(select, null);
+            }
+          }
+          for (; i < each_blocks.length; i += 1) {
+            each_blocks[i].d(1);
+          }
+          each_blocks.length = each_value_1.length;
+        }
+        if (!current || dirty[0] & /*name*/
+        4) {
+          attr(
+            select,
+            "name",
+            /*name*/
+            ctx2[2]
+          );
+        }
+        if (!current || dirty[0] & /*required*/
+        16) {
+          select.required = /*required*/
+          ctx2[4];
+        }
+        if (!current || dirty[0] & /*label*/
+        64) {
+          attr(
+            select,
+            "aria-label",
+            /*label*/
+            ctx2[6]
+          );
+        }
+        if (dirty[0] & /*value*/
+        1) {
+          select_options(
+            select,
+            /*value*/
+            ctx2[0]
+          );
+        }
+        if (!current || dirty[0] & /*$$restProps*/
+        16777216 && input_1_placeholder_value !== (input_1_placeholder_value = /*$$restProps*/
+        ctx2[24].placeholder ?? "Enter values...")) {
+          attr(input_1, "placeholder", input_1_placeholder_value);
+        }
+        if (!current || dirty[0] & /*classesInput*/
+        262144 && input_1_class_value !== (input_1_class_value = "input-chip-field " + /*classesInput*/
+        ctx2[18])) {
+          attr(input_1, "class", input_1_class_value);
+        }
+        if (!current || dirty[0] & /*$$restProps*/
+        16777216 && input_1_disabled_value !== (input_1_disabled_value = /*$$restProps*/
+        ctx2[24].disabled)) {
+          input_1.disabled = input_1_disabled_value;
+        }
+        if (dirty[0] & /*input*/
+        2 && input_1.value !== /*input*/
+        ctx2[1]) {
+          set_input_value(
+            input_1,
+            /*input*/
+            ctx2[1]
+          );
+        }
+        if (
+          /*chipValues*/
+          ctx2[16].length
+        ) {
+          if (if_block) {
+            if_block.p(ctx2, dirty);
+            if (dirty[0] & /*chipValues*/
+            65536) {
+              transition_in(if_block, 1);
+            }
+          } else {
+            if_block = create_if_block$e(ctx2);
+            if_block.c();
+            transition_in(if_block, 1);
+            if_block.m(div1, null);
+          }
+        } else if (if_block) {
+          group_outros();
+          transition_out(if_block, 1, 1, () => {
+            if_block = null;
+          });
+          check_outros();
+        }
+        if (!current || dirty[0] & /*classesChipWrapper*/
+        1048576 && div1_class_value !== (div1_class_value = "input-chip-wrapper " + /*classesChipWrapper*/
+        ctx2[20])) {
+          attr(div1, "class", div1_class_value);
+        }
+        if (!current || dirty[0] & /*classesBase*/
+        2097152 && div2_class_value !== (div2_class_value = "input-chip " + /*classesBase*/
+        ctx2[21])) {
+          attr(div2, "class", div2_class_value);
+        }
+        if (!current || dirty[0] & /*classesBase, $$restProps*/
+        18874368) {
+          toggle_class(
+            div2,
+            "opacity-50",
+            /*$$restProps*/
+            ctx2[24].disabled
+          );
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(if_block);
+        current = true;
+      },
+      o(local) {
+        transition_out(if_block);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div2);
+        }
+        destroy_each(each_blocks, detaching);
+        ctx[49](null);
+        if (if_block) if_block.d();
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  const cBase$9 = "textarea cursor-pointer";
+  const cChipWrapper = "space-y-4";
+  const cChipList = "flex flex-wrap gap-2";
+  const cInputField = "unstyled bg-transparent border-0 !ring-0 p-0 w-full";
+  function instance$m($$self, $$props, $$invalidate) {
+    let classesInvalid;
+    let classesBase;
+    let classesChipWrapper;
+    let classesChipList;
+    let classesInput;
+    const omit_props_names = [
+      "input",
+      "name",
+      "value",
+      "whitelist",
+      "max",
+      "minlength",
+      "maxlength",
+      "allowUpperCase",
+      "allowDuplicates",
+      "validation",
+      "duration",
+      "required",
+      "chips",
+      "invalid",
+      "padding",
+      "rounded",
+      "regionChipWrapper",
+      "regionChipList",
+      "regionInput",
+      "label",
+      "transitions",
+      "listTransitionIn",
+      "listTransitionInParams",
+      "listTransitionOut",
+      "listTransitionOutParams",
+      "chipTransitionIn",
+      "chipTransitionInParams",
+      "chipTransitionOut",
+      "chipTransitionOutParams",
+      "addChip",
+      "removeChip"
+    ];
+    let $$restProps = compute_rest_props($$props, omit_props_names);
+    let $prefersReducedMotionStore;
+    component_subscribe($$self, prefersReducedMotionStore, ($$value) => $$invalidate(53, $prefersReducedMotionStore = $$value));
+    const dispatch2 = createEventDispatcher();
+    let { input = "" } = $$props;
+    let { name } = $$props;
+    let { value = [] } = $$props;
+    let { whitelist = [] } = $$props;
+    let { max: max2 = -1 } = $$props;
+    let { minlength = -1 } = $$props;
+    let { maxlength = -1 } = $$props;
+    let { allowUpperCase = false } = $$props;
+    let { allowDuplicates = false } = $$props;
+    let { validation = () => true } = $$props;
+    let { duration = 150 } = $$props;
+    let { required = false } = $$props;
+    let { chips = "variant-filled" } = $$props;
+    let { invalid = "input-error" } = $$props;
+    let { padding = "p-2" } = $$props;
+    let { rounded = "rounded-container-token" } = $$props;
+    let { regionChipWrapper = "" } = $$props;
+    let { regionChipList = "" } = $$props;
+    let { regionInput = "" } = $$props;
+    let { label = "Chips select" } = $$props;
+    let { transitions = !$prefersReducedMotionStore } = $$props;
+    let { listTransitionIn = fly } = $$props;
+    let { listTransitionInParams = { duration: 150, opacity: 0, y: -20 } } = $$props;
+    let { listTransitionOut = fly } = $$props;
+    let { listTransitionOutParams = { duration: 150, opacity: 0, y: -20 } } = $$props;
+    let { chipTransitionIn = scale } = $$props;
+    let { chipTransitionInParams = { duration: 150, opacity: 0 } } = $$props;
+    let { chipTransitionOut = scale } = $$props;
+    let { chipTransitionOutParams = { duration: 150, opacity: 0 } } = $$props;
+    let inputValid = true;
+    let chipValues = (value == null ? void 0 : value.map((val) => {
+      return { val, id: Math.random() };
+    })) || [];
+    function resetFormHandler() {
+      $$invalidate(0, value = []);
+    }
+    let selectElement;
+    onMount(() => {
+      if (!selectElement.form) return;
+      const externalForm = selectElement.form;
+      externalForm.addEventListener("reset", resetFormHandler);
+      return () => {
+        externalForm.removeEventListener("reset", resetFormHandler);
+      };
+    });
+    function validateCustom(chip) {
+      return validation === void 0 || validation(chip);
+    }
+    function validateCount() {
+      return max2 === -1 || value.length < max2;
+    }
+    function validateLength(chip) {
+      return (minlength === -1 || chip.length >= minlength) && (maxlength === -1 || chip.length <= maxlength);
+    }
+    function validateWhiteList(chip) {
+      return whitelist.length === 0 || whitelist.includes(chip);
+    }
+    function validateDuplicates(chip) {
+      return allowDuplicates || !value.includes(chip);
+    }
+    function validate(chip = "") {
+      if (!chip && !input) return false;
+      chip = chip !== "" ? chip.trim() : input.trim();
+      return validateCustom(chip) && validateCount() && validateLength(chip) && validateWhiteList(chip) && validateDuplicates(chip);
+    }
+    function addChipCommon(chip) {
+      chip = allowUpperCase ? chip : chip.toLowerCase();
+      value.push(chip);
+      $$invalidate(0, value);
+      chipValues.push({ val: chip, id: Math.random() });
+      $$invalidate(16, chipValues), $$invalidate(0, value);
+    }
+    function removeChipCommon(chip) {
+      let chipIndex = value.indexOf(chip);
+      value.splice(chipIndex, 1);
+      $$invalidate(0, value);
+      chipValues.splice(chipIndex, 1);
+      $$invalidate(16, chipValues), $$invalidate(0, value);
+    }
+    function onKeyHandler(event) {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      $$invalidate(40, inputValid = validate());
+      if (inputValid === false) {
+        dispatch2("invalid", { event, input });
+        return;
+      }
+      addChipCommon(input);
+      dispatch2("add", {
+        event,
+        chipIndex: value.length - 1,
+        chipValue: input
+      });
+      $$invalidate(1, input = "");
+    }
+    function removeChipInternally(event, chipIndex, chipValue) {
+      if ($$restProps.disabled) return;
+      removeChipCommon(chipValue);
+      dispatch2("remove", { event, chipIndex, chipValue });
+    }
+    function addChip(chip) {
+      $$invalidate(40, inputValid = validate(chip));
+      if (inputValid === false) {
+        dispatch2("invalidManually", { input: chip });
+        return;
+      }
+      addChipCommon(chip);
+      dispatch2("addManually", {
+        chipIndex: value.length - 1,
+        chipValue: chip
+      });
+    }
+    function removeChip(chip) {
+      if ($$restProps.disabled) return;
+      removeChipCommon(chip);
+      dispatch2("removeManually", { chipValue: chip });
+    }
+    function click_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function keypress_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function keydown_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function keyup_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function input_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function focus_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function blur_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function select_binding($$value) {
+      binding_callbacks[$$value ? "unshift" : "push"](() => {
+        selectElement = $$value;
+        $$invalidate(17, selectElement);
+      });
+    }
+    function select_change_handler() {
+      value = select_multiple_value(this);
+      $$invalidate(0, value);
+    }
+    function input_1_input_handler() {
+      input = this.value;
+      $$invalidate(1, input);
+    }
+    const click_handler_1 = (i, val, e) => removeChipInternally(e, i, val);
+    $$self.$$set = ($$new_props) => {
+      $$invalidate(64, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+      $$invalidate(24, $$restProps = compute_rest_props($$props, omit_props_names));
+      if ("input" in $$new_props) $$invalidate(1, input = $$new_props.input);
+      if ("name" in $$new_props) $$invalidate(2, name = $$new_props.name);
+      if ("value" in $$new_props) $$invalidate(0, value = $$new_props.value);
+      if ("whitelist" in $$new_props) $$invalidate(25, whitelist = $$new_props.whitelist);
+      if ("max" in $$new_props) $$invalidate(26, max2 = $$new_props.max);
+      if ("minlength" in $$new_props) $$invalidate(27, minlength = $$new_props.minlength);
+      if ("maxlength" in $$new_props) $$invalidate(28, maxlength = $$new_props.maxlength);
+      if ("allowUpperCase" in $$new_props) $$invalidate(29, allowUpperCase = $$new_props.allowUpperCase);
+      if ("allowDuplicates" in $$new_props) $$invalidate(30, allowDuplicates = $$new_props.allowDuplicates);
+      if ("validation" in $$new_props) $$invalidate(31, validation = $$new_props.validation);
+      if ("duration" in $$new_props) $$invalidate(3, duration = $$new_props.duration);
+      if ("required" in $$new_props) $$invalidate(4, required = $$new_props.required);
+      if ("chips" in $$new_props) $$invalidate(5, chips = $$new_props.chips);
+      if ("invalid" in $$new_props) $$invalidate(32, invalid = $$new_props.invalid);
+      if ("padding" in $$new_props) $$invalidate(33, padding = $$new_props.padding);
+      if ("rounded" in $$new_props) $$invalidate(34, rounded = $$new_props.rounded);
+      if ("regionChipWrapper" in $$new_props) $$invalidate(35, regionChipWrapper = $$new_props.regionChipWrapper);
+      if ("regionChipList" in $$new_props) $$invalidate(36, regionChipList = $$new_props.regionChipList);
+      if ("regionInput" in $$new_props) $$invalidate(37, regionInput = $$new_props.regionInput);
+      if ("label" in $$new_props) $$invalidate(6, label = $$new_props.label);
+      if ("transitions" in $$new_props) $$invalidate(7, transitions = $$new_props.transitions);
+      if ("listTransitionIn" in $$new_props) $$invalidate(8, listTransitionIn = $$new_props.listTransitionIn);
+      if ("listTransitionInParams" in $$new_props) $$invalidate(9, listTransitionInParams = $$new_props.listTransitionInParams);
+      if ("listTransitionOut" in $$new_props) $$invalidate(10, listTransitionOut = $$new_props.listTransitionOut);
+      if ("listTransitionOutParams" in $$new_props) $$invalidate(11, listTransitionOutParams = $$new_props.listTransitionOutParams);
+      if ("chipTransitionIn" in $$new_props) $$invalidate(12, chipTransitionIn = $$new_props.chipTransitionIn);
+      if ("chipTransitionInParams" in $$new_props) $$invalidate(13, chipTransitionInParams = $$new_props.chipTransitionInParams);
+      if ("chipTransitionOut" in $$new_props) $$invalidate(14, chipTransitionOut = $$new_props.chipTransitionOut);
+      if ("chipTransitionOutParams" in $$new_props) $$invalidate(15, chipTransitionOutParams = $$new_props.chipTransitionOutParams);
+    };
+    $$self.$$.update = () => {
+      if ($$self.$$.dirty[1] & /*inputValid, invalid*/
+      514) {
+        $$invalidate(41, classesInvalid = inputValid === false ? invalid : "");
+      }
+      $$invalidate(21, classesBase = `${cBase$9} ${padding} ${rounded} ${$$props.class ?? ""} ${classesInvalid}`);
+      if ($$self.$$.dirty[1] & /*regionChipWrapper*/
+      16) {
+        $$invalidate(20, classesChipWrapper = `${cChipWrapper} ${regionChipWrapper}`);
+      }
+      if ($$self.$$.dirty[1] & /*regionChipList*/
+      32) {
+        $$invalidate(19, classesChipList = `${cChipList} ${regionChipList}`);
+      }
+      if ($$self.$$.dirty[1] & /*regionInput*/
+      64) {
+        $$invalidate(18, classesInput = `${cInputField} ${regionInput}`);
+      }
+      if ($$self.$$.dirty[0] & /*value, chipValues*/
+      65537) {
+        $$invalidate(16, chipValues = (value == null ? void 0 : value.map((val, i) => {
+          var _a;
+          if (((_a = chipValues[i]) == null ? void 0 : _a.val) === val) return chipValues[i];
+          return { id: Math.random(), val };
+        })) || []);
+      }
+    };
+    $$props = exclude_internal_props($$props);
+    return [
+      value,
+      input,
+      name,
+      duration,
+      required,
+      chips,
+      label,
+      transitions,
+      listTransitionIn,
+      listTransitionInParams,
+      listTransitionOut,
+      listTransitionOutParams,
+      chipTransitionIn,
+      chipTransitionInParams,
+      chipTransitionOut,
+      chipTransitionOutParams,
+      chipValues,
+      selectElement,
+      classesInput,
+      classesChipList,
+      classesChipWrapper,
+      classesBase,
+      onKeyHandler,
+      removeChipInternally,
+      $$restProps,
+      whitelist,
+      max2,
+      minlength,
+      maxlength,
+      allowUpperCase,
+      allowDuplicates,
+      validation,
+      invalid,
+      padding,
+      rounded,
+      regionChipWrapper,
+      regionChipList,
+      regionInput,
+      addChip,
+      removeChip,
+      inputValid,
+      classesInvalid,
+      click_handler,
+      keypress_handler,
+      keydown_handler,
+      keyup_handler,
+      input_handler,
+      focus_handler,
+      blur_handler,
+      select_binding,
+      select_change_handler,
+      input_1_input_handler,
+      click_handler_1
+    ];
+  }
+  class InputChip extends SvelteComponent {
+    constructor(options) {
+      super();
+      init(
+        this,
+        options,
+        instance$m,
+        create_fragment$m,
+        safe_not_equal,
+        {
+          input: 1,
+          name: 2,
+          value: 0,
+          whitelist: 25,
+          max: 26,
+          minlength: 27,
+          maxlength: 28,
+          allowUpperCase: 29,
+          allowDuplicates: 30,
+          validation: 31,
+          duration: 3,
+          required: 4,
+          chips: 5,
+          invalid: 32,
+          padding: 33,
+          rounded: 34,
+          regionChipWrapper: 35,
+          regionChipList: 36,
+          regionInput: 37,
+          label: 6,
+          transitions: 7,
+          listTransitionIn: 8,
+          listTransitionInParams: 9,
+          listTransitionOut: 10,
+          listTransitionOutParams: 11,
+          chipTransitionIn: 12,
+          chipTransitionInParams: 13,
+          chipTransitionOut: 14,
+          chipTransitionOutParams: 15,
+          addChip: 38,
+          removeChip: 39
+        },
+        null,
+        [-1, -1, -1]
+      );
+    }
+    get addChip() {
+      return this.$$.ctx[38];
+    }
+    get removeChip() {
+      return this.$$.ctx[39];
+    }
+  }
+  function create_fragment$l(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -4428,8 +6154,8 @@
       }
     };
   }
-  const cBase$5 = "";
-  function instance$g($$self, $$props, $$invalidate) {
+  const cBase$8 = "";
+  function instance$l($$self, $$props, $$invalidate) {
     let classesBase;
     let { $$slots: slots = {}, $$scope } = $$props;
     let { multiple = false } = $$props;
@@ -4468,7 +6194,7 @@
       if ("$$scope" in $$new_props) $$invalidate(12, $$scope = $$new_props.$$scope);
     };
     $$self.$$.update = () => {
-      $$invalidate(1, classesBase = `${cBase$5} ${spacing} ${rounded} ${$$props.class ?? ""}`);
+      $$invalidate(1, classesBase = `${cBase$8} ${spacing} ${rounded} ${$$props.class ?? ""}`);
     };
     $$props = exclude_internal_props($$props);
     return [
@@ -4491,7 +6217,7 @@
   class ListBox extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$g, create_fragment$g, safe_not_equal, {
+      init(this, options, instance$l, create_fragment$l, safe_not_equal, {
         multiple: 2,
         disabled: 3,
         spacing: 4,
@@ -4508,9 +6234,9 @@
   }
   const get_trail_slot_changes$1 = (dirty) => ({});
   const get_trail_slot_context$1 = (ctx) => ({});
-  const get_lead_slot_changes = (dirty) => ({});
-  const get_lead_slot_context = (ctx) => ({});
-  function create_else_block$3(ctx) {
+  const get_lead_slot_changes$1 = (dirty) => ({});
+  const get_lead_slot_context$1 = (ctx) => ({});
+  function create_else_block$4(ctx) {
     let input;
     let value_has_changed = false;
     let binding_group;
@@ -4606,7 +6332,7 @@
       }
     };
   }
-  function create_if_block_2$4(ctx) {
+  function create_if_block_2$5(ctx) {
     let input;
     let mounted;
     let dispose;
@@ -4693,7 +6419,7 @@
       }
     };
   }
-  function create_if_block_1$5(ctx) {
+  function create_if_block_1$7(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -4706,7 +6432,7 @@
       ctx,
       /*$$scope*/
       ctx[24],
-      get_lead_slot_context
+      get_lead_slot_context$1
     );
     return {
       c() {
@@ -4740,9 +6466,9 @@
                 /*$$scope*/
                 ctx2[24],
                 dirty,
-                get_lead_slot_changes
+                get_lead_slot_changes$1
               ),
-              get_lead_slot_context
+              get_lead_slot_context$1
             );
           }
         }
@@ -4769,7 +6495,7 @@
       }
     };
   }
-  function create_if_block$9(ctx) {
+  function create_if_block$d(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -4845,7 +6571,7 @@
       }
     };
   }
-  function create_fragment$f(ctx) {
+  function create_fragment$k(ctx) {
     let label;
     let div3;
     let div0;
@@ -4864,14 +6590,14 @@
       if (
         /*multiple*/
         ctx2[4]
-      ) return create_if_block_2$4;
-      return create_else_block$3;
+      ) return create_if_block_2$5;
+      return create_else_block$4;
     }
     let current_block_type = select_block_type(ctx);
     let if_block0 = current_block_type(ctx);
     let if_block1 = (
       /*$$slots*/
-      ctx[14].lead && create_if_block_1$5(ctx)
+      ctx[14].lead && create_if_block_1$7(ctx)
     );
     const default_slot_template = (
       /*#slots*/
@@ -4886,7 +6612,7 @@
     );
     let if_block2 = (
       /*$$slots*/
-      ctx[14].trail && create_if_block$9(ctx)
+      ctx[14].trail && create_if_block$d(ctx)
     );
     return {
       c() {
@@ -4987,7 +6713,7 @@
               transition_in(if_block1, 1);
             }
           } else {
-            if_block1 = create_if_block_1$5(ctx2);
+            if_block1 = create_if_block_1$7(ctx2);
             if_block1.c();
             transition_in(if_block1, 1);
             if_block1.m(div2, t1);
@@ -5038,7 +6764,7 @@
               transition_in(if_block2, 1);
             }
           } else {
-            if_block2 = create_if_block$9(ctx2);
+            if_block2 = create_if_block$d(ctx2);
             if_block2.c();
             transition_in(if_block2, 1);
             if_block2.m(div2, null);
@@ -5096,7 +6822,7 @@
       }
     };
   }
-  const cBase$4 = "cursor-pointer -outline-offset-[3px]";
+  const cBase$7 = "cursor-pointer -outline-offset-[3px]";
   const cDisabled$1 = "opacity-50 !cursor-default";
   const cLabel$1 = "flex items-center space-x-4";
   const cRegionLead = "";
@@ -5115,7 +6841,7 @@
     }
     return true;
   }
-  function instance$f($$self, $$props, $$invalidate) {
+  function instance$k($$self, $$props, $$invalidate) {
     let selected;
     let classesActive;
     let classesDisabled;
@@ -5242,7 +6968,7 @@
       8) {
         $$invalidate(23, classesDisabled = disabled ? cDisabled$1 : "");
       }
-      $$invalidate(12, classesBase = `${cBase$4} ${classesDisabled} ${rounded} ${padding} ${classesActive} ${$$props.class ?? ""}`);
+      $$invalidate(12, classesBase = `${cBase$7} ${classesDisabled} ${rounded} ${padding} ${classesActive} ${$$props.class ?? ""}`);
       if ($$self.$$.dirty[0] & /*regionLead*/
       524288) {
         $$invalidate(10, classesRegionLead = `${cRegionLead} ${regionLead}`);
@@ -5305,8 +7031,8 @@
       init(
         this,
         options,
-        instance$f,
-        create_fragment$f,
+        instance$k,
+        create_fragment$k,
         safe_not_equal,
         {
           group: 0,
@@ -5327,7 +7053,623 @@
       );
     }
   }
-  function create_fragment$e(ctx) {
+  function create_fragment$j(ctx) {
+    let div1;
+    let div0;
+    let div0_class_value;
+    let style_width = `${/*indeterminate*/
+  ctx[4] ? 100 : (
+    /*fillPercent*/
+    ctx[7]
+  )}%`;
+    let div1_class_value;
+    let div1_aria_valuemax_value;
+    return {
+      c() {
+        div1 = element("div");
+        div0 = element("div");
+        attr(div0, "class", div0_class_value = "progress-bar-meter " + /*classesMeter*/
+        ctx[5] + " svelte-12wvf64");
+        set_style(div0, "width", style_width);
+        attr(div1, "class", div1_class_value = "progress-bar " + /*classesTrack*/
+        ctx[6] + " svelte-12wvf64");
+        attr(div1, "data-testid", "progress-bar");
+        attr(div1, "role", "progressbar");
+        attr(
+          div1,
+          "aria-labelledby",
+          /*labelledby*/
+          ctx[3]
+        );
+        attr(
+          div1,
+          "aria-valuenow",
+          /*value*/
+          ctx[0]
+        );
+        attr(
+          div1,
+          "aria-valuemin",
+          /*min*/
+          ctx[1]
+        );
+        attr(div1, "aria-valuemax", div1_aria_valuemax_value = /*max*/
+        ctx[2] - /*min*/
+        ctx[1]);
+      },
+      m(target, anchor) {
+        insert(target, div1, anchor);
+        append(div1, div0);
+      },
+      p(ctx2, [dirty]) {
+        if (dirty & /*classesMeter*/
+        32 && div0_class_value !== (div0_class_value = "progress-bar-meter " + /*classesMeter*/
+        ctx2[5] + " svelte-12wvf64")) {
+          attr(div0, "class", div0_class_value);
+        }
+        if (dirty & /*indeterminate, fillPercent*/
+        144 && style_width !== (style_width = `${/*indeterminate*/
+      ctx2[4] ? 100 : (
+        /*fillPercent*/
+        ctx2[7]
+      )}%`)) {
+          set_style(div0, "width", style_width);
+        }
+        if (dirty & /*classesTrack*/
+        64 && div1_class_value !== (div1_class_value = "progress-bar " + /*classesTrack*/
+        ctx2[6] + " svelte-12wvf64")) {
+          attr(div1, "class", div1_class_value);
+        }
+        if (dirty & /*labelledby*/
+        8) {
+          attr(
+            div1,
+            "aria-labelledby",
+            /*labelledby*/
+            ctx2[3]
+          );
+        }
+        if (dirty & /*value*/
+        1) {
+          attr(
+            div1,
+            "aria-valuenow",
+            /*value*/
+            ctx2[0]
+          );
+        }
+        if (dirty & /*min*/
+        2) {
+          attr(
+            div1,
+            "aria-valuemin",
+            /*min*/
+            ctx2[1]
+          );
+        }
+        if (dirty & /*max, min*/
+        6 && div1_aria_valuemax_value !== (div1_aria_valuemax_value = /*max*/
+        ctx2[2] - /*min*/
+        ctx2[1])) {
+          attr(div1, "aria-valuemax", div1_aria_valuemax_value);
+        }
+      },
+      i: noop,
+      o: noop,
+      d(detaching) {
+        if (detaching) {
+          detach(div1);
+        }
+      }
+    };
+  }
+  const cTrack$1 = "w-full overflow-hidden";
+  const cMeter = "h-full";
+  function instance$j($$self, $$props, $$invalidate) {
+    let fillPercent;
+    let indeterminate;
+    let classesIndeterminate;
+    let classesTrack;
+    let classesMeter;
+    let { value = void 0 } = $$props;
+    let { min = 0 } = $$props;
+    let { max: max2 = 100 } = $$props;
+    let { height = "h-2" } = $$props;
+    let { rounded = "rounded-token" } = $$props;
+    let { transition = "transition-[width]" } = $$props;
+    let { animIndeterminate = "anim-indeterminate" } = $$props;
+    let { meter = "bg-surface-900-50-token" } = $$props;
+    let { track = "bg-surface-200-700-token" } = $$props;
+    let { labelledby = "" } = $$props;
+    $$self.$$set = ($$new_props) => {
+      $$invalidate(15, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+      if ("value" in $$new_props) $$invalidate(0, value = $$new_props.value);
+      if ("min" in $$new_props) $$invalidate(1, min = $$new_props.min);
+      if ("max" in $$new_props) $$invalidate(2, max2 = $$new_props.max);
+      if ("height" in $$new_props) $$invalidate(8, height = $$new_props.height);
+      if ("rounded" in $$new_props) $$invalidate(9, rounded = $$new_props.rounded);
+      if ("transition" in $$new_props) $$invalidate(10, transition = $$new_props.transition);
+      if ("animIndeterminate" in $$new_props) $$invalidate(11, animIndeterminate = $$new_props.animIndeterminate);
+      if ("meter" in $$new_props) $$invalidate(12, meter = $$new_props.meter);
+      if ("track" in $$new_props) $$invalidate(13, track = $$new_props.track);
+      if ("labelledby" in $$new_props) $$invalidate(3, labelledby = $$new_props.labelledby);
+    };
+    $$self.$$.update = () => {
+      if ($$self.$$.dirty & /*value, min, max*/
+      7) {
+        $$invalidate(7, fillPercent = value ? 100 * (value - min) / (max2 - min) : 0);
+      }
+      if ($$self.$$.dirty & /*value*/
+      1) {
+        $$invalidate(4, indeterminate = value === void 0 || value < 0);
+      }
+      if ($$self.$$.dirty & /*indeterminate, animIndeterminate*/
+      2064) {
+        $$invalidate(14, classesIndeterminate = indeterminate ? animIndeterminate : "");
+      }
+      $$invalidate(6, classesTrack = `${cTrack$1} ${track} ${height} ${rounded} ${$$props.class ?? ""}`);
+      if ($$self.$$.dirty & /*meter, rounded, classesIndeterminate, transition*/
+      22016) {
+        $$invalidate(5, classesMeter = `${cMeter} ${meter} ${rounded} ${classesIndeterminate} ${transition}`);
+      }
+    };
+    $$props = exclude_internal_props($$props);
+    return [
+      value,
+      min,
+      max2,
+      labelledby,
+      indeterminate,
+      classesMeter,
+      classesTrack,
+      fillPercent,
+      height,
+      rounded,
+      transition,
+      animIndeterminate,
+      meter,
+      track,
+      classesIndeterminate
+    ];
+  }
+  class ProgressBar extends SvelteComponent {
+    constructor(options) {
+      super();
+      init(this, options, instance$j, create_fragment$j, safe_not_equal, {
+        value: 0,
+        min: 1,
+        max: 2,
+        height: 8,
+        rounded: 9,
+        transition: 10,
+        animIndeterminate: 11,
+        meter: 12,
+        track: 13,
+        labelledby: 3
+      });
+    }
+  }
+  function create_if_block$c(ctx) {
+    let text_1;
+    let text_1_class_value;
+    let current;
+    const default_slot_template = (
+      /*#slots*/
+      ctx[16].default
+    );
+    const default_slot = create_slot(
+      default_slot_template,
+      ctx,
+      /*$$scope*/
+      ctx[15],
+      null
+    );
+    return {
+      c() {
+        text_1 = svg_element("text");
+        if (default_slot) default_slot.c();
+        attr(text_1, "x", "50%");
+        attr(text_1, "y", "50%");
+        attr(text_1, "text-anchor", "middle");
+        attr(text_1, "dominant-baseline", "middle");
+        attr(text_1, "font-weight", "bold");
+        attr(
+          text_1,
+          "font-size",
+          /*font*/
+          ctx[2]
+        );
+        attr(text_1, "class", text_1_class_value = "progress-radial-text " + /*fill*/
+        ctx[7]);
+      },
+      m(target, anchor) {
+        insert(target, text_1, anchor);
+        if (default_slot) {
+          default_slot.m(text_1, null);
+        }
+        current = true;
+      },
+      p(ctx2, dirty) {
+        if (default_slot) {
+          if (default_slot.p && (!current || dirty & /*$$scope*/
+          32768)) {
+            update_slot_base(
+              default_slot,
+              default_slot_template,
+              ctx2,
+              /*$$scope*/
+              ctx2[15],
+              !current ? get_all_dirty_from_scope(
+                /*$$scope*/
+                ctx2[15]
+              ) : get_slot_changes(
+                default_slot_template,
+                /*$$scope*/
+                ctx2[15],
+                dirty,
+                null
+              ),
+              null
+            );
+          }
+        }
+        if (!current || dirty & /*font*/
+        4) {
+          attr(
+            text_1,
+            "font-size",
+            /*font*/
+            ctx2[2]
+          );
+        }
+        if (!current || dirty & /*fill*/
+        128 && text_1_class_value !== (text_1_class_value = "progress-radial-text " + /*fill*/
+        ctx2[7])) {
+          attr(text_1, "class", text_1_class_value);
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(default_slot, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(default_slot, local);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(text_1);
+        }
+        if (default_slot) default_slot.d(detaching);
+      }
+    };
+  }
+  function create_fragment$i(ctx) {
+    let figure;
+    let svg;
+    let circle0;
+    let circle0_class_value;
+    let circle1;
+    let circle1_class_value;
+    let style_stroke_dasharray = `${/*circumference*/
+  ctx[9]}
+			${/*circumference*/
+  ctx[9]}`;
+    let figure_class_value;
+    let figure_aria_valuenow_value;
+    let figure_aria_valuetext_value;
+    let current;
+    let if_block = (
+      /*value*/
+      ctx[0] != void 0 && /*value*/
+      ctx[0] >= 0 && /*$$slots*/
+      ctx[13].default && create_if_block$c(ctx)
+    );
+    return {
+      c() {
+        figure = element("figure");
+        svg = svg_element("svg");
+        circle0 = svg_element("circle");
+        circle1 = svg_element("circle");
+        if (if_block) if_block.c();
+        attr(circle0, "class", circle0_class_value = "progress-radial-track " + cBaseTrack + " " + /*track*/
+        ctx[6]);
+        attr(
+          circle0,
+          "stroke-width",
+          /*stroke*/
+          ctx[1]
+        );
+        attr(
+          circle0,
+          "r",
+          /*radius*/
+          ctx[12]
+        );
+        attr(circle0, "cx", "50%");
+        attr(circle0, "cy", "50%");
+        attr(circle1, "class", circle1_class_value = "progress-radial-meter " + cBaseMeter + " " + /*meter*/
+        ctx[5] + " " + /*transition*/
+        ctx[4]);
+        attr(
+          circle1,
+          "stroke-width",
+          /*stroke*/
+          ctx[1]
+        );
+        attr(
+          circle1,
+          "r",
+          /*radius*/
+          ctx[12]
+        );
+        attr(circle1, "cx", "50%");
+        attr(circle1, "cy", "50%");
+        attr(
+          circle1,
+          "stroke-linecap",
+          /*strokeLinecap*/
+          ctx[3]
+        );
+        set_style(circle1, "stroke-dasharray", style_stroke_dasharray);
+        set_style(
+          circle1,
+          "stroke-dashoffset",
+          /*dashoffset*/
+          ctx[10]
+        );
+        attr(svg, "viewBox", "0 0 " + baseSize + " " + baseSize);
+        attr(svg, "class", "rounded-full");
+        toggle_class(
+          svg,
+          "animate-spin",
+          /*value*/
+          ctx[0] === void 0
+        );
+        attr(figure, "class", figure_class_value = "progress-radial " + /*classesBase*/
+        ctx[11]);
+        attr(figure, "data-testid", "progress-radial");
+        attr(figure, "role", "meter");
+        attr(
+          figure,
+          "aria-labelledby",
+          /*labelledby*/
+          ctx[8]
+        );
+        attr(figure, "aria-valuenow", figure_aria_valuenow_value = /*value*/
+        ctx[0] || 0);
+        attr(figure, "aria-valuetext", figure_aria_valuetext_value = /*value*/
+        ctx[0] ? `${/*value*/
+      ctx[0]}%` : "Indeterminate Spinner");
+        attr(figure, "aria-valuemin", 0);
+        attr(figure, "aria-valuemax", 100);
+      },
+      m(target, anchor) {
+        insert(target, figure, anchor);
+        append(figure, svg);
+        append(svg, circle0);
+        append(svg, circle1);
+        if (if_block) if_block.m(svg, null);
+        current = true;
+      },
+      p(ctx2, [dirty]) {
+        if (!current || dirty & /*track*/
+        64 && circle0_class_value !== (circle0_class_value = "progress-radial-track " + cBaseTrack + " " + /*track*/
+        ctx2[6])) {
+          attr(circle0, "class", circle0_class_value);
+        }
+        if (!current || dirty & /*stroke*/
+        2) {
+          attr(
+            circle0,
+            "stroke-width",
+            /*stroke*/
+            ctx2[1]
+          );
+        }
+        if (!current || dirty & /*meter, transition*/
+        48 && circle1_class_value !== (circle1_class_value = "progress-radial-meter " + cBaseMeter + " " + /*meter*/
+        ctx2[5] + " " + /*transition*/
+        ctx2[4])) {
+          attr(circle1, "class", circle1_class_value);
+        }
+        if (!current || dirty & /*stroke*/
+        2) {
+          attr(
+            circle1,
+            "stroke-width",
+            /*stroke*/
+            ctx2[1]
+          );
+        }
+        if (!current || dirty & /*strokeLinecap*/
+        8) {
+          attr(
+            circle1,
+            "stroke-linecap",
+            /*strokeLinecap*/
+            ctx2[3]
+          );
+        }
+        if (dirty & /*circumference*/
+        512 && style_stroke_dasharray !== (style_stroke_dasharray = `${/*circumference*/
+      ctx2[9]}
+			${/*circumference*/
+      ctx2[9]}`)) {
+          set_style(circle1, "stroke-dasharray", style_stroke_dasharray);
+        }
+        if (dirty & /*dashoffset*/
+        1024) {
+          set_style(
+            circle1,
+            "stroke-dashoffset",
+            /*dashoffset*/
+            ctx2[10]
+          );
+        }
+        if (
+          /*value*/
+          ctx2[0] != void 0 && /*value*/
+          ctx2[0] >= 0 && /*$$slots*/
+          ctx2[13].default
+        ) {
+          if (if_block) {
+            if_block.p(ctx2, dirty);
+            if (dirty & /*value, $$slots*/
+            8193) {
+              transition_in(if_block, 1);
+            }
+          } else {
+            if_block = create_if_block$c(ctx2);
+            if_block.c();
+            transition_in(if_block, 1);
+            if_block.m(svg, null);
+          }
+        } else if (if_block) {
+          group_outros();
+          transition_out(if_block, 1, 1, () => {
+            if_block = null;
+          });
+          check_outros();
+        }
+        if (!current || dirty & /*value, undefined*/
+        1) {
+          toggle_class(
+            svg,
+            "animate-spin",
+            /*value*/
+            ctx2[0] === void 0
+          );
+        }
+        if (!current || dirty & /*classesBase*/
+        2048 && figure_class_value !== (figure_class_value = "progress-radial " + /*classesBase*/
+        ctx2[11])) {
+          attr(figure, "class", figure_class_value);
+        }
+        if (!current || dirty & /*labelledby*/
+        256) {
+          attr(
+            figure,
+            "aria-labelledby",
+            /*labelledby*/
+            ctx2[8]
+          );
+        }
+        if (!current || dirty & /*value*/
+        1 && figure_aria_valuenow_value !== (figure_aria_valuenow_value = /*value*/
+        ctx2[0] || 0)) {
+          attr(figure, "aria-valuenow", figure_aria_valuenow_value);
+        }
+        if (!current || dirty & /*value*/
+        1 && figure_aria_valuetext_value !== (figure_aria_valuetext_value = /*value*/
+        ctx2[0] ? `${/*value*/
+      ctx2[0]}%` : "Indeterminate Spinner")) {
+          attr(figure, "aria-valuetext", figure_aria_valuetext_value);
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(if_block);
+        current = true;
+      },
+      o(local) {
+        transition_out(if_block);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(figure);
+        }
+        if (if_block) if_block.d();
+      }
+    };
+  }
+  const cBase$6 = "progress-radial relative overflow-hidden";
+  const cBaseTrack = "fill-transparent";
+  const cBaseMeter = "fill-transparent -rotate-90 origin-[50%_50%]";
+  const baseSize = 512;
+  function instance$i($$self, $$props, $$invalidate) {
+    let classesBase;
+    let { $$slots: slots = {}, $$scope } = $$props;
+    const $$slots = compute_slots(slots);
+    let { value = void 0 } = $$props;
+    let { stroke = 40 } = $$props;
+    let { font = 56 } = $$props;
+    let { strokeLinecap = "butt" } = $$props;
+    let { transition = "transition-[stroke-dashoffset]" } = $$props;
+    let { width = "w-36" } = $$props;
+    let { meter = "stroke-surface-900 dark:stroke-surface-50" } = $$props;
+    let { track = "stroke-surface-500/30" } = $$props;
+    let { fill = "fill-token" } = $$props;
+    let { labelledby = "" } = $$props;
+    const radius = baseSize / 2 - stroke / 2;
+    let circumference = radius;
+    let dashoffset;
+    function setProgress(percent) {
+      $$invalidate(9, circumference = radius * 2 * Math.PI);
+      $$invalidate(10, dashoffset = circumference - percent / 100 * circumference);
+    }
+    setProgress(0);
+    afterUpdate(() => {
+      setProgress(value === void 0 ? 25 : value);
+    });
+    $$self.$$set = ($$new_props) => {
+      $$invalidate(18, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+      if ("value" in $$new_props) $$invalidate(0, value = $$new_props.value);
+      if ("stroke" in $$new_props) $$invalidate(1, stroke = $$new_props.stroke);
+      if ("font" in $$new_props) $$invalidate(2, font = $$new_props.font);
+      if ("strokeLinecap" in $$new_props) $$invalidate(3, strokeLinecap = $$new_props.strokeLinecap);
+      if ("transition" in $$new_props) $$invalidate(4, transition = $$new_props.transition);
+      if ("width" in $$new_props) $$invalidate(14, width = $$new_props.width);
+      if ("meter" in $$new_props) $$invalidate(5, meter = $$new_props.meter);
+      if ("track" in $$new_props) $$invalidate(6, track = $$new_props.track);
+      if ("fill" in $$new_props) $$invalidate(7, fill = $$new_props.fill);
+      if ("labelledby" in $$new_props) $$invalidate(8, labelledby = $$new_props.labelledby);
+      if ("$$scope" in $$new_props) $$invalidate(15, $$scope = $$new_props.$$scope);
+    };
+    $$self.$$.update = () => {
+      $$invalidate(11, classesBase = `${cBase$6} ${width} ${$$props.class ?? ""}`);
+    };
+    $$props = exclude_internal_props($$props);
+    return [
+      value,
+      stroke,
+      font,
+      strokeLinecap,
+      transition,
+      meter,
+      track,
+      fill,
+      labelledby,
+      circumference,
+      dashoffset,
+      classesBase,
+      radius,
+      $$slots,
+      width,
+      $$scope,
+      slots
+    ];
+  }
+  class ProgressRadial extends SvelteComponent {
+    constructor(options) {
+      super();
+      init(this, options, instance$i, create_fragment$i, safe_not_equal, {
+        value: 0,
+        stroke: 1,
+        font: 2,
+        strokeLinecap: 3,
+        transition: 4,
+        width: 14,
+        meter: 5,
+        track: 6,
+        fill: 7,
+        labelledby: 8
+      });
+    }
+  }
+  function create_fragment$h(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -5420,8 +7762,8 @@
       }
     };
   }
-  const cBase$3 = "p-1";
-  function instance$e($$self, $$props, $$invalidate) {
+  const cBase$5 = "p-1";
+  function instance$h($$self, $$props, $$invalidate) {
     let classesBase;
     let { $$slots: slots = {}, $$scope } = $$props;
     let { display = "inline-flex" } = $$props;
@@ -5462,7 +7804,7 @@
       if ("$$scope" in $$new_props) $$invalidate(14, $$scope = $$new_props.$$scope);
     };
     $$self.$$.update = () => {
-      $$invalidate(1, classesBase = `${cBase$3} ${display} ${flexDirection} ${gap} ${background} ${border} ${rounded} ${$$props.class ?? ""}`);
+      $$invalidate(1, classesBase = `${cBase$5} ${display} ${flexDirection} ${gap} ${background} ${border} ${rounded} ${$$props.class ?? ""}`);
     };
     $$props = exclude_internal_props($$props);
     return [
@@ -5487,7 +7829,7 @@
   class RadioGroup extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$e, create_fragment$e, safe_not_equal, {
+      init(this, options, instance$h, create_fragment$h, safe_not_equal, {
         display: 2,
         flexDirection: 3,
         gap: 4,
@@ -5504,7 +7846,7 @@
       });
     }
   }
-  function create_fragment$d(ctx) {
+  function create_fragment$g(ctx) {
     let label_1;
     let div1;
     let div0;
@@ -5754,10 +8096,10 @@
       }
     };
   }
-  const cBase$2 = "flex-auto";
+  const cBase$4 = "flex-auto";
   const cWrapper = "text-base text-center cursor-pointer";
   const cDisabled = "opacity-50 cursor-not-allowed";
-  function instance$d($$self, $$props, $$invalidate) {
+  function instance$g($$self, $$props, $$invalidate) {
     let checked;
     let classesActive;
     let classesDisabled;
@@ -5857,7 +8199,7 @@
       $$invalidate(18, classesDisabled = $$props.disabled ? cDisabled : "");
       $$invalidate(8, classesWrapper = `${cWrapper} ${padding} ${rounded} ${classesActive} ${classesDisabled} ${$$props.class ?? ""}`);
     };
-    $$invalidate(9, classsBase = `${cBase$2}`);
+    $$invalidate(9, classsBase = `${cBase$4}`);
     $$props = exclude_internal_props($$props);
     return [
       group,
@@ -5898,8 +8240,8 @@
       init(
         this,
         options,
-        instance$d,
-        create_fragment$d,
+        instance$g,
+        create_fragment$g,
         safe_not_equal,
         {
           group: 0,
@@ -5922,12 +8264,12 @@
   }
   const get_trail_slot_changes = (dirty) => ({});
   const get_trail_slot_context = (ctx) => ({});
-  function get_each_context$3(ctx, list, i) {
+  function get_each_context$4(ctx, list, i) {
     const child_ctx = ctx.slice();
     child_ctx[23] = list[i];
     return child_ctx;
   }
-  function create_if_block_2$3(ctx) {
+  function create_if_block_2$4(ctx) {
     let label_1;
     let current;
     const default_slot_template = (
@@ -6011,7 +8353,7 @@
       }
     };
   }
-  function create_if_block_1$4(ctx) {
+  function create_if_block_1$6(ctx) {
     let datalist;
     let datalist_id_value;
     let each_value = ensure_array_like(
@@ -6020,7 +8362,7 @@
     );
     let each_blocks = [];
     for (let i = 0; i < each_value.length; i += 1) {
-      each_blocks[i] = create_each_block$3(get_each_context$3(ctx, each_value, i));
+      each_blocks[i] = create_each_block$4(get_each_context$4(ctx, each_value, i));
     }
     return {
       c() {
@@ -6049,11 +8391,11 @@
           );
           let i;
           for (i = 0; i < each_value.length; i += 1) {
-            const child_ctx = get_each_context$3(ctx2, each_value, i);
+            const child_ctx = get_each_context$4(ctx2, each_value, i);
             if (each_blocks[i]) {
               each_blocks[i].p(child_ctx, dirty);
             } else {
-              each_blocks[i] = create_each_block$3(child_ctx);
+              each_blocks[i] = create_each_block$4(child_ctx);
               each_blocks[i].c();
               each_blocks[i].m(datalist, null);
             }
@@ -6077,7 +8419,7 @@
       }
     };
   }
-  function create_each_block$3(ctx) {
+  function create_each_block$4(ctx) {
     let option;
     let option_value_value;
     let option_label_value;
@@ -6113,7 +8455,7 @@
       }
     };
   }
-  function create_if_block$8(ctx) {
+  function create_if_block$b(ctx) {
     let div;
     let current;
     const trail_slot_template = (
@@ -6182,7 +8524,7 @@
       }
     };
   }
-  function create_fragment$c(ctx) {
+  function create_fragment$f(ctx) {
     let div1;
     let t0;
     let div0;
@@ -6197,7 +8539,7 @@
     let dispose;
     let if_block0 = (
       /*$$slots*/
-      ctx[12].default && create_if_block_2$3(ctx)
+      ctx[12].default && create_if_block_2$4(ctx)
     );
     let input_levels = [
       { type: "range" },
@@ -6244,11 +8586,11 @@
       /*ticked*/
       ctx[6] && /*tickmarks*/
       ctx[8] && /*tickmarks*/
-      ctx[8].length && create_if_block_1$4(ctx)
+      ctx[8].length && create_if_block_1$6(ctx)
     );
     let if_block2 = (
       /*$$slots*/
-      ctx[12].trail && create_if_block$8(ctx)
+      ctx[12].trail && create_if_block$b(ctx)
     );
     return {
       c() {
@@ -6332,7 +8674,7 @@
               transition_in(if_block0, 1);
             }
           } else {
-            if_block0 = create_if_block_2$3(ctx2);
+            if_block0 = create_if_block_2$4(ctx2);
             if_block0.c();
             transition_in(if_block0, 1);
             if_block0.m(div1, t0);
@@ -6402,7 +8744,7 @@
           if (if_block1) {
             if_block1.p(ctx2, dirty);
           } else {
-            if_block1 = create_if_block_1$4(ctx2);
+            if_block1 = create_if_block_1$6(ctx2);
             if_block1.c();
             if_block1.m(div0, null);
           }
@@ -6421,7 +8763,7 @@
               transition_in(if_block2, 1);
             }
           } else {
-            if_block2 = create_if_block$8(ctx2);
+            if_block2 = create_if_block$b(ctx2);
             if_block2.c();
             transition_in(if_block2, 1);
             if_block2.m(div1, null);
@@ -6462,11 +8804,11 @@
       }
     };
   }
-  const cBase$1 = "space-y-2";
+  const cBase$3 = "space-y-2";
   const cBaseLabel = "";
   const cBaseContent = "flex justify-center py-2";
   const cBaseInput = "w-full h-2";
-  function instance$c($$self, $$props, $$invalidate) {
+  function instance$f($$self, $$props, $$invalidate) {
     let classesBase;
     let classesInput;
     const omit_props_names = ["name", "id", "value", "min", "max", "step", "ticked", "accent", "label"];
@@ -6523,7 +8865,7 @@
       if ("$$scope" in $$new_props) $$invalidate(14, $$scope = $$new_props.$$scope);
     };
     $$self.$$.update = () => {
-      $$invalidate(10, classesBase = `${cBase$1} ${$$props.class ?? ""}`);
+      $$invalidate(10, classesBase = `${cBase$3} ${$$props.class ?? ""}`);
       if ($$self.$$.dirty & /*accent*/
       8192) {
         $$invalidate(9, classesInput = `${cBaseInput} ${accent}`);
@@ -6556,7 +8898,7 @@
   class RangeSlider extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$c, create_fragment$c, safe_not_equal, {
+      init(this, options, instance$f, create_fragment$f, safe_not_equal, {
         name: 1,
         id: 2,
         value: 0,
@@ -6569,7 +8911,7 @@
       });
     }
   }
-  function create_if_block$7(ctx) {
+  function create_if_block$a(ctx) {
     let div;
     let current;
     const default_slot_template = (
@@ -6638,7 +8980,7 @@
       }
     };
   }
-  function create_fragment$b(ctx) {
+  function create_fragment$e(ctx) {
     let div2;
     let label_1;
     let input;
@@ -6674,7 +9016,7 @@
     }
     let if_block = (
       /*$$slots*/
-      ctx[10].default && create_if_block$7(ctx)
+      ctx[10].default && create_if_block$a(ctx)
     );
     return {
       c() {
@@ -6867,7 +9209,7 @@
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block$7(ctx2);
+            if_block = create_if_block$a(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(label_1, null);
@@ -6936,11 +9278,11 @@
       }
     };
   }
-  const cBase = "inline-block";
+  const cBase$2 = "inline-block";
   const cLabel = "unstyled flex items-center";
   const cTrack = "flex transition-all duration-[200ms] cursor-pointer";
   const cThumb = "w-[50%] h-full scale-[0.8] transition-all duration-[200ms] shadow";
-  function instance$b($$self, $$props, $$invalidate) {
+  function instance$e($$self, $$props, $$invalidate) {
     let cTrackActive;
     let cThumbBackground;
     let cThumbPos;
@@ -7040,7 +9382,7 @@
         $$invalidate(17, cThumbPos = checked ? "translate-x-full" : "");
       }
       $$invalidate(20, classesDisabled = $$props.disabled === true ? "opacity-50" : "hover:brightness-[105%] dark:hover:brightness-110 cursor-pointer");
-      $$invalidate(6, classesBase = `${cBase} ${rounded} ${classesDisabled} ${$$props.class ?? ""}`);
+      $$invalidate(6, classesBase = `${cBase$2} ${rounded} ${classesDisabled} ${$$props.class ?? ""}`);
       if ($$self.$$.dirty[0] & /*border, rounded, trackSize, cTrackActive*/
       638976) {
         $$invalidate(4, classesTrack = `${cTrack} ${border} ${rounded} ${trackSize} ${cTrackActive}`);
@@ -7093,8 +9435,8 @@
       init(
         this,
         options,
-        instance$b,
-        create_fragment$b,
+        instance$e,
+        create_fragment$e,
         safe_not_equal,
         {
           name: 1,
@@ -7111,7 +9453,920 @@
       );
     }
   }
-  function create_if_block$6(ctx) {
+  const get_panel_slot_changes = (dirty) => ({});
+  const get_panel_slot_context = (ctx) => ({});
+  function create_if_block$9(ctx) {
+    let div;
+    let div_class_value;
+    let current;
+    const panel_slot_template = (
+      /*#slots*/
+      ctx[17].panel
+    );
+    const panel_slot = create_slot(
+      panel_slot_template,
+      ctx,
+      /*$$scope*/
+      ctx[16],
+      get_panel_slot_context
+    );
+    return {
+      c() {
+        div = element("div");
+        if (panel_slot) panel_slot.c();
+        attr(div, "class", div_class_value = "tab-panel " + /*classesPanel*/
+        ctx[2]);
+        attr(div, "role", "tabpanel");
+        attr(
+          div,
+          "aria-labelledby",
+          /*panel*/
+          ctx[1]
+        );
+        attr(div, "tabindex", "0");
+      },
+      m(target, anchor) {
+        insert(target, div, anchor);
+        if (panel_slot) {
+          panel_slot.m(div, null);
+        }
+        current = true;
+      },
+      p(ctx2, dirty) {
+        if (panel_slot) {
+          if (panel_slot.p && (!current || dirty & /*$$scope*/
+          65536)) {
+            update_slot_base(
+              panel_slot,
+              panel_slot_template,
+              ctx2,
+              /*$$scope*/
+              ctx2[16],
+              !current ? get_all_dirty_from_scope(
+                /*$$scope*/
+                ctx2[16]
+              ) : get_slot_changes(
+                panel_slot_template,
+                /*$$scope*/
+                ctx2[16],
+                dirty,
+                get_panel_slot_changes
+              ),
+              get_panel_slot_context
+            );
+          }
+        }
+        if (!current || dirty & /*classesPanel*/
+        4 && div_class_value !== (div_class_value = "tab-panel " + /*classesPanel*/
+        ctx2[2])) {
+          attr(div, "class", div_class_value);
+        }
+        if (!current || dirty & /*panel*/
+        2) {
+          attr(
+            div,
+            "aria-labelledby",
+            /*panel*/
+            ctx2[1]
+          );
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(panel_slot, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(panel_slot, local);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div);
+        }
+        if (panel_slot) panel_slot.d(detaching);
+      }
+    };
+  }
+  function create_fragment$d(ctx) {
+    let div1;
+    let div0;
+    let div0_class_value;
+    let t2;
+    let div1_class_value;
+    let current;
+    const default_slot_template = (
+      /*#slots*/
+      ctx[17].default
+    );
+    const default_slot = create_slot(
+      default_slot_template,
+      ctx,
+      /*$$scope*/
+      ctx[16],
+      null
+    );
+    let if_block = (
+      /*$$slots*/
+      ctx[5].panel && create_if_block$9(ctx)
+    );
+    return {
+      c() {
+        div1 = element("div");
+        div0 = element("div");
+        if (default_slot) default_slot.c();
+        t2 = space();
+        if (if_block) if_block.c();
+        attr(div0, "class", div0_class_value = "tab-list " + /*classesList*/
+        ctx[3]);
+        attr(div0, "role", "tablist");
+        attr(
+          div0,
+          "aria-labelledby",
+          /*labelledby*/
+          ctx[0]
+        );
+        attr(div1, "class", div1_class_value = "tab-group " + /*classesBase*/
+        ctx[4]);
+        attr(div1, "data-testid", "tab-group");
+      },
+      m(target, anchor) {
+        insert(target, div1, anchor);
+        append(div1, div0);
+        if (default_slot) {
+          default_slot.m(div0, null);
+        }
+        append(div1, t2);
+        if (if_block) if_block.m(div1, null);
+        current = true;
+      },
+      p(ctx2, [dirty]) {
+        if (default_slot) {
+          if (default_slot.p && (!current || dirty & /*$$scope*/
+          65536)) {
+            update_slot_base(
+              default_slot,
+              default_slot_template,
+              ctx2,
+              /*$$scope*/
+              ctx2[16],
+              !current ? get_all_dirty_from_scope(
+                /*$$scope*/
+                ctx2[16]
+              ) : get_slot_changes(
+                default_slot_template,
+                /*$$scope*/
+                ctx2[16],
+                dirty,
+                null
+              ),
+              null
+            );
+          }
+        }
+        if (!current || dirty & /*classesList*/
+        8 && div0_class_value !== (div0_class_value = "tab-list " + /*classesList*/
+        ctx2[3])) {
+          attr(div0, "class", div0_class_value);
+        }
+        if (!current || dirty & /*labelledby*/
+        1) {
+          attr(
+            div0,
+            "aria-labelledby",
+            /*labelledby*/
+            ctx2[0]
+          );
+        }
+        if (
+          /*$$slots*/
+          ctx2[5].panel
+        ) {
+          if (if_block) {
+            if_block.p(ctx2, dirty);
+            if (dirty & /*$$slots*/
+            32) {
+              transition_in(if_block, 1);
+            }
+          } else {
+            if_block = create_if_block$9(ctx2);
+            if_block.c();
+            transition_in(if_block, 1);
+            if_block.m(div1, null);
+          }
+        } else if (if_block) {
+          group_outros();
+          transition_out(if_block, 1, 1, () => {
+            if_block = null;
+          });
+          check_outros();
+        }
+        if (!current || dirty & /*classesBase*/
+        16 && div1_class_value !== (div1_class_value = "tab-group " + /*classesBase*/
+        ctx2[4])) {
+          attr(div1, "class", div1_class_value);
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(default_slot, local);
+        transition_in(if_block);
+        current = true;
+      },
+      o(local) {
+        transition_out(default_slot, local);
+        transition_out(if_block);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div1);
+        }
+        if (default_slot) default_slot.d(detaching);
+        if (if_block) if_block.d();
+      }
+    };
+  }
+  const cBase$1 = "space-y-4";
+  const cList = "flex overflow-x-auto hide-scrollbar";
+  const cPanel = "";
+  function instance$d($$self, $$props, $$invalidate) {
+    let classesBase;
+    let classesList;
+    let classesPanel;
+    let { $$slots: slots = {}, $$scope } = $$props;
+    const $$slots = compute_slots(slots);
+    let { justify = "justify-start" } = $$props;
+    let { border = "border-b border-surface-400-500-token" } = $$props;
+    let { active: active2 = "border-b-2 border-surface-900-50-token" } = $$props;
+    let { hover = "hover:variant-soft" } = $$props;
+    let { flex = "flex-none" } = $$props;
+    let { padding = "px-4 py-2" } = $$props;
+    let { rounded = "rounded-tl-container-token rounded-tr-container-token" } = $$props;
+    let { spacing = "space-y-1" } = $$props;
+    let { regionList = "" } = $$props;
+    let { regionPanel = "" } = $$props;
+    let { labelledby = "" } = $$props;
+    let { panel = "" } = $$props;
+    setContext("active", active2);
+    setContext("hover", hover);
+    setContext("flex", flex);
+    setContext("padding", padding);
+    setContext("rounded", rounded);
+    setContext("spacing", spacing);
+    $$self.$$set = ($$new_props) => {
+      $$invalidate(18, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+      if ("justify" in $$new_props) $$invalidate(6, justify = $$new_props.justify);
+      if ("border" in $$new_props) $$invalidate(7, border = $$new_props.border);
+      if ("active" in $$new_props) $$invalidate(8, active2 = $$new_props.active);
+      if ("hover" in $$new_props) $$invalidate(9, hover = $$new_props.hover);
+      if ("flex" in $$new_props) $$invalidate(10, flex = $$new_props.flex);
+      if ("padding" in $$new_props) $$invalidate(11, padding = $$new_props.padding);
+      if ("rounded" in $$new_props) $$invalidate(12, rounded = $$new_props.rounded);
+      if ("spacing" in $$new_props) $$invalidate(13, spacing = $$new_props.spacing);
+      if ("regionList" in $$new_props) $$invalidate(14, regionList = $$new_props.regionList);
+      if ("regionPanel" in $$new_props) $$invalidate(15, regionPanel = $$new_props.regionPanel);
+      if ("labelledby" in $$new_props) $$invalidate(0, labelledby = $$new_props.labelledby);
+      if ("panel" in $$new_props) $$invalidate(1, panel = $$new_props.panel);
+      if ("$$scope" in $$new_props) $$invalidate(16, $$scope = $$new_props.$$scope);
+    };
+    $$self.$$.update = () => {
+      $$invalidate(4, classesBase = `${cBase$1} ${$$props.class ?? ""}`);
+      if ($$self.$$.dirty & /*justify, border, regionList*/
+      16576) {
+        $$invalidate(3, classesList = `${cList} ${justify} ${border} ${regionList}`);
+      }
+      if ($$self.$$.dirty & /*regionPanel*/
+      32768) {
+        $$invalidate(2, classesPanel = `${cPanel} ${regionPanel}`);
+      }
+    };
+    $$props = exclude_internal_props($$props);
+    return [
+      labelledby,
+      panel,
+      classesPanel,
+      classesList,
+      classesBase,
+      $$slots,
+      justify,
+      border,
+      active2,
+      hover,
+      flex,
+      padding,
+      rounded,
+      spacing,
+      regionList,
+      regionPanel,
+      $$scope,
+      slots
+    ];
+  }
+  class TabGroup extends SvelteComponent {
+    constructor(options) {
+      super();
+      init(this, options, instance$d, create_fragment$d, safe_not_equal, {
+        justify: 6,
+        border: 7,
+        active: 8,
+        hover: 9,
+        flex: 10,
+        padding: 11,
+        rounded: 12,
+        spacing: 13,
+        regionList: 14,
+        regionPanel: 15,
+        labelledby: 0,
+        panel: 1
+      });
+    }
+  }
+  const get_lead_slot_changes = (dirty) => ({});
+  const get_lead_slot_context = (ctx) => ({});
+  function create_if_block$8(ctx) {
+    let div;
+    let current;
+    const lead_slot_template = (
+      /*#slots*/
+      ctx[22].lead
+    );
+    const lead_slot = create_slot(
+      lead_slot_template,
+      ctx,
+      /*$$scope*/
+      ctx[21],
+      get_lead_slot_context
+    );
+    return {
+      c() {
+        div = element("div");
+        if (lead_slot) lead_slot.c();
+        attr(div, "class", "tab-lead");
+      },
+      m(target, anchor) {
+        insert(target, div, anchor);
+        if (lead_slot) {
+          lead_slot.m(div, null);
+        }
+        current = true;
+      },
+      p(ctx2, dirty) {
+        if (lead_slot) {
+          if (lead_slot.p && (!current || dirty[0] & /*$$scope*/
+          2097152)) {
+            update_slot_base(
+              lead_slot,
+              lead_slot_template,
+              ctx2,
+              /*$$scope*/
+              ctx2[21],
+              !current ? get_all_dirty_from_scope(
+                /*$$scope*/
+                ctx2[21]
+              ) : get_slot_changes(
+                lead_slot_template,
+                /*$$scope*/
+                ctx2[21],
+                dirty,
+                get_lead_slot_changes
+              ),
+              get_lead_slot_context
+            );
+          }
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(lead_slot, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(lead_slot, local);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div);
+        }
+        if (lead_slot) lead_slot.d(detaching);
+      }
+    };
+  }
+  function create_fragment$c(ctx) {
+    let label;
+    let div3;
+    let div0;
+    let input;
+    let t0;
+    let div2;
+    let t1;
+    let div1;
+    let div2_class_value;
+    let div3_class_value;
+    let div3_tabindex_value;
+    let current;
+    let binding_group;
+    let mounted;
+    let dispose;
+    let input_levels = [
+      { type: "radio" },
+      { name: (
+        /*name*/
+        ctx[1]
+      ) },
+      { __value: (
+        /*value*/
+        ctx[2]
+      ) },
+      /*prunedRestProps*/
+      ctx[11](),
+      { tabindex: "-1" }
+    ];
+    let input_data = {};
+    for (let i = 0; i < input_levels.length; i += 1) {
+      input_data = assign(input_data, input_levels[i]);
+    }
+    let if_block = (
+      /*$$slots*/
+      ctx[12].lead && create_if_block$8(ctx)
+    );
+    const default_slot_template = (
+      /*#slots*/
+      ctx[22].default
+    );
+    const default_slot = create_slot(
+      default_slot_template,
+      ctx,
+      /*$$scope*/
+      ctx[21],
+      null
+    );
+    binding_group = init_binding_group(
+      /*$$binding_groups*/
+      ctx[30][0]
+    );
+    return {
+      c() {
+        label = element("label");
+        div3 = element("div");
+        div0 = element("div");
+        input = element("input");
+        t0 = space();
+        div2 = element("div");
+        if (if_block) if_block.c();
+        t1 = space();
+        div1 = element("div");
+        if (default_slot) default_slot.c();
+        set_attributes(input, input_data);
+        attr(div0, "class", "h-0 w-0 overflow-hidden");
+        attr(div1, "class", "tab-label");
+        attr(div2, "class", div2_class_value = "tab-interface " + /*classesInterface*/
+        ctx[8]);
+        attr(div3, "class", div3_class_value = "tab " + /*classesTab*/
+        ctx[7]);
+        attr(div3, "data-testid", "tab");
+        attr(div3, "role", "tab");
+        attr(
+          div3,
+          "aria-controls",
+          /*controls*/
+          ctx[4]
+        );
+        attr(
+          div3,
+          "aria-selected",
+          /*selected*/
+          ctx[5]
+        );
+        attr(div3, "tabindex", div3_tabindex_value = /*selected*/
+        ctx[5] ? 0 : -1);
+        attr(
+          label,
+          "class",
+          /*classesBase*/
+          ctx[9]
+        );
+        attr(
+          label,
+          "title",
+          /*title*/
+          ctx[3]
+        );
+        binding_group.p(input);
+      },
+      m(target, anchor) {
+        insert(target, label, anchor);
+        append(label, div3);
+        append(div3, div0);
+        append(div0, input);
+        if (input.autofocus) input.focus();
+        ctx[28](input);
+        input.checked = input.__value === /*group*/
+        ctx[0];
+        append(div3, t0);
+        append(div3, div2);
+        if (if_block) if_block.m(div2, null);
+        append(div2, t1);
+        append(div2, div1);
+        if (default_slot) {
+          default_slot.m(div1, null);
+        }
+        current = true;
+        if (!mounted) {
+          dispose = [
+            listen(
+              input,
+              "change",
+              /*input_change_handler*/
+              ctx[29]
+            ),
+            listen(
+              input,
+              "click",
+              /*click_handler*/
+              ctx[26]
+            ),
+            listen(
+              input,
+              "change",
+              /*change_handler*/
+              ctx[27]
+            ),
+            listen(
+              div3,
+              "keydown",
+              /*onKeyDown*/
+              ctx[10]
+            ),
+            listen(
+              div3,
+              "keydown",
+              /*keydown_handler*/
+              ctx[23]
+            ),
+            listen(
+              div3,
+              "keyup",
+              /*keyup_handler*/
+              ctx[24]
+            ),
+            listen(
+              div3,
+              "keypress",
+              /*keypress_handler*/
+              ctx[25]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        set_attributes(input, input_data = get_spread_update(input_levels, [
+          { type: "radio" },
+          (!current || dirty[0] & /*name*/
+          2) && { name: (
+            /*name*/
+            ctx2[1]
+          ) },
+          (!current || dirty[0] & /*value*/
+          4) && { __value: (
+            /*value*/
+            ctx2[2]
+          ) },
+          /*prunedRestProps*/
+          ctx2[11](),
+          { tabindex: "-1" }
+        ]));
+        if (dirty[0] & /*group*/
+        1) {
+          input.checked = input.__value === /*group*/
+          ctx2[0];
+        }
+        if (
+          /*$$slots*/
+          ctx2[12].lead
+        ) {
+          if (if_block) {
+            if_block.p(ctx2, dirty);
+            if (dirty[0] & /*$$slots*/
+            4096) {
+              transition_in(if_block, 1);
+            }
+          } else {
+            if_block = create_if_block$8(ctx2);
+            if_block.c();
+            transition_in(if_block, 1);
+            if_block.m(div2, t1);
+          }
+        } else if (if_block) {
+          group_outros();
+          transition_out(if_block, 1, 1, () => {
+            if_block = null;
+          });
+          check_outros();
+        }
+        if (default_slot) {
+          if (default_slot.p && (!current || dirty[0] & /*$$scope*/
+          2097152)) {
+            update_slot_base(
+              default_slot,
+              default_slot_template,
+              ctx2,
+              /*$$scope*/
+              ctx2[21],
+              !current ? get_all_dirty_from_scope(
+                /*$$scope*/
+                ctx2[21]
+              ) : get_slot_changes(
+                default_slot_template,
+                /*$$scope*/
+                ctx2[21],
+                dirty,
+                null
+              ),
+              null
+            );
+          }
+        }
+        if (!current || dirty[0] & /*classesInterface*/
+        256 && div2_class_value !== (div2_class_value = "tab-interface " + /*classesInterface*/
+        ctx2[8])) {
+          attr(div2, "class", div2_class_value);
+        }
+        if (!current || dirty[0] & /*classesTab*/
+        128 && div3_class_value !== (div3_class_value = "tab " + /*classesTab*/
+        ctx2[7])) {
+          attr(div3, "class", div3_class_value);
+        }
+        if (!current || dirty[0] & /*controls*/
+        16) {
+          attr(
+            div3,
+            "aria-controls",
+            /*controls*/
+            ctx2[4]
+          );
+        }
+        if (!current || dirty[0] & /*selected*/
+        32) {
+          attr(
+            div3,
+            "aria-selected",
+            /*selected*/
+            ctx2[5]
+          );
+        }
+        if (!current || dirty[0] & /*selected*/
+        32 && div3_tabindex_value !== (div3_tabindex_value = /*selected*/
+        ctx2[5] ? 0 : -1)) {
+          attr(div3, "tabindex", div3_tabindex_value);
+        }
+        if (!current || dirty[0] & /*classesBase*/
+        512) {
+          attr(
+            label,
+            "class",
+            /*classesBase*/
+            ctx2[9]
+          );
+        }
+        if (!current || dirty[0] & /*title*/
+        8) {
+          attr(
+            label,
+            "title",
+            /*title*/
+            ctx2[3]
+          );
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(if_block);
+        transition_in(default_slot, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(if_block);
+        transition_out(default_slot, local);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(label);
+        }
+        ctx[28](null);
+        if (if_block) if_block.d();
+        if (default_slot) default_slot.d(detaching);
+        binding_group.r();
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  const cBase = "text-center cursor-pointer transition-colors duration-100";
+  const cInterface = "";
+  function instance$c($$self, $$props, $$invalidate) {
+    let selected;
+    let classesActive;
+    let classesBase;
+    let classesInterface;
+    let classesTab;
+    const omit_props_names = [
+      "group",
+      "name",
+      "value",
+      "title",
+      "controls",
+      "regionTab",
+      "active",
+      "hover",
+      "flex",
+      "padding",
+      "rounded",
+      "spacing"
+    ];
+    let $$restProps = compute_rest_props($$props, omit_props_names);
+    let { $$slots: slots = {}, $$scope } = $$props;
+    const $$slots = compute_slots(slots);
+    let { group } = $$props;
+    let { name } = $$props;
+    let { value } = $$props;
+    let { title = "" } = $$props;
+    let { controls = "" } = $$props;
+    let { regionTab = "" } = $$props;
+    let { active: active2 = getContext("active") } = $$props;
+    let { hover = getContext("hover") } = $$props;
+    let { flex = getContext("flex") } = $$props;
+    let { padding = getContext("padding") } = $$props;
+    let { rounded = getContext("rounded") } = $$props;
+    let { spacing = getContext("spacing") } = $$props;
+    let elemInput;
+    function onKeyDown(event) {
+      if (["Enter", "Space"].includes(event.code)) {
+        event.preventDefault();
+        elemInput.click();
+      } else if (event.code === "ArrowRight") {
+        const tabList = elemInput.closest(".tab-list");
+        if (!tabList) return;
+        const tabs = Array.from(tabList.querySelectorAll(".tab"));
+        const currTab = elemInput.closest(".tab");
+        if (!currTab) return;
+        const currIndex = tabs.indexOf(currTab);
+        const nextIndex = currIndex + 1 >= tabs.length ? 0 : currIndex + 1;
+        const nextTab = tabs[nextIndex];
+        const nextTabInput = nextTab == null ? void 0 : nextTab.querySelector("input");
+        if (nextTab && nextTabInput) {
+          nextTabInput.click();
+          nextTab.focus();
+        }
+      } else if (event.code === "ArrowLeft") {
+        const tabList = elemInput.closest(".tab-list");
+        if (!tabList) return;
+        const tabs = Array.from(tabList.querySelectorAll(".tab"));
+        const currTab = elemInput.closest(".tab");
+        if (!currTab) return;
+        const currIndex = tabs.indexOf(currTab);
+        const nextIndex = currIndex - 1 < 0 ? tabs.length - 1 : currIndex - 1;
+        const nextTab = tabs[nextIndex];
+        const nextTabInput = nextTab == null ? void 0 : nextTab.querySelector("input");
+        if (nextTab && nextTabInput) {
+          nextTabInput.click();
+          nextTab.focus();
+        }
+      }
+    }
+    function prunedRestProps() {
+      delete $$restProps.class;
+      return $$restProps;
+    }
+    const $$binding_groups = [[]];
+    function keydown_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function keyup_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function keypress_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function click_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function change_handler(event) {
+      bubble.call(this, $$self, event);
+    }
+    function input_binding($$value) {
+      binding_callbacks[$$value ? "unshift" : "push"](() => {
+        elemInput = $$value;
+        $$invalidate(6, elemInput);
+      });
+    }
+    function input_change_handler() {
+      group = this.__value;
+      $$invalidate(0, group);
+    }
+    $$self.$$set = ($$new_props) => {
+      $$invalidate(32, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+      $$invalidate(31, $$restProps = compute_rest_props($$props, omit_props_names));
+      if ("group" in $$new_props) $$invalidate(0, group = $$new_props.group);
+      if ("name" in $$new_props) $$invalidate(1, name = $$new_props.name);
+      if ("value" in $$new_props) $$invalidate(2, value = $$new_props.value);
+      if ("title" in $$new_props) $$invalidate(3, title = $$new_props.title);
+      if ("controls" in $$new_props) $$invalidate(4, controls = $$new_props.controls);
+      if ("regionTab" in $$new_props) $$invalidate(13, regionTab = $$new_props.regionTab);
+      if ("active" in $$new_props) $$invalidate(14, active2 = $$new_props.active);
+      if ("hover" in $$new_props) $$invalidate(15, hover = $$new_props.hover);
+      if ("flex" in $$new_props) $$invalidate(16, flex = $$new_props.flex);
+      if ("padding" in $$new_props) $$invalidate(17, padding = $$new_props.padding);
+      if ("rounded" in $$new_props) $$invalidate(18, rounded = $$new_props.rounded);
+      if ("spacing" in $$new_props) $$invalidate(19, spacing = $$new_props.spacing);
+      if ("$$scope" in $$new_props) $$invalidate(21, $$scope = $$new_props.$$scope);
+    };
+    $$self.$$.update = () => {
+      if ($$self.$$.dirty[0] & /*value, group*/
+      5) {
+        $$invalidate(5, selected = value === group);
+      }
+      if ($$self.$$.dirty[0] & /*selected, active, hover*/
+      49184) {
+        $$invalidate(20, classesActive = selected ? active2 : hover);
+      }
+      $$invalidate(9, classesBase = `${cBase} ${flex} ${padding} ${rounded} ${classesActive} ${$$props.class ?? ""}`);
+      if ($$self.$$.dirty[0] & /*spacing*/
+      524288) {
+        $$invalidate(8, classesInterface = `${cInterface} ${spacing}`);
+      }
+      if ($$self.$$.dirty[0] & /*regionTab*/
+      8192) {
+        $$invalidate(7, classesTab = `${regionTab}`);
+      }
+    };
+    $$props = exclude_internal_props($$props);
+    return [
+      group,
+      name,
+      value,
+      title,
+      controls,
+      selected,
+      elemInput,
+      classesTab,
+      classesInterface,
+      classesBase,
+      onKeyDown,
+      prunedRestProps,
+      $$slots,
+      regionTab,
+      active2,
+      hover,
+      flex,
+      padding,
+      rounded,
+      spacing,
+      classesActive,
+      $$scope,
+      slots,
+      keydown_handler,
+      keyup_handler,
+      keypress_handler,
+      click_handler,
+      change_handler,
+      input_binding,
+      input_change_handler,
+      $$binding_groups
+    ];
+  }
+  class Tab extends SvelteComponent {
+    constructor(options) {
+      super();
+      init(
+        this,
+        options,
+        instance$c,
+        create_fragment$c,
+        safe_not_equal,
+        {
+          group: 0,
+          name: 1,
+          value: 2,
+          title: 3,
+          controls: 4,
+          regionTab: 13,
+          active: 14,
+          hover: 15,
+          flex: 16,
+          padding: 17,
+          rounded: 18,
+          spacing: 19
+        },
+        null,
+        [-1, -1]
+      );
+    }
+  }
+  function create_if_block$7(ctx) {
     let previous_key = (
       /*$modalStore*/
       ctx[14]
@@ -7161,14 +10416,14 @@
       }
     };
   }
-  function create_else_block$2(ctx) {
+  function create_else_block$3(ctx) {
     let div;
     let current_block_type_index;
     let if_block;
     let div_class_value;
     let div_aria_label_value;
     let current;
-    const if_block_creators = [create_if_block_8, create_else_block_1];
+    const if_block_creators = [create_if_block_8$1, create_else_block_1];
     const if_blocks = [];
     function select_block_type_2(ctx2, dirty) {
       var _a;
@@ -7250,7 +10505,7 @@
       }
     };
   }
-  function create_if_block_1$3(ctx) {
+  function create_if_block_1$5(ctx) {
     var _a, _b, _c, _d;
     let div;
     let t0;
@@ -7260,30 +10515,30 @@
     let div_aria_label_value;
     let if_block0 = (
       /*$modalStore*/
-      ((_a = ctx[14][0]) == null ? void 0 : _a.title) && create_if_block_7(ctx)
+      ((_a = ctx[14][0]) == null ? void 0 : _a.title) && create_if_block_7$1(ctx)
     );
     let if_block1 = (
       /*$modalStore*/
-      ((_b = ctx[14][0]) == null ? void 0 : _b.body) && create_if_block_6(ctx)
+      ((_b = ctx[14][0]) == null ? void 0 : _b.body) && create_if_block_6$1(ctx)
     );
     let if_block2 = (
       /*$modalStore*/
       ((_c = ctx[14][0]) == null ? void 0 : _c.image) && typeof /*$modalStore*/
-      ((_d = ctx[14][0]) == null ? void 0 : _d.image) === "string" && create_if_block_5(ctx)
+      ((_d = ctx[14][0]) == null ? void 0 : _d.image) === "string" && create_if_block_5$1(ctx)
     );
     function select_block_type_1(ctx2, dirty) {
       if (
         /*$modalStore*/
         ctx2[14][0].type === "alert"
-      ) return create_if_block_2$2;
+      ) return create_if_block_2$3;
       if (
         /*$modalStore*/
         ctx2[14][0].type === "confirm"
-      ) return create_if_block_3$1;
+      ) return create_if_block_3$2;
       if (
         /*$modalStore*/
         ctx2[14][0].type === "prompt"
-      ) return create_if_block_4;
+      ) return create_if_block_4$1;
     }
     let current_block_type = select_block_type_1(ctx);
     let if_block3 = current_block_type && current_block_type(ctx);
@@ -7325,7 +10580,7 @@
           if (if_block0) {
             if_block0.p(ctx2, dirty);
           } else {
-            if_block0 = create_if_block_7(ctx2);
+            if_block0 = create_if_block_7$1(ctx2);
             if_block0.c();
             if_block0.m(div, t0);
           }
@@ -7340,7 +10595,7 @@
           if (if_block1) {
             if_block1.p(ctx2, dirty);
           } else {
-            if_block1 = create_if_block_6(ctx2);
+            if_block1 = create_if_block_6$1(ctx2);
             if_block1.c();
             if_block1.m(div, t1);
           }
@@ -7356,7 +10611,7 @@
           if (if_block2) {
             if_block2.p(ctx2, dirty);
           } else {
-            if_block2 = create_if_block_5(ctx2);
+            if_block2 = create_if_block_5$1(ctx2);
             if_block2.c();
             if_block2.m(div, t2);
           }
@@ -7509,7 +10764,7 @@
       }
     };
   }
-  function create_if_block_8(ctx) {
+  function create_if_block_8$1(ctx) {
     var _a, _b;
     let switch_instance;
     let switch_instance_anchor;
@@ -7529,7 +10784,7 @@
     function switch_props(ctx2, dirty) {
       var _a2;
       let switch_instance_props = {
-        $$slots: { default: [create_default_slot$6] },
+        $$slots: { default: [create_default_slot$7] },
         $$scope: { ctx: ctx2 }
       };
       for (let i = 0; i < switch_instance_spread_levels.length; i += 1) {
@@ -7625,7 +10880,7 @@
       }
     };
   }
-  function create_default_slot$6(ctx) {
+  function create_default_slot$7(ctx) {
     var _a;
     let html_tag;
     let raw_value = (
@@ -7657,7 +10912,7 @@
       }
     };
   }
-  function create_if_block_7(ctx) {
+  function create_if_block_7$1(ctx) {
     let header;
     let raw_value = (
       /*$modalStore*/
@@ -7691,7 +10946,7 @@
       }
     };
   }
-  function create_if_block_6(ctx) {
+  function create_if_block_6$1(ctx) {
     let article;
     let raw_value = (
       /*$modalStore*/
@@ -7725,7 +10980,7 @@
       }
     };
   }
-  function create_if_block_5(ctx) {
+  function create_if_block_5$1(ctx) {
     let img;
     let img_src_value;
     return {
@@ -7755,7 +11010,7 @@
       }
     };
   }
-  function create_if_block_4(ctx) {
+  function create_if_block_4$1(ctx) {
     let form;
     let input;
     let t0;
@@ -7904,7 +11159,7 @@
       }
     };
   }
-  function create_if_block_3$1(ctx) {
+  function create_if_block_3$2(ctx) {
     let footer;
     let button0;
     let t0;
@@ -8002,7 +11257,7 @@
       }
     };
   }
-  function create_if_block_2$2(ctx) {
+  function create_if_block_2$3(ctx) {
     let footer;
     let button;
     let t2;
@@ -8078,7 +11333,7 @@
     let current;
     let mounted;
     let dispose;
-    const if_block_creators = [create_if_block_1$3, create_else_block$2];
+    const if_block_creators = [create_if_block_1$5, create_else_block$3];
     const if_blocks = [];
     function select_block_type(ctx2, dirty) {
       if (
@@ -8259,7 +11514,7 @@
       }
     };
   }
-  function create_fragment$a(ctx) {
+  function create_fragment$b(ctx) {
     let if_block_anchor;
     let current;
     let mounted;
@@ -8270,7 +11525,7 @@
     );
     let if_block = (
       /*$modalStore*/
-      ctx[14].length > 0 && create_if_block$6(ctx)
+      ctx[14].length > 0 && create_if_block$7(ctx)
     );
     return {
       c() {
@@ -8311,7 +11566,7 @@
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block$6(ctx2);
+            if_block = create_if_block$7(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(if_block_anchor.parentNode, if_block_anchor);
@@ -8347,7 +11602,7 @@
   const cTransitionLayer = "w-full h-fit min-h-full overflow-y-auto flex justify-center";
   const cModal = "block overflow-y-auto";
   const cModalImage = "w-full h-auto";
-  function instance$a($$self, $$props, $$invalidate) {
+  function instance$b($$self, $$props, $$invalidate) {
     let cPosition;
     let classesBackdrop;
     let classesTransitionLayer;
@@ -8613,8 +11868,8 @@
       init(
         this,
         options,
-        instance$a,
-        create_fragment$a,
+        instance$b,
+        create_fragment$b,
         safe_not_equal,
         {
           components: 30,
@@ -8648,7 +11903,7 @@
     }
   }
   const creditCode = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAAA8AXHiAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxMAAAsTAQCanBgAADzWSURBVHhe7Z0HnBRF9sdrMyxZoiCegKCCOZ3xzKcCgp56CoqKohj+6pmznBGMGM+cQDALBgwneuZ4nieGU5KKIoqAIrCEDf1/3zddQ29vd09P2oD++BQzW93TXV316uWqLvhZUCowv8P8+OOP5uOPPzY9evQwvXr1MoWFhe6RYDiOY2bPnm2+/vprs+WWW5p27dq5R37bWCEwNTU1K6WDfvNYvny5M2LECKd58+bOjjvu6Hz77bfukXB88803zuabb+60aNHCueqqq5xVq1a5R+JB+t79tmZBnms5U7IqQWdrHhYvXmymTZvm/hWNlStXmpkzZxohMOVCcK9UKCkpMT/88INZtmyZqa6uNgUFBe6RaHzxxRdm6dKl7l9rJKqieX0Txi+//GKGDh1qhKOYs846y1RVRc+fsrIy0759eyWOyspK2Ll7JBxrr722ef31182ECRPMyJEjTXFxsXskHOeee67p27ev+b//+79Y92iqWGMJCy4yb9481YNeeOGFlBwINbNbt26qV8G94g567969lYDXWmsttyYatIM2iWqLGuLWrnlYYwmrdevWyoHATz/9ZL777jv9HgYIqmPHjqaoqEg5FmIUAsg1xo4dax588EFz/fXXm/Lycrd2zUOTIiy4CDqNKMluTThatmxpNt54YxVPiMXvv/8+JaF07dpVCYvrw1nywVHatm1rDjvsMLU64+hk6G60Jc4zNyY0GcJCPI0ePdoMGjTIiAWmXCUKDNr+++9vNthgA7PeeuupmEs1kB06dFDCgqDgcg0tqrj/zTffbAYPHmzGjRuXUk9sVJDGL5OZ3OghHMfZZpttYDmO6DXOl19+6R4JhwyEI7PdmTNnjn5PhX/9619Oq1at9B4nn3yyuiDiQvrR/ZY7VFRUOMJFtT177723s2TJEvdI44b0xZImw7FQjvv166cc5auvvjJTp05VMREFzu3UqZPp3r27fk8FxJQ9LxXH4t633Xab2XrrrVVfSsVBM0GzZs3MlVdeaf70pz+Z4cOHm+bNm7tHmgCaCscC77//vtOmTRudwZtuuqkjg+8eiQYz/7PPPnNk8N2aYMyePdvp3LmzXn+PPfZwfv31V/dIXcyfP9/Zbrvt9Ny+ffsqV4xC3DYEAU4lhOz+1fjRpDiWtNdstdVWZt9999W/P/30UzNlyhT9ngrXXHON2XHHHdWHFAUh2mRYZtGiRZEcCwcnliOAy6XyYV133XXahlGjRrk18dGiRYuU4aVGh8bAscTaiz0jZ8yYoSEUabrqWmLxuUfCIaJEzxcCcObNm+fW1gXtsHrcH/7wh0iO+MUXXzg9evTQc//4xz86QojukbrgulZXEmPCrQ0HoaFrr73WkYngiBUcW3+jD9PRC/OFRsGx3nvvPXPUUUeZ++67L5aesv7665tjjjlGvwuRmXvuuUe/R0EGXj/Ri15++WX9HgS87zvttJN+h3NFcSFcHzhhgYjPSP1HjAJ1kwARsfoZhaefflq565gxY8xTTz0Vyy1BKOqGG25QVwb6Z4OjoTnWgQce6EjHafD3zTffdGuj8c477ziiaMfiFkBEpiNEo+eLEhzKHeEMIt6cCy+8UC3EKC767rvvOq1bt9ZrCqG7tcE47rjj9DzKs88+69YGg/tvttlmei5t5j5xMHPmTGejjTbSvtxnn30y0uVyhUbBsbB40FGYccOGDdMwTCrgm8IaYyb/73//M//+97/dI8HgfOl09XSjR4VxAOrx2F922WVm1113jeQUePJFIdfv1sMfBvxjOGy32GILs+2227q1wXj44YfNl19+qd+HDBlixEjR76lAG0jd6dmzp+qhcazgvKKhORbWkrDv5Iw++OCDI60xi0cffVR1LazEl156ya0NBj6s//znP8ot0tFZoiDErHqTEIxytygsXLjQefHFF9UqTKVL3nXXXcq9hRidV155Ja22LliwQP176HQNCThWAYQlM7NBg1b//e9/zX777adcoFWrVkaIxuy99956LIxr4IV+5plnVNfBw17fPh70tY8++kitVThFrjgEz/PEE08ohxswYECsjInGBumTpQ3OsZiRzOKLLrrIKSkpUa5Fot3PP//snpFbYOkxo9PhBL8jPcCxGlzHgiPhozn99NONKPJah2ed2GBcEGT+8MMPk7E0eTb99IPcKeJuf//732OnxdQnPvnkkzUnAbChOZYX0qnO3/72N+eBBx5QX04criImv3PEEUeolYjfB+4X9jtSj+WRndLSUmfatGlubV288MILzvHHH+98+umnbk1dfPzxx3rOk08+6dZkDtorBoM+A5xbJpV7JByiPqi1+fLLL6fU2+obcKx6JSzcAjgWGRQGdvr06UlXgZ8Y+NtfFwQcntapKRaRI1aie6QurrvuOj2Pcs0117i1tcEg9evXT88R68qtrYujjz5az0HRZkJkA4wL3CZcb+DAgSmDzfRfly5d9Pw999yzjrGDGuHtZxR6FPv6Qr0RFlzl/vvvVw/4euutp51CWX/99bVu/Pjxah1mAjgbXE6UXC1XXHFF6KIGvPbWn7XTTju5tbUBMW+88cZ6Dt73MO7x8MMPKzFw7ziZE6mAxSgi2nn77bcjORA6IgQv6oOW8847L9lGnnvixIka5yQqYPuZCcfz3n333VlPgjioF8KCqE488UQ1yxmsoIKjcezYsaEEkQrMTBuchtuEKf4MWJ8+ffQ8wjuk4gRh11131XNoc1AICOLDAYkzkxAKf+cCccT/PffcoxOI9jEx4UwAg+Tss89OOm2DCu6ZSy+9NJaozQb1QljEvNBpmF277LKLM2HCBEcUbc1UuOOOO3TWYw3SWRCXv2MhTEQmeVVRIH/KdiDXCcMJJ5yQPI+2BAHvPMchrKBlYLkiJIAYw7cWR0/6/PPP1b9F2+C89957r3vEce68804VyxzDqkZPxdf2wQcf6HnUWW6NHpdPz3zeCeutt97SGSSWn3POOedoqokfyP4zzzxTCYuO8TobETFXX321cpn99tsvMjUFztKtWzftOJTgr7/+2j1SGyjbEDrnocwHEQmDwbH77rsvp0TkB4P717/+VScXYaooMLG22morbTflggsuSIpgOHb79u21HukQxGXh4qNGjdJnp6+feeYZ90jukXfC2n///fVhIYoovxQEs+WWW+q5WHh2MGHvgwYN0npEFwp31ExD3+BcyujRo93a2hCT3llnnXX0HJT+oDgj3AOdLxe6UxQgcjg5bbnkkkvc2mCghNv46IABA2q121q7iPCojAw44/bbb6/nDh48OG8iMa+EhQhBcYT9ouhaYqFDCFs8+OCDSUWSY6eddprOJBL46ACLJ554wmnXrp12BmIgKigL6+/YsaOeS/JdkBjj2tYC6969u5rtuQTPgni76aabnIsvvtj57rvv3CO1AQFsuOGG2g7SoVHao4D+dfvtt2vA25uWzb1IxaHvUC3sZCCdCIMJkYiVafsfAkb1IGAdxtWzhdwrf4SFlcMMo7z66qturePceuutTrNmzVTZJhZmgV4EEdLZX331lVubEBdXXnmlDgAF300YUKSJO8IFYPnoUH7dhQEaMmRIMqMCrmE7PR0Q+8O1EfRbYpLoZ3BZxGmQ/mSfl2fCH5Yqj8rex3+tuXPn6gTmfvjfLCAqng+F3VuP8k99r169Yq0byAQQVt487zbGJ/eBePU7YMMNmV0aE/RuoiEzzf1WG5x7xhlnmIMOOkhz0v/85z+7R+qCHHEbNxQCMo899phmTXjBsvjttttOc684hrc77N5heOihh7Q95JHZLFIvyEiQCaLrFMmqEEJ3jyRApECIT6ML9ANtpu1BIDfrueeeS7bRfy3bz/SxEJ1+B6xMsv3sXUyb7rNmDGlQxhwLvQmrLQhE9FG6mbU4Jr26EfqC15GJrB82bJhyGnSAIH2MGY0Ca2duGGjPzjvvrJyA602ePNk9shrc34pXIdRY2RReYFDAdfEVhek0tCNsYxE4NeKP+2OtBel5cNbLL79cuRoqQFiuGn2HaIcD+732WJFED+gzCmOAcs+YbLHFFrVUDgvOoz+ycajKNTIXhVgiuA8OPfTQ0Ie2IgxHY5QO8c9//jO5iIFdW3i4bADRwu65HjqbX8xgFDCgHIfArC8oLvBfCTdUq9fqNOlg6NChem+K12XgBVaiTWfu1KlTpG6JbsV5iET6Mgy011rOGDpBbcdyx92CQzVu4qUfWREWpisNhCvgUkCx9DeUAcSJx3kQznvvveceWQ3ypNZdd12dcXRgutwjDFhO3Jfr4o32gyxRe/y2225za+MD4s9kAjAhbRYHHC/MMkNXpG2c95e//CVSB+Ma1qpGd33ttdfcI6vB5EHJ55pw2zDnMD5G67o49dRT3dr0kBVhwWZRtLFGaASNxfloRZztdIKkmPc8EIo8pjFugzFjxqgSDavnGGIzlWWUDlCurbd/9913rxN/gwMgEuzABSGKG2XCqRBvpGJzT4jr8ccfd4/UhSUULNco6832M8+DQk5fMtFF/1PuT0HNKC8v1+sxib3KvB+I9iOPPFJVklS+tTBkRVhg1qxZGiuzDkcKK2fGjRuXtF6Q6zg9Ca7C3ex53oJPhZkSZD1lAjobcxuuRUfjR/MTFoNswzvMUL+uRGQAfQQrystVaCOW3imnnJK2CBVFPKlbsbI5ijvDdYh7wtHjgHZBCGJUJCe7vxBj5JxU/YwbKM7qpzBkRVgMHgUWjb6BGLMPwEJOq4Db8xhYTHs8zdtuu62zww476KyaNGmSPgjn5Ar2WiwwIPCK+yLo+taxSPHOYgiJFGk4GlyZkJIFDlbEOoOHcg2BesHAMeH89+OaPDuEznW9ky8I/N5/7ShwPoW+xKuONGAc6OfDDz9cU7m9/qx8Qu6RHcfygswBvOTIcYKhYbpDYwLOQ8tF4by20xkAVrpQj0IM97J46qmnkusa0UHQIy2YONQj+ukPLyBIxBDHcd6y6npNBYSVMz8W6/3YEQWfCxmaIh61njVud955p5HB0r8bAiKOjYgUXYfoxSabbKJ7OwAhnqRPCh8XPighOv2tTBKtB8uWLUtmqLL6hnOA6Fzm1ltv1e8iVutkggrRJffoEp3OiKWs3+sTCxcuNP/4xz/Uh5Z35Ipj2dnuBWwZ5RPFHo97QwGzGW6BCEM8WmAZ2cAuFhoGCeBZTj/9dBV3KL1wKft8N998sz4Pv7nhhhuSSjz6ls08QPx4fXH49KzrAA7pbUN9ggwI2o5Rw8a8+UJOOZboDu631aBOxIYWy8HSBVxERJaZOHFich1fupBO1PWKcBUv58Tzzzo82sl36XSt52/pfOVG1Nl6AAezx+E6lmNNmzZNPd88p+hSetxCLDYjirpywvPOO083XWsIcH/WVvKsoue5tflB3pd/CRfQDTZYrAmBEUZ59dVXVQSxbIpBigJiVPQfHdzJkyfrAtd0wY54hEZE/9Ml9JYYAEvPWGQh5nWtZVxz5swxzz//vIpElqLRdgCBIu7FpDeih2nIBPCMr7zyihIQCza8i1h5ZlQCjrGki9BUQ4BJxZI1Fu1uttlmbm3uIUwr3vKvVOZpOsCRinkv+k2sICieZEx0RBnOxUwR5ndCxIUdoz7o2cPqo67FsVz2Y0PBa6yEQZ41tShkI1Z2BmbZuVeJzRTsBcoMRrn1K7hB2GuvvXRp10svvaTB3UwRxvrhmGHHqPdyN4uw+qhrcSzoN00BGCMywZVzY6RhAAj9uEdDkIpj4c+R0yI3ImM2xgWBz4ceekgDsXGoPwjc77dUGhKkPBET9ubS9+/fP9LHJm1O7cciRIMjU/SNJJvHYUhiHp7hTKLgiIRMO4zf8fvfUmlIEKYTTpskKpyuXr9eECCsSOVdzqmjXFN34oknmrvuukutIPKNjjjiCM0pItcKq8j/m7hAuUXZR/ENe0kS96f8lhAmQul/Xs8iUkDfduE1GDIBfi728kL1wcfHfTFszj//fLUoMaLYyYY8ryjI+GS2dwMhHGKCXMMWUmPI7iQ9OFOwrg6Wy7VZphQketc0jhXnecLAWgF8ZkQCiAJwrTgIO48FL/ju8O15Y4Xki5EqBOLcQ87JzI8Fd3rzzTd11znMboCviN312LFu7ty5WpcuRNQq18JDfvnll5vDDz9clf01DdL37rfa39MFv8WFQDQgHcMKicJvRcetdf+uXbvqGODn8nJJ/rbjHFsaCXVl7HmHeslKIDYIl8FLjXfbG7TFAw21x6F0YnRwPa+iiEwn9cbmI3GdoFm9JpcwcIwsCBZuBGWDekG/UcjiQCE/5JBDNCrCekw7Nnzi3onzSr0oyHVyG4QmDZjovm0oYQNyobAsUy04tWDZFYl5drtECnlchE+4LsXf8WtyCfOLxYEdB0BYiUxTxsOuGqeQiMl9cgm5b+4Iyw66Fyz7ovFYFXGT+LgGnQmns2sKKaxRpJ7j/s7PZeEeQfUNUWhLNoQFcOmMGzdOtx4gXVtEmfYnn7vttlvGyXxRkDHK745+ONZ4Lx8ymh2ACWWgCxBWwAIhrIBcD7N6iBPy9gfOP+WUU3SfdGl3VnpJKnDt2HpEPYD20D/ptgldVcSkZlywU7QQqF6DscDJecIJJ2hMk9hhriFtzv+OfswYrzONhDoi/cweXnvLnlbkKsGJwkAWqkW6HCtzDiS/q1klpTLgWP2WqL4Jw4033phMzabwna2Xpk6dqmIxn5D21rUKpdLMnz/f/St74P9gLZ8Ff2PJENYhAMwbGwjbXHLJJWrdAGmbflqk8ptEISvuY4elnuB/7mxAaAkuxSf7u+KPuuWWW4zoWLFf2ulHUPuQPGR81IEQUpJjsfSH/HCsO5TnkSNHqnwmryqXIJzDEiiyM2Xg7fApJwtaB+hFuhwru8K96u9+Ydw1DFjK+JuCOBpGEH3JHveZ7j0WBO7JIhCW+rM2EQuexReso7SAY9UiLHLD7W52tuAwI7aXa9BAQgM4Re0eBhQWMEShfgmrcRQ/ICYWZrCmkxhuPhRwwBiRwOhVRQjtwXi8NMKCWetABXUIi4dgcQPuAbuAlJJqH/VsgP6FW+L888/XZUreFdJwNlH+nTfeeMOt+Z2wRKSpNUcqEdY240O2az7A/hIiNtUjb4HfUsSr3pdjLGfzv8WjDmF5gVh87rnnMl4NmwvYvUVpvMVvnbDsNpYU0VdVZWGFcz7AUjLuwzI5LyAumE2YbxLCKho1atQFoues1q5dkDFJMHLdddd1a+ofdvHBWWedpQHu+gDKfqYlX/BeG2WcV+rheqFfLr74Yg1A5+P+bCxCYJut0vlusfbaa2tKt82qDcCqenszxbfffmtEXus7cPClACFu/QzrFHxeIir1Aayvi9/Y32UK+2vvXblmJv4iP6Q/3W+5g9fPhwVG/JQ+pF/CEgu94NlEnVCfIT6suOB33A+rPp1+kd8trRfCEr1JXQoEp8l1J/cc5xyvhyOXPc1Ga4kDrht0rpiiUmTAalYf41wyVVmmhSPXO2Ac81/L2w7Meghq+PDhOptzTVxewvKC+8fpO17/izuHxR/k66dDXJlA2rU0uMU5Bg9vBwofGbPniiuu0L2pbMcsWLDAvP322xlnRgTBSwheFDAgvmO0A9FL+8hx+uyzz8z06dM1a4M2UViUAbfgO2/P4DhiyZ5HpCGX8BJvEGzf0Sbe++hdgeSFPY9P+z3fqBeOxQxGDLIRGoslCdEgEh9//HGzzjrraIeMGDHCvPjii7qChNxqVuPwySoZL1J1dqagwy2h3HTTTZpSUlpSagqLCk1hgZRCGRQpYjvo89AGUaz1O8mNJD+i93Tr1i1nHMs+pxXR/G0Jg1VB9BeFkA0hHPqQCetdrgZ4lhdeeEH7mpVIYRwwV5B21o8o9IJOZ3azitgunWLGsWTK/95BiIz3+9FhiE5A59oOzyUYMJZ2jRs3TnfsIwpguaxTzf3kvgWO1BXrM9iBBhDWcccdZ0aOHKmRhVwRloWXEPCe83Ywoha//PKLW5vALrvsom9Es/3aUICw6kUUekEnYeF5Hx69i2X5EBAWjg0BEYRmdQ5rAusDtA2FGEsIwiGURCkpKzGlzcrke4mGQyAerXfbybNQ5yW2fIFkStZlWqKiDeisRx99tK6kykdQORPUO8cKA7McKxCxyMphcq9ZAAo3YJb+0X2vcz45FiutH3roYfPIow+br0WHKi0tc48m2oeIsZmacDPqsFoRfyeddJI54IADIsWMbTf3Sgfea7IqnMxdOD5xP3LQt9lmGyWodA2hfAGOpYQlnKH8wgsvVKUUC4IFEoAAI0vH6RAsJWYlM4TBZmbzcPl8EKwt7m05A+BvO0C5BgM4ZcpzZuzY682cb78xRYWY2QlCIGi+1VZbqdKOmKTO1tNfo0aNUr0xCrbd6faZn1jRr0gVziY4nwq01bYTyYFhw8TjO/dFV7Ppyh988IG59NJL1beF5BFaSaTNkPpLiEAupPtJ4e0lIMrWPgQZOcb+6WzPw65xbMPDjm9kevo9w4AwDd5gPPd4aYVg1WOeCnHPsR7pXBeuzersQYMGO336bKDP2r37OhrL5JlZvY2neyP5m33S+/btp3t6EoTlGUHQdbMpjEOcfkkF0pdYqkcCZdj1OM7e9GzvJJxZ60hAYMdDxp4QDuk3ZKCSDm1jiKSmC7E5a6+9ti6mkesnQjqswmBzLgKadscVHoj9x4XlM80CC7sTB2U+EOPjJrYRNIo1iF6Qo024iMal03GcGzQAuShcm8Ar+6uutVZ7JZ6BA/dTwiI9muwLCIy3aXXp3MVp224tp43UswEbgeGga+aiZAN2BCT2y9oB0cU0yYB9vILAjkAiHXQLBLs9JWEb/vaPPVt9WsIiCG430oOWIKxIHQufDoozPh18NBSheGX/cj3N6kTh9rNqdobBWYj+YYHoxA/Ep9xT91qHhY4ePVp1BsC1zznnHDX7cTNgFaIsH3roocp6Afel5AOwfgrPjIXYv/8AEcPF5pJLLhXrdBszc+YsscgeN7379DEbbriBaVHeQp2OGB/sP+91qoaBtlsRExfe/sVtgO6J8o5IZIwIt+Bm6N69u3vWatAuDCAvcOWQXeoHm6CQWUoYD1eQ3TsMp/H999+fHA+2OmCPLxtB8UOeMX4GKRyMvB5YKWyfV3kwwyl+2MR99ulk91/y1WGvdvbxG1ItpMOU8i14vQnt8hdmnAW/9c/oXBauz7ORUcGMRKwjIsjLYoXLpElP6r5anEtfIO6pz2e7vPCnNdkiBo57Rm3Qv0Igym0JYLM6x/umEC+4F/vCs0rHP66IRmjAC/85FlKfu8UUftAI5DoJYIhLf6NYbEmaLMdsA8moYBWJcLVanebdtI1z/R2f68I9yBVj52UL2g/BkdYDwTHJSKJjEzXOz2e7vDj22GNr9Q3qBmLIvzWlBWPAtpSoHkwExsO2N1+Qa+d3MUVcSFuS4kE6Utk7bgdEJ+IFJ6m1gDiXkm8gfnDYYgnh6uCeDzwwzgwdOkSPsfWkjfJ7258PeEUhHnYWC+M769Kli4on1IZ07p/v9sr169/zni3oFEoYctlpDCjuBfZGwJWAzgjBE/bBKUm2QD4HyMJLWE0BayRh5RLch0HFyBArSTmY6Clmzz33VG5VX+34nbBiQHQVLcx+0VWSn3i0bYHd45wV/UstUbZXJNQD6pOwLMfCInrkkUe0TbRj6NCh5sADD8x4tUu68BIWFiEE3rlzZxWHhJ9wVOJExvNundh84tSuD47qR84JC4Ih/QXPNCID/YTBgDggFnQmvmMm48H1EhMuDM6H0IjG84m+RcHdQGAY1Cdh4WYhc4ClU7SfZyNhEZcJbcLVEie3ifZmM8BewmKRL9EQdE8KBARBEQ0hrMMr9ajjk3DPmWeemdRP6XtcOUQQvBkQjBt9znPlghCThCXfy1NdMFXnQCxnn322+kzgNBAEv5HrJ9NL7Cf1lLi45pprtINAur/NBDznO++8o23Ff0a7AUSF4swxJsbAgQPNzjvvrMTFuUH9Y9uazYB5CYsdeCZMmOD+FQ2IDX2QFHPAPmZPPfWUxjUJ3QEmMz5H6zvEF0Z6DRyR52Iz4HQD2/LMCcKSL+XsEmw38YJImJ1QOE5Lsj+HDBlSi8r9INGMLYzgVn7QqcwuZg7FsmquR6P5zmwh9oiVA3u3qbcoydzfxgvzTVi0FQIitYedlO1sDwJcmb05xdxXCy1f7fISFuNBFqiVAvxtvzNu9L/l+JtvvrmKcUQm4HnQF8lzmzJlitaRgsNLPYPAfSFGlukzTkiWcePGaUYw3JoYKf2FtIF24JI4a6UuQViffPJJOWkX/IAf2xlqgUlNQzbccEO3pi4gyAsuuECzQvHYQiA8ELMAIkHeU4c+YIkKwuFvGkRhhkGA3o70I5+EZbkKxIKLgfYG3cuexycDChfbbbfd9Lks+J09L134fxvVHwBuafVWOBAF4iIqQL9aoJuRZLnrrrsmuRjjduqpp5qPP/44SZzQgAWrqImktGzZUrkfHBqvP4s4GG/G7I477lAOSJYH2RfC6RKed2J7BJrlOoGFhZE416Ig11HnGzEzmcn6nbibNFIdikKssZ1yUedxjGvlo3DtefPm6Tq5uPcBeLL5XdDxTIoQiRb7t0Xc/guDfSY/GCvGl4iKcDR9EwfbphPfxfFq7yuEp0vx8OITcbDXsjsBeoPQyrHkIcqR21A04oiCOQ17t7JWfp/xDEwXzD5mDso+XBRRg9wHtIOSD/B8KOtwUmKZce4DN0HJ5zeIAelP90jmsPe1/W05FvUo7l9++aXp16+fSgPUBrh8fQKOhQSiPbSRlJq7775b9TN0QOFi9e9uSAX0luuvv15zuWUGKatGzrOZLuBh4gx4phg/frym+CJG4tyHQaed6GSIz3xMPq8oRE/C68+EZ7IdfPDBmm/vFcMNDem3+k9NToVZs2bpBvVYXhgU6A1ePSFfgCCw9CBsBi0dwDHgriIa3Jr8gb6gTzAw6CN2NIZjeAGhc05Dot4IC2sFpTIVYO2kZcBW4QBXXXWVZidmg7gcDhYPkaRDyFwbyxGCRAzmg2N5wUZ0p512mvqiSG+BuyKWAAo71nufPn00BMUCj4cffjjQUs838ioK4QDobTgY+cRkJXUV/SAMDBQzEB0LPc8fYOV4XEJJB9yDJWoUcte99wi6n7dNDByWJA5JrN1cty/IKsTFgJqABU4fcQ7EjW7IXvkW9DmWGvlT9jo2Lw5LLx+Q58/Pjn7PPvus7p9ExiLWJlmJ3E8erNY7/jKBtDdpLeWycF32SSUtJl3wW3aBsa/sDbp+NiUuuDdWGTlXZLzS56J76V6wtl2kILEnP3u5X3LJJWoBC6dzr5C95QnkGrlPm2EpN1zJC2YKMwSF+MYbb1Sfj3fG+yFtc7/V5gyAY97juQJtnPTkk+app59WHw/3QCxyf45R+C69ZqTrTZVTY5xqKfwtBb2G/VZ5owN/5xLcG9Am2sD1bV0YSD1ipRN+Jl5/h3iHs7I+EwerF1izOLeJydpzgb2f/YwLOX9p6G4zFuledNKkSeqF5zc4VskEOOqoozSNmbRXYl12kMLAMQpeYgiRB0f3yivkfhXLl5v5IiYYDPQm66y17bFt5rOQIsdsQWzjPIyKTsSFv8+998UdIlxfnZhMAO4dBCYymRh4x23UgmfCIY3IpBB6A+iWOE4J96CmWFUFAwDXBvflemlgVSxRiJMTJ+B0z4sBwoCz7d5779WEfTJCyRDFQZoJeOsUjjc2ZbWQ9tYRFbkqlSKiEQs8byYlX23zYtttt9UFLjLQzuDBg9Wh6T8nCqghQlS6eyNikRU4pC4LMWjhhQQWvKZYJrTuBX/SSSfpixzijKX0Q+3UZDpGFG71wHr1IGS0zETVl0hzzTW4ryiUqqMwQBZ0XIcOHXQZmkW+Bs8W//X52xZvfapjuSxeDBw4UPUmSwiinCtxsHUkfWjbkw7EEHBIw2ZFjxd42e19KBD0+PHj3aMJiAFRZ6WW3L82YYkl5owYMUIVu0cffdStdXQzU3KrcdnbZUG5BB3CggmUfdY1WpDUzxIxOJ9FPgeRyRRU39DFC/Lu77vvPkdUjFqve2N8WOI1evTorF9ZYgE3ZEnXpptuqoyFezzyyCPuUUdz/uGgbKlO+M6iDmFhEYk+ow0dMmSI1jGQFRUVujUgaw75O9dgA1XW6nFf1jdGIZ+E1ViLH0wA4nZMeAZddKAkgYl+qGsfWSic7VjZsSf+i/WImPRakMSQuScLe2FKFvK72ltFEhbAmkBpJeJt37aO8oci7vcpZQIi6Dj5ePk2KTH4UlAMpT2qoLP9ITHK37Ea/j5HYWesyGY97LDDNGcMZRwl3Gbd4mAmxspYZgruy9hjkGBAYdVjAFiQ80/KNpYmhovn2OqtIhlYYNOEbQ5PrsHiR2J/WBy8b5pYFw/A/WV21mp4EDjPtvW3gjDLzwsIi9QX8qvI2uWllVtssUXWjCAMjAHXxoUBkXvHTY7VfxAaz/agQYN0ZrHiONVGGn40NsKyHZwO0v1NHMKygCkwQeEy3CPoPpm0OR3I9es/CE2yIHt9UtIlqsaKdAk900HFz4QD9thjj03uAuQH3IMwDsQYdR8kBqEz4ovptj8OckpYiNE4jUTM4lBcExDGFfIBUonI4iT3Ca7Pe4jQWdMF7RXLUrND2b4qL0AUCjFkDRyivDHhjDPOCLRkcgUsFWsteb83tKsgn/e3IJuTHXBk2LTgzyImi1M6XfTv31+vgaPVe49cQMYlu70bcGby4vF99tkn+bAUNpbIBOxNxbt0uGaYhzcXxNSYCDJO8YINSXBcQhC2v/E74nNKB7zejxeN3nPPPW6No+nVV111lboW6JdMkTVhsSEGr8OwD4iX/IQTTtCQQSYgbMB18M3gOwmClygaY8kHofpBfjoSgk3gbN/jU6Jv4oJz8Ul5f8M7ebgWu9KkWuMQBblm/LfYy/nut9XAB0V+PCBjgb2bSCumPgpcK+h6LEvCl8UqEpTQ3xEMEvv2339/8+ijj2pWAjor+2Clo+txLn3s/Q3LxQBrHGzgOlOkdDfIDNQ0WJyjQQSDQ5WEM6w9sgLiAKLCGmHPd3wuhxxySHITL/6mo8KuFUaUDQ3bJjtQfOaqnVHuBtwLJFTaTdKyBYtXWMZFFoQfrGEkAZPjUVkc8typE/2IgKMw8to3bzwoWxByIHJOO3jNbDqAfTe24hVdYfX+Y0El6LzGAFQTm7zJsrAoHUzanFoUwm6hYkxdZke2kPvqJ9yPBaGAUEE6gBs0tgJXsSWs3n8sqASdFwekFlaLupX4lH6m0gfq7HE+00lHhFPxShrys1B5kGRRSCkKyVVnn1A2wSAXPFXIJQy8fYIYFkRkCYpl2YQEWDyRLeQ5VCQgRjNtY2MGkQry6nnO/v37qxPUC1EQEp+Vy82qioVm1YpfTOWyn0xNNe9rdkxRSUtT2rKDKW3W1hRLKShupr8REtbfpQIOVfxn7FNKuAjdLgzCPOKFdHB8MlhxZ48XNAiud/PNN2vAkpUjOOVyqZzDBdlfgA1Zhw8froFZL3Ghz/GKEN6I4V/ahY6I0xGPNnqkBdz5/fffV+OELEwL6lnXhw7iXxTCwlUIgBid1RFpG/02Y8YM3eOA32QSGGZBMesHuRbxVl4e4MWqigXmp88nm4q575jlC6YbZ+UvcnN4E0LJ5V8Fxaa4RWdTttb6plXPvUz73nuZ4tL0FlTw/KnGDsKKZRVmSlSA1OKTTz5ZB4lBZDdiZl0csHSJVGcIOwoQ77XXXqs7AU+ePLmOyIZw2M8KTzOeaiuOAS9k4hhhEq8Xm5Ut1BMk9656oT1wbgoEZkG2BlYt9exhZe9BvxEfJUUbTsNayUxgNx0hH71lqwQx2FWMi2a9Yr58/Ejz/WuXmyVfv2mcFUuED5WYgsIyEavFUkq0SGNM5dIfzOJZU82cF880s6acZpb+9IWSHYINDpbgfKv7xwvuH5chxCKsdIlKlE/lEOxiwtZGpHMwS1kDx5q4OOv2kOeskeMabLoRBR6W+/DqD5Y5+R+eTSsQxeTQs8DAPg8ZAeTn0z6OzZw5U+sBxIAVBKeBsCyhsOLZ1vMbO0m4PvVMHF6U5CVuFpYSl2PBBZtneAk7LhA977z9jnle9BsbY61e9qOZPfUCM2PS0WbVohmmtEUHU9SstSkoEm4pBAWHqqpxzMqqai1VMi4FUl/SvI0pLW9rfv1qqvl84gFm3gd3moJVdu2hFap1kQ4dxCKsdEGHQxCwbMDCyquvvlo3T4taU+gFsUQWXtCJ5P2kwvHHH69KJcToFTWIJ3bjA+SUsce5BVs1MdgA0WYXbKCYwr0gGnLFEIe2U2mXFbMQkiUsBt6KUjiWl/vRF4haQKoQ7wrKBP027mc2ZzFKQaFZsWSucJxTzC+fPiL6luiVQlAgQbSJUlW5zJS27Wm6/+l8s96frzRt199XdC72KBMCk39l5e1N85JCM+/ta8yc10ebmiomA8+ZHiMJQl4Ii8FEMech2V8AgmKVTtzAM78jsYwVKWyfxMreVMCSYutGv9geM2aMcibAu429m94jmuE0AOK3viAIC0OAdthENwsIzV4fw8MSFsRvX3LAJmb0gQUGBaIWoO8hZjPhWoBfVS5faGZPOdlUfPu+KS5ra5zCZkoo/EMZr5GzqqtXiKgsNt33uMx02vSvpkOfAWa93S4wrXvsaqqEO+lbZrleYbkpKW1tFnw03nzz2hVSw++zR04IC7bP4NnOQuQhkthzi1egkcnIgHMOBIf7goJYsYPu7Wg7cHAQ69nPBIgg+0o6xCQ7oXgBZ4WAADvXWRGNTod4pE2IVa8FBvFCxIBzLGHRZvQrQB2rv71A/4IDcy0v4acLp3ql+fbN64Wo3jMl5WvJjWsPIb3I1WsqV5hW62xjWnfpZ37874Pm8ydHCrdaaTpscqj8pLm00aO3FhSJGG1nFvz7djP/v+NMgXC0bJE1YeGOgIAYNPQqBoOQACyfHWJIb0bn4u2qpLDaRZEsR+c7BIhC7PeLeDvfPxCcm8oIgNjZXAQrDQsNa9QfOfC+CgTl2oLfYsEBfuvV2XCVWMLCt+NtA8q5nQgYEd7JgkVKqgrqwUUXXZQWcSlnSXw1i4Wgfv7iGVPaMvFOxdVHErBXdZwaIbz2xhECWv7jf8yCjx80i6Y/b5p37Guate8hs2eFnGt/K5ar6F7NW3U0c9/9h1m+aLZb6796fGRFWKyoxb+F9YbCyiy1HY34YAAYJNwLI0aMUB0IpRjLCG6FuMCa4hjbB0Ew3sEIA0SK7sW+pGHnoyxjidIe8r/RrfxmvrXQEGPepEMmgrVE+Y03bublOP4kOTis3d3Z7mNlwXVwQ8C54uiMXnifcP7HE02BU2lqCspEZAUTJ+o377wuKipTAnOkD0plclQvX2AKy1qK+GxjatQVsRrco1rEorNqsfl55vNKkNkgY8JC/yEQyrZDDB6ciY6zs9mCWYrLAWWW3WPwN+EW4PfsJINegkhhw1V0jzgzGQJFN2J/TfScIEDoWG4An49dGOIFjj7ENi4HL/F4OZaa9x5OB0ey23AT1/RzTd4LDahHiQ8C4p+Vx8Rg48D2yK/zPjSLv3rVFJag8wnxJKp9gERExxLCKm3dVURnlalZ9av0a6EQS5VwJplcxeWmGiuxcqXUJQiMa2kpKjE/f/mcqVqxOFmXCVIusQ8D3Am2DmfCEhs7dqzOei9hocMMHz5cOxJfFk5SBhnvO6KBQSATEuLgXAaCzAY4TBT4PVYcyjhWpp8Y8WsdeeSRKqpoH2LZq6tZLoOlRgAcz7/3GhAZ+7tjMSLiyRywz8X14KxMKByxPIOXE/KdfqENXAdR7+eUqAhwaYgfP5nfix4EWvzjh3eYiu8+EI7TWgacfxC1o9ZctViANdWr5PsKU7VymSnvurVZZ4dTVdea/5/7jVNVYYqEU7Xtubtp3W1r0w7naMsupmL+Z/qbQghOrojFWbl0vilbq6cp75Sw4DMgrtWrdNyK2GBWw2Gw9EiZCcp8QKdCbMH+2SA1bMN9PPJwP1aZoK8ROojiXBCGHTg/hwRwSPxlnAeBwTWjrucHv0PMwUlps1fH4hhiEg6Mtef3meELQ3fEMoRgibH6l7OhGvAaOODdajwMENVKEWPTHx1qqhfPMUWldgWVcB2x8ApL25jmbbooR0KZb9ahr+m8zfGmebse5vuPJph5b44xJcVFprKmwHTa+gTTfoOBpqxNV1Mo5y+Y8az5+oVzTVmpcMHCRLRg1bIFpnXvP5veg+7Qe6cr1qSPMl9MQYeiEOPNDiIqRNVbb72lyu+wYcOSm4NhhUFkzGq7ERscCJHEzGaRBTHFKEAk3D+IqOAyiFgIAPcBg+gnKtqAbgeXDPLqcz4ikEnjJxyO8UxwQP8xgJ5ldSivn8wLDAWblkKohvOiQOsrF8811UvnSh+tTieCQzXr+kfT+6CJZoMhk80GQ5/Rsu6eo01hcXOxBseZH96+NsExC4pNUYFjfnjrWjN9Yn/zxcRBpmLRLNNxwwNEod9IRPdq46mwuMRULf5Kro+CnxkyJqxUYPAgHNg8+TuWCFD08ekgChhYwGBBXLgk4IRxdv7zA0Ki8JZ3dB9wzDHHqH/KC85BbBOuQcx5wzW5AFYjnIpnwU8GF/brYezGh74JmIBej38YVi37yTiiExV4JhNKeefNDjEt2vcyi2b80/z40QMi9u4zc1670syYNMLMff0qUyzEVFhULM9dJdytwrTrtYtp1WUTs+z7j8yyH7DiRbFvs45cbLUyX4jHvmKRqVq+yK1JH3kjLAsG0gvEAoSErhLE6TIF14TTodgjJhFhiGAbDLZAn8O/hShD1FklPVdgAkE4iGl0MZR02uMFInTkyJHqbIUrxnIcJ/vR8hA+xfIrFq4pX38UPeqbqRebb4WoFk0bb1b+MlvaUmCcQmmHcOUVi380HfodaNr3PcAs/1msYRR4wjhCWMWlLTzXF0hfJqKGtccuHeSNsAhvIBYYSILA1k81ePBgdZpCANZTjTjiHD6Z8Tatht/ce++9mjLL3lreMEkQEKOY+QAL1abaeoFCjw8M0Ea7zXeuwETCALHPQJwziAPDMXnZAr40uHVK1BljKshSTXDDwpLmpqRZay2kyJS139CUdugnivxSU1DWzvQYcJMQ1UHmuzeuFm40XwiyNGEh6jXIwNDLJJG4XSMkLHQQRA3EgTLtFTlYj15LjEAwSi4iA8XX6mN0PLsDIk5wTyBaooDVad0PKO92cL1ARFudho3L0t0h2QJxCyHbCWPBM2HV8vJOgGESJtqxjL2pOlEguFwoCrglpNVI9CH3JUyjnyLWSsrbmV4DbzI9B99lNjjwPrEIW5lZz55sKpctNMUlhICE27WQe4uyj9jzOi/4Pek0q42E9JFXUcgGH3AETHPCHXAlP9Av0LfgIhAC/ixLcKNGjUpuNc3udOhqYcBQsJ50fFaIwSAgduBkED7iyOu/Sge4Ogg833LLLW7NatB+tsmmvbzIyRufzATwjZIWHeS/lkm/U11In2m3FahOtfjr183MZ/9m2v5hB1Mx/1Mz+7nTTM2qJeoDSwi5QlNW3onGCrHNl4/VpFBTXWWKytsLcdXNe4+LvO/dQBAZFwLchsHErwWnwLsNR8LHhIhjluPwxM8FFyAcw443gAF64403dIaHAX8UCYVYaoRTCBuFAQ6C3mM5Y7pAdGAUQPToUxghdjJ4wX1Q4i3xBp0TBxAWsb3Zz55olsx8WdSjRBYGvqv1Btxo2vXc00yfdIxZ8t17ci/inRAOBLPQtOy2uan8VSxK0acKSsqlvsY4K381JW16mt5/ud9Urlxs/vfQX00ZUrEQK9cRQ2Gh6bTdiab7jmfpvdPlPtI/+d+7AecifilCKogg/DZwCrIhIR6ICmIiAwLdBLBjCi8BArgMMMmjiAoQZEanY79TXBdRwFLNlKgABGIzIbDqwkQd98F44PwoorIGDiEm/GdBIFGv7fp7m6qaKiUOMhjcI/o/3MhZschUr1go5WdTI9+LigrNsu/e1+Q+p3q5qVm+wFRjXRaVm7V3OMUUCxec/+G9ouRWqJIPOdaI9VjcqrPpsMEgZYCZTYV64Fh0GoVgMHlRcBXEHtYTSiued+KNWEjUsQc53mosN3532WWXmXPOOSelyMJNAQdBZwlaupRrMAkITdFm9KhU0YJUuP3221Wf5FnZfdn7vJaEqqsqzKcPDFACKSJnXYipx363mTY9djPfvD7aLP/hE9HDiA/S5wmvvCUM5WFCPM3ar286bnygad6ut1k04znz1T/PEQJM+AQ5t7JypWn1hx1Nr33HihGQGVnI/RvmXTpYf8xgxIQfODfPO+887Rx8PXjusx20dMG9QRSX4ZVqcFzENMYHEyNToBbwrBgD6GRwb68rhtZQ4E3ff3iP+f6ta01JaQvjVC0z7Tc/yqy9zfEarllNROFwCPmsWGyWzP1AXRNO5ZIEkeoz18jYrDK99rvFtFtvF/mL/K700WCEFQb0Md63jHhEV8IStEHd+gSZFliicA4SDv1gELAKMUYwTkgTyhZwaJzHcHC4oT++aLFSRNmMycea6oWfmQKx3ETNNq26bqOcKEEcQl7JCSGfLpVRhbW3aslcs2LBdP0slIOFbhiHE6ukrnW/Q0yPva7MmFuBRkVYiBP0MBvxv/zyy9WyAlGcIy4QlXfeeafqPYSY/I5TC9wRiGjcFhAWXno/GMA4bUoMdCLDA2OBuGVYvj/n0kbahVgKAyJt0eyXzcwnjjKlzRPLuKoqlwsnWmUcaRLpMom7EqTWHySBO6KosEh+wz0SmbaJs0TRX77QOCWtzSZHTjGlrbomfpshIKy8K+9xgPebmB5xNR6WiD8pLfrgMQYwDnAL4P4499xzNTkxDOSIQVxYpnwGIW6bOA8LlbRsAs24Qyyx+cG5NocNfTTMIEBrWkuswJ4Db9I3ZJCwV1ZSZsqatzTNm7U0zZq3ksJba/mUv8vlU0oZn/J3aVlz4Ybe9O0asRiXmpK2PUyfg+5XovJ7yjJBoyAsMkhJIRbuqdwCIstGZ/EDSws/lw2thA0uwMqziPKbxQX6E4AD0oagoLcXED3qAItDrA/PCxybkFfHjf5ieg64yRQ0byNGnVh6Ul0jYrFGh7RIzqAUu5+I1UThu8vLDKnKlUu+N2UdN5Jr3Whad95UjwQL4fTQ4IRFh+NasLnvOEtxhuYSrKbBlIegcDNEbaDh9e7HCrWkABEGK3bRo8LcCRbkaBHuIgOEpWpMtrpA3NWYdmIN9trvH6a02w5m+a/zVSRCesKOEp8BJcGpakSB/9WsWlFhWvUbYnrvf5dp0amvHOZYbtDghEX+N555wNvqsQijdAzA4OCURGxZjhAFjAFihABlOyroi1UGMWA0RDlZ44IoAIsoAOnYqTgWDlf0QJ4LhzGTwovE0CeIpLqg0LTovJnpd8gjwnFuMM1If6mGaJaqeMOB6lRWmBopfKeucuVS5Wwt19vZbHjQA6b3vteY4uZrCaHmjqgUKO8ykxsM7FwiFpBuM8n7XeKAjfOF6zjdu3d33n//fbc2HMINdbecPfbYw+HVHmGQvtBP0fV0dzv7d7bgdXX77ruvM2bMmFob8AdB9E1n+PDhKu+Ki4udCRMmuEeiUSP/VlUsdJb+MM354ZOJzjf/GuXMnHKCM+PpEVpmP3+KM+eNK52F059zlv30P6dqZWab48WB9Ft2O/rlAnQkb70QURV7IHfYYYeEoiFl6tSpbm00uI9wLt0iqL7Bc0HcYvW5NdFgr1EmG8/32GOPubXR4Klq5H96sKamyqmuWuFUV1Y41auWJYp8r6mS+0tb9Bz33HwAwmpUfqw4YGUQGRAA0YnvK9NAcrawS+rJkCCclEuQWoT4RjSHuUa8gAot+B4m2PzHciwAFUJb+XnDar6wYMGC5L6bLVu2dN599133SDTGjx+v4qgqiw1b/UCknXzyyc66667rDBs2LON9V4MQl3M3VsCxGoW7IS7Ym8ku6SItJs4+ECQKEvQmP9+mLOcCGAS4BrA22YuBGGeusNrHlAAuEH/eV2NHkyEsnIbE0HCm4uMiiTCVrwsLDG87zkb2SQ1zOmYCnJn2/vjHaFeuITNfExYJGRFDtX64poAmQ1gQCcQlnFY5VZwYIu4Iy+FI7gtbfpYJ0HtI4IO7MOCEY3INuBS+L4iW5WRNiWs1GcLCscmsxStPVgFJg36R4QdZB5ZLkQ4Nl8kVMBggLHxuEFYqx2cm4B7kopFJSygqzr5ijQVNhrAgou22207zs3AipiIqHIzsuAeng7vAsVJZj+hNbBHOmsNUhAJBYQnyybn8Ni6wJmkX3DcVcLCSp8V2lameuTGhSSnv6YDBs555uBvp0KkGhjAKcTrep8jOOamAaIWwEIO4HdCJUsFuNYnul0q0NSVC8mONJSxEoOUicZZ5McjsTkPs0pZUIFMVwoJ4SbuOQ1iIczJPCdfk0phobFhjCQsuxSoaRCB5VamWWaEnseAV8USSIfG6VEDvg6vwG/9eWWFgFRLrKVlX2JR0prQhndFkHKTpQjiCviFfntGtCcfixYud3XffXZ2vOD2nTZvmHgnH66+/7gjX0t/wginCRnGAozdueKcpQvq7aTlI0wUcgRSZOLoKy95JC4ZTbb/99roRbiqwKJVd/BCJrDSKE3oBKP1xz22qaHKxwnwDJRyxGbTQIwzkcEXleP3WIExraYEorVVFYZn7v+N3ZABoCo7FZlS58xz+jt9hTMX/A/eR72+RaQ9jAAAAAElFTkSuQmCC";
-  function create_if_block$5(ctx) {
+  function create_if_block$6(ctx) {
     let div;
     let section;
     let t0;
@@ -8659,13 +11914,13 @@
     let dispose;
     const default_slot_template = (
       /*#slots*/
-      ctx[9].default
+      ctx[8].default
     );
     const default_slot = create_slot(
       default_slot_template,
       ctx,
       /*$$scope*/
-      ctx[8],
+      ctx[7],
       null
     );
     return {
@@ -8680,7 +11935,7 @@
         attr(button, "class", "absolute top-2 right-2 z-1 btn-icon btn-icon-sm select-none bg-transparent font-bold hover:text-xl");
         attr(div, "data-theme", "skeleton");
         attr(div, "class", div_class_value = "relative rounded-container-token shadow-xl bg-scroll " + /*classes*/
-        ctx[2]);
+        ctx[1]);
       },
       m(target, anchor) {
         insert(target, div, anchor);
@@ -8688,7 +11943,6 @@
         if (default_slot) {
           default_slot.m(section, null);
         }
-        ctx[10](section);
         append(div, t0);
         append(div, button);
         current = true;
@@ -8706,20 +11960,20 @@
         ctx = new_ctx;
         if (default_slot) {
           if (default_slot.p && (!current || dirty & /*$$scope*/
-          256)) {
+          128)) {
             update_slot_base(
               default_slot,
               default_slot_template,
               ctx,
               /*$$scope*/
-              ctx[8],
+              ctx[7],
               !current ? get_all_dirty_from_scope(
                 /*$$scope*/
-                ctx[8]
+                ctx[7]
               ) : get_slot_changes(
                 default_slot_template,
                 /*$$scope*/
-                ctx[8],
+                ctx[7],
                 dirty,
                 null
               ),
@@ -8728,8 +11982,8 @@
           }
         }
         if (!current || dirty & /*classes*/
-        4 && div_class_value !== (div_class_value = "relative rounded-container-token shadow-xl bg-scroll " + /*classes*/
-        ctx[2])) {
+        2 && div_class_value !== (div_class_value = "relative rounded-container-token shadow-xl bg-scroll " + /*classes*/
+        ctx[1])) {
           attr(div, "class", div_class_value);
         }
       },
@@ -8747,18 +12001,17 @@
           detach(div);
         }
         if (default_slot) default_slot.d(detaching);
-        ctx[10](null);
         mounted = false;
         dispose();
       }
     };
   }
-  function create_fragment$9(ctx) {
+  function create_fragment$a(ctx) {
     let if_block_anchor;
     let current;
     let if_block = (
       /*$modalStore*/
-      ctx[3][0] && create_if_block$5(ctx)
+      ctx[2][0] && create_if_block$6(ctx)
     );
     return {
       c() {
@@ -8773,16 +12026,16 @@
       p(ctx2, [dirty]) {
         if (
           /*$modalStore*/
-          ctx2[3][0]
+          ctx2[2][0]
         ) {
           if (if_block) {
             if_block.p(ctx2, dirty);
             if (dirty & /*$modalStore*/
-            8) {
+            4) {
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block$5(ctx2);
+            if_block = create_if_block$6(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(if_block_anchor.parentNode, if_block_anchor);
@@ -8812,7 +12065,7 @@
       }
     };
   }
-  function instance$9($$self, $$props, $$invalidate) {
+  function instance$a($$self, $$props, $$invalidate) {
     let classes;
     let $modalStore;
     let { $$slots: slots = {}, $$scope } = $$props;
@@ -8821,49 +12074,21 @@
     let { width = "w-full md:max-w-screen-sm lg:max-w-screen-md xl:max-w-screen-lg" } = $$props;
     let { height = "" } = $$props;
     const modalStore = getModalStore();
-    component_subscribe($$self, modalStore, (value) => $$invalidate(3, $modalStore = value));
-    let content;
-    let lastHeight;
-    let inAnimation = false;
-    const ob = new ResizeObserver(() => {
-      if (!content) return;
-      const curHeight = content.offsetHeight;
-      if (curHeight === lastHeight || inAnimation) return;
-      inAnimation = true;
-      const animation = content.animate([{ height: lastHeight + "px" }, { height: curHeight + "px" }], { duration: 100 });
-      lastHeight = curHeight;
-      animation.finished.then(() => {
-        inAnimation = false;
-      });
-    });
-    onMount(() => {
-      lastHeight = content.offsetHeight;
-      ob.observe(content);
-    });
-    onDestroy(() => {
-      ob.disconnect();
-    });
-    function section_binding($$value) {
-      binding_callbacks[$$value ? "unshift" : "push"](() => {
-        content = $$value;
-        $$invalidate(1, content);
-      });
-    }
+    component_subscribe($$self, modalStore, (value) => $$invalidate(2, $modalStore = value));
     $$self.$$set = ($$new_props) => {
-      $$invalidate(14, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+      $$invalidate(9, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
       if ("parent" in $$new_props) $$invalidate(0, parent = $$new_props.parent);
-      if ("padding" in $$new_props) $$invalidate(5, padding = $$new_props.padding);
-      if ("width" in $$new_props) $$invalidate(6, width = $$new_props.width);
-      if ("height" in $$new_props) $$invalidate(7, height = $$new_props.height);
-      if ("$$scope" in $$new_props) $$invalidate(8, $$scope = $$new_props.$$scope);
+      if ("padding" in $$new_props) $$invalidate(4, padding = $$new_props.padding);
+      if ("width" in $$new_props) $$invalidate(5, width = $$new_props.width);
+      if ("height" in $$new_props) $$invalidate(6, height = $$new_props.height);
+      if ("$$scope" in $$new_props) $$invalidate(7, $$scope = $$new_props.$$scope);
     };
     $$self.$$.update = () => {
-      $$invalidate(2, classes = `${padding} ${width} ${height} ${$$props.class ?? ""}`);
+      $$invalidate(1, classes = `${padding} ${width} ${height} ${$$props.class ?? ""}`);
     };
     $$props = exclude_internal_props($$props);
     return [
       parent,
-      content,
       classes,
       $modalStore,
       modalStore,
@@ -8871,176 +12096,126 @@
       width,
       height,
       $$scope,
-      slots,
-      section_binding
+      slots
     ];
   }
   class ModalWrapper extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$9, create_fragment$9, safe_not_equal, {
+      init(this, options, instance$a, create_fragment$a, safe_not_equal, {
         parent: 0,
-        padding: 5,
-        width: 6,
-        height: 7
+        padding: 4,
+        width: 5,
+        height: 6
       });
     }
   }
-  function create_default_slot$5(ctx) {
+  function create_default_slot$6(ctx) {
     let header;
     let t2;
     let article;
-    let ul;
-    let li0;
-    let t3;
-    let a0;
-    let t4;
-    let t5;
-    let t6;
-    let li1;
-    let t8;
-    let li2;
-    let t10;
-    let li3;
-    let t12;
-    let li4;
-    let t14;
-    let li5;
-    let strong;
     let t16;
-    let a1;
+    let footer;
+    let div0;
+    let button;
     let t17;
     let t18;
+    let a;
+    let t19_value = t("text.feedback") + "";
     let t19;
-    let footer;
-    let details;
-    let summary;
     let t20;
-    let t21;
-    let div;
-    let t24;
-    let a2;
-    let t25;
+    let div2;
+    let div1;
+    let div2_class_value;
+    let mounted;
+    let dispose;
     return {
       c() {
         header = element("header");
-        header.textContent = `Pixiv Downloader ${"1.1.0"}`;
+        header.textContent = `Pixiv Downloader ${"1.2.0"}`;
         t2 = space();
         article = element("article");
-        ul = element("ul");
-        li0 = element("li");
-        t3 = text("新增: 支持新网站：");
-        a0 = element("a");
-        t4 = text("Yande.re");
-        t5 = text("。");
-        t6 = space();
-        li1 = element("li");
-        li1.textContent = "新增（Pixiv, Danbooru）: 现在会将作品简介保存到历史记录中。";
-        t8 = space();
-        li2 = element("li");
-        li2.textContent = "新增（Pixiv）: 现在会单独记录多页插图每一页是否已下载。";
-        t10 = space();
-        li3 = element("li");
-        li3.textContent = "新增（设置）: 现在可以调整Mp4格式动图的码率。";
-        t12 = space();
-        li4 = element("li");
-        li4.textContent = "优化（设置）: 现在会在光标处插入文件名模板。";
-        t14 = space();
-        li5 = element("li");
-        strong = element("strong");
-        strong.textContent = "实验性功能（Pixiv）：";
-        t16 = text("下载单页插图时为插图添加");
-        a1 = element("a");
-        t17 = text("#pixivGlow2024");
-        t18 = text("动态效果，可在【设置】【其它】中开启。");
-        t19 = space();
+        article.innerHTML = `<ul class="list-disc list-inside leading-loose"><p>重写了批量下载，请在Pixiv【用户页】【已关注用户的新作】点击页面右方头像进行下载。暂未支持下载搜索结果。</p> <li>新增: 现在批量下载支持自定义下载页数。</li> <li>新增: 现在批量下载支持作品标签黑名单，白名单。</li> <li>新增: 现在进行中断批量下载的页面跳转时会进行提示。</li> <li>修复（Pixiv）: 无法下载【已关注用户的新作】最后一页的问题。</li> <li>修复（Pixiv）: 无法正确获得繁体中文标签的问题。</li> <li>修复（Pixiv）: 一些特殊字符导致保存失败的问题。</li></ul>`;
+        t16 = space();
         footer = element("footer");
-        details = element("details");
-        summary = element("summary");
-        t20 = text("脚本还行？请我喝杯可乐吧！");
-        t21 = space();
-        div = element("div");
-        div.innerHTML = `<img src="${creditCode}" alt="credit" class="rounded-full"/> <p class="mt-2">想喝香草味冰可乐</p>`;
-        t24 = space();
-        a2 = element("a");
-        t25 = text("有问题or想建议？这里反馈");
+        div0 = element("div");
+        button = element("button");
+        t17 = text("脚本还行？请我喝杯可乐吧！");
+        t18 = space();
+        a = element("a");
+        t19 = text(t19_value);
+        t20 = space();
+        div2 = element("div");
+        div1 = element("div");
+        div1.innerHTML = `<img src="${creditCode}" alt="credit" class="rounded-full"/> <p>想喝香草味冰可乐</p>`;
         attr(header, "class", "modal-header text-2xl font-bold");
-        attr(
-          a0,
-          "class",
-          /*anchor*/
-          ctx[1]
-        );
-        attr(a0, "href", "https://yande.re/post");
-        attr(a0, "target", "_blank");
-        attr(
-          a1,
-          "class",
-          /*anchor*/
-          ctx[1]
-        );
-        attr(a1, "target", "_blank");
-        attr(a1, "href", "https://www.pixiv.net/tags/pixivGlow2024");
-        attr(ul, "class", "list-disc list-inside leading-loose");
         attr(article, "class", "modal-body mt-4");
-        attr(summary, "class", "inline-block cursor-pointer " + /*anchor*/
-        ctx[1]);
-        attr(div, "class", "text-center truncate flex flex-col items-center mt-4");
-        attr(a2, "class", "absolute right-0 top-0 " + /*anchor*/
-        ctx[1]);
-        attr(a2, "target", "_blank");
-        attr(a2, "href", "https://sleazyfork.org/zh-CN/scripts/432150-pixiv-downloader/feedback");
-        attr(footer, "class", "modal-footer relative mt-4 text-sm");
+        attr(
+          button,
+          "class",
+          /*anchor*/
+          ctx[3]
+        );
+        attr(
+          a,
+          "class",
+          /*anchor*/
+          ctx[3]
+        );
+        attr(a, "target", "_blank");
+        attr(a, "href", "https://sleazyfork.org/zh-CN/scripts/432150-pixiv-downloader/feedback");
+        attr(div0, "class", "flex justify-between items-center");
+        attr(div1, "class", "flex flex-col items-center gap-2 min-h-0");
+        attr(div2, "class", div2_class_value = "grid transition-[grid-template-rows] duration-[400ms] " + /*gridRows*/
+        ctx[2]);
+        attr(footer, "class", "modal-footer mt-4 text-sm");
       },
       m(target, anchor) {
         insert(target, header, anchor);
         insert(target, t2, anchor);
         insert(target, article, anchor);
-        append(article, ul);
-        append(ul, li0);
-        append(li0, t3);
-        append(li0, a0);
-        append(a0, t4);
-        append(li0, t5);
-        append(ul, t6);
-        append(ul, li1);
-        append(ul, t8);
-        append(ul, li2);
-        append(ul, t10);
-        append(ul, li3);
-        append(ul, t12);
-        append(ul, li4);
-        append(ul, t14);
-        append(ul, li5);
-        append(li5, strong);
-        append(li5, t16);
-        append(li5, a1);
-        append(a1, t17);
-        append(li5, t18);
-        insert(target, t19, anchor);
+        insert(target, t16, anchor);
         insert(target, footer, anchor);
-        append(footer, details);
-        append(details, summary);
-        append(summary, t20);
-        append(details, t21);
-        append(details, div);
-        append(footer, t24);
-        append(footer, a2);
-        append(a2, t25);
+        append(footer, div0);
+        append(div0, button);
+        append(button, t17);
+        append(div0, t18);
+        append(div0, a);
+        append(a, t19);
+        append(footer, t20);
+        append(footer, div2);
+        append(div2, div1);
+        if (!mounted) {
+          dispose = listen(
+            button,
+            "click",
+            /*click_handler*/
+            ctx[4]
+          );
+          mounted = true;
+        }
       },
-      p: noop,
+      p(ctx2, dirty) {
+        if (dirty & /*gridRows*/
+        4 && div2_class_value !== (div2_class_value = "grid transition-[grid-template-rows] duration-[400ms] " + /*gridRows*/
+        ctx2[2])) {
+          attr(div2, "class", div2_class_value);
+        }
+      },
       d(detaching) {
         if (detaching) {
           detach(header);
           detach(t2);
           detach(article);
-          detach(t19);
+          detach(t16);
           detach(footer);
         }
+        mounted = false;
+        dispose();
       }
     };
   }
-  function create_fragment$8(ctx) {
+  function create_fragment$9(ctx) {
     let modalwrapper;
     let current;
     modalwrapper = new ModalWrapper({
@@ -9049,7 +12224,7 @@
           /*parent*/
           ctx[0]
         ),
-        $$slots: { default: [create_default_slot$5] },
+        $$slots: { default: [create_default_slot$6] },
         $$scope: { ctx }
       }
     });
@@ -9066,8 +12241,8 @@
         if (dirty & /*parent*/
         1) modalwrapper_changes.parent = /*parent*/
         ctx2[0];
-        if (dirty & /*$$scope*/
-        8) {
+        if (dirty & /*$$scope, gridRows, showCreditCode*/
+        70) {
           modalwrapper_changes.$$scope = { dirty, ctx: ctx2 };
         }
         modalwrapper.$set(modalwrapper_changes);
@@ -9086,19 +12261,28 @@
       }
     };
   }
-  function instance$8($$self, $$props, $$invalidate) {
+  function instance$9($$self, $$props, $$invalidate) {
+    let gridRows;
     const anchorFocus = `focus:!outline-none focus:decoration-wavy`;
     const anchor = `leading-loose anchor underline-offset-2 ${anchorFocus}`;
     let { parent } = $$props;
+    let showCreditCode = false;
+    const click_handler = () => $$invalidate(1, showCreditCode = !showCreditCode);
     $$self.$$set = ($$props2) => {
       if ("parent" in $$props2) $$invalidate(0, parent = $$props2.parent);
     };
-    return [parent, anchor];
+    $$self.$$.update = () => {
+      if ($$self.$$.dirty & /*showCreditCode*/
+      2) {
+        $$invalidate(2, gridRows = showCreditCode ? "grid-rows-[1fr]" : "grid-rows-[0fr]");
+      }
+    };
+    return [parent, showCreditCode, gridRows, anchor, click_handler];
   }
   class Changelog extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$8, create_fragment$8, safe_not_equal, { parent: 0 });
+      init(this, options, instance$9, create_fragment$9, safe_not_equal, { parent: 0 });
     }
   }
   const check = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>check</title><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>`;
@@ -9107,17 +12291,17 @@
   const data = config.getAll();
   const configStore = writable(data);
   configStore.subscribe(config.update);
-  function get_each_context$2(ctx, list, i) {
+  function get_each_context$3(ctx, list, i) {
     const child_ctx = ctx.slice();
     child_ctx[40] = list[i];
     return child_ctx;
   }
-  function get_each_context_1$1(ctx, list, i) {
+  function get_each_context_1$2(ctx, list, i) {
     const child_ctx = ctx.slice();
     child_ctx[40] = list[i];
     return child_ctx;
   }
-  function create_else_block$1(ctx) {
+  function create_else_block$2(ctx) {
     let input;
     return {
       c() {
@@ -9152,7 +12336,7 @@
       }
     };
   }
-  function create_if_block_2$1(ctx) {
+  function create_if_block_2$2(ctx) {
     let input;
     let mounted;
     let dispose;
@@ -9215,7 +12399,7 @@
       }
     };
   }
-  function create_each_block_1$1(ctx) {
+  function create_each_block_1$2(ctx) {
     let button;
     let span;
     let t0_value = (
@@ -9278,7 +12462,7 @@
       }
     };
   }
-  function create_if_block_1$2(ctx) {
+  function create_if_block_1$4(ctx) {
     let li0;
     let p0;
     let t1;
@@ -9297,7 +12481,7 @@
     radiogroup = new RadioGroup({
       props: {
         class: "shrink-0",
-        $$slots: { default: [create_default_slot_5$1] },
+        $$slots: { default: [create_default_slot_5$2] },
         $$scope: { ctx }
       }
     });
@@ -9440,7 +12624,7 @@
       }
     };
   }
-  function create_default_slot_5$1(ctx) {
+  function create_default_slot_5$2(ctx) {
     let radioitem0;
     let updating_group;
     let t0;
@@ -9588,7 +12772,7 @@
       }
     };
   }
-  function create_each_block$2(ctx) {
+  function create_each_block$3(ctx) {
     let button;
     let span;
     let t0_value = (
@@ -9643,7 +12827,7 @@
       }
     };
   }
-  function create_if_block$4(ctx) {
+  function create_if_block$5(ctx) {
     let li;
     let div;
     let p0;
@@ -9657,7 +12841,7 @@
     radiogroup = new RadioGroup({
       props: {
         class: " shrink-0",
-        $$slots: { default: [create_default_slot$4] },
+        $$slots: { default: [create_default_slot$5] },
         $$scope: { ctx }
       }
     });
@@ -9726,7 +12910,7 @@
       }
     };
   }
-  function create_default_slot_4$1(ctx) {
+  function create_default_slot_4$2(ctx) {
     let t_1;
     return {
       c() {
@@ -9742,7 +12926,7 @@
       }
     };
   }
-  function create_default_slot_3$3(ctx) {
+  function create_default_slot_3$4(ctx) {
     let t_1;
     return {
       c() {
@@ -9758,7 +12942,7 @@
       }
     };
   }
-  function create_default_slot_2$3(ctx) {
+  function create_default_slot_2$4(ctx) {
     let t_1;
     return {
       c() {
@@ -9774,7 +12958,7 @@
       }
     };
   }
-  function create_default_slot_1$3(ctx) {
+  function create_default_slot_1$4(ctx) {
     let t_1;
     return {
       c() {
@@ -9790,7 +12974,7 @@
       }
     };
   }
-  function create_default_slot$4(ctx) {
+  function create_default_slot$5(ctx) {
     let radioitem0;
     let updating_group;
     let t0;
@@ -9810,7 +12994,7 @@
       name: "tagLang",
       class: "text-sm",
       value: TagLanguage.JAPANESE,
-      $$slots: { default: [create_default_slot_4$1] },
+      $$slots: { default: [create_default_slot_4$2] },
       $$scope: { ctx }
     };
     if (
@@ -9829,7 +13013,7 @@
       name: "tagLang",
       class: "text-sm",
       value: TagLanguage.CHINESE,
-      $$slots: { default: [create_default_slot_3$3] },
+      $$slots: { default: [create_default_slot_3$4] },
       $$scope: { ctx }
     };
     if (
@@ -9848,7 +13032,7 @@
       name: "tagLang",
       class: "text-sm",
       value: TagLanguage.TRADITIONAL_CHINESE,
-      $$slots: { default: [create_default_slot_2$3] },
+      $$slots: { default: [create_default_slot_2$4] },
       $$scope: { ctx }
     };
     if (
@@ -9867,7 +13051,7 @@
       name: "tagLang",
       class: "text-sm",
       value: TagLanguage.ENGLISH,
-      $$slots: { default: [create_default_slot_1$3] },
+      $$slots: { default: [create_default_slot_1$4] },
       $$scope: { ctx }
     };
     if (
@@ -9981,7 +13165,7 @@
       }
     };
   }
-  function create_fragment$7(ctx) {
+  function create_fragment$8(ctx) {
     let div4;
     let section0;
     let p0;
@@ -10033,8 +13217,8 @@
       if (
         /*subDirectoryAvailable*/
         ctx2[6]
-      ) return create_if_block_2$1;
-      return create_else_block$1;
+      ) return create_if_block_2$2;
+      return create_else_block$2;
     }
     let current_block_type = select_block_type(ctx);
     let if_block0 = current_block_type(ctx);
@@ -10044,7 +13228,7 @@
     );
     let each_blocks_1 = [];
     for (let i = 0; i < each_value_1.length; i += 1) {
-      each_blocks_1[i] = create_each_block_1$1(get_each_context_1$1(ctx, each_value_1, i));
+      each_blocks_1[i] = create_each_block_1$2(get_each_context_1$2(ctx, each_value_1, i));
     }
     function slidetoggle_checked_binding(value) {
       ctx[29](value);
@@ -10065,7 +13249,7 @@
     binding_callbacks.push(() => bind(slidetoggle, "checked", slidetoggle_checked_binding));
     let if_block1 = (
       /*$store*/
-      ctx[7].useFileSystemAccess && create_if_block_1$2(ctx)
+      ctx[7].useFileSystemAccess && create_if_block_1$4(ctx)
     );
     let each_value = ensure_array_like(
       /*templates*/
@@ -10073,9 +13257,9 @@
     );
     let each_blocks = [];
     for (let i = 0; i < each_value.length; i += 1) {
-      each_blocks[i] = create_each_block$2(get_each_context$2(ctx, each_value, i));
+      each_blocks[i] = create_each_block$3(get_each_context$3(ctx, each_value, i));
     }
-    let if_block2 = show_if && create_if_block$4(ctx);
+    let if_block2 = show_if && create_if_block$5(ctx);
     return {
       c() {
         div4 = element("div");
@@ -10328,11 +13512,11 @@
           );
           let i;
           for (i = 0; i < each_value_1.length; i += 1) {
-            const child_ctx = get_each_context_1$1(ctx2, each_value_1, i);
+            const child_ctx = get_each_context_1$2(ctx2, each_value_1, i);
             if (each_blocks_1[i]) {
               each_blocks_1[i].p(child_ctx, dirty);
             } else {
-              each_blocks_1[i] = create_each_block_1$1(child_ctx);
+              each_blocks_1[i] = create_each_block_1$2(child_ctx);
               each_blocks_1[i].c();
               each_blocks_1[i].m(div1, null);
             }
@@ -10362,7 +13546,7 @@
               transition_in(if_block1, 1);
             }
           } else {
-            if_block1 = create_if_block_1$2(ctx2);
+            if_block1 = create_if_block_1$4(ctx2);
             if_block1.c();
             transition_in(if_block1, 1);
             if_block1.m(ul0, null);
@@ -10419,11 +13603,11 @@
           );
           let i;
           for (i = 0; i < each_value.length; i += 1) {
-            const child_ctx = get_each_context$2(ctx2, each_value, i);
+            const child_ctx = get_each_context$3(ctx2, each_value, i);
             if (each_blocks[i]) {
               each_blocks[i].p(child_ctx, dirty);
             } else {
-              each_blocks[i] = create_each_block$2(child_ctx);
+              each_blocks[i] = create_each_block$3(child_ctx);
               each_blocks[i].c();
               each_blocks[i].m(div3, null);
             }
@@ -10482,7 +13666,7 @@
       }
     };
   }
-  function instance$7($$self, $$props, $$invalidate) {
+  function instance$8($$self, $$props, $$invalidate) {
     let ulClasses;
     let subDirectoryAvailable;
     let folderBtnDisabled;
@@ -10704,8 +13888,8 @@
       init(
         this,
         options,
-        instance$7,
-        create_fragment$7,
+        instance$8,
+        create_fragment$8,
         safe_not_equal,
         {
           bg: 22,
@@ -10723,14 +13907,67 @@
       );
     }
   }
-  function get_each_context$1(ctx, list, i) {
+  const nonNegativeInt = (node, params) => {
+    if (!(node instanceof HTMLInputElement) || node.type !== "number")
+      throw new Error('Node should be an HTMLInputElement with a `type` of "number".');
+    const updateStore = (newVal) => {
+      if ("key" in params) {
+        const { key, store } = params;
+        store.update((currentVal) => {
+          if (typeof newVal === "number") {
+            return { ...currentVal, [key]: newVal };
+          } else {
+            return currentVal;
+          }
+        });
+      } else {
+        params.update((currentVal) => {
+          if (typeof newVal === "number") {
+            return newVal;
+          } else {
+            const nodeVal = node.value === "" ? null : +node.value;
+            nodeVal !== currentVal && (node.value = typeof currentVal === "number" ? "" + currentVal : "");
+            return currentVal;
+          }
+        });
+      }
+    };
+    node.addEventListener("input", (evt) => {
+      const el = evt.currentTarget;
+      const { min, max: max2, value } = el;
+      const minVal = min === "" ? 0 : +min;
+      const maxVal = max2 === "" ? null : +max2;
+      if (!el.checkValidity()) {
+        if (/^[0-9]+$/.test(value)) {
+          const numVal = +value;
+          if (numVal < minVal) {
+            updateStore(minVal);
+          } else if (maxVal && numVal > maxVal) {
+            updateStore(maxVal);
+          }
+        } else {
+          updateStore();
+        }
+      }
+    });
+    node.addEventListener("blur", (evt) => {
+      const el = evt.currentTarget;
+      const { min, value } = el;
+      const minVal = min === "" ? 0 : +min;
+      if (value === "") {
+        updateStore(minVal);
+      }
+    });
+    return {};
+  };
+  function get_each_context$2(ctx, list, i) {
     const child_ctx = ctx.slice();
-    child_ctx[37] = list[i];
+    child_ctx[27] = list[i];
     return child_ctx;
   }
-  function get_each_context_1(ctx, list, i) {
+  function get_each_context_1$1(ctx, list, i) {
     const child_ctx = ctx.slice();
-    child_ctx[37] = list[i];
+    child_ctx[27] = list[i];
     return child_ctx;
   }
   function create_default_slot_6(ctx) {
@@ -10749,7 +13986,7 @@
       }
     };
   }
-  function create_default_slot_5(ctx) {
+  function create_default_slot_5$1(ctx) {
     let t_1;
     return {
       c() {
@@ -10765,7 +14002,7 @@
       }
     };
   }
-  function create_default_slot_4(ctx) {
+  function create_default_slot_4$1(ctx) {
     let t_1;
     return {
       c() {
@@ -10781,7 +14018,7 @@
       }
     };
   }
-  function create_default_slot_3$2(ctx) {
+  function create_default_slot_3$3(ctx) {
     let t_1;
     return {
       c() {
@@ -10797,7 +14034,7 @@
       }
     };
   }
-  function create_default_slot_2$2(ctx) {
+  function create_default_slot_2$3(ctx) {
     let t_1;
     return {
       c() {
@@ -10813,7 +14050,7 @@
       }
     };
   }
-  function create_default_slot_1$2(ctx) {
+  function create_default_slot_1$3(ctx) {
     let t_1;
     return {
       c() {
@@ -10829,7 +14066,7 @@
       }
     };
   }
-  function create_default_slot$3(ctx) {
+  function create_default_slot$4(ctx) {
     let radioitem0;
     let updating_group;
     let t0;
@@ -10849,7 +14086,7 @@
     let updating_group_5;
     let current;
     function radioitem0_group_binding(value) {
-      ctx[15](value);
+      ctx[13](value);
     }
     let radioitem0_props = {
       name: "ugoiraFormat",
@@ -10868,13 +14105,13 @@
     radioitem0 = new RadioItem({ props: radioitem0_props });
     binding_callbacks.push(() => bind(radioitem0, "group", radioitem0_group_binding));
     function radioitem1_group_binding(value) {
-      ctx[16](value);
+      ctx[14](value);
     }
     let radioitem1_props = {
       name: "ugoiraFormat",
       class: "text-sm",
       value: UgoiraFormat.WEBM,
-      $$slots: { default: [create_default_slot_5] },
+      $$slots: { default: [create_default_slot_5$1] },
       $$scope: { ctx }
     };
     if (
@@ -10887,14 +14124,14 @@
     radioitem1 = new RadioItem({ props: radioitem1_props });
     binding_callbacks.push(() => bind(radioitem1, "group", radioitem1_group_binding));
     function radioitem2_group_binding(value) {
-      ctx[17](value);
+      ctx[15](value);
     }
     let radioitem2_props = {
       disabled: !env.videoFrameSupported(),
       class: "text-sm",
       name: "ugoiraFormat",
       value: UgoiraFormat.MP4,
-      $$slots: { default: [create_default_slot_4] },
+      $$slots: { default: [create_default_slot_4$1] },
       $$scope: { ctx }
     };
     if (
@@ -10907,13 +14144,13 @@
     radioitem2 = new RadioItem({ props: radioitem2_props });
     binding_callbacks.push(() => bind(radioitem2, "group", radioitem2_group_binding));
     function radioitem3_group_binding(value) {
-      ctx[18](value);
+      ctx[16](value);
     }
     let radioitem3_props = {
       name: "ugoiraFormat",
       class: "text-sm",
       value: UgoiraFormat.WEBP,
-      $$slots: { default: [create_default_slot_3$2] },
+      $$slots: { default: [create_default_slot_3$3] },
       $$scope: { ctx }
     };
     if (
@@ -10926,13 +14163,13 @@
     radioitem3 = new RadioItem({ props: radioitem3_props });
     binding_callbacks.push(() => bind(radioitem3, "group", radioitem3_group_binding));
     function radioitem4_group_binding(value) {
-      ctx[19](value);
+      ctx[17](value);
     }
     let radioitem4_props = {
       name: "ugoiraFormat",
       class: "text-sm",
       value: UgoiraFormat.GIF,
-      $$slots: { default: [create_default_slot_2$2] },
+      $$slots: { default: [create_default_slot_2$3] },
       $$scope: { ctx }
     };
     if (
@@ -10945,13 +14182,13 @@
     radioitem4 = new RadioItem({ props: radioitem4_props });
     binding_callbacks.push(() => bind(radioitem4, "group", radioitem4_group_binding));
     function radioitem5_group_binding(value) {
-      ctx[20](value);
+      ctx[18](value);
     }
     let radioitem5_props = {
       name: "ugoiraFormat",
       class: "text-sm",
       value: UgoiraFormat.PNG,
-      $$slots: { default: [create_default_slot_1$2] },
+      $$slots: { default: [create_default_slot_1$3] },
       $$scope: { ctx }
     };
     if (
@@ -10994,7 +14231,7 @@
       p(ctx2, dirty) {
         const radioitem0_changes = {};
         if (dirty[1] & /*$$scope*/
-        2048) {
+        2) {
           radioitem0_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group && dirty[0] & /*$store*/
@@ -11007,7 +14244,7 @@
         radioitem0.$set(radioitem0_changes);
         const radioitem1_changes = {};
         if (dirty[1] & /*$$scope*/
-        2048) {
+        2) {
           radioitem1_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group_1 && dirty[0] & /*$store*/
@@ -11020,7 +14257,7 @@
         radioitem1.$set(radioitem1_changes);
         const radioitem2_changes = {};
         if (dirty[1] & /*$$scope*/
-        2048) {
+        2) {
           radioitem2_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group_2 && dirty[0] & /*$store*/
@@ -11033,7 +14270,7 @@
         radioitem2.$set(radioitem2_changes);
         const radioitem3_changes = {};
         if (dirty[1] & /*$$scope*/
-        2048) {
+        2) {
           radioitem3_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group_3 && dirty[0] & /*$store*/
@@ -11046,7 +14283,7 @@
         radioitem3.$set(radioitem3_changes);
         const radioitem4_changes = {};
         if (dirty[1] & /*$$scope*/
-        2048) {
+        2) {
           radioitem4_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group_4 && dirty[0] & /*$store*/
@@ -11059,7 +14296,7 @@
         radioitem4.$set(radioitem4_changes);
         const radioitem5_changes = {};
         if (dirty[1] & /*$$scope*/
-        2048) {
+        2) {
           radioitem5_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group_5 && dirty[0] & /*$store*/
@@ -11107,11 +14344,11 @@
       }
     };
   }
-  function create_each_block_1(ctx) {
+  function create_each_block_1$1(ctx) {
     let option;
     let t_1_value = (
       /*quality*/
-      ctx[37] + ""
+      ctx[27] + ""
     );
     let t_1;
     return {
@@ -11119,7 +14356,7 @@
         option = element("option");
         t_1 = text(t_1_value);
         option.__value = /*quality*/
-        ctx[37];
+        ctx[27];
         set_input_value(option, option.__value);
       },
       m(target, anchor) {
@@ -11134,11 +14371,11 @@
       }
     };
   }
-  function create_each_block$1(ctx) {
+  function create_each_block$2(ctx) {
     let option;
     let t_1_value = (
       /*quality*/
-      ctx[37] + 1 + ""
+      ctx[27] + 1 + ""
     );
     let t_1;
     return {
@@ -11146,7 +14383,7 @@
         option = element("option");
         t_1 = text(t_1_value);
         option.__value = /*quality*/
-        ctx[37] + 1;
+        ctx[27] + 1;
         set_input_value(option, option.__value);
       },
       m(target, anchor) {
@@ -11161,7 +14398,7 @@
       }
     };
   }
-  function create_fragment$6(ctx) {
+  function create_fragment$7(ctx) {
     let div6;
     let section0;
     let p0;
@@ -11261,12 +14498,12 @@
     radiogroup = new RadioGroup({
       props: {
         class: "shrink-0",
-        $$slots: { default: [create_default_slot$3] },
+        $$slots: { default: [create_default_slot$4] },
         $$scope: { ctx }
       }
     });
     function slidetoggle_checked_binding(value) {
-      ctx[27](value);
+      ctx[21](value);
     }
     let slidetoggle_props = { name: "lossless-webp", size: "sm" };
     if (
@@ -11281,12 +14518,12 @@
     let each_value_1 = ensure_array_like(Array.from({ length: 7 }, func));
     let each_blocks_1 = [];
     for (let i = 0; i < each_value_1.length; i += 1) {
-      each_blocks_1[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
+      each_blocks_1[i] = create_each_block_1$1(get_each_context_1$1(ctx, each_value_1, i));
     }
     let each_value = ensure_array_like(Array.from({ length: 20 }, func_1));
     let each_blocks = [];
     for (let i = 0; i < each_value.length; i += 1) {
-      each_blocks[i] = create_each_block$1(get_each_context$1(ctx, each_value, i));
+      each_blocks[i] = create_each_block$2(get_each_context$2(ctx, each_value, i));
     }
     return {
       c() {
@@ -11458,7 +14695,7 @@
           ctx[7].webpMehtod === void 0
         ) add_render_callback(() => (
           /*select0_change_handler*/
-          ctx[31].call(select0)
+          ctx[23].call(select0)
         ));
         attr(li5, "class", "items-center");
         attr(ul1, "class", ul1_class_value = "list " + /*border*/
@@ -11479,7 +14716,7 @@
           ctx[7].gifQuality === void 0
         ) add_render_callback(() => (
           /*select1_change_handler*/
-          ctx[32].call(select1)
+          ctx[24].call(select1)
         ));
         attr(
           p16,
@@ -11631,89 +14868,45 @@
         current = true;
         if (!mounted) {
           dispose = [
-            listen(
-              input0,
-              "input",
-              /*input_handler*/
-              ctx[21]
-            ),
-            listen(
-              input0,
-              "blur",
-              /*blur_handler*/
-              ctx[22]
-            ),
+            action_destroyer(nonNegativeInt.call(null, input0, { store: configStore, key: "webmQuality" })),
             listen(
               input0,
               "input",
               /*input0_input_handler*/
-              ctx[23]
+              ctx[19]
             ),
-            listen(
-              input1,
-              "input",
-              /*input_handler_1*/
-              ctx[24]
-            ),
-            listen(
-              input1,
-              "blur",
-              /*blur_handler_1*/
-              ctx[25]
-            ),
+            action_destroyer(nonNegativeInt.call(null, input1, { store: configStore, key: "mp4Bitrate" })),
             listen(
               input1,
               "input",
               /*input1_input_handler*/
-              ctx[26]
+              ctx[20]
             ),
-            listen(
-              input2,
-              "input",
-              /*input_handler_2*/
-              ctx[28]
-            ),
-            listen(
-              input2,
-              "blur",
-              /*blur_handler_2*/
-              ctx[29]
-            ),
+            action_destroyer(nonNegativeInt.call(null, input2, { store: configStore, key: "webpQuality" })),
             listen(
               input2,
               "input",
               /*input2_input_handler*/
-              ctx[30]
+              ctx[22]
             ),
             listen(
               select0,
               "change",
               /*select0_change_handler*/
-              ctx[31]
+              ctx[23]
             ),
             listen(
               select1,
               "change",
               /*select1_change_handler*/
-              ctx[32]
+              ctx[24]
             ),
-            listen(
-              input3,
-              "input",
-              /*input_handler_3*/
-              ctx[33]
-            ),
-            listen(
-              input3,
-              "blur",
-              /*blur_handler_3*/
-              ctx[34]
-            ),
+            action_destroyer(nonNegativeInt.call(null, input3, { store: configStore, key: "pngColor" })),
             listen(
               input3,
               "input",
               /*input3_input_handler*/
-              ctx[35]
+              ctx[25]
             )
           ];
           mounted = true;
@@ -11732,7 +14925,7 @@
         const radiogroup_changes = {};
         if (dirty[0] & /*$store*/
         128 | dirty[1] & /*$$scope*/
-        2048) {
+        2) {
           radiogroup_changes.$$scope = { dirty, ctx: ctx2 };
         }
         radiogroup.$set(radiogroup_changes);
@@ -11846,11 +15039,11 @@
           each_value_1 = ensure_array_like(Array.from({ length: 7 }, func));
           let i;
           for (i = 0; i < each_value_1.length; i += 1) {
-            const child_ctx = get_each_context_1(ctx2, each_value_1, i);
+            const child_ctx = get_each_context_1$1(ctx2, each_value_1, i);
             if (each_blocks_1[i]) {
               each_blocks_1[i].p(child_ctx, dirty);
             } else {
-              each_blocks_1[i] = create_each_block_1(child_ctx);
+              each_blocks_1[i] = create_each_block_1$1(child_ctx);
               each_blocks_1[i].c();
               each_blocks_1[i].m(select0, null);
             }
@@ -11893,11 +15086,11 @@
           each_value = ensure_array_like(Array.from({ length: 20 }, func_1));
           let i;
           for (i = 0; i < each_value.length; i += 1) {
-            const child_ctx = get_each_context$1(ctx2, each_value, i);
+            const child_ctx = get_each_context$2(ctx2, each_value, i);
             if (each_blocks[i]) {
               each_blocks[i].p(child_ctx, dirty);
             } else {
-              each_blocks[i] = create_each_block$1(child_ctx);
+              each_blocks[i] = create_each_block$2(child_ctx);
               each_blocks[i].c();
               each_blocks[i].m(select1, null);
             }
@@ -11988,7 +15181,7 @@
   }
   const func = (_, idx) => idx;
   const func_1 = (_, idx) => idx;
-  function instance$6($$self, $$props, $$invalidate) {
+  function instance$7($$self, $$props, $$invalidate) {
     let ulClasses;
     let inputClasses;
     let $store;
@@ -12003,30 +15196,6 @@
     let { inputWidth = "w-32" } = $$props;
     let { sectionSpace = `space-y-4` } = $$props;
     let { sectionTitle = "font-bold" } = $$props;
-    function validateNumber(evt, key) {
-      const el = evt.currentTarget;
-      if (el.type !== "number") throw new Error("input.type must be number.");
-      if (!el.checkValidity()) {
-        if (/^[0-9]+$/.test(el.value)) {
-          configStore.update((config2) => {
-            return { ...config2, [key]: +el.max };
-          });
-        } else {
-          configStore.update((config2) => {
-            return { ...config2 };
-          });
-        }
-      }
-    }
-    function setDefaultValueIfEmpty(evt, key) {
-      const el = evt.currentTarget;
-      if (el.type !== "number") throw new Error("input.type must be number.");
-      if (el.value === "") {
-        configStore.update((config2) => {
-          return { ...config2, [key]: +el.min };
-        });
-      }
-    }
     function radioitem0_group_binding(value) {
       if ($$self.$$.not_equal($store.ugoiraFormat, value)) {
         $store.ugoiraFormat = value;
@@ -12063,14 +15232,10 @@
         configStore.set($store);
       }
     }
-    const input_handler = (evt) => validateNumber(evt, "webmQuality");
-    const blur_handler = (evt) => setDefaultValueIfEmpty(evt, "webmQuality");
     function input0_input_handler() {
       $store.webmQuality = to_number(this.value);
       configStore.set($store);
     }
-    const input_handler_1 = (evt) => validateNumber(evt, "mp4Bitrate");
-    const blur_handler_1 = (evt) => setDefaultValueIfEmpty(evt, "mp4Bitrate");
     function input1_input_handler() {
       $store.mp4Bitrate = to_number(this.value);
       configStore.set($store);
@@ -12081,8 +15246,6 @@
         configStore.set($store);
       }
     }
-    const input_handler_2 = (evt) => validateNumber(evt, "webpQuality");
-    const blur_handler_2 = (evt) => setDefaultValueIfEmpty(evt, "webpQuality");
     function input2_input_handler() {
       $store.webpQuality = to_number(this.value);
       configStore.set($store);
@@ -12095,29 +15258,27 @@
       $store.gifQuality = select_value(this);
       configStore.set($store);
     }
-    const input_handler_3 = (evt) => validateNumber(evt, "pngColor");
-    const blur_handler_3 = (evt) => setDefaultValueIfEmpty(evt, "pngColor");
     function input3_input_handler() {
       $store.pngColor = to_number(this.value);
       configStore.set($store);
     }
     $$self.$$set = ($$new_props) => {
-      $$invalidate(36, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
-      if ("bg" in $$new_props) $$invalidate(10, bg = $$new_props.bg);
+      $$invalidate(26, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+      if ("bg" in $$new_props) $$invalidate(8, bg = $$new_props.bg);
       if ("border" in $$new_props) $$invalidate(0, border = $$new_props.border);
-      if ("padding" in $$new_props) $$invalidate(11, padding = $$new_props.padding);
-      if ("margin" in $$new_props) $$invalidate(12, margin = $$new_props.margin);
+      if ("padding" in $$new_props) $$invalidate(9, padding = $$new_props.padding);
+      if ("margin" in $$new_props) $$invalidate(10, margin = $$new_props.margin);
       if ("rounded" in $$new_props) $$invalidate(1, rounded = $$new_props.rounded);
       if ("descriptionText" in $$new_props) $$invalidate(2, descriptionText = $$new_props.descriptionText);
-      if ("inputRounded" in $$new_props) $$invalidate(13, inputRounded = $$new_props.inputRounded);
-      if ("inputWidth" in $$new_props) $$invalidate(14, inputWidth = $$new_props.inputWidth);
+      if ("inputRounded" in $$new_props) $$invalidate(11, inputRounded = $$new_props.inputRounded);
+      if ("inputWidth" in $$new_props) $$invalidate(12, inputWidth = $$new_props.inputWidth);
       if ("sectionSpace" in $$new_props) $$invalidate(3, sectionSpace = $$new_props.sectionSpace);
       if ("sectionTitle" in $$new_props) $$invalidate(4, sectionTitle = $$new_props.sectionTitle);
     };
     $$self.$$.update = () => {
       $$invalidate(6, ulClasses = `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${$$props.class ?? ""}`);
       if ($$self.$$.dirty[0] & /*inputWidth, inputRounded*/
-      24576) {
+      6144) {
         $$invalidate(5, inputClasses = `${inputWidth} ${inputRounded} shrink-0`);
       }
     };
@@ -12131,8 +15292,6 @@
       inputClasses,
       ulClasses,
       $store,
-      validateNumber,
-      setDefaultValueIfEmpty,
       bg,
       padding,
       margin,
@@ -12144,20 +15303,12 @@
       radioitem3_group_binding,
       radioitem4_group_binding,
       radioitem5_group_binding,
-      input_handler,
-      blur_handler,
       input0_input_handler,
-      input_handler_1,
-      blur_handler_1,
       input1_input_handler,
       slidetoggle_checked_binding,
-      input_handler_2,
-      blur_handler_2,
       input2_input_handler,
       select0_change_handler,
       select1_change_handler,
-      input_handler_3,
-      blur_handler_3,
       input3_input_handler
     ];
   }
@@ -12167,18 +15318,18 @@
       init(
         this,
         options,
-        instance$6,
-        create_fragment$6,
+        instance$7,
+        create_fragment$7,
         safe_not_equal,
         {
-          bg: 10,
+          bg: 8,
           border: 0,
-          padding: 11,
-          margin: 12,
+          padding: 9,
+          margin: 10,
           rounded: 1,
           descriptionText: 2,
-          inputRounded: 13,
-          inputWidth: 14,
+          inputRounded: 11,
+          inputWidth: 12,
           sectionSpace: 3,
           sectionTitle: 4
         },
@@ -12187,7 +15338,7 @@
       );
     }
   }
-  function create_default_slot$2(ctx) {
+  function create_default_slot$3(ctx) {
     let t_1_value = t("setting.history.button.import") + "";
     let t_1;
     return {
@@ -12205,7 +15356,7 @@
       }
     };
   }
-  function create_fragment$5(ctx) {
+  function create_fragment$6(ctx) {
     let div;
     let section0;
     let p0;
@@ -12251,7 +15402,7 @@
       props: {
         name: "import-file",
         accept: ".json",
-        $$slots: { default: [create_default_slot$2] },
+        $$slots: { default: [create_default_slot$3] },
         $$scope: { ctx }
       }
     });
@@ -12514,13 +15665,13 @@
         var _a;
         const text2 = (_a = readEvt.target) == null ? void 0 : _a.result;
         if (typeof text2 !== "string") throw new Error("Invalid file");
-        const history = JSON.parse(text2);
-        if (!(history instanceof Array)) throw new Error("Invalid file");
-        resolve(history);
+        const history2 = JSON.parse(text2);
+        if (!(history2 instanceof Array)) throw new Error("Invalid file");
+        resolve(history2);
       };
     });
   }
-  function instance$5($$self, $$props, $$invalidate) {
+  function instance$6($$self, $$props, $$invalidate) {
     let ulClasses;
     let { bg = "bg-white/30 dark:bg-black/15" } = $$props;
     let { border = "divide-y-[1px] *:border-surface-300-600-token" } = $$props;
@@ -12591,7 +15742,7 @@
   class DownloadHistory extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$5, create_fragment$5, safe_not_equal, {
+      init(this, options, instance$6, create_fragment$6, safe_not_equal, {
         bg: 7,
         border: 8,
         padding: 9,
@@ -12602,7 +15753,7 @@
       });
     }
   }
-  function create_default_slot_3$1(ctx) {
+  function create_default_slot_3$2(ctx) {
     let div1;
     let p;
     let t1;
@@ -12650,7 +15801,7 @@
       }
     };
   }
-  function create_default_slot_2$1(ctx) {
+  function create_default_slot_2$2(ctx) {
     let div1;
     let p;
     let t1;
@@ -12698,7 +15849,7 @@
       }
     };
   }
-  function create_if_block$3(ctx) {
+  function create_if_block$4(ctx) {
     let section;
     let p;
     let t0_value = t("setting.button_position.label.my_bookmark") + "";
@@ -12721,7 +15872,7 @@
       max,
       ticked: true,
       class: "flex-grow",
-      $$slots: { default: [create_default_slot_1$1] },
+      $$slots: { default: [create_default_slot_1$2] },
       $$scope: { ctx }
     };
     if (
@@ -12747,7 +15898,7 @@
       max,
       ticked: true,
       class: "flex-grow",
-      $$slots: { default: [create_default_slot$1] },
+      $$slots: { default: [create_default_slot$2] },
       $$scope: { ctx }
     };
     if (
@@ -12867,7 +16018,7 @@
       }
     };
   }
-  function create_default_slot_1$1(ctx) {
+  function create_default_slot_1$2(ctx) {
     let div1;
     let p;
     let t1;
@@ -12915,7 +16066,7 @@
       }
     };
   }
-  function create_default_slot$1(ctx) {
+  function create_default_slot$2(ctx) {
     let div1;
     let p;
     let t1;
@@ -12963,7 +16114,7 @@
       }
     };
   }
-  function create_fragment$4(ctx) {
+  function create_fragment$5(ctx) {
     let div2;
     let div1;
     let div0;
@@ -12993,7 +16144,7 @@
       max,
       ticked: true,
       class: "flex-grow",
-      $$slots: { default: [create_default_slot_3$1] },
+      $$slots: { default: [create_default_slot_3$2] },
       $$scope: { ctx }
     };
     if (
@@ -13019,7 +16170,7 @@
       max,
       ticked: true,
       class: "flex-grow",
-      $$slots: { default: [create_default_slot_2$1] },
+      $$slots: { default: [create_default_slot_2$2] },
       $$scope: { ctx }
     };
     if (
@@ -13036,7 +16187,7 @@
       /*change_handler_1*/
       ctx[18]
     );
-    let if_block = show_if && create_if_block$3(ctx);
+    let if_block = show_if && create_if_block$4(ctx);
     return {
       c() {
         div2 = element("div");
@@ -13186,7 +16337,7 @@
   function changeCssProp(key, value) {
     document.documentElement.style.setProperty(key, String(value));
   }
-  function instance$4($$self, $$props, $$invalidate) {
+  function instance$5($$self, $$props, $$invalidate) {
     let ulClasses;
     let $store;
     component_subscribe($$self, configStore, ($$value) => $$invalidate(24, $store = $$value));
@@ -13306,7 +16457,7 @@
   class BtnPosition extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$4, create_fragment$4, safe_not_equal, {
+      init(this, options, instance$5, create_fragment$5, safe_not_equal, {
         bg: 0,
         border: 10,
         padding: 11,
@@ -13317,7 +16468,7 @@
       });
     }
   }
-  function create_if_block_3(ctx) {
+  function create_if_block_3$1(ctx) {
     let li0;
     let p0;
     let t1;
@@ -13426,7 +16577,7 @@
       }
     };
   }
-  function create_if_block_1$1(ctx) {
+  function create_if_block_1$3(ctx) {
     let li;
     let div;
     let p;
@@ -13452,7 +16603,7 @@
     }
     slidetoggle = new SlideToggle({ props: slidetoggle_props });
     binding_callbacks.push(() => bind(slidetoggle, "checked", slidetoggle_checked_binding_1));
-    let if_block = show_if && create_if_block_2(ctx);
+    let if_block = show_if && create_if_block_2$1(ctx);
     return {
       c() {
         li = element("li");
@@ -13498,7 +16649,7 @@
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block_2(ctx2);
+            if_block = create_if_block_2$1(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(li, null);
@@ -13531,7 +16682,7 @@
       }
     };
   }
-  function create_if_block_2(ctx) {
+  function create_if_block_2$1(ctx) {
     let ul;
     let li0;
     let label0;
@@ -13659,7 +16810,7 @@
       }
     };
   }
-  function create_if_block$2(ctx) {
+  function create_if_block$3(ctx) {
     let section;
     let p0;
     let t0;
@@ -13788,7 +16939,7 @@
       }
     };
   }
-  function create_fragment$3(ctx) {
+  function create_fragment$4(ctx) {
     let div;
     let ul;
     let li;
@@ -13816,9 +16967,9 @@
     }
     slidetoggle = new SlideToggle({ props: slidetoggle_props });
     binding_callbacks.push(() => bind(slidetoggle, "checked", slidetoggle_checked_binding));
-    let if_block0 = show_if_2 && create_if_block_3(ctx);
-    let if_block1 = show_if_1 && create_if_block_1$1(ctx);
-    let if_block2 = show_if && create_if_block$2(ctx);
+    let if_block0 = show_if_2 && create_if_block_3$1(ctx);
+    let if_block1 = show_if_1 && create_if_block_1$3(ctx);
+    let if_block2 = show_if && create_if_block$3(ctx);
     return {
       c() {
         div = element("div");
@@ -13921,7 +17072,7 @@
       }
     };
   }
-  function instance$3($$self, $$props, $$invalidate) {
+  function instance$4($$self, $$props, $$invalidate) {
     let ulClasses;
     let $store;
     component_subscribe($$self, configStore, ($$value) => $$invalidate(6, $store = $$value));
@@ -14013,7 +17164,7 @@
   class Others extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$3, create_fragment$3, safe_not_equal, {
+      init(this, options, instance$4, create_fragment$4, safe_not_equal, {
         bg: 7,
         border: 0,
         padding: 8,
@@ -14025,7 +17176,7 @@
       });
     }
   }
-  function create_fragment$2(ctx) {
+  function create_fragment$3(ctx) {
     let div;
     let section0;
     let p0;
@@ -14185,7 +17336,7 @@
       }
     };
   }
-  function instance$2($$self, $$props, $$invalidate) {
+  function instance$3($$self, $$props, $$invalidate) {
     let ulClasses;
     let { bg = "bg-white/30 dark:bg-black/15" } = $$props;
     let { border = "divide-y-[1px] *:border-surface-300-600-token" } = $$props;
@@ -14213,7 +17364,7 @@
   class FeedBack extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$2, create_fragment$2, safe_not_equal, {
+      init(this, options, instance$3, create_fragment$3, safe_not_equal, {
         bg: 3,
         border: 4,
         padding: 5,
@@ -14226,13 +17377,13 @@
   }
   const menuOpen = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21,15.61L19.59,17L14.58,12L19.59,7L21,8.39L17.44,12L21,15.61M3,6H16V8H3V6M3,13V11H13V13H3M3,18V16H16V18H3Z" /></svg>`;
   const menuClose = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6H13V8H3V6M3 16H13V18H3V16M3 11H15V13H3V11M16 7L14.58 8.39L18.14 12L14.58 15.61L16 17L21 12L16 7Z" /></svg>`;
-  function get_each_context(ctx, list, i) {
+  function get_each_context$1(ctx, list, i) {
     const child_ctx = ctx.slice();
     child_ctx[9] = list[i];
     child_ctx[11] = i;
     return child_ctx;
   }
-  function create_if_block_1(ctx) {
+  function create_if_block_1$2(ctx) {
     let listboxitem;
     let updating_group;
     let current;
@@ -14246,7 +17397,7 @@
         ctx[11]
       ),
       class: "rounded-token",
-      $$slots: { default: [create_default_slot_3] },
+      $$slots: { default: [create_default_slot_3$1] },
       $$scope: { ctx }
     };
     if (
@@ -14295,7 +17446,7 @@
       }
     };
   }
-  function create_default_slot_3(ctx) {
+  function create_default_slot_3$1(ctx) {
     let t_1_value = (
       /*option*/
       ctx[9].name + ""
@@ -14316,12 +17467,12 @@
       }
     };
   }
-  function create_each_block(ctx) {
+  function create_each_block$1(ctx) {
     let if_block_anchor;
     let current;
     let if_block = (!("show" in /*option*/
     ctx[9]) || /*option*/
-    ctx[9].show) && create_if_block_1(ctx);
+    ctx[9].show) && create_if_block_1$2(ctx);
     return {
       c() {
         if (if_block) if_block.c();
@@ -14354,7 +17505,7 @@
       }
     };
   }
-  function create_default_slot_2(ctx) {
+  function create_default_slot_2$1(ctx) {
     let each_1_anchor;
     let current;
     let each_value = ensure_array_like(
@@ -14363,7 +17514,7 @@
     );
     let each_blocks = [];
     for (let i = 0; i < each_value.length; i += 1) {
-      each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
+      each_blocks[i] = create_each_block$1(get_each_context$1(ctx, each_value, i));
     }
     const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
       each_blocks[i] = null;
@@ -14393,12 +17544,12 @@
           );
           let i;
           for (i = 0; i < each_value.length; i += 1) {
-            const child_ctx = get_each_context(ctx2, each_value, i);
+            const child_ctx = get_each_context$1(ctx2, each_value, i);
             if (each_blocks[i]) {
               each_blocks[i].p(child_ctx, dirty);
               transition_in(each_blocks[i], 1);
             } else {
-              each_blocks[i] = create_each_block(child_ctx);
+              each_blocks[i] = create_each_block$1(child_ctx);
               each_blocks[i].c();
               transition_in(each_blocks[i], 1);
               each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
@@ -14433,7 +17584,7 @@
       }
     };
   }
-  function create_default_slot_1(ctx) {
+  function create_default_slot_1$1(ctx) {
     let h3;
     let t_1_value = (
       /*optionList*/
@@ -14468,7 +17619,7 @@
       }
     };
   }
-  function create_else_block(ctx) {
+  function create_else_block$1(ctx) {
     let html_tag;
     let html_anchor;
     return {
@@ -14489,7 +17640,7 @@
       }
     };
   }
-  function create_if_block$1(ctx) {
+  function create_if_block$2(ctx) {
     let html_tag;
     let html_anchor;
     return {
@@ -14519,8 +17670,8 @@
       if (
         /*showListbox*/
         ctx2[1]
-      ) return create_if_block$1;
-      return create_else_block;
+      ) return create_if_block$2;
+      return create_else_block$1;
     }
     let current_block_type = select_block_type(ctx);
     let if_block = current_block_type(ctx);
@@ -14567,7 +17718,7 @@
       }
     };
   }
-  function create_default_slot(ctx) {
+  function create_default_slot$1(ctx) {
     let div1;
     let listbox;
     let t0;
@@ -14581,7 +17732,7 @@
       props: {
         class: "pt-4 pr-6 row-start-1 row-span-2 " + sidebarWidth + " transition-[transform] " + /*transform*/
         ctx[3],
-        $$slots: { default: [create_default_slot_2] },
+        $$slots: { default: [create_default_slot_2$1] },
         $$scope: { ctx }
       }
     });
@@ -14592,7 +17743,7 @@
         class: "mr-6 border-b border-surface-800-100-token",
         $$slots: {
           lead: [create_lead_slot],
-          default: [create_default_slot_1]
+          default: [create_default_slot_1$1]
         },
         $$scope: { ctx }
       }
@@ -14742,7 +17893,7 @@
       }
     };
   }
-  function create_fragment$1(ctx) {
+  function create_fragment$2(ctx) {
     let modalwrapper;
     let current;
     modalwrapper = new ModalWrapper({
@@ -14754,7 +17905,7 @@
         height: "h-screen md:h-[600px]",
         width: "w-screen md:max-w-screen-md xl:max-w-screen-lg",
         padding: "",
-        $$slots: { default: [create_default_slot] },
+        $$slots: { default: [create_default_slot$1] },
         $$scope: { ctx }
       }
     });
@@ -14792,7 +17943,7 @@
     };
   }
   const sidebarWidth = "w-[140px]";
-  function instance$1($$self, $$props, $$invalidate) {
+  function instance$2($$self, $$props, $$invalidate) {
     let gridCol;
     let transform;
     let { parent } = $$props;
@@ -14859,10 +18010,2500 @@
   class Config extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$1, create_fragment$1, safe_not_equal, { parent: 0 });
+      init(this, options, instance$2, create_fragment$2, safe_not_equal, { parent: 0 });
+    }
+  }
+  const downloadSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z"></path></svg>`;
+  const stopSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z"></path></svg>
+`;
+  const playSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M10,16.5L16,12L10,7.5V16.5Z" /></svg>`;
+  const stopOutLineSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4M9,9V15H15V9" /></svg>`;
+  const downloadMultipleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9,1V7H5L12,14L19,7H15V1H9M5,16V18H19V16H5M5,20V22H19V20H5Z" /></svg>`;
+  function get_each_context(ctx, list, i) {
+    const child_ctx = ctx.slice();
+    child_ctx[75] = list[i].name;
+    child_ctx[76] = list[i].id;
+    return child_ctx;
+  }
+  function get_each_context_1(ctx, list, i) {
+    const child_ctx = ctx.slice();
+    child_ctx[76] = list[i].id;
+    child_ctx[75] = list[i].name;
+    return child_ctx;
+  }
+  function create_if_block_5(ctx) {
+    let div1;
+    let t_1;
+    let div0;
+    let current_block_type_index;
+    let if_block1;
+    let div1_transition;
+    let current;
+    let if_block0 = !/*$downloading*/
+    ctx[5] && create_if_block_9(ctx);
+    const if_block_creators = [create_if_block_6, create_else_block];
+    const if_blocks = [];
+    function select_block_type_1(ctx2, dirty) {
+      if (!/*$downloading*/
+      ctx2[5]) return 0;
+      return 1;
+    }
+    current_block_type_index = select_block_type_1(ctx);
+    if_block1 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+    return {
+      c() {
+        div1 = element("div");
+        if (if_block0) if_block0.c();
+        t_1 = space();
+        div0 = element("div");
+        if_block1.c();
+        attr(div0, "class", "flex relative my-4");
+        attr(div1, "data-theme", "skeleton");
+        attr(div1, "class", "card px-4 fixed right-20 top-36 w-[600px] *:text-sm shadow-xl bg-scroll");
+      },
+      m(target, anchor) {
+        insert(target, div1, anchor);
+        if (if_block0) if_block0.m(div1, null);
+        append(div1, t_1);
+        append(div1, div0);
+        if_blocks[current_block_type_index].m(div0, null);
+        current = true;
+      },
+      p(ctx2, dirty) {
+        if (!/*$downloading*/
+        ctx2[5]) {
+          if (if_block0) {
+            if_block0.p(ctx2, dirty);
+            if (dirty[0] & /*$downloading*/
+            32) {
+              transition_in(if_block0, 1);
+            }
+          } else {
+            if_block0 = create_if_block_9(ctx2);
+            if_block0.c();
+            transition_in(if_block0, 1);
+            if_block0.m(div1, t_1);
+          }
+        } else if (if_block0) {
+          group_outros();
+          transition_out(if_block0, 1, 1, () => {
+            if_block0 = null;
+          });
+          check_outros();
+        }
+        let previous_block_index = current_block_type_index;
+        current_block_type_index = select_block_type_1(ctx2);
+        if (current_block_type_index === previous_block_index) {
+          if_blocks[current_block_type_index].p(ctx2, dirty);
+        } else {
+          group_outros();
+          transition_out(if_blocks[previous_block_index], 1, 1, () => {
+            if_blocks[previous_block_index] = null;
+          });
+          check_outros();
+          if_block1 = if_blocks[current_block_type_index];
+          if (!if_block1) {
+            if_block1 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx2);
+            if_block1.c();
+          } else {
+            if_block1.p(ctx2, dirty);
+          }
+          transition_in(if_block1, 1);
+          if_block1.m(div0, null);
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(if_block0);
+        transition_in(if_block1);
+        if (local) {
+          add_render_callback(() => {
+            if (!current) return;
+            if (!div1_transition) div1_transition = create_bidirectional_transition(div1, fly, { x: 50, opacity: 0 }, true);
+            div1_transition.run(1);
+          });
+        }
+        current = true;
+      },
+      o(local) {
+        transition_out(if_block0);
+        transition_out(if_block1);
+        if (local) {
+          if (!div1_transition) div1_transition = create_bidirectional_transition(div1, fly, { x: 50, opacity: 0 }, false);
+          div1_transition.run(0);
+        }
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div1);
+        }
+        if (if_block0) if_block0.d();
+        if_blocks[current_block_type_index].d();
+        if (detaching && div1_transition) div1_transition.end();
+      }
+    };
+  }
+  function create_if_block_9(ctx) {
+    let div;
+    let tabgroup;
+    let t_1;
+    let hr;
+    let div_transition;
+    let current;
+    tabgroup = new TabGroup({
+      props: {
+        regionList: "text-surface-700-200-token",
+        class: "text-sm",
+        $$slots: {
+          panel: [create_panel_slot],
+          default: [create_default_slot_3]
+        },
+        $$scope: { ctx }
+      }
+    });
+    return {
+      c() {
+        div = element("div");
+        create_component(tabgroup.$$.fragment);
+        t_1 = space();
+        hr = element("hr");
+        attr(hr, "class", "!border-t-1 my-4");
+        attr(div, "class", "downloader-filter");
+      },
+      m(target, anchor) {
+        insert(target, div, anchor);
+        mount_component(tabgroup, div, null);
+        append(div, t_1);
+        append(div, hr);
+        current = true;
+      },
+      p(ctx2, dirty) {
+        const tabgroup_changes = {};
+        if (dirty[0] & /*$downloadAllPages, $pageEnd, $pageStart, downloaderConfig, $selectedFilters, tabSet, $whitelistTag, $blacklistTag*/
+        4132865 | dirty[2] & /*$$scope*/
+        524288) {
+          tabgroup_changes.$$scope = { dirty, ctx: ctx2 };
+        }
+        tabgroup.$set(tabgroup_changes);
+      },
+      i(local) {
+        if (current) return;
+        transition_in(tabgroup.$$.fragment, local);
+        if (local) {
+          add_render_callback(() => {
+            if (!current) return;
+            if (!div_transition) div_transition = create_bidirectional_transition(div, slide, {}, true);
+            div_transition.run(1);
+          });
+        }
+        current = true;
+      },
+      o(local) {
+        transition_out(tabgroup.$$.fragment, local);
+        if (local) {
+          if (!div_transition) div_transition = create_bidirectional_transition(div, slide, {}, false);
+          div_transition.run(0);
+        }
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div);
+        }
+        destroy_component(tabgroup);
+        if (detaching && div_transition) div_transition.end();
+      }
+    };
+  }
+  function create_default_slot_5(ctx) {
+    let t_1_value = t("downloader.category.tab_name") + "";
+    let t_1;
+    return {
+      c() {
+        t_1 = text(t_1_value);
+      },
+      m(target, anchor) {
+        insert(target, t_1, anchor);
+      },
+      p: noop,
+      d(detaching) {
+        if (detaching) {
+          detach(t_1);
+        }
+      }
+    };
+  }
+  function create_default_slot_4(ctx) {
+    let t_1_value = t("downloader.tag_filter.tab_name") + "";
+    let t_1;
+    return {
+      c() {
+        t_1 = text(t_1_value);
+      },
+      m(target, anchor) {
+        insert(target, t_1, anchor);
+      },
+      p: noop,
+      d(detaching) {
+        if (detaching) {
+          detach(t_1);
+        }
+      }
+    };
+  }
+  function create_default_slot_3(ctx) {
+    let tab0;
+    let updating_group;
+    let t_1;
+    let tab1;
+    let updating_group_1;
+    let current;
+    function tab0_group_binding(value) {
+      ctx[48](value);
+    }
+    let tab0_props = {
+      name: "category",
+      value: 0,
+      $$slots: { default: [create_default_slot_5] },
+      $$scope: { ctx }
+    };
+    if (
+      /*tabSet*/
+      ctx[12] !== void 0
+    ) {
+      tab0_props.group = /*tabSet*/
+      ctx[12];
+    }
+    tab0 = new Tab({ props: tab0_props });
+    binding_callbacks.push(() => bind(tab0, "group", tab0_group_binding));
+    function tab1_group_binding(value) {
+      ctx[49](value);
+    }
+    let tab1_props = {
+      name: "tag_filter",
+      value: 1,
+      $$slots: { default: [create_default_slot_4] },
+      $$scope: { ctx }
+    };
+    if (
+      /*tabSet*/
+      ctx[12] !== void 0
+    ) {
+      tab1_props.group = /*tabSet*/
+      ctx[12];
+    }
+    tab1 = new Tab({ props: tab1_props });
+    binding_callbacks.push(() => bind(tab1, "group", tab1_group_binding));
+    return {
+      c() {
+        create_component(tab0.$$.fragment);
+        t_1 = space();
+        create_component(tab1.$$.fragment);
+      },
+      m(target, anchor) {
+        mount_component(tab0, target, anchor);
+        insert(target, t_1, anchor);
+        mount_component(tab1, target, anchor);
+        current = true;
+      },
+      p(ctx2, dirty) {
+        const tab0_changes = {};
+        if (dirty[2] & /*$$scope*/
+        524288) {
+          tab0_changes.$$scope = { dirty, ctx: ctx2 };
+        }
+        if (!updating_group && dirty[0] & /*tabSet*/
+        4096) {
+          updating_group = true;
+          tab0_changes.group = /*tabSet*/
+          ctx2[12];
+          add_flush_callback(() => updating_group = false);
+        }
+        tab0.$set(tab0_changes);
+        const tab1_changes = {};
+        if (dirty[2] & /*$$scope*/
+        524288) {
+          tab1_changes.$$scope = { dirty, ctx: ctx2 };
+        }
+        if (!updating_group_1 && dirty[0] & /*tabSet*/
+        4096) {
+          updating_group_1 = true;
+          tab1_changes.group = /*tabSet*/
+          ctx2[12];
+          add_flush_callback(() => updating_group_1 = false);
+        }
+        tab1.$set(tab1_changes);
+      },
+      i(local) {
+        if (current) return;
+        transition_in(tab0.$$.fragment, local);
+        transition_in(tab1.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(tab0.$$.fragment, local);
+        transition_out(tab1.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(t_1);
+        }
+        destroy_component(tab0, detaching);
+        destroy_component(tab1, detaching);
+      }
+    };
+  }
+  function create_if_block_11(ctx) {
+    let inputchip0;
+    let updating_value;
+    let t_1;
+    let inputchip1;
+    let updating_value_1;
+    let current;
+    function inputchip0_value_binding(value) {
+      ctx[46](value);
+    }
+    let inputchip0_props = {
+      allowUpperCase: true,
+      name: "blacklist",
+      chips: "variant-filled-primary",
+      placeholder: t("downloader.tag_filter.placeholder.blacklist_tag")
+    };
+    if (
+      /*$blacklistTag*/
+      ctx[20] !== void 0
+    ) {
+      inputchip0_props.value = /*$blacklistTag*/
+      ctx[20];
+    }
+    inputchip0 = new InputChip({ props: inputchip0_props });
+    binding_callbacks.push(() => bind(inputchip0, "value", inputchip0_value_binding));
+    function inputchip1_value_binding(value) {
+      ctx[47](value);
+    }
+    let inputchip1_props = {
+      allowUpperCase: true,
+      name: "whitelist",
+      chips: "variant-filled-primary",
+      placeholder: t("downloader.tag_filter.placeholder.whitelist_tag"),
+      class: "my-4"
+    };
+    if (
+      /*$whitelistTag*/
+      ctx[21] !== void 0
+    ) {
+      inputchip1_props.value = /*$whitelistTag*/
+      ctx[21];
+    }
+    inputchip1 = new InputChip({ props: inputchip1_props });
+    binding_callbacks.push(() => bind(inputchip1, "value", inputchip1_value_binding));
+    return {
+      c() {
+        create_component(inputchip0.$$.fragment);
+        t_1 = space();
+        create_component(inputchip1.$$.fragment);
+      },
+      m(target, anchor) {
+        mount_component(inputchip0, target, anchor);
+        insert(target, t_1, anchor);
+        mount_component(inputchip1, target, anchor);
+        current = true;
+      },
+      p(ctx2, dirty) {
+        const inputchip0_changes = {};
+        if (!updating_value && dirty[0] & /*$blacklistTag*/
+        1048576) {
+          updating_value = true;
+          inputchip0_changes.value = /*$blacklistTag*/
+          ctx2[20];
+          add_flush_callback(() => updating_value = false);
+        }
+        inputchip0.$set(inputchip0_changes);
+        const inputchip1_changes = {};
+        if (!updating_value_1 && dirty[0] & /*$whitelistTag*/
+        2097152) {
+          updating_value_1 = true;
+          inputchip1_changes.value = /*$whitelistTag*/
+          ctx2[21];
+          add_flush_callback(() => updating_value_1 = false);
+        }
+        inputchip1.$set(inputchip1_changes);
+      },
+      i(local) {
+        if (current) return;
+        transition_in(inputchip0.$$.fragment, local);
+        transition_in(inputchip1.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(inputchip0.$$.fragment, local);
+        transition_out(inputchip1.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(t_1);
+        }
+        destroy_component(inputchip0, detaching);
+        destroy_component(inputchip1, detaching);
+      }
+    };
+  }
+  function create_if_block_10(ctx) {
+    let div1;
+    let div0;
+    let t0;
+    let div6;
+    let div2;
+    let radiogroup;
+    let t1;
+    let div5;
+    let label0;
+    let div3;
+    let i0;
+    let t2;
+    let input0;
+    let t3;
+    let label1;
+    let div4;
+    let i1;
+    let t4;
+    let input1;
+    let current;
+    let mounted;
+    let dispose;
+    let each_value_1 = ensure_array_like(
+      /*downloaderConfig*/
+      ctx[0].filterOption.filters
+    );
+    let each_blocks = [];
+    for (let i = 0; i < each_value_1.length; i += 1) {
+      each_blocks[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
+    }
+    radiogroup = new RadioGroup({
+      props: {
+        regionLabel: "text-surface-700-200-token",
+        active: "variant-filled-primary",
+        background: "bg-surface-400/20 dark:bg-surface-500/20",
+        border: "",
+        display: "flex",
+        $$slots: { default: [create_default_slot] },
+        $$scope: { ctx }
+      }
+    });
+    return {
+      c() {
+        div1 = element("div");
+        div0 = element("div");
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          each_blocks[i].c();
+        }
+        t0 = space();
+        div6 = element("div");
+        div2 = element("div");
+        create_component(radiogroup.$$.fragment);
+        t1 = space();
+        div5 = element("div");
+        label0 = element("label");
+        div3 = element("div");
+        i0 = element("i");
+        t2 = space();
+        input0 = element("input");
+        t3 = space();
+        label1 = element("label");
+        div4 = element("div");
+        i1 = element("i");
+        t4 = space();
+        input1 = element("input");
+        attr(div0, "class", "btn-group w-full");
+        attr(div1, "class", "flex justify-end items-center my-4");
+        attr(div2, "class", "flex-grow w-full");
+        attr(i0, "class", "w-6 fill-current");
+        attr(div3, "class", "input-group-shim !px-1 flex-none");
+        attr(input0, "class", "w-20 pr-0 text-surface-700-200-token text-sm");
+        attr(input0, "type", "number");
+        attr(input0, "min", 1);
+        attr(input0, "step", "1");
+        input0.disabled = /*$downloadAllPages*/
+        ctx[17];
+        attr(label0, "class", "input-group input-group-divider flex [&>input]:!min-w-0 [&>input]:!border-transparent border-surface-400/20 dark:border-surface-500/20 bg-surface-400/20 dark:bg-surface-500/20");
+        attr(i1, "class", "w-6 fill-current");
+        attr(div4, "class", "input-group-shim !px-1 flex-none");
+        attr(input1, "class", "w-20 pr-0 text-surface-700-200-token text-sm");
+        attr(input1, "type", "number");
+        attr(input1, "min", "1");
+        attr(input1, "step", "1");
+        input1.disabled = /*$downloadAllPages*/
+        ctx[17];
+        attr(label1, "class", "input-group input-group-divider flex [&>input]:!min-w-0 [&>input]:!border-transparent border-surface-400/20 dark:border-surface-500/20 bg-surface-400/20 dark:bg-surface-500/20");
+        attr(div5, "class", "flex justify-between items-center gap-4 w-full");
+        attr(div6, "class", "flex justify-between items-center my-4 gap-4");
+      },
+      m(target, anchor) {
+        insert(target, div1, anchor);
+        append(div1, div0);
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          if (each_blocks[i]) {
+            each_blocks[i].m(div0, null);
+          }
+        }
+        insert(target, t0, anchor);
+        insert(target, div6, anchor);
+        append(div6, div2);
+        mount_component(radiogroup, div2, null);
+        append(div6, t1);
+        append(div6, div5);
+        append(div5, label0);
+        append(label0, div3);
+        append(div3, i0);
+        i0.innerHTML = playSvg;
+        append(label0, t2);
+        append(label0, input0);
+        set_input_value(
+          input0,
+          /*$pageStart*/
+          ctx[18]
+        );
+        append(div5, t3);
+        append(div5, label1);
+        append(label1, div4);
+        append(div4, i1);
+        i1.innerHTML = stopOutLineSvg;
+        append(label1, t4);
+        append(label1, input1);
+        set_input_value(
+          input1,
+          /*$pageEnd*/
+          ctx[19]
+        );
+        current = true;
+        if (!mounted) {
+          dispose = [
+            action_destroyer(nonNegativeInt.call(
+              null,
+              input0,
+              /*pageStart*/
+              ctx[28]
+            )),
+            listen(
+              input0,
+              "input",
+              /*input0_input_handler*/
+              ctx[44]
+            ),
+            action_destroyer(nonNegativeInt.call(
+              null,
+              input1,
+              /*pageEnd*/
+              ctx[29]
+            )),
+            listen(
+              input1,
+              "input",
+              /*input1_input_handler*/
+              ctx[45]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*downloaderConfig, $selectedFilters*/
+        65537) {
+          each_value_1 = ensure_array_like(
+            /*downloaderConfig*/
+            ctx2[0].filterOption.filters
+          );
+          let i;
+          for (i = 0; i < each_value_1.length; i += 1) {
+            const child_ctx = get_each_context_1(ctx2, each_value_1, i);
+            if (each_blocks[i]) {
+              each_blocks[i].p(child_ctx, dirty);
+            } else {
+              each_blocks[i] = create_each_block_1(child_ctx);
+              each_blocks[i].c();
+              each_blocks[i].m(div0, null);
+            }
+          }
+          for (; i < each_blocks.length; i += 1) {
+            each_blocks[i].d(1);
+          }
+          each_blocks.length = each_value_1.length;
+        }
+        const radiogroup_changes = {};
+        if (dirty[0] & /*$downloadAllPages*/
+        131072 | dirty[2] & /*$$scope*/
+        524288) {
+          radiogroup_changes.$$scope = { dirty, ctx: ctx2 };
+        }
+        radiogroup.$set(radiogroup_changes);
+        if (!current || dirty[0] & /*$downloadAllPages*/
+        131072) {
+          input0.disabled = /*$downloadAllPages*/
+          ctx2[17];
+        }
+        if (dirty[0] & /*$pageStart*/
+        262144 && to_number(input0.value) !== /*$pageStart*/
+        ctx2[18]) {
+          set_input_value(
+            input0,
+            /*$pageStart*/
+            ctx2[18]
+          );
+        }
+        if (!current || dirty[0] & /*$downloadAllPages*/
+        131072) {
+          input1.disabled = /*$downloadAllPages*/
+          ctx2[17];
+        }
+        if (dirty[0] & /*$pageEnd*/
+        524288 && to_number(input1.value) !== /*$pageEnd*/
+        ctx2[19]) {
+          set_input_value(
+            input1,
+            /*$pageEnd*/
+            ctx2[19]
+          );
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(radiogroup.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(radiogroup.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div1);
+          detach(t0);
+          detach(div6);
+        }
+        destroy_each(each_blocks, detaching);
+        destroy_component(radiogroup);
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_each_block_1(ctx) {
+    let label;
+    let div0;
+    let input;
+    let input_value_value;
+    let value_has_changed = false;
+    let t0;
+    let div1;
+    let t1_value = (
+      /*name*/
+      ctx[75] + ""
+    );
+    let t1;
+    let t2;
+    let binding_group;
+    let mounted;
+    let dispose;
+    binding_group = init_binding_group(
+      /*$$binding_groups*/
+      ctx[41][0]
+    );
+    return {
+      c() {
+        label = element("label");
+        div0 = element("div");
+        input = element("input");
+        t0 = space();
+        div1 = element("div");
+        t1 = text(t1_value);
+        t2 = space();
+        attr(input, "type", "checkbox");
+        input.__value = input_value_value = /*id*/
+        ctx[76];
+        set_input_value(input, input.__value);
+        attr(div0, "class", "w-0 h-0 overflow-hidden hidden");
+        attr(div1, "class", "!m-0");
+        attr(label, "class", "btn !py-2 rounded-none !transform-none cursor-pointer variant-soft-surface has-[:checked]:!variant-filled-primary text-sm w-full");
+        binding_group.p(input);
+      },
+      m(target, anchor) {
+        insert(target, label, anchor);
+        append(label, div0);
+        append(div0, input);
+        input.checked = ~/*$selectedFilters*/
+        (ctx[16] || []).indexOf(input.__value);
+        append(label, t0);
+        append(label, div1);
+        append(div1, t1);
+        append(label, t2);
+        if (!mounted) {
+          dispose = listen(
+            input,
+            "change",
+            /*input_change_handler*/
+            ctx[40]
+          );
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*downloaderConfig*/
+        1 && input_value_value !== (input_value_value = /*id*/
+        ctx2[76])) {
+          input.__value = input_value_value;
+          set_input_value(input, input.__value);
+          value_has_changed = true;
+        }
+        if (value_has_changed || dirty[0] & /*$selectedFilters, downloaderConfig*/
+        65537) {
+          input.checked = ~/*$selectedFilters*/
+          (ctx2[16] || []).indexOf(input.__value);
+        }
+        if (dirty[0] & /*downloaderConfig*/
+        1 && t1_value !== (t1_value = /*name*/
+        ctx2[75] + "")) set_data(t1, t1_value);
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(label);
+        }
+        binding_group.r();
+        mounted = false;
+        dispose();
+      }
+    };
+  }
+  function create_default_slot_2(ctx) {
+    let t_1_value = t("downloader.category.filter.download_all_pages") + "";
+    let t_1;
+    return {
+      c() {
+        t_1 = text(t_1_value);
+      },
+      m(target, anchor) {
+        insert(target, t_1, anchor);
+      },
+      p: noop,
+      d(detaching) {
+        if (detaching) {
+          detach(t_1);
+        }
+      }
+    };
+  }
+  function create_default_slot_1(ctx) {
+    let t_1_value = t("downloader.category.filter.download_selected_pages") + "";
+    let t_1;
+    return {
+      c() {
+        t_1 = text(t_1_value);
+      },
+      m(target, anchor) {
+        insert(target, t_1, anchor);
+      },
+      p: noop,
+      d(detaching) {
+        if (detaching) {
+          detach(t_1);
+        }
+      }
+    };
+  }
+  function create_default_slot(ctx) {
+    let radioitem0;
+    let updating_group;
+    let t_1;
+    let radioitem1;
+    let updating_group_1;
+    let current;
+    function radioitem0_group_binding(value) {
+      ctx[42](value);
+    }
+    let radioitem0_props = {
+      class: "text-sm !py-[7px]",
+      name: "justify",
+      value: true,
+      $$slots: { default: [create_default_slot_2] },
+      $$scope: { ctx }
+    };
+    if (
+      /*$downloadAllPages*/
+      ctx[17] !== void 0
+    ) {
+      radioitem0_props.group = /*$downloadAllPages*/
+      ctx[17];
+    }
+    radioitem0 = new RadioItem({ props: radioitem0_props });
+    binding_callbacks.push(() => bind(radioitem0, "group", radioitem0_group_binding));
+    function radioitem1_group_binding(value) {
+      ctx[43](value);
+    }
+    let radioitem1_props = {
+      class: "text-sm !py-[7px]",
+      name: "justify",
+      value: false,
+      $$slots: { default: [create_default_slot_1] },
+      $$scope: { ctx }
+    };
+    if (
+      /*$downloadAllPages*/
+      ctx[17] !== void 0
+    ) {
+      radioitem1_props.group = /*$downloadAllPages*/
+      ctx[17];
+    }
+    radioitem1 = new RadioItem({ props: radioitem1_props });
+    binding_callbacks.push(() => bind(radioitem1, "group", radioitem1_group_binding));
+    return {
+      c() {
+        create_component(radioitem0.$$.fragment);
+        t_1 = space();
+        create_component(radioitem1.$$.fragment);
+      },
+      m(target, anchor) {
+        mount_component(radioitem0, target, anchor);
+        insert(target, t_1, anchor);
+        mount_component(radioitem1, target, anchor);
+        current = true;
+      },
+      p(ctx2, dirty) {
+        const radioitem0_changes = {};
+        if (dirty[2] & /*$$scope*/
+        524288) {
+          radioitem0_changes.$$scope = { dirty, ctx: ctx2 };
+        }
+        if (!updating_group && dirty[0] & /*$downloadAllPages*/
+        131072) {
+          updating_group = true;
+          radioitem0_changes.group = /*$downloadAllPages*/
+          ctx2[17];
+          add_flush_callback(() => updating_group = false);
+        }
+        radioitem0.$set(radioitem0_changes);
+        const radioitem1_changes = {};
+        if (dirty[2] & /*$$scope*/
+        524288) {
+          radioitem1_changes.$$scope = { dirty, ctx: ctx2 };
+        }
+        if (!updating_group_1 && dirty[0] & /*$downloadAllPages*/
+        131072) {
+          updating_group_1 = true;
+          radioitem1_changes.group = /*$downloadAllPages*/
+          ctx2[17];
+          add_flush_callback(() => updating_group_1 = false);
+        }
+        radioitem1.$set(radioitem1_changes);
+      },
+      i(local) {
+        if (current) return;
+        transition_in(radioitem0.$$.fragment, local);
+        transition_in(radioitem1.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(radioitem0.$$.fragment, local);
+        transition_out(radioitem1.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(t_1);
+        }
+        destroy_component(radioitem0, detaching);
+        destroy_component(radioitem1, detaching);
+      }
+    };
+  }
+  function create_panel_slot(ctx) {
+    let current_block_type_index;
+    let if_block;
+    let if_block_anchor;
+    let current;
+    const if_block_creators = [create_if_block_10, create_if_block_11];
+    const if_blocks = [];
+    function select_block_type(ctx2, dirty) {
+      if (
+        /*tabSet*/
+        ctx2[12] === 0
+      ) return 0;
+      if (
+        /*tabSet*/
+        ctx2[12] === 1
+      ) return 1;
+      return -1;
+    }
+    if (~(current_block_type_index = select_block_type(ctx))) {
+      if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+    }
+    return {
+      c() {
+        if (if_block) if_block.c();
+        if_block_anchor = empty();
+      },
+      m(target, anchor) {
+        if (~current_block_type_index) {
+          if_blocks[current_block_type_index].m(target, anchor);
+        }
+        insert(target, if_block_anchor, anchor);
+        current = true;
+      },
+      p(ctx2, dirty) {
+        let previous_block_index = current_block_type_index;
+        current_block_type_index = select_block_type(ctx2);
+        if (current_block_type_index === previous_block_index) {
+          if (~current_block_type_index) {
+            if_blocks[current_block_type_index].p(ctx2, dirty);
+          }
+        } else {
+          if (if_block) {
+            group_outros();
+            transition_out(if_blocks[previous_block_index], 1, 1, () => {
+              if_blocks[previous_block_index] = null;
+            });
+            check_outros();
+          }
+          if (~current_block_type_index) {
+            if_block = if_blocks[current_block_type_index];
+            if (!if_block) {
+              if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx2);
+              if_block.c();
+            } else {
+              if_block.p(ctx2, dirty);
+            }
+            transition_in(if_block, 1);
+            if_block.m(if_block_anchor.parentNode, if_block_anchor);
+          } else {
+            if_block = null;
+          }
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(if_block);
+        current = true;
+      },
+      o(local) {
+        transition_out(if_block);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(if_block_anchor);
+        }
+        if (~current_block_type_index) {
+          if_blocks[current_block_type_index].d(detaching);
+        }
+      }
+    };
+  }
+  function create_else_block(ctx) {
+    var _a;
+    let div2;
+    let div1;
+    let progressbar;
+    let t0;
+    let div0;
+    let p0;
+    let t1_value = (
+      /*$log*/
+      (((_a = ctx[22]) == null ? void 0 : _a.message) ?? "") + ""
+    );
+    let t1;
+    let t2;
+    let p1;
+    let t3_value = (
+      /*$artworkCount*/
+      ctx[4] ? `${/*processed*/
+    ctx[2]} / ${/*$artworkCount*/
+    ctx[4]}` : ""
+    );
+    let t3;
+    let t4;
+    let button;
+    let i;
+    let t5;
+    let span;
+    let div2_transition;
+    let current;
+    let mounted;
+    let dispose;
+    progressbar = new ProgressBar({
+      props: {
+        height: "h-4",
+        rounded: "rounded-md",
+        meter: "bg-primary-500",
+        track: "bg-primary-500/30",
+        max: 100,
+        value: (
+          /*downloadProgress*/
+          ctx[15]
+        )
+      }
+    });
+    return {
+      c() {
+        var _a2;
+        div2 = element("div");
+        div1 = element("div");
+        create_component(progressbar.$$.fragment);
+        t0 = space();
+        div0 = element("div");
+        p0 = element("p");
+        t1 = text(t1_value);
+        t2 = space();
+        p1 = element("p");
+        t3 = text(t3_value);
+        t4 = space();
+        button = element("button");
+        i = element("i");
+        t5 = space();
+        span = element("span");
+        span.textContent = `${t("downloader.download_type.stop")}`;
+        attr(p0, "class", "truncate");
+        toggle_class(
+          p0,
+          "text-error-500",
+          /*$log*/
+          ((_a2 = ctx[22]) == null ? void 0 : _a2.type) === "Error"
+        );
+        attr(p1, "class", "flex-none");
+        attr(div0, "class", "flex items-center justify-between gap-4 basis-0 text-surface-700-200-token");
+        attr(div1, "class", "flex flex-grow flex-col justify-between overflow-hidden");
+        attr(i, "class", "w-5");
+        attr(button, "class", "btn variant-filled-primary");
+        attr(div2, "class", "flex justify-end flex-grow w-full gap-6");
+      },
+      m(target, anchor) {
+        insert(target, div2, anchor);
+        append(div2, div1);
+        mount_component(progressbar, div1, null);
+        append(div1, t0);
+        append(div1, div0);
+        append(div0, p0);
+        append(p0, t1);
+        append(div0, t2);
+        append(div0, p1);
+        append(p1, t3);
+        append(div2, t4);
+        append(div2, button);
+        append(button, i);
+        i.innerHTML = stopSvg;
+        append(button, t5);
+        append(button, span);
+        ctx[56](div2);
+        current = true;
+        if (!mounted) {
+          dispose = [
+            listen(
+              button,
+              "click",
+              /*click_handler_2*/
+              ctx[55]
+            ),
+            listen(
+              div2,
+              "introstart",
+              /*introstart_handler_1*/
+              ctx[57]
+            ),
+            listen(
+              div2,
+              "outrostart",
+              /*outrostart_handler_1*/
+              ctx[58]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        var _a2, _b;
+        const progressbar_changes = {};
+        if (dirty[0] & /*downloadProgress*/
+        32768) progressbar_changes.value = /*downloadProgress*/
+        ctx2[15];
+        progressbar.$set(progressbar_changes);
+        if ((!current || dirty[0] & /*$log*/
+        4194304) && t1_value !== (t1_value = /*$log*/
+        (((_a2 = ctx2[22]) == null ? void 0 : _a2.message) ?? "") + "")) set_data(t1, t1_value);
+        if (!current || dirty[0] & /*$log*/
+        4194304) {
+          toggle_class(
+            p0,
+            "text-error-500",
+            /*$log*/
+            ((_b = ctx2[22]) == null ? void 0 : _b.type) === "Error"
+          );
+        }
+        if ((!current || dirty[0] & /*$artworkCount, processed*/
+        20) && t3_value !== (t3_value = /*$artworkCount*/
+        ctx2[4] ? `${/*processed*/
+      ctx2[2]} / ${/*$artworkCount*/
+      ctx2[4]}` : "")) set_data(t3, t3_value);
+      },
+      i(local) {
+        if (current) return;
+        transition_in(progressbar.$$.fragment, local);
+        if (local) {
+          add_render_callback(() => {
+            if (!current) return;
+            if (!div2_transition) div2_transition = create_bidirectional_transition(div2, fade, { duration: 250 }, true);
+            div2_transition.run(1);
+          });
+        }
+        current = true;
+      },
+      o(local) {
+        transition_out(progressbar.$$.fragment, local);
+        if (local) {
+          if (!div2_transition) div2_transition = create_bidirectional_transition(div2, fade, { duration: 250 }, false);
+          div2_transition.run(0);
+        }
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div2);
+        }
+        destroy_component(progressbar);
+        ctx[56](null);
+        if (detaching && div2_transition) div2_transition.end();
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_if_block_6(ctx) {
+    var _a;
+    let div1;
+    let div0;
+    let p0;
+    let t0_value = (
+      /*$log*/
+      (((_a = ctx[22]) == null ? void 0 : _a.message) ?? "") + ""
+    );
+    let t0;
+    let t1;
+    let p1;
+    let t2;
+    let t3;
+    let show_if;
+    let show_if_1;
+    let div1_transition;
+    let current;
+    let mounted;
+    let dispose;
+    function select_block_type_2(ctx2, dirty) {
+      if (dirty[0] & /*pageConfig*/
+      2) show_if = null;
+      if (dirty[0] & /*pageConfig*/
+      2) show_if_1 = null;
+      if (show_if == null) show_if = !!/*pageConfig*/
+      (ctx2[1] && Array.isArray(
+        /*pageConfig*/
+        ctx2[1].genPageId
+      ));
+      if (show_if) return create_if_block_7;
+      if (show_if_1 == null) show_if_1 = !!/*pageConfig*/
+      (ctx2[1] && !Array.isArray(
+        /*pageConfig*/
+        ctx2[1].genPageId
+      ));
+      if (show_if_1) return create_if_block_8;
+    }
+    let current_block_type = select_block_type_2(ctx, [-1, -1, -1]);
+    let if_block = current_block_type && current_block_type(ctx);
+    return {
+      c() {
+        var _a2;
+        div1 = element("div");
+        div0 = element("div");
+        p0 = element("p");
+        t0 = text(t0_value);
+        t1 = space();
+        p1 = element("p");
+        t2 = text(
+          /*downloadResult*/
+          ctx[14]
+        );
+        t3 = space();
+        if (if_block) if_block.c();
+        attr(p0, "class", "truncate");
+        toggle_class(
+          p0,
+          "text-error-500",
+          /*$log*/
+          ((_a2 = ctx[22]) == null ? void 0 : _a2.type) === "Error"
+        );
+        attr(p1, "class", "truncate");
+        attr(div0, "class", "flex flex-grow flex-col justify-between overflow-hidden text-surface-700-200-token");
+        attr(div1, "class", "flex justify-end flex-grow w-full gap-4");
+      },
+      m(target, anchor) {
+        insert(target, div1, anchor);
+        append(div1, div0);
+        append(div0, p0);
+        append(p0, t0);
+        append(div0, t1);
+        append(div0, p1);
+        append(p1, t2);
+        append(div1, t3);
+        if (if_block) if_block.m(div1, null);
+        ctx[52](div1);
+        current = true;
+        if (!mounted) {
+          dispose = [
+            listen(
+              div1,
+              "introstart",
+              /*introstart_handler*/
+              ctx[53]
+            ),
+            listen(
+              div1,
+              "outrostart",
+              /*outrostart_handler*/
+              ctx[54]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        var _a2, _b;
+        if ((!current || dirty[0] & /*$log*/
+        4194304) && t0_value !== (t0_value = /*$log*/
+        (((_a2 = ctx2[22]) == null ? void 0 : _a2.message) ?? "") + "")) set_data(t0, t0_value);
+        if (!current || dirty[0] & /*$log*/
+        4194304) {
+          toggle_class(
+            p0,
+            "text-error-500",
+            /*$log*/
+            ((_b = ctx2[22]) == null ? void 0 : _b.type) === "Error"
+          );
+        }
+        if (!current || dirty[0] & /*downloadResult*/
+        16384) set_data(
+          t2,
+          /*downloadResult*/
+          ctx2[14]
+        );
+        if (current_block_type === (current_block_type = select_block_type_2(ctx2, dirty)) && if_block) {
+          if_block.p(ctx2, dirty);
+        } else {
+          if (if_block) if_block.d(1);
+          if_block = current_block_type && current_block_type(ctx2);
+          if (if_block) {
+            if_block.c();
+            if_block.m(div1, null);
+          }
+        }
+      },
+      i(local) {
+        if (current) return;
+        if (local) {
+          add_render_callback(() => {
+            if (!current) return;
+            if (!div1_transition) div1_transition = create_bidirectional_transition(div1, fade, { duration: 250 }, true);
+            div1_transition.run(1);
+          });
+        }
+        current = true;
+      },
+      o(local) {
+        if (local) {
+          if (!div1_transition) div1_transition = create_bidirectional_transition(div1, fade, { duration: 250 }, false);
+          div1_transition.run(0);
+        }
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div1);
+        }
+        if (if_block) {
+          if_block.d();
+        }
+        ctx[52](null);
+        if (detaching && div1_transition) div1_transition.end();
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_if_block_8(ctx) {
+    let button;
+    let i;
+    let t0;
+    let span;
+    let t1_value = (
+      /*pageConfig*/
+      ctx[1].genPageId.name + ""
+    );
+    let t1;
+    let mounted;
+    let dispose;
+    return {
+      c() {
+        button = element("button");
+        i = element("i");
+        t0 = space();
+        span = element("span");
+        t1 = text(t1_value);
+        attr(i, "class", "w-5");
+        attr(button, "class", "btn variant-filled-primary");
+      },
+      m(target, anchor) {
+        insert(target, button, anchor);
+        append(button, i);
+        i.innerHTML = downloadSvg;
+        append(button, t0);
+        append(button, span);
+        append(span, t1);
+        if (!mounted) {
+          dispose = listen(
+            button,
+            "click",
+            /*click_handler_1*/
+            ctx[51]
+          );
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*pageConfig*/
+        2 && t1_value !== (t1_value = /*pageConfig*/
+        ctx2[1].genPageId.name + "")) set_data(t1, t1_value);
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(button);
+        }
+        mounted = false;
+        dispose();
+      }
+    };
+  }
+  function create_if_block_7(ctx) {
+    let div;
+    let each_value = ensure_array_like(
+      /*pageConfig*/
+      ctx[1].genPageId
+    );
+    let each_blocks = [];
+    for (let i = 0; i < each_value.length; i += 1) {
+      each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
+    }
+    return {
+      c() {
+        div = element("div");
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          each_blocks[i].c();
+        }
+        attr(div, "class", "flex-none btn-group");
+      },
+      m(target, anchor) {
+        insert(target, div, anchor);
+        for (let i = 0; i < each_blocks.length; i += 1) {
+          if (each_blocks[i]) {
+            each_blocks[i].m(div, null);
+          }
+        }
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*startDownload, pageConfig*/
+        8388610) {
+          each_value = ensure_array_like(
+            /*pageConfig*/
+            ctx2[1].genPageId
+          );
+          let i;
+          for (i = 0; i < each_value.length; i += 1) {
+            const child_ctx = get_each_context(ctx2, each_value, i);
+            if (each_blocks[i]) {
+              each_blocks[i].p(child_ctx, dirty);
+            } else {
+              each_blocks[i] = create_each_block(child_ctx);
+              each_blocks[i].c();
+              each_blocks[i].m(div, null);
+            }
+          }
+          for (; i < each_blocks.length; i += 1) {
+            each_blocks[i].d(1);
+          }
+          each_blocks.length = each_value.length;
+        }
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div);
+        }
+        destroy_each(each_blocks, detaching);
+      }
+    };
+  }
+  function create_each_block(ctx) {
+    let button;
+    let i;
+    let t0;
+    let span;
+    let t1_value = (
+      /*name*/
+      ctx[75] + ""
+    );
+    let t1;
+    let t2;
+    let mounted;
+    let dispose;
+    function click_handler() {
+      return (
+        /*click_handler*/
+        ctx[50](
+          /*id*/
+          ctx[76]
+        )
+      );
+    }
+    return {
+      c() {
+        button = element("button");
+        i = element("i");
+        t0 = space();
+        span = element("span");
+        t1 = text(t1_value);
+        t2 = space();
+        attr(i, "class", "w-5");
+        attr(button, "class", "btn rounded-none !transform-none !variant-filled-primary");
+      },
+      m(target, anchor) {
+        insert(target, button, anchor);
+        append(button, i);
+        i.innerHTML = downloadSvg;
+        append(button, t0);
+        append(button, span);
+        append(span, t1);
+        append(button, t2);
+        if (!mounted) {
+          dispose = listen(button, "click", click_handler);
+          mounted = true;
+        }
+      },
+      p(new_ctx, dirty) {
+        ctx = new_ctx;
+        if (dirty[0] & /*pageConfig*/
+        2 && t1_value !== (t1_value = /*name*/
+        ctx[75] + "")) set_data(t1, t1_value);
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(button);
+        }
+        mounted = false;
+        dispose();
+      }
+    };
+  }
+  function create_if_block$1(ctx) {
+    let div2;
+    let div0;
+    let promise2;
+    let t0;
+    let t1;
+    let div1;
+    let current_block_type_index;
+    let if_block1;
+    let div2_transition;
+    let current;
+    let mounted;
+    let dispose;
+    let info = {
+      ctx,
+      current: null,
+      token: null,
+      hasCatch: false,
+      pending: create_pending_block,
+      then: create_then_block,
+      catch: create_catch_block,
+      value: 74
+    };
+    handle_promise(promise2 = /*avatarUpdated*/
+    ctx[11], info);
+    let if_block0 = (
+      /*$downloading*/
+      ctx[5] && !/*showDownloadMenu*/
+      ctx[13] && create_if_block_3(ctx)
+    );
+    const if_block_creators = [create_if_block_1$1, create_if_block_2];
+    const if_blocks = [];
+    function select_block_type_3(ctx2, dirty) {
+      if (
+        /*$downloading*/
+        ctx2[5] && /*$artworkCount*/
+        ctx2[4] && !/*showDownloadMenu*/
+        ctx2[13]
+      ) return 0;
+      if (!/*showDownloadMenu*/
+      ctx2[13]) return 1;
+      return -1;
+    }
+    if (~(current_block_type_index = select_block_type_3(ctx))) {
+      if_block1 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+    }
+    return {
+      c() {
+        div2 = element("div");
+        div0 = element("div");
+        info.block.c();
+        t0 = space();
+        if (if_block0) if_block0.c();
+        t1 = space();
+        div1 = element("div");
+        if (if_block1) if_block1.c();
+        attr(div0, "data-theme", "skeleton");
+        attr(div0, "class", "avatar absolute -z-10 size-14 rounded-full overflow-hidden bg-scroll transition-opacity duration-[250ms]");
+        toggle_class(div0, "opacity-70", !/*showDownloadMenu*/
+        ctx[13]);
+        toggle_class(div0, "blur-[1px]", !/*showDownloadMenu*/
+        ctx[13]);
+        attr(div1, "class", "size-14 flex justify-center items-center relative");
+        attr(div2, "class", "size-14 rounded-full fixed right-4 top-36 drop-shadow-xl cursor-pointer hover:brightness-110 backdrop-blur-sm");
+      },
+      m(target, anchor) {
+        insert(target, div2, anchor);
+        append(div2, div0);
+        info.block.m(div0, info.anchor = null);
+        info.mount = () => div0;
+        info.anchor = null;
+        append(div2, t0);
+        if (if_block0) if_block0.m(div2, null);
+        append(div2, t1);
+        append(div2, div1);
+        if (~current_block_type_index) {
+          if_blocks[current_block_type_index].m(div1, null);
+        }
+        current = true;
+        if (!mounted) {
+          dispose = listen(
+            div2,
+            "click",
+            /*click_handler_3*/
+            ctx[66]
+          );
+          mounted = true;
+        }
+      },
+      p(new_ctx, dirty) {
+        ctx = new_ctx;
+        info.ctx = ctx;
+        if (dirty[0] & /*avatarUpdated*/
+        2048 && promise2 !== (promise2 = /*avatarUpdated*/
+        ctx[11]) && handle_promise(promise2, info)) ;
+        else {
+          update_await_block_branch(info, ctx, dirty);
+        }
+        if (!current || dirty[0] & /*showDownloadMenu*/
+        8192) {
+          toggle_class(div0, "opacity-70", !/*showDownloadMenu*/
+          ctx[13]);
+        }
+        if (!current || dirty[0] & /*showDownloadMenu*/
+        8192) {
+          toggle_class(div0, "blur-[1px]", !/*showDownloadMenu*/
+          ctx[13]);
+        }
+        if (
+          /*$downloading*/
+          ctx[5] && !/*showDownloadMenu*/
+          ctx[13]
+        ) {
+          if (if_block0) {
+            if_block0.p(ctx, dirty);
+            if (dirty[0] & /*$downloading, showDownloadMenu*/
+            8224) {
+              transition_in(if_block0, 1);
+            }
+          } else {
+            if_block0 = create_if_block_3(ctx);
+            if_block0.c();
+            transition_in(if_block0, 1);
+            if_block0.m(div2, t1);
+          }
+        } else if (if_block0) {
+          group_outros();
+          transition_out(if_block0, 1, 1, () => {
+            if_block0 = null;
+          });
+          check_outros();
+        }
+        let previous_block_index = current_block_type_index;
+        current_block_type_index = select_block_type_3(ctx);
+        if (current_block_type_index === previous_block_index) {
+          if (~current_block_type_index) {
+            if_blocks[current_block_type_index].p(ctx, dirty);
+          }
+        } else {
+          if (if_block1) {
+            group_outros();
+            transition_out(if_blocks[previous_block_index], 1, 1, () => {
+              if_blocks[previous_block_index] = null;
+            });
+            check_outros();
+          }
+          if (~current_block_type_index) {
+            if_block1 = if_blocks[current_block_type_index];
+            if (!if_block1) {
+              if_block1 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+              if_block1.c();
+            } else {
+              if_block1.p(ctx, dirty);
+            }
+            transition_in(if_block1, 1);
+            if_block1.m(div1, null);
+          } else {
+            if_block1 = null;
+          }
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(if_block0);
+        transition_in(if_block1);
+        if (local) {
+          add_render_callback(() => {
+            if (!current) return;
+            if (!div2_transition) div2_transition = create_bidirectional_transition(div2, fly, { opacity: 0, x: 50 }, true);
+            div2_transition.run(1);
+          });
+        }
+        current = true;
+      },
+      o(local) {
+        transition_out(if_block0);
+        transition_out(if_block1);
+        if (local) {
+          if (!div2_transition) div2_transition = create_bidirectional_transition(div2, fly, { opacity: 0, x: 50 }, false);
+          div2_transition.run(0);
+        }
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div2);
+        }
+        info.block.d();
+        info.token = null;
+        info = null;
+        if (if_block0) if_block0.d();
+        if (~current_block_type_index) {
+          if_blocks[current_block_type_index].d();
+        }
+        if (detaching && div2_transition) div2_transition.end();
+        mounted = false;
+        dispose();
+      }
+    };
+  }
+  function create_catch_block(ctx) {
+    return { c: noop, m: noop, p: noop, d: noop };
+  }
+  function create_then_block(ctx) {
+    let if_block_anchor;
+    let if_block = (
+      /*val*/
+      ctx[74] && create_if_block_4(ctx)
+    );
+    return {
+      c() {
+        if (if_block) if_block.c();
+        if_block_anchor = empty();
+      },
+      m(target, anchor) {
+        if (if_block) if_block.m(target, anchor);
+        insert(target, if_block_anchor, anchor);
+      },
+      p(ctx2, dirty) {
+        if (
+          /*val*/
+          ctx2[74]
+        ) {
+          if (if_block) {
+            if_block.p(ctx2, dirty);
+          } else {
+            if_block = create_if_block_4(ctx2);
+            if_block.c();
+            if_block.m(if_block_anchor.parentNode, if_block_anchor);
+          }
+        } else if (if_block) {
+          if_block.d(1);
+          if_block = null;
+        }
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(if_block_anchor);
+        }
+        if (if_block) if_block.d(detaching);
+      }
+    };
+  }
+  function create_if_block_4(ctx) {
+    let img;
+    let img_src_value;
+    return {
+      c() {
+        img = element("img");
+        if (!src_url_equal(img.src, img_src_value = /*val*/
+        ctx[74])) attr(img, "src", img_src_value);
+        attr(img, "alt", "batch download");
+        attr(img, "class", "object-cover object-center");
+      },
+      m(target, anchor) {
+        insert(target, img, anchor);
+        ctx[59](img);
+      },
+      p(ctx2, dirty) {
+        if (dirty[0] & /*avatarUpdated*/
+        2048 && !src_url_equal(img.src, img_src_value = /*val*/
+        ctx2[74])) {
+          attr(img, "src", img_src_value);
+        }
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(img);
+        }
+        ctx[59](null);
+      }
+    };
+  }
+  function create_pending_block(ctx) {
+    return { c: noop, m: noop, p: noop, d: noop };
+  }
+  function create_if_block_3(ctx) {
+    let div;
+    let progressradial;
+    let div_transition;
+    let current;
+    progressradial = new ProgressRadial({
+      props: {
+        width: "w-16",
+        stroke: 32,
+        meter: "stroke-primary-500",
+        track: "stroke-primary-500/30",
+        fill: "fill-primary-500",
+        strokeLinecap: "butt",
+        value: (
+          /*downloadProgress*/
+          ctx[15]
+        )
+      }
+    });
+    return {
+      c() {
+        div = element("div");
+        create_component(progressradial.$$.fragment);
+        attr(div, "class", "!absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2");
+      },
+      m(target, anchor) {
+        insert(target, div, anchor);
+        mount_component(progressradial, div, null);
+        current = true;
+      },
+      p(ctx2, dirty) {
+        const progressradial_changes = {};
+        if (dirty[0] & /*downloadProgress*/
+        32768) progressradial_changes.value = /*downloadProgress*/
+        ctx2[15];
+        progressradial.$set(progressradial_changes);
+      },
+      i(local) {
+        if (current) return;
+        transition_in(progressradial.$$.fragment, local);
+        if (local) {
+          add_render_callback(() => {
+            if (!current) return;
+            if (!div_transition) div_transition = create_bidirectional_transition(div, fade, { duration: 250 }, true);
+            div_transition.run(1);
+          });
+        }
+        current = true;
+      },
+      o(local) {
+        transition_out(progressradial.$$.fragment, local);
+        if (local) {
+          if (!div_transition) div_transition = create_bidirectional_transition(div, fade, { duration: 250 }, false);
+          div_transition.run(0);
+        }
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div);
+        }
+        destroy_component(progressradial);
+        if (detaching && div_transition) div_transition.end();
+      }
+    };
+  }
+  function create_if_block_2(ctx) {
+    let i;
+    let i_transition;
+    let current;
+    let mounted;
+    let dispose;
+    return {
+      c() {
+        i = element("i");
+        attr(i, "class", "w-6 fill-slate-700 dark:fill-slate-200 mix-blend-hard-light mt-4");
+      },
+      m(target, anchor) {
+        insert(target, i, anchor);
+        i.innerHTML = downloadMultipleSvg;
+        ctx[63](i);
+        current = true;
+        if (!mounted) {
+          dispose = [
+            listen(
+              i,
+              "introstart",
+              /*introstart_handler_3*/
+              ctx[64]
+            ),
+            listen(
+              i,
+              "outrostart",
+              /*outrostart_handler_3*/
+              ctx[65]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p: noop,
+      i(local) {
+        if (current) return;
+        if (local) {
+          add_render_callback(() => {
+            if (!current) return;
+            if (!i_transition) i_transition = create_bidirectional_transition(i, fade, { duration: 250 }, true);
+            i_transition.run(1);
+          });
+        }
+        current = true;
+      },
+      o(local) {
+        if (local) {
+          if (!i_transition) i_transition = create_bidirectional_transition(i, fade, { duration: 250 }, false);
+          i_transition.run(0);
+        }
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(i);
+        }
+        ctx[63](null);
+        if (detaching && i_transition) i_transition.end();
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_if_block_1$1(ctx) {
+    let div;
+    let span0;
+    let t0;
+    let t1;
+    let hr;
+    let t2;
+    let span1;
+    let t3;
+    let div_transition;
+    let current;
+    let mounted;
+    let dispose;
+    return {
+      c() {
+        div = element("div");
+        span0 = element("span");
+        t0 = text(
+          /*processed*/
+          ctx[2]
+        );
+        t1 = space();
+        hr = element("hr");
+        t2 = space();
+        span1 = element("span");
+        t3 = text(
+          /*$artworkCount*/
+          ctx[4]
+        );
+        attr(span0, "class", "truncate max-w-full");
+        attr(hr, "class", "!border-t-1 my-[1px] self-stretch !border-surface-700 dark:!border-surface-200");
+        attr(span1, "class", "truncate max-w-full");
+        attr(div, "class", "flex flex-col justify-center items-center px-3 font-bold text-[12px] leading-[14px] overflow-hidden text-surface-700-200-token");
+      },
+      m(target, anchor) {
+        insert(target, div, anchor);
+        append(div, span0);
+        append(span0, t0);
+        append(div, t1);
+        append(div, hr);
+        append(div, t2);
+        append(div, span1);
+        append(span1, t3);
+        ctx[60](div);
+        current = true;
+        if (!mounted) {
+          dispose = [
+            listen(
+              div,
+              "introstart",
+              /*introstart_handler_2*/
+              ctx[61]
+            ),
+            listen(
+              div,
+              "outrostart",
+              /*outrostart_handler_2*/
+              ctx[62]
+            )
+          ];
+          mounted = true;
+        }
+      },
+      p(ctx2, dirty) {
+        if (!current || dirty[0] & /*processed*/
+        4) set_data(
+          t0,
+          /*processed*/
+          ctx2[2]
+        );
+        if (!current || dirty[0] & /*$artworkCount*/
+        16) set_data(
+          t3,
+          /*$artworkCount*/
+          ctx2[4]
+        );
+      },
+      i(local) {
+        if (current) return;
+        if (local) {
+          add_render_callback(() => {
+            if (!current) return;
+            if (!div_transition) div_transition = create_bidirectional_transition(div, fade, { duration: 250 }, true);
+            div_transition.run(1);
+          });
+        }
+        current = true;
+      },
+      o(local) {
+        if (local) {
+          if (!div_transition) div_transition = create_bidirectional_transition(div, fade, { duration: 250 }, false);
+          div_transition.run(0);
+        }
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(div);
+        }
+        ctx[60](null);
+        if (detaching && div_transition) div_transition.end();
+        mounted = false;
+        run_all(dispose);
+      }
+    };
+  }
+  function create_fragment$1(ctx) {
+    let t_1;
+    let if_block1_anchor;
+    let current;
+    let if_block0 = (
+      /*showDownloadMenu*/
+      ctx[13] && /*ifDownloaderCanShow*/
+      ctx[3] && create_if_block_5(ctx)
+    );
+    let if_block1 = (
+      /*ifDownloaderCanShow*/
+      ctx[3] && create_if_block$1(ctx)
+    );
+    return {
+      c() {
+        if (if_block0) if_block0.c();
+        t_1 = space();
+        if (if_block1) if_block1.c();
+        if_block1_anchor = empty();
+      },
+      m(target, anchor) {
+        if (if_block0) if_block0.m(target, anchor);
+        insert(target, t_1, anchor);
+        if (if_block1) if_block1.m(target, anchor);
+        insert(target, if_block1_anchor, anchor);
+        current = true;
+      },
+      p(ctx2, dirty) {
+        if (
+          /*showDownloadMenu*/
+          ctx2[13] && /*ifDownloaderCanShow*/
+          ctx2[3]
+        ) {
+          if (if_block0) {
+            if_block0.p(ctx2, dirty);
+            if (dirty[0] & /*showDownloadMenu, ifDownloaderCanShow*/
+            8200) {
+              transition_in(if_block0, 1);
+            }
+          } else {
+            if_block0 = create_if_block_5(ctx2);
+            if_block0.c();
+            transition_in(if_block0, 1);
+            if_block0.m(t_1.parentNode, t_1);
+          }
+        } else if (if_block0) {
+          group_outros();
+          transition_out(if_block0, 1, 1, () => {
+            if_block0 = null;
+          });
+          check_outros();
+        }
+        if (
+          /*ifDownloaderCanShow*/
+          ctx2[3]
+        ) {
+          if (if_block1) {
+            if_block1.p(ctx2, dirty);
+            if (dirty[0] & /*ifDownloaderCanShow*/
+            8) {
+              transition_in(if_block1, 1);
+            }
+          } else {
+            if_block1 = create_if_block$1(ctx2);
+            if_block1.c();
+            transition_in(if_block1, 1);
+            if_block1.m(if_block1_anchor.parentNode, if_block1_anchor);
+          }
+        } else if (if_block1) {
+          group_outros();
+          transition_out(if_block1, 1, 1, () => {
+            if_block1 = null;
+          });
+          check_outros();
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(if_block0);
+        transition_in(if_block1);
+        current = true;
+      },
+      o(local) {
+        transition_out(if_block0);
+        transition_out(if_block1);
+        current = false;
+      },
+      d(detaching) {
+        if (detaching) {
+          detach(t_1);
+          detach(if_block1_anchor);
+        }
+        if (if_block0) if_block0.d(detaching);
+        if (if_block1) if_block1.d(detaching);
+      }
+    };
+  }
+  function beforeUnloadHandler(evt) {
+    evt.preventDefault();
+    evt.returnValue = true;
+  }
+  function instance$1($$self, $$props, $$invalidate) {
+    let ifDownloaderCanShow;
+    let processed;
+    let downloadProgress;
+    let downloadResult;
+    let $excluded;
+    let $failed;
+    let $successd;
+    let $artworkCount;
+    let $downloading;
+    let $selectedFilters;
+    let $downloadAllPages;
+    let $pageStart;
+    let $pageEnd;
+    let $blacklistTag;
+    let $whitelistTag;
+    let $log;
+    function initFilterStore() {
+      Array.isArray($selectedFilters) || set_store_value(selectedFilters, $selectedFilters = downloaderConfig.filterOption.filters.filter((filter) => filter.checked).map((filter) => filter.id), $selectedFilters);
+    }
+    async function updateAvatarSrc(url2) {
+      if (!downloaderConfig.avatar) return;
+      if ($downloading) {
+        updateAvatarAfterDownload = url2;
+        return;
+      }
+      let src;
+      if (typeof downloaderConfig.avatar === "string") {
+        src = downloaderConfig.avatar;
+      } else {
+        if (url2 in avatarCache) {
+          src = avatarCache[url2];
+        } else {
+          src = await downloaderConfig.avatar(url2);
+          avatarCache[url2] = src;
+        }
+      }
+      if (!src || avatarEl && avatarEl.src === src) return;
+      let imageLoaded;
+      $$invalidate(11, avatarUpdated = new Promise((resolve) => {
+        imageLoaded = resolve;
+      }));
+      const el = document.createElement("img");
+      el.src = src;
+      el.onload = () => {
+        imageLoaded(src);
+      };
+    }
+    function onUrlChange(url2) {
+      logger.info("Navigating to ", url2);
+      if (!downloaderConfig) return;
+      const pageConfigs = downloaderConfig.pageMatch;
+      for (let i = 0; i < pageConfigs.length; i++) {
+        const matchPattern = pageConfigs[i].match;
+        if (typeof matchPattern === "string") {
+          if (url2.match(matchPattern)) {
+            $$invalidate(1, pageConfig = pageConfigs[i]);
+            updateAvatarSrc(url2);
+            return;
+          }
+        } else if (typeof matchPattern === "function") {
+          if (matchPattern(url2)) {
+            $$invalidate(1, pageConfig = pageConfigs[i]);
+            updateAvatarSrc(url2);
+            return;
+          }
+        } else {
+          if (matchPattern.test(url2)) {
+            $$invalidate(1, pageConfig = pageConfigs[i]);
+            updateAvatarSrc(url2);
+            return;
+          }
+        }
+      }
+      $$invalidate(1, pageConfig = null);
+      updateAvatarAfterDownload = "";
+    }
+    function watchUrlChange() {
+      if ("navigation" in window) {
+        let prevUrl;
+        let nextUrl;
+        navigation.addEventListener("navigatesuccess", () => {
+          prevUrl !== nextUrl && onUrlChange(nextUrl);
+        });
+        navigation.addEventListener("navigate", (evt) => {
+          prevUrl = location.href;
+          nextUrl = evt.destination.url;
+        });
+      } else {
+        const rewrite = (type) => {
+          const oriHistory = history[type];
+          return function(...args) {
+            const currentUrl = location.href;
+            const res = oriHistory.apply(this, args);
+            const navigateUrl = location.href;
+            currentUrl !== navigateUrl && onUrlChange(navigateUrl);
+            return res;
+          };
+        };
+        history.pushState = rewrite("pushState");
+        history.replaceState = rewrite("replaceState");
+      }
+    }
+    async function startDownload(id) {
+      const { genPageId } = pageConfig;
+      if (Array.isArray(genPageId)) {
+        id && await batchDownload(id);
+      } else {
+        !id && await batchDownload(genPageId.id);
+      }
+    }
+    let { downloaderConfig } = $$props;
+    let pageConfig;
+    const { selectedFilters, blacklistTag, whitelistTag, downloadAllPages, pageStart, pageEnd } = optionStore;
+    component_subscribe($$self, selectedFilters, (value) => $$invalidate(16, $selectedFilters = value));
+    component_subscribe($$self, blacklistTag, (value) => $$invalidate(20, $blacklistTag = value));
+    component_subscribe($$self, whitelistTag, (value) => $$invalidate(21, $whitelistTag = value));
+    component_subscribe($$self, downloadAllPages, (value) => $$invalidate(17, $downloadAllPages = value));
+    component_subscribe($$self, pageStart, (value) => $$invalidate(18, $pageStart = value));
+    component_subscribe($$self, pageEnd, (value) => $$invalidate(19, $pageEnd = value));
+    let startDownloadEl;
+    let stopDownloadEl;
+    let avatarEl;
+    let avatarProgressEl;
+    let avatarDownloadIcon;
+    const avatarCache = {};
+    let avatarUpdated;
+    let updateAvatarAfterDownload;
+    let tabSet = 0;
+    let showDownloadMenu = false;
+    initFilterStore();
+    defineBatchDownload(downloaderConfig);
+    const { artworkCount, successd, failed, excluded, downloading, log, batchDownload, abort } = useBatchDownload();
+    component_subscribe($$self, artworkCount, (value) => $$invalidate(4, $artworkCount = value));
+    component_subscribe($$self, successd, (value) => $$invalidate(39, $successd = value));
+    component_subscribe($$self, failed, (value) => $$invalidate(38, $failed = value));
+    component_subscribe($$self, excluded, (value) => $$invalidate(37, $excluded = value));
+    component_subscribe($$self, downloading, (value) => $$invalidate(5, $downloading = value));
+    component_subscribe($$self, log, (value) => $$invalidate(22, $log = value));
+    watchUrlChange();
+    onUrlChange(location.href);
+    downloading.subscribe((val) => {
+      if (val) {
+        window.addEventListener("beforeunload", beforeUnloadHandler);
+      } else {
+        window.removeEventListener("beforeunload", beforeUnloadHandler);
+        updateAvatarAfterDownload && pageConfig && updateAvatarSrc(updateAvatarAfterDownload);
+      }
+    });
+    const $$binding_groups = [[]];
+    function input_change_handler() {
+      $selectedFilters = get_binding_group_value($$binding_groups[0], this.__value, this.checked);
+      selectedFilters.set($selectedFilters);
+    }
+    function radioitem0_group_binding(value) {
+      $downloadAllPages = value;
+      downloadAllPages.set($downloadAllPages);
+    }
+    function radioitem1_group_binding(value) {
+      $downloadAllPages = value;
+      downloadAllPages.set($downloadAllPages);
+    }
+    function input0_input_handler() {
+      $pageStart = to_number(this.value);
+      pageStart.set($pageStart);
+    }
+    function input1_input_handler() {
+      $pageEnd = to_number(this.value);
+      pageEnd.set($pageEnd);
+    }
+    function inputchip0_value_binding(value) {
+      $blacklistTag = value;
+      blacklistTag.set($blacklistTag);
+    }
+    function inputchip1_value_binding(value) {
+      $whitelistTag = value;
+      whitelistTag.set($whitelistTag);
+    }
+    function tab0_group_binding(value) {
+      tabSet = value;
+      $$invalidate(12, tabSet);
+    }
+    function tab1_group_binding(value) {
+      tabSet = value;
+      $$invalidate(12, tabSet);
+    }
+    const click_handler = (id) => {
+      startDownload(id);
+    };
+    const click_handler_1 = () => {
+      startDownload();
+    };
+    function div1_binding($$value) {
+      binding_callbacks[$$value ? "unshift" : "push"](() => {
+        startDownloadEl = $$value;
+        $$invalidate(6, startDownloadEl);
+      });
+    }
+    const introstart_handler = () => (
+      // required when the transition reverses
+      startDownloadEl.classList.remove("absolute")
+    );
+    const outrostart_handler = () => startDownloadEl.classList.add("absolute");
+    const click_handler_2 = () => {
+      abort();
+    };
+    function div2_binding($$value) {
+      binding_callbacks[$$value ? "unshift" : "push"](() => {
+        stopDownloadEl = $$value;
+        $$invalidate(7, stopDownloadEl);
+      });
+    }
+    const introstart_handler_1 = () => stopDownloadEl.classList.remove("absolute");
+    const outrostart_handler_1 = () => stopDownloadEl.classList.add("absolute");
+    function img_binding($$value) {
+      binding_callbacks[$$value ? "unshift" : "push"](() => {
+        avatarEl = $$value;
+        $$invalidate(8, avatarEl);
+      });
+    }
+    function div_binding($$value) {
+      binding_callbacks[$$value ? "unshift" : "push"](() => {
+        avatarProgressEl = $$value;
+        $$invalidate(9, avatarProgressEl);
+      });
+    }
+    const introstart_handler_2 = () => avatarProgressEl.classList.remove("absolute");
+    const outrostart_handler_2 = () => avatarProgressEl.classList.add("absolute");
+    function i_binding($$value) {
+      binding_callbacks[$$value ? "unshift" : "push"](() => {
+        avatarDownloadIcon = $$value;
+        $$invalidate(10, avatarDownloadIcon);
+      });
+    }
+    const introstart_handler_3 = () => avatarDownloadIcon.classList.remove("absolute");
+    const outrostart_handler_3 = () => avatarDownloadIcon.classList.add("absolute");
+    const click_handler_3 = () => {
+      $$invalidate(13, showDownloadMenu = !showDownloadMenu);
+    };
+    $$self.$$set = ($$props2) => {
+      if ("downloaderConfig" in $$props2) $$invalidate(0, downloaderConfig = $$props2.downloaderConfig);
+    };
+    $$self.$$.update = () => {
+      if ($$self.$$.dirty[0] & /*$downloading, pageConfig*/
+      34) {
+        $$invalidate(3, ifDownloaderCanShow = $downloading || !!pageConfig);
+      }
+      if ($$self.$$.dirty[0] & /*ifDownloaderCanShow*/
+      8) {
+        {
+          if (!ifDownloaderCanShow) $$invalidate(13, showDownloadMenu = false);
+        }
+      }
+      if ($$self.$$.dirty[1] & /*$successd, $failed, $excluded*/
+      448) {
+        $$invalidate(2, processed = $successd.length + $failed.length + $excluded.length);
+      }
+      if ($$self.$$.dirty[0] & /*$artworkCount, processed*/
+      20) {
+        $$invalidate(15, downloadProgress = $artworkCount ? processed / $artworkCount * 100 : void 0);
+      }
+      if ($$self.$$.dirty[0] & /*$downloading, $artworkCount*/
+      48 | $$self.$$.dirty[1] & /*$successd, $failed, $excluded*/
+      448) {
+        $$invalidate(14, downloadResult = !$downloading && $artworkCount ? `Completed: ${$successd.length}. Failed: ${$failed.length}. Excluded: ${$excluded.length}.` : "");
+      }
+    };
+    return [
+      downloaderConfig,
+      pageConfig,
+      processed,
+      ifDownloaderCanShow,
+      $artworkCount,
+      $downloading,
+      startDownloadEl,
+      stopDownloadEl,
+      avatarEl,
+      avatarProgressEl,
+      avatarDownloadIcon,
+      avatarUpdated,
+      tabSet,
+      showDownloadMenu,
+      downloadResult,
+      downloadProgress,
+      $selectedFilters,
+      $downloadAllPages,
+      $pageStart,
+      $pageEnd,
+      $blacklistTag,
+      $whitelistTag,
+      $log,
+      startDownload,
+      selectedFilters,
+      blacklistTag,
+      whitelistTag,
+      downloadAllPages,
+      pageStart,
+      pageEnd,
+      artworkCount,
+      successd,
+      failed,
+      excluded,
+      downloading,
+      log,
+      abort,
+      $excluded,
+      $failed,
+      $successd,
+      input_change_handler,
+      $$binding_groups,
+      radioitem0_group_binding,
+      radioitem1_group_binding,
+      input0_input_handler,
+      input1_input_handler,
+      inputchip0_value_binding,
+      inputchip1_value_binding,
+      tab0_group_binding,
+      tab1_group_binding,
+      click_handler,
+      click_handler_1,
+      div1_binding,
+      introstart_handler,
+      outrostart_handler,
+      click_handler_2,
+      div2_binding,
+      introstart_handler_1,
+      outrostart_handler_1,
+      img_binding,
+      div_binding,
+      introstart_handler_2,
+      outrostart_handler_2,
+      i_binding,
+      introstart_handler_3,
+      outrostart_handler_3,
+      click_handler_3
+    ];
+  }
+  class Downloader extends SvelteComponent {
+    constructor(options) {
+      super();
+      init(this, options, instance$1, create_fragment$1, safe_not_equal, { downloaderConfig: 0 }, null, [-1, -1, -1]);
     }
   }
   const cog = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" /></svg>`;
+  function create_if_block_1(ctx) {
+    let downloader2;
+    let current;
+    downloader2 = new Downloader({
+      props: {
+        downloaderConfig: (
+          /*downloaderConfig*/
+          ctx[0]
+        )
+      }
+    });
+    return {
+      c() {
+        create_component(downloader2.$$.fragment);
+      },
+      m(target, anchor) {
+        mount_component(downloader2, target, anchor);
+        current = true;
+      },
+      p(ctx2, dirty) {
+        const downloader_changes = {};
+        if (dirty & /*downloaderConfig*/
+        1) downloader_changes.downloaderConfig = /*downloaderConfig*/
+        ctx2[0];
+        downloader2.$set(downloader_changes);
+      },
+      i(local) {
+        if (current) return;
+        transition_in(downloader2.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(downloader2.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        destroy_component(downloader2, detaching);
+      }
+    };
+  }
   function create_if_block(ctx) {
     let button;
     let i;
@@ -14893,7 +20534,7 @@
             button,
             "click",
             /*click_handler*/
-            ctx[12]
+            ctx[13]
           );
           mounted = true;
         }
@@ -14911,7 +20552,8 @@
   function create_fragment(ctx) {
     let div;
     let modal;
-    let t_1;
+    let t0;
+    let t1;
     let div_class_value;
     let current;
     let mounted;
@@ -14920,31 +20562,39 @@
       props: {
         components: (
           /*components*/
-          ctx[4]
+          ctx[5]
         ),
         class: "!p-0"
       }
     });
-    let if_block = (
+    let if_block0 = (
+      /*downloaderConfig*/
+      ctx[0] && create_if_block_1(ctx)
+    );
+    let if_block1 = (
       /*$store*/
-      ctx[2].showPopupButton && create_if_block(ctx)
+      ctx[3].showPopupButton && create_if_block(ctx)
     );
     return {
       c() {
         div = element("div");
         create_component(modal.$$.fragment);
-        t_1 = space();
-        if (if_block) if_block.c();
+        t0 = space();
+        if (if_block0) if_block0.c();
+        t1 = space();
+        if (if_block1) if_block1.c();
         attr(div, "class", div_class_value = "contents " + /*darkMode*/
-        ctx[1]);
+        ctx[2]);
         attr(div, "data-theme", "skeleton");
       },
       m(target, anchor) {
         insert(target, div, anchor);
         mount_component(modal, div, null);
-        append(div, t_1);
-        if (if_block) if_block.m(div, null);
-        ctx[13](div);
+        append(div, t0);
+        if (if_block0) if_block0.m(div, null);
+        append(div, t1);
+        if (if_block1) if_block1.m(div, null);
+        ctx[14](div);
         current = true;
         if (!mounted) {
           dispose = [
@@ -14952,12 +20602,12 @@
               window,
               "keydown",
               /*handleKeydown*/
-              ctx[6],
+              ctx[7],
               true
             ),
             listen(div, "keydown", stop_propagation(
               /*keydown_handler*/
-              ctx[11]
+              ctx[12]
             )),
             listen(div, "mousedown", preventBackDropClick, true),
             listen(div, "mouseup", preventBackDropClick, true)
@@ -14967,33 +20617,58 @@
       },
       p(ctx2, [dirty]) {
         if (
-          /*$store*/
-          ctx2[2].showPopupButton
+          /*downloaderConfig*/
+          ctx2[0]
         ) {
-          if (if_block) {
-            if_block.p(ctx2, dirty);
+          if (if_block0) {
+            if_block0.p(ctx2, dirty);
+            if (dirty & /*downloaderConfig*/
+            1) {
+              transition_in(if_block0, 1);
+            }
           } else {
-            if_block = create_if_block(ctx2);
-            if_block.c();
-            if_block.m(div, null);
+            if_block0 = create_if_block_1(ctx2);
+            if_block0.c();
+            transition_in(if_block0, 1);
+            if_block0.m(div, t1);
           }
-        } else if (if_block) {
-          if_block.d(1);
-          if_block = null;
+        } else if (if_block0) {
+          group_outros();
+          transition_out(if_block0, 1, 1, () => {
+            if_block0 = null;
+          });
+          check_outros();
+        }
+        if (
+          /*$store*/
+          ctx2[3].showPopupButton
+        ) {
+          if (if_block1) {
+            if_block1.p(ctx2, dirty);
+          } else {
+            if_block1 = create_if_block(ctx2);
+            if_block1.c();
+            if_block1.m(div, null);
+          }
+        } else if (if_block1) {
+          if_block1.d(1);
+          if_block1 = null;
         }
         if (!current || dirty & /*darkMode*/
-        2 && div_class_value !== (div_class_value = "contents " + /*darkMode*/
-        ctx2[1])) {
+        4 && div_class_value !== (div_class_value = "contents " + /*darkMode*/
+        ctx2[2])) {
           attr(div, "class", div_class_value);
         }
       },
       i(local) {
         if (current) return;
         transition_in(modal.$$.fragment, local);
+        transition_in(if_block0);
         current = true;
       },
       o(local) {
         transition_out(modal.$$.fragment, local);
+        transition_out(if_block0);
         current = false;
       },
       d(detaching) {
@@ -15001,8 +20676,9 @@
           detach(div);
         }
         destroy_component(modal);
-        if (if_block) if_block.d();
-        ctx[13](null);
+        if (if_block0) if_block0.d();
+        if (if_block1) if_block1.d();
+        ctx[14](null);
         mounted = false;
         run_all(dispose);
       }
@@ -15018,7 +20694,7 @@
   function instance($$self, $$props, $$invalidate) {
     let darkMode;
     let $store;
-    component_subscribe($$self, configStore, ($$value) => $$invalidate(2, $store = $$value));
+    component_subscribe($$self, configStore, ($$value) => $$invalidate(3, $store = $$value));
     initializeStores();
     const modalStore = getModalStore();
     const components = {
@@ -15032,6 +20708,7 @@
     const settingModal = { type: "component", component: "setting" };
     let { dark = false } = $$props;
     let { updated = false } = $$props;
+    let { downloaderConfig } = $$props;
     function showChangelog() {
       modalStore.trigger(changelogModal);
     }
@@ -15070,20 +20747,22 @@
     function div_binding($$value) {
       binding_callbacks[$$value ? "unshift" : "push"](() => {
         root = $$value;
-        $$invalidate(0, root);
+        $$invalidate(1, root);
       });
     }
     $$self.$$set = ($$props2) => {
-      if ("dark" in $$props2) $$invalidate(7, dark = $$props2.dark);
-      if ("updated" in $$props2) $$invalidate(8, updated = $$props2.updated);
+      if ("dark" in $$props2) $$invalidate(8, dark = $$props2.dark);
+      if ("updated" in $$props2) $$invalidate(9, updated = $$props2.updated);
+      if ("downloaderConfig" in $$props2) $$invalidate(0, downloaderConfig = $$props2.downloaderConfig);
     };
     $$self.$$.update = () => {
       if ($$self.$$.dirty & /*dark*/
-      128) {
-        $$invalidate(1, darkMode = dark ? "dark" : "");
+      256) {
+        $$invalidate(2, darkMode = dark ? "dark" : "");
       }
     };
     return [
+      downloaderConfig,
       root,
       darkMode,
       $store,
@@ -15104,22 +20783,37 @@
     constructor(options) {
       super();
       init(this, options, instance, create_fragment, safe_not_equal, {
-        dark: 7,
-        updated: 8,
-        showChangelog: 9,
-        showSetting: 10
+        dark: 8,
+        updated: 9,
+        downloaderConfig: 0,
+        showChangelog: 10,
+        showSetting: 11
       });
     }
     get showChangelog() {
-      return this.$$.ctx[9];
-    }
-    get showSetting() {
       return this.$$.ctx[10];
     }
+    get showSetting() {
+      return this.$$.ctx[11];
+    }
   }
-  const util = ".pdl-hide{display:none!important}.pdl-unavailable{pointer-events:none!important;opacity:.5!important;cursor:not-allowed!important}.pdl-spacer{margin:0;padding:0;flex:1}";
-  const theme = ":root{--pdl-bg1: #fff;--pdl-bg2-hover: rgba(0, 0, 0, .05);--pdl-bg3-hover: rgb(31, 31, 31);--pdl-btn1: rgba(0, 0, 0, .04);--pdl-btn1-hover: rgba(0, 0, 0, .12);--pdl-border1: rgba(0, 0, 0, .1);--pdl-text1: rgb(31, 31, 31)}:root[data-theme=default],:root body[data-current-user-theme=light]{--pdl-bg1: #fff;--pdl-bg2-hover: rgba(0, 0, 0, .05);--pdl-bg3-hover: rgb(31, 31, 31);--pdl-btn1: rgba(0, 0, 0, .04);--pdl-btn1-hover: rgba(0, 0, 0, .12);--pdl-border1: rgba(0, 0, 0, .1);--pdl-text1: rgb(31, 31, 31)}@media (prefers-color-scheme: light){:root{--pdl-bg1: #fff;--pdl-bg2-hover: rgba(0, 0, 0, .05);--pdl-bg3-hover: rgb(31, 31, 31);--pdl-btn1: rgba(0, 0, 0, .04);--pdl-btn1-hover: rgba(0, 0, 0, .12);--pdl-border1: rgba(0, 0, 0, .1);--pdl-text1: rgb(31, 31, 31)}}:root[data-theme=dark],:root body[data-current-user-theme=dark]{--pdl-bg1: rgb(31, 31, 31);--pdl-bg2-hover: rgba(255, 255, 255, .1);--pdl-bg3-hover: rgb(155, 155, 155);--pdl-btn1: rgba(255, 255, 255, .4);--pdl-btn1-hover: rgba(255, 255, 255, .6);--pdl-border1: rgba(255, 255, 255, .3);--pdl-text1: rgb(245, 245, 245)}@media (prefers-color-scheme: dark){:root{--pdl-bg1: rgb(31, 31, 31);--pdl-bg2-hover: rgba(255, 255, 255, .1);--pdl-bg3-hover: rgb(155, 155, 155);--pdl-btn1: rgba(255, 255, 255, .4);--pdl-btn1-hover: rgba(255, 255, 255, .6);--pdl-border1: rgba(255, 255, 255, .3);--pdl-text1: rgb(245, 245, 245)}}";
-  const downloadButton = `@charset "UTF-8";@property --pdl-progress{syntax: "<percentage>"; inherits: true; initial-value: 0%;}@keyframes pdl_loading{to{transform:translate(-50%,-50%) rotate(360deg)}}.pdl-btn{font-family:'win-bug-omega, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif';position:relative;border-radius:4px;background:no-repeat center/85%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%233C3C3C' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E");color:#01b468;display:inline-block;font-size:13px;font-weight:700;height:32px;line-height:32px;margin:0;overflow:hidden;padding:0;border:none;text-decoration:none!important;text-align:center;text-overflow:ellipsis;-webkit-user-select:none;-moz-user-select:none;user-select:none;white-space:nowrap;width:32px;cursor:pointer}.pdl-btn.pdl-btn-main{margin:0 0 0 10px}.pdl-btn.pdl-btn-sub{position:absolute;background-color:#ffffff80;top:calc((100% - 32px) * var(--pdl-btn-top) / 100);left:calc((100% - 32px) * var(--pdl-btn-left) / 100);z-index:1}.pdl-btn.pdl-btn-sub.presentation{position:fixed;top:50px;right:20px;left:auto;border-radius:8px}.pdl-btn.pdl-btn-sub.manga-viewer{top:80%;right:4px;left:auto;border-radius:8px}.pdl-btn.pdl-btn-sub.self-bookmark{top:calc((100% - 32px) * var(--pdl-btn-self-bookmark-top) / 100);left:calc((100% - 32px) * var(--pdl-btn-self-bookmark-left) / 100)}._history-item>.pdl-btn.pdl-btn-sub{z-index:auto}.pdl-btn.pdl-error{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23EA0000' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")!important}.pdl-btn.pdl-complete{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%2301B468' d='M256 8C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 48c110.532 0 200 89.451 200 200 0 110.532-89.451 200-200 200-110.532 0-200-89.451-200-200 0-110.532 89.451-200 200-200m140.204 130.267l-22.536-22.718c-4.667-4.705-12.265-4.736-16.97-.068L215.346 303.697l-59.792-60.277c-4.667-4.705-12.265-4.736-16.97-.069l-22.719 22.536c-4.705 4.667-4.736 12.265-.068 16.971l90.781 91.516c4.667 4.705 12.265 4.736 16.97.068l172.589-171.204c4.704-4.668 4.734-12.266.067-16.971z'%3E%3C/path%3E %3C/svg%3E")!important}.pdl-btn.pdl-progress{background-image:none!important;cursor:default!important}.pdl-btn.pdl-progress:after{content:"";display:inline-block;position:absolute;top:50%;left:50%;width:27px;height:27px;transform:translate(-50%,-50%);-webkit-mask:radial-gradient(transparent,transparent 54%,#000 57%,#000);mask:radial-gradient(transparent,transparent 54%,#000 57%,#000);border-radius:50%}.pdl-btn.pdl-progress:not(:empty):after{background:conic-gradient(#01b468 0,#01b468 var(--pdl-progress),transparent var(--pdl-progress),transparent);transition:--pdl-progress .2s ease}.pdl-btn.pdl-progress:empty:after{background:conic-gradient(#01b468 0,#01b468 25%,#01b46833 25%,#01b46833);animation:1.5s infinite linear pdl_loading}.pdl-btn.pdl-tag{height:auto;border-top-right-radius:4px;border-bottom-right-radius:4px;left:-1px;background-color:var(--pdl-btn1);transition:background-image .5s}.pdl-btn.pdl-tag:hover{background-color:var(--pdl-btn1-hover)}.pdl-btn.pdl-modal-tag{position:absolute;right:65px;top:6px;background-origin:content-box;border-radius:4px;padding:5px;width:42px;height:50px;background-color:var(--pdl-btn1);transition:.25s background-color}.pdl-btn.pdl-modal-tag:hover{background-color:var(--pdl-btn1-hover)}.pdl-btn.pdl-tag-hide{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E  %3C/svg%3E")!important;pointer-events:none!important}.pdl-wrap-artworks{position:absolute;right:8px;top:0;bottom:0;margin-top:40px;z-index:1}.pdl-wrap-artworks.rule34{bottom:calc(22px + 1em)}.pdl-wrap-artworks.yande{right:5em}.pdl-wrap-artworks .pdl-btn-sub.artworks{position:sticky;top:40px;left:0}:root .pdl-btn-main{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%233C3C3C' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root[data-theme=default] .pdl-btn-main{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%233C3C3C' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}@media (prefers-color-scheme: light){:root .pdl-btn-main{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%233C3C3C' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}}:root[data-theme=dark] .pdl-btn-main{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23D6D6D6' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}@media (prefers-color-scheme: dark){:root .pdl-btn-main{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23D6D6D6' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}}`;
+  const PdlApp = create_custom_element(
+    App,
+    { dark: { type: "Boolean" }, updated: { type: "Boolean" }, downloaderConfig: {} },
+    [],
+    ["showChangelog", "showSetting"],
+    true,
+    (customElementConstructor) => {
+      return class extends customElementConstructor {
+        constructor(props) {
+          super();
+          this.updated = props.updated ?? false;
+          this.downloaderConfig = props.downloaderConfig;
+        }
+      };
+    }
+  );
+  customElements.define("pdl-app", PdlApp);
   class SiteInject {
     constructor() {
       __publicField(this, "modal");
@@ -15140,28 +20834,16 @@
         },
         "s"
       );
-      if (config.get("showMsg")) {
-        this.modal.setAttribute("updated", "");
-        config.set("showMsg", false);
-      }
     }
     injectApp() {
-      customElements.define(
-        "pdl-app",
-        create_custom_element(
-          App,
-          { dark: { type: "Boolean" }, updated: { type: "Boolean" } },
-          [],
-          ["showChangelog", "showSetting"],
-          true
-        )
-      );
-      const modal = document.createElement("pdl-app");
+      const updated = config.get("showMsg");
+      updated && config.set("showMsg", false);
+      const downloaderConfig = this.getBatchDownloadConfig();
+      const modal = new PdlApp({ updated, downloaderConfig });
       document.body.append(modal);
       this.modal = modal;
     }
     injectStyle() {
-      [util, theme, downloadButton].forEach((style) => _GM_addStyle(style));
       [
         "pdl-btn-self-bookmark-left",
         "pdl-btn-self-bookmark-top",
@@ -15181,6 +20863,28 @@
       this.modal.removeAttribute("dark");
     }
   }
+  const wrapperStyle = ".button-wrapper{position:absolute;right:8px;top:0;bottom:0;margin-top:40px;z-index:1}.button-wrapper.rule34{bottom:calc(1em + 22px)}.button-wrapper.yande{right:calc(5em + 8px)}";
+  class ArtworkButton extends HTMLElement {
+    constructor(props) {
+      super();
+      __publicField(this, "props");
+      this.props = props;
+      this.render();
+    }
+    render() {
+      const shadowRoot = this.attachShadow({ mode: "open" });
+      const btnProps = { ...this.props };
+      shadowRoot.innerHTML = `<style>${wrapperStyle}</style><div class="button-wrapper${btnProps.site ? " " + btnProps.site : ""}"></div>`;
+      delete btnProps.site;
+      const thumbnailButton = new ThumbnailButton({
+        type: ThumbnailBtnType.Gallery,
+        ...btnProps
+      });
+      const wrapper = shadowRoot.querySelector(".button-wrapper");
+      wrapper.appendChild(thumbnailButton);
+    }
+  }
+  customElements.define("pdl-artwork-button", ArtworkButton);
   class Rule34 extends SiteInject {
     inject() {
       super.inject();
@@ -15216,15 +20920,13 @@
     createArtworkBtn(id) {
       const btnContainer = document.querySelector("div.flexi > div");
       btnContainer.style.position = "relative";
-      const wrapper = document.createElement("div");
-      wrapper.classList.add("pdl-wrap-artworks", "rule34");
-      const btn2 = new ThumbnailButton({
-        id,
-        type: ThumbnailBtnType.Gallery,
-        onClick: downloadArtwork$3
-      });
-      wrapper.appendChild(btn2);
-      btnContainer.appendChild(wrapper);
+      btnContainer.appendChild(
+        new ArtworkButton({
+          id,
+          site: "rule34",
+          onClick: downloadArtwork$3
+        })
+      );
     }
     pageAction() {
       const query = location.search;
@@ -15248,6 +20950,9 @@
       query.addEventListener("change", (e) => {
         e.matches ? this.setModalDarkMode() : this.setModalLightMode();
       });
+    }
+    getBatchDownloadConfig() {
+      return void 0;
     }
   }
   async function addBookmark$1(id) {
@@ -15276,7 +20981,7 @@
   const danbooruParser = {
     async getDoc(url2) {
       const res = await fetch(url2);
-      if (!res.ok) throw new RequestError("Request failed with status code " + res.status, res);
+      if (!res.ok) throw new RequestError(res.url, res.status);
       const html = await res.text();
       return new DOMParser().parseFromString(html, "text/html");
     },
@@ -15474,15 +21179,12 @@
     }
     createArtworkBtn(id) {
       const btnContainer = document.querySelector("section.image-container");
-      const btn2 = new ThumbnailButton({
-        id,
-        type: ThumbnailBtnType.Gallery,
-        onClick: downloadArtwork$2
-      });
-      const wrapper = document.createElement("div");
-      wrapper.classList.add("pdl-wrap-artworks");
-      wrapper.appendChild(btn2);
-      btnContainer.appendChild(wrapper);
+      btnContainer.appendChild(
+        new ArtworkButton({
+          id,
+          onClick: downloadArtwork$2
+        })
+      );
     }
     createPoolThumbnailBtn() {
       const btnContainers = document.querySelectorAll(
@@ -15532,6 +21234,9 @@
         });
       }
     }
+    getBatchDownloadConfig() {
+      return void 0;
+    }
   }
   const regexp = {
     preloadData: /"meta-preload-data" content='(.*?)'>/,
@@ -15541,7 +21246,6 @@
     bookmarkPage: /users\/(\d+)\/bookmarks\/artworks/,
     userPageTags: /users\/\d+\/(artworks|illustrations|manga|bookmarks(?=\/artworks))/,
     searchPage: /\/tags\/.*\/(artworks|illustrations|manga)/,
-    suscribePage: /bookmark_new_illust/,
     activityHref: /illust_id=(\d+)/,
     originSrcPageNum: new RegExp("(?<=_p)\\d+"),
     followLatest: /\/bookmark_new_illust(?:_r18)?\.php/,
@@ -15588,10 +21292,9 @@
   })(BookmarkRestrict || {});
   function createService() {
     async function _requestJson(url2, init2) {
-      logger.info("fetch url:", url2);
+      logger.info("Fetch url:", url2);
       const res = await fetch(url2, init2);
-      if (!res.ok)
-        throw new RequestError("Request " + url2 + " failed with status code " + res.status, res);
+      if (!res.ok) throw new RequestError(res.url, res.status);
       const data2 = await res.json();
       if (data2.error) throw new JsonDataError(data2.message);
       return data2.body;
@@ -15602,12 +21305,15 @@
       },
       async getArtworkHtml(illustId) {
         logger.info("Fetch illust:", illustId);
-        let params = "";
-        const tagLang = config.get("tagLang");
-        if (tagLang !== "ja") params = "?lang=" + tagLang;
+        const params = "?lang=" + config.get("tagLang");
         const res = await fetch("https://www.pixiv.net/artworks/" + illustId + params);
-        if (!res.ok) throw new RequestError("Request failed with status code " + res.status, res);
+        if (!res.ok) throw new RequestError(res.url, res.status);
         return await res.text();
+      },
+      getArtworkDetail(illustId) {
+        logger.info("Fetch illust:", illustId);
+        const params = "?lang=" + config.get("tagLang");
+        return _requestJson("/ajax/illust/" + illustId + params);
       },
       addBookmark(illustId, token, tags = [], restrict = BookmarkRestrict.public) {
         return _requestJson("/ajax/illusts/bookmarks/add", {
@@ -15636,11 +21342,8 @@
       getUgoiraMeta(illustId) {
         return _requestJson("/ajax/illust/" + illustId + "/ugoira_meta");
       },
-      getArtworkDetail(illustId) {
-        let params = "";
-        const tagLang = config.get("tagLang");
-        if (tagLang !== "ja") params = "?lang=" + tagLang;
-        return _requestJson("/ajax/illust/" + illustId + params);
+      getUserData(userId) {
+        return _requestJson("/ajax/user/" + userId);
       }
     };
   }
@@ -15705,51 +21408,24 @@
     }
     return bookmarkBtnRef;
   }
-  function isValidIllustType(illustType, option) {
-    switch (illustType) {
-      case IllustType.illusts:
-        if (option.filterIllusts) return true;
-        break;
-      case IllustType.manga:
-        if (option.filterManga) return true;
-        break;
-      case IllustType.ugoira:
-        if (option.filterUgoira) return true;
-        break;
-      default:
-        throw new Error("Invalid filter type");
-    }
-    return false;
-  }
-  async function filterWorks(works, option) {
-    const obj = {
-      unavaliable: [],
-      avaliable: [],
-      invalid: []
-    };
-    for (const work of works) {
-      if (!work.isBookmarkable) {
-        obj.unavaliable.push(work.id);
-      } else if (option.filterExcludeDownloaded && await historyDb.has(work.id)) {
-        obj.invalid.push(work.id);
-      } else if (!isValidIllustType(work.illustType, option)) {
-        obj.invalid.push(work.id);
-      } else {
-        obj.avaliable.push(work.id);
-      }
-    }
-    return obj;
-  }
   const pixivParser = {
-    async parse(illustId) {
-      const htmlText = await api.getArtworkHtml(illustId);
-      const preloadDataText = htmlText.match(regexp.preloadData);
-      if (!preloadDataText) throw new Error("Fail to parse preload data.");
-      const globalDataText = htmlText.match(regexp.globalData);
-      if (!globalDataText) throw new Error("Fail to parse global data.");
-      const preloadData = JSON.parse(preloadDataText[1]);
-      const globalData = JSON.parse(globalDataText[1]);
-      const illustData = preloadData.illust[illustId];
+    async parse(illustId, ajax) {
+      let illustData;
+      let token;
+      if (ajax) {
+        illustData = await api.getArtworkDetail(illustId);
+        token = "";
+      } else {
+        const htmlText = await api.getArtworkHtml(illustId);
+        const preloadDataText = htmlText.match(regexp.preloadData);
+        if (!preloadDataText) throw new Error("Fail to parse preload data: " + illustId);
+        const globalDataText = htmlText.match(regexp.globalData);
+        if (!globalDataText) throw new Error("Fail to parse global data: " + illustId);
+        const preloadData = JSON.parse(preloadDataText[1]);
+        const globalData = JSON.parse(globalDataText[1]);
+        illustData = preloadData.illust[illustId];
+        token = globalData.token;
+      }
       const {
         illustType,
         userName,
@@ -15762,7 +21438,6 @@
         urls,
         bookmarkData
       } = illustData;
-      const { token } = globalData;
       const tagsArr = [];
       const tagsTranslatedArr = [];
       tags.tags.forEach((tagData) => {
@@ -15802,145 +21477,186 @@
         };
       }
     },
-    async getFollowLatestGenerator(filterOption, mode, page) {
-      const MAX_PAGE = 34;
-      const MAX_ILLUSTS_PER_PAGE = 60;
-      let lastId;
-      let total;
-      let data2;
-      let cache;
-      function findLastId(ids) {
-        return Math.min(...ids.map((id) => Number(id)));
-      }
-      if (page === void 0) {
-        data2 = await api.getFollowLatestWorks(1, mode);
-        const ids = data2.page.ids;
-        total = ids.length;
-        lastId = findLastId(ids);
-        if (total === MAX_ILLUSTS_PER_PAGE) {
-          const secondPageData = await api.getFollowLatestWorks(2, mode);
-          const secondIds = secondPageData.page.ids;
-          const secondLastId = findLastId(secondIds);
-          if (secondLastId < lastId) {
-            lastId = secondLastId;
-            cache = secondPageData;
-            total += secondIds.length;
-          }
-        }
-      } else {
-        data2 = await api.getFollowLatestWorks(page, mode);
-        total = data2.page.ids.length;
-      }
-      async function* generateIds() {
-        yield await filterWorks(data2.thumbnails.illust, filterOption);
-        if (page === void 0) {
-          if (total === MAX_ILLUSTS_PER_PAGE) return;
-          if (total < MAX_ILLUSTS_PER_PAGE * 2) {
-            yield await filterWorks(cache.thumbnails.illust, filterOption);
-            return;
-          }
-          let currentPage = 3;
-          while (currentPage <= MAX_PAGE) {
-            const data22 = await api.getFollowLatestWorks(currentPage, mode);
-            const ids = data22.page.ids;
-            const pageLastId = findLastId(ids);
-            if (pageLastId >= lastId) {
-              logger.info("getFollowLatestGenerator: got duplicate works");
-              yield await filterWorks(cache.thumbnails.illust, filterOption);
-              break;
-            }
-            lastId = pageLastId;
-            total += ids.length;
-            yield { ...await filterWorks(cache.thumbnails.illust, filterOption), total };
-            cache = data22;
-            currentPage++;
-            await sleep(3e3);
-          }
-        }
-      }
-      return {
-        total,
-        generator: generateIds()
-      };
-    },
-    async getChunksGenerator(userId, category, tag, rest, filterOption) {
-      const OFFSET = 48;
-      let requestUrl;
-      if (category === "bookmarks") {
-        requestUrl = `https://www.pixiv.net/ajax/user/${userId}/illusts/bookmarks?tag=${tag}&offset=0&limit=${OFFSET}&rest=${rest}&lang=ja`;
-      } else {
-        requestUrl = `https://www.pixiv.net/ajax/user/${userId}/${category}/tag?tag=${tag}&offset=0&limit=${OFFSET}&lang=ja`;
-      }
-      let head = 0;
-      const firstPageData = await api.getJson(requestUrl);
-      const total = firstPageData.total;
-      async function* generateIds() {
-        yield await filterWorks(firstPageData.works, filterOption);
-        head += OFFSET;
-        while (head < total) {
-          const data2 = await api.getJson(
-            requestUrl.replace("offset=0", "offset=" + head)
-          );
-          head += OFFSET;
-          await sleep(3e3);
-          yield await filterWorks(data2.works, filterOption);
-        }
-      }
-      return {
-        total,
-        generator: generateIds()
-      };
-    },
-    async getAllWorksGenerator(userId, filterOption) {
+    async *illustMangaGenerator(pageRange, checkValidity, userId) {
+      const ARTWORKS_PER_PAGE = 48;
       const profile = await api.getUserAllProfile(userId);
-      let illustIds = [];
-      let mangaIds = [];
-      if ((filterOption.filterIllusts || filterOption.filterUgoira) && typeof profile.illusts === "object") {
-        illustIds.push(...Object.keys(profile.illusts).reverse());
-      }
-      if (filterOption.filterManga && typeof profile.manga === "object") {
-        mangaIds.push(...Object.keys(profile.manga).reverse());
-      }
-      if (filterOption.filterExcludeDownloaded) {
-        const filteredIllustIds = [];
-        for (const id of illustIds) {
-          const isDownloaded = await historyDb.has(id);
-          !isDownloaded && filteredIllustIds.push(id);
+      let ids = [];
+      typeof profile.illusts === "object" && ids.push(...Object.keys(profile.illusts));
+      typeof profile.manga === "object" && ids.push(...Object.keys(profile.manga));
+      if (!ids.length) throw new Error(`User ${userId} has no illusts or mangas.`);
+      ids = ids.sort((a, b) => Number(b) - Number(a));
+      let sliceStart;
+      let sliceEnd;
+      const [startPage = null, endPage = null] = pageRange ?? [];
+      let page = startPage ?? 1;
+      startPage === null ? sliceStart = 0 : sliceStart = (startPage - 1) * ARTWORKS_PER_PAGE;
+      endPage === null ? sliceEnd = ids.length : sliceEnd = endPage * ARTWORKS_PER_PAGE;
+      const selectedIds = ids.slice(sliceStart, sliceEnd);
+      if (!selectedIds.length) throw new RangeError(`Page ${page} exceeds the limit.`);
+      const baseUrl = `https://www.pixiv.net/ajax/user/${userId}/profile/illusts?`;
+      const total = selectedIds.length;
+      do {
+        const chunk = selectedIds.splice(0, ARTWORKS_PER_PAGE);
+        const queryStr = chunk.map((id) => "ids[]=" + id).join("&") + `&work_category=illustManga&is_first_page=0&lang=ja`;
+        const data2 = await api.getJson(baseUrl + queryStr);
+        const workDatas = Object.values(data2.works).sort((a, b) => Number(b.id) - Number(a.id));
+        const avaliable = [];
+        const invalid = [];
+        const unavaliable = [];
+        for (let i = 0; i < workDatas.length; i++) {
+          const work = workDatas[i];
+          const { id, isMasked } = work;
+          if (isMasked) {
+            unavaliable.push(String(id));
+            continue;
+          }
+          const isValid = await checkValidity(work);
+          isValid ? avaliable.push(id) : invalid.push(id);
         }
-        illustIds = filteredIllustIds;
-        const filteredMangaIds = [];
-        for (const id of mangaIds) {
-          const isDownloaded = await historyDb.has(id);
-          !isDownloaded && filteredMangaIds.push(id);
+        yield {
+          total,
+          page,
+          avaliable,
+          invalid,
+          unavaliable
+        };
+        page++;
+      } while (selectedIds.length > 0);
+    },
+    async *chunkGenerator(pageRange, checkValidity, userId, category, tag, bookmarkRest = "show") {
+      const ARTWORKS_PER_PAGE = 48;
+      const [startPage = null, endPage = null] = pageRange ?? [];
+      if (!userId) throw new Error('Require argument "userId".');
+      let offset;
+      let offsetEnd;
+      let total;
+      let page = startPage ?? 1;
+      startPage === null ? offset = 0 : offset = (startPage - 1) * ARTWORKS_PER_PAGE;
+      do {
+        let requestUrl;
+        if (category === "bookmarks") {
+          requestUrl = `/ajax/user/${userId}/illusts/bookmarks?tag=${tag}&offset=${offset}&limit=${ARTWORKS_PER_PAGE}&rest=${bookmarkRest}&lang=ja`;
+        } else {
+          requestUrl = `/ajax/user/${userId}/${category}/tag?tag=${tag}&offset=${offset}&limit=${ARTWORKS_PER_PAGE}&lang=ja`;
         }
-        mangaIds = filteredMangaIds;
+        const userPageData = await api.getJson(requestUrl);
+        const { works, total: totalArtwork } = userPageData;
+        if (totalArtwork === 0)
+          throw new Error(`User ${userId} has no ${category} tagged with ${tag}.`);
+        if (!offsetEnd) {
+          endPage === null ? offsetEnd = totalArtwork : offsetEnd = endPage * ARTWORKS_PER_PAGE > totalArtwork ? totalArtwork : endPage * ARTWORKS_PER_PAGE;
+          if (offsetEnd <= offset) throw new RangeError(`Page ${page} exceeds the limit.`);
+          total = offsetEnd - offset;
+        }
+        const avaliable = [];
+        const invalid = [];
+        const unavaliable = [];
+        for (let i = 0; i < works.length; i++) {
+          const work = works[i];
+          const { id, isMasked } = work;
+          if (isMasked) {
+            unavaliable.push(String(id));
+            continue;
+          }
+          const isValid = await checkValidity(work);
+          isValid ? avaliable.push(id) : invalid.push(id);
+        }
+        yield {
+          total,
+          page,
+          avaliable,
+          invalid,
+          unavaliable
+        };
+        page++;
+      } while ((offset += ARTWORKS_PER_PAGE) < offsetEnd);
+    },
+    async *bookmarkGenerator(pageRange, checkValidity, userId, bookmarkRest = "show", tag = "") {
+      yield* this.chunkGenerator(pageRange, checkValidity, userId, "bookmarks", tag, bookmarkRest);
+    },
+    async *taggedArtworkGenerator(pageRange, checkValidity, userId, category, tag, bookmarkRest = "show") {
+      if (category === "bookmarks") {
+        yield* this.bookmarkGenerator(pageRange, checkValidity, userId, bookmarkRest, tag);
+      } else {
+        yield* this.chunkGenerator(pageRange, checkValidity, userId, category, tag);
       }
-      async function* generateIds() {
-        const OFFSET = 48;
-        const baseUrl = "https://www.pixiv.net/ajax/user/" + userId + "/profile/illusts";
-        let workCategory = "illust";
-        while (illustIds.length > 0) {
-          let searchStr = "?";
-          const chunk = illustIds.splice(0, OFFSET);
-          searchStr += chunk.map((id) => "ids[]=" + id).join("&") + `&work_category=${workCategory}&is_first_page=0&lang=ja`;
-          const data2 = await api.getJson(baseUrl + searchStr);
-          await sleep(3e3);
-          yield await filterWorks(Object.values(data2.works).reverse(), filterOption);
+    },
+    async *followLatestGenerator(pageRange, checkValidity, mode = "all") {
+      const PAGE_LIMIT = 34;
+      const ARTWORKS_PER_PAGE = 60;
+      let [startPage = null, endPage = null] = pageRange ?? [];
+      startPage === null && (startPage = 1);
+      (endPage === null || endPage > PAGE_LIMIT) && (endPage = PAGE_LIMIT);
+      if (startPage > PAGE_LIMIT) throw new RangeError(`Page ${startPage} exceeds the limit.`);
+      let earliestId;
+      let total;
+      let cache;
+      let page = startPage;
+      function findEarliestId(ids2) {
+        return Math.min(...ids2.map((id) => Number(id)));
+      }
+      async function* yieldData(data22, page2) {
+        const avaliable = [];
+        const invalid = [];
+        const unavaliable = [];
+        const { illust } = data22.thumbnails;
+        for (let i = 0; i < illust.length; i++) {
+          const work = illust[i];
+          const { id, isMasked } = work;
+          if (isMasked) {
+            unavaliable.push(String(id));
+            continue;
+          }
+          const isValid = await checkValidity(work);
+          isValid ? avaliable.push(id) : invalid.push(id);
         }
-        workCategory = "manga";
-        while (mangaIds.length > 0) {
-          let searchStr = "?";
-          const chunk = mangaIds.splice(0, OFFSET);
-          searchStr += chunk.map((id) => "ids[]=" + id).join("&") + `&work_category=${workCategory}&is_first_page=0&lang=ja`;
-          const data2 = await api.getJson(baseUrl + searchStr);
-          await sleep(3e3);
-          yield await filterWorks(Object.values(data2.works).reverse(), filterOption);
+        yield {
+          total,
+          page: page2,
+          avaliable,
+          invalid,
+          unavaliable
+        };
+      }
+      const data2 = await api.getFollowLatestWorks(page, mode);
+      const ids = data2.page.ids;
+      total = ids.length;
+      earliestId = findEarliestId(ids);
+      if (endPage === startPage) {
+        yield* yieldData(data2, startPage);
+        return;
+      }
+      if (total === ARTWORKS_PER_PAGE) {
+        const secondPageData = await api.getFollowLatestWorks(++page, mode);
+        const secondIds = secondPageData.page.ids;
+        const secondPageEarliestId = findEarliestId(secondIds);
+        if (secondPageEarliestId < earliestId) {
+          earliestId = secondPageEarliestId;
+          cache = secondPageData;
+          total += secondIds.length;
         }
       }
-      return {
-        total: illustIds.length + mangaIds.length,
-        generator: generateIds()
-      };
+      yield* yieldData(data2, startPage);
+      if (total === ARTWORKS_PER_PAGE) return;
+      if (total < ARTWORKS_PER_PAGE * 2 || endPage - startPage === 1) {
+        yield* yieldData(cache, page);
+        return;
+      }
+      while (++page <= endPage) {
+        const data22 = await api.getFollowLatestWorks(page, mode);
+        const ids2 = data22.page.ids;
+        const pageEarliestId = findEarliestId(ids2);
+        if (pageEarliestId >= earliestId) {
+          logger.info("getFollowLatestGenerator: got duplicate works");
+          yield* yieldData(cache, page - 1);
+          break;
+        }
+        earliestId = pageEarliestId;
+        total += ids2.length;
+        yield* yieldData(cache, page - 1);
+        cache = data22;
+      }
+      yield* yieldData(cache, page - 1);
     }
   };
   function createCompressor() {
@@ -16042,115 +21758,7 @@
       });
     });
   }
-  const pngWorkerFragment = `async function encodeAPNG(frames, delay, cnum) {
-    const bitmaps = await Promise.all(frames.map((frame) => {
-        if (frame instanceof Blob) {
-            return createImageBitmap(frame);
-        }
-        else {
-            return frame;
-        }
-    }));
-    const width = bitmaps[0].width;
-    const height = bitmaps[0].height;
-    const canvas = new OffscreenCanvas(width, height);
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    const u8arrs = [];
-    for (let i = 0; i < bitmaps.length; i++) {
-        ctx.drawImage(bitmaps[i], 0, 0);
-        bitmaps[i].close();
-        u8arrs.push(ctx.getImageData(0, 0, width, height).data);
-    }
-    const png = UPNG.encode(u8arrs, width, height, cnum, delay, { loop: 0 });
-    if (!png)
-        throw new Error("Failed to encode apng.");
-    return png;
-}
-async function decodeApng(ab) {
-    const img = UPNG.decode(ab);
-    const rgba = UPNG.toRGBA8(img);
-    const frames = rgba.map((ab2) => new ImageData(new Uint8ClampedArray(ab2), img.width, img.height));
-    const delays = img.frames.map((frame) => frame.delay);
-    return { frames, delays };
-}
-async function appendEffect(illustBlob, effect, delays) {
-    if (!Array.isArray(effect)) {
-        const apngDatas = await decodeApng(effect);
-        effect = apngDatas.frames;
-        delays = apngDatas.delays;
-    }
-    else {
-        if (!delays)
-            throw new Error('Argument "delays" is required.');
-    }
-    const illustBitmap = await createImageBitmap(illustBlob);
-    const effectBitmaps = await Promise.all(effect.map((data) => createImageBitmap(data)));
-    const { width, height } = illustBitmap;
-    const { width: effectWidth, height: effectHeight } = effectBitmaps[0];
-    const illustAspectRatio = width / height;
-    const effectAspectRatio = effectWidth / effectHeight;
-    let dx;
-    let dy;
-    let dWidth;
-    let dHeight;
-    if (effectAspectRatio > illustAspectRatio) {
-        dWidth = height * effectAspectRatio;
-        dHeight = height;
-        dx = (width - dWidth) / 2;
-        dy = 0;
-    }
-    else {
-        dWidth = width;
-        dHeight = width / effectAspectRatio;
-        dx = 0;
-        dy = (height - dHeight) / 2;
-    }
-    const canvas = new OffscreenCanvas(width, height);
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    const finalDatas = [];
-    for (let i = 0; i < effectBitmaps.length; i++) {
-        ctx.drawImage(illustBitmap, 0, 0);
-        ctx.drawImage(effectBitmaps[i], dx, dy, dWidth, dHeight);
-        finalDatas.push(ctx.getImageData(0, 0, width, height));
-        effectBitmaps[i].close();
-    }
-    illustBitmap.close();
-    const bitmaps = [];
-    for (let i = 0; i < finalDatas.length; i++) {
-        const bitmap = await createImageBitmap(finalDatas[i]);
-        bitmaps.push(bitmap);
-    }
-    return { bitmaps, frames: effect.map((data) => data), delays };
-}
-self.onmessage = async (evt) => {
-    try {
-        const data = evt.data;
-        if ("effect" in data) {
-            const { illust, effect, delay } = data;
-            let imageBitmaps;
-            if (delay) {
-                imageBitmaps = await appendEffect(illust, effect, delay);
-            }
-            else {
-                imageBitmaps = await appendEffect(illust, effect);
-            }
-            self.postMessage(imageBitmaps, [
-                ...imageBitmaps.frames.map((arr) => arr.data.buffer),
-                ...imageBitmaps.bitmaps
-            ]);
-        }
-        else {
-            const { frames, delay, cnum = 256 } = data;
-            const apng = await encodeAPNG(frames, delay, cnum);
-            self.postMessage(apng, [apng]);
-        }
-    }
-    catch (error) {
-        console.error(error);
-        self.postMessage(void 0);
-    }
-};
-`;
+  const pngWorkerFragment = 'async function encodeAPNG(frames, delays, cnum) {\n    const bitmaps = await Promise.all(frames.map((frame) => {\n        if (frame instanceof Blob) {\n            return createImageBitmap(frame);\n        }\n        else {\n            return frame;\n        }\n    }));\n    const width = bitmaps[0].width;\n    const height = bitmaps[0].height;\n    const canvas = new OffscreenCanvas(width, height);\n    const ctx = canvas.getContext("2d", { willReadFrequently: true });\n    const u8arrs = [];\n    for (let i = 0; i < bitmaps.length; i++) {\n        ctx.drawImage(bitmaps[i], 0, 0);\n        bitmaps[i].close();\n        u8arrs.push(ctx.getImageData(0, 0, width, height).data);\n    }\n    const png = UPNG.encode(u8arrs, width, height, cnum, delays, { loop: 0 });\n    if (!png)\n        throw new Error("Failed to encode apng.");\n    return png;\n}\nasync function decodeApng(ab) {\n    const img = UPNG.decode(ab);\n    const rgba = UPNG.toRGBA8(img);\n    const { width, height } = img;\n    const delays = img.frames.map((frame) => frame.delay);\n    return { frames: rgba, delays, width, height };\n}\nasync function appendEffect(illustBlob, effect, delays, width, height) {\n    if (!Array.isArray(effect)) {\n        const apngDatas = await decodeApng(effect);\n        effect = apngDatas.frames;\n        delays = apngDatas.delays;\n        width = apngDatas.width;\n        height = apngDatas.height;\n    }\n    else {\n        if (!delays || width === void 0 || height === void 0)\n            throw new Error("Missing argument.");\n    }\n    const illustBitmap = await createImageBitmap(illustBlob);\n    const effectBitmaps = await Promise.all(effect.map((buf) => createImageBitmap(new ImageData(new Uint8ClampedArray(buf), width, height))));\n    const { width: illustWidth, height: illustHeight } = illustBitmap;\n    const illustAspectRatio = illustWidth / illustHeight;\n    const effectAspectRatio = width / height;\n    let dx;\n    let dy;\n    let dWidth;\n    let dHeight;\n    if (effectAspectRatio > illustAspectRatio) {\n        dWidth = illustHeight * effectAspectRatio;\n        dHeight = illustHeight;\n        dx = (illustWidth - dWidth) / 2;\n        dy = 0;\n    }\n    else {\n        dWidth = illustWidth;\n        dHeight = illustWidth / effectAspectRatio;\n        dx = 0;\n        dy = (illustHeight - dHeight) / 2;\n    }\n    const canvas = new OffscreenCanvas(illustWidth, illustHeight);\n    const ctx = canvas.getContext("2d", { willReadFrequently: true });\n    const finalDatas = [];\n    for (let i = 0; i < effectBitmaps.length; i++) {\n        ctx.drawImage(illustBitmap, 0, 0);\n        ctx.drawImage(effectBitmaps[i], dx, dy, dWidth, dHeight);\n        finalDatas.push(ctx.getImageData(0, 0, illustWidth, illustHeight));\n        effectBitmaps[i].close();\n    }\n    illustBitmap.close();\n    const bitmaps = [];\n    for (let i = 0; i < finalDatas.length; i++) {\n        const bitmap = await createImageBitmap(finalDatas[i]);\n        bitmaps.push(bitmap);\n    }\n    return {\n        bitmaps,\n        frames: effect,\n        width,\n        height,\n        delays\n    };\n}\nself.onmessage = async (evt) => {\n    try {\n        const data = evt.data;\n        if ("effect" in data) {\n            let result;\n            if ("delays" in data) {\n                const { illust, effect, width, height, delays } = data;\n                result = await appendEffect(illust, effect, delays, width, height);\n            }\n            else {\n                const { illust, effect } = data;\n                result = await appendEffect(illust, effect);\n            }\n            self.postMessage(result, [...result.frames, ...result.bitmaps]);\n        }\n        else {\n            const { frames, delays, cnum = 256 } = data;\n            const apng = await encodeAPNG(frames, delays, cnum);\n            self.postMessage(apng, [apng]);\n        }\n    }\n    catch (error) {\n        console.error(error);\n        self.postMessage(void 0);\n    }\n};\n';
   const UPNG = (() => GM_getResourceText("upng-js?raw"))();
   const pako = (() => GM_getResourceText("pako/dist/pako.js?raw"))();
   const workerUrl$1 = URL.createObjectURL(
@@ -16191,8 +21799,8 @@ self.onmessage = async (evt) => {
         const pngBlob = new Blob([e.data], { type: "image/png" });
         resolve(pngBlob);
       };
-      const delay = convertMeta.source.delays;
-      const cfg = { frames, delay, cnum: config.get("pngColor") };
+      const delays = convertMeta.source.delays;
+      const cfg = { frames, delays, cnum: config.get("pngColor") };
       worker.postMessage(
         cfg,
         cfg.frames[0] instanceof ImageBitmap ? cfg.frames : []
@@ -16226,8 +21834,8 @@ self.onmessage = async (evt) => {
           worker.terminate();
         };
         worker.onmessage = function(e) {
-          freeApngWorkers.push(worker);
           logger.timeEnd(convertMeta.id);
+          worker.terminate();
           if (!e.data) {
             return reject(new Error("Mix Effect convert Failed " + convertMeta.id));
           }
@@ -16236,13 +21844,11 @@ self.onmessage = async (evt) => {
         let cfg;
         if (effect instanceof ArrayBuffer) {
           cfg = { illust, effect };
-          worker.postMessage(cfg, [cfg.effect]);
+          worker.postMessage(cfg, [effect]);
         } else {
-          cfg = { illust, delay: effect.delays, effect: effect.frames };
-          worker.postMessage(
-            cfg,
-            cfg.effect.map((arr) => arr.data.buffer)
-          );
+          const { frames, delays, width, height } = effect;
+          cfg = { illust, delays, effect: frames, width, height };
+          worker.postMessage(cfg, frames);
         }
       });
     });
@@ -19001,9 +24607,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
       const adapter2 = convertAdapter.getAdapter(format);
       if (!isConvertSource(convertMeta)) {
         const mixEffect = convertAdapter.getMixEffectFn();
-        let imageFrames;
-        let imageDelays;
-        mixEffect(convertMeta).then(({ bitmaps, frames, delays }) => {
+        mixEffect(convertMeta).then(({ bitmaps, frames, delays, width, height }) => {
           const meta = {
             ...convertMeta,
             source: {
@@ -19012,11 +24616,9 @@ If you want to offset all timestamps of a track such that the first one is zero,
               delays
             }
           };
-          imageFrames = frames;
-          imageDelays = delays;
-          return adapter2(meta.source.data, meta);
-        }).then((blob) => {
-          resolve({ frames: imageFrames, delays: imageDelays, blob });
+          return Promise.all([adapter2(meta.source.data, meta), frames, delays, width, height]);
+        }).then(([blob, frames, delays, width, height]) => {
+          resolve({ blob, frames, delays, width, height });
         }, reject).finally(() => {
           active2.splice(active2.indexOf(convertMeta), 1);
           if (queue.length) doConvert(queue.shift());
@@ -19201,13 +24803,13 @@ If you want to offset all timestamps of a track such that the first one is zero,
           const url2 = "https://source.pixiv.net/special/seasonal-effect-tag/pixiv-glow-2024/effect.png";
           const { taskId } = pixivConfig;
           const effectData = await historyDb.getImageEffect(effectId);
-          if (effectData) {
-            const { imageDatas, delays } = effectData;
+          if (effectData && effectData.data[0] instanceof ArrayBuffer) {
+            const { data: data2, delays, width, height } = effectData;
             const { blob } = await converter.appendPixivEffect(
               taskId,
               pixivConfig.source.extendName,
               imgBlob,
-              { frames: imageDatas, delays },
+              { frames: data2, delays, width, height },
               onProgress
             );
             return blob;
@@ -19226,7 +24828,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
                 ontimeout: () => reject(new Error("Timeout"))
               });
             });
-            const { blob, frames, delays } = await converter.appendPixivEffect(
+            const { blob, frames, delays, width, height } = await converter.appendPixivEffect(
               taskId,
               pixivConfig.source.extendName,
               imgBlob,
@@ -19235,8 +24837,10 @@ If you want to offset all timestamps of a track such that the first one is zero,
             );
             historyDb.addImageEffect({
               id: effectId,
-              imageDatas: frames,
-              delays
+              data: frames,
+              delays,
+              width,
+              height
             });
             return blob;
           }
@@ -19316,8 +24920,8 @@ If you want to offset all timestamps of a track such that the first one is zero,
       const { id, userId, artist, title, tags, tagsTranslated, createDate, pageCount } = this.meta;
       const currPage = page === void 0 ? pageCount : page;
       const useTags = this.useTranslatedTags() ? tagsTranslated : tags;
-      const fArtist = this.normalizeString(artist);
-      const fTitle = this.normalizeString(title);
+      const fArtist = this.normalizeString(artist) || userId;
+      const fTitle = this.normalizeString(title) || id;
       const fTags = this.normalizeString(useTags.join("_"));
       const replaceDate = (match, p1) => {
         const format = p1 || "YYYY-MM-DD";
@@ -19534,755 +25138,6 @@ If you want to offset all timestamps of a track such that the first one is zero,
       pdlEle.remove();
     });
   }
-  function createPdlBtn(option) {
-    const { attrs, classList, textContent, downloadArtwork: downloadArtwork2 } = option;
-    const ele = document.createElement("button");
-    textContent && (ele.textContent = textContent);
-    if (classList && classList.length > 0) {
-      for (const cla of classList) {
-        ele.classList.add(cla);
-      }
-    }
-    if (attrs) {
-      for (const key in attrs) {
-        ele.setAttribute(key, attrs[key]);
-      }
-    }
-    if (downloadArtwork2) {
-      ele.addEventListener("click", (evt) => {
-        evt.preventDefault();
-        evt.stopPropagation();
-        const btn2 = evt.currentTarget;
-        if (!btn2.classList.contains("pdl-progress")) {
-          btn2.classList.add("pdl-progress");
-          const setProgress = (progress, updateProgressbar = true) => {
-            if (progress !== null) {
-              progress = Math.floor(progress);
-              btn2.textContent = String(progress);
-              updateProgressbar && btn2.style.setProperty("--pdl-progress", progress + "%");
-            } else {
-              btn2.textContent = "";
-              updateProgressbar && btn2.style.removeProperty("--pdl-progress");
-            }
-          };
-          downloadArtwork2(btn2, setProgress).then(() => {
-            btn2.classList.remove("pdl-error");
-            btn2.classList.add("pdl-complete");
-          }).catch((err) => {
-            if (err) logger.error(err);
-            btn2.classList.remove("pdl-complete");
-            btn2.classList.add("pdl-error");
-          }).finally(() => {
-            btn2.innerHTML = "";
-            btn2.style.removeProperty("--pdl-progress");
-            btn2.classList.remove("pdl-progress");
-          });
-        }
-      });
-    }
-    return ele;
-  }
-  const dlBarRef = {
-    filter: {
-      filterExcludeDownloaded: void 0,
-      filterIllusts: void 0,
-      filterManga: void 0,
-      filterUgoira: void 0
-    },
-    statusBar: void 0,
-    abortBtn: void 0
-  };
-  function updateStatus(str) {
-    dlBarRef.statusBar && (dlBarRef.statusBar.textContent = str);
-  }
-  function createFilterEl(id, filterType, text2) {
-    const checkbox2 = document.createElement("input");
-    const label = document.createElement("label");
-    checkbox2.id = id;
-    checkbox2.type = "checkbox";
-    checkbox2.classList.add("pdl-checkbox");
-    checkbox2.setAttribute("category", String(filterType));
-    checkbox2.checked = config.get(filterType);
-    label.setAttribute("for", id);
-    label.setAttribute("category", String(filterType));
-    label.textContent = text2;
-    checkbox2.addEventListener("change", (evt) => {
-      const checkbox22 = evt.currentTarget;
-      const category = checkbox22.getAttribute("category");
-      config.set(category, checkbox22.checked);
-    });
-    dlBarRef.filter[filterType] = checkbox2;
-    const wrap = document.createElement("div");
-    wrap.classList.add("pdl-filter");
-    wrap.appendChild(checkbox2);
-    wrap.appendChild(label);
-    return wrap;
-  }
-  function createFilter() {
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("pdl-filter-wrap");
-    wrapper.appendChild(
-      createFilterEl(
-        "pdl-filter-exclude_downloaded",
-        "filterExcludeDownloaded",
-        t("checkbox.filter_exclude_downloaded")
-      )
-    );
-    wrapper.appendChild(
-      createFilterEl("pdl-filter-illusts", "filterIllusts", t("checkbox.filter_illusts"))
-    );
-    wrapper.appendChild(
-      createFilterEl("pdl-filter-manga", "filterManga", t("checkbox.filter_manga"))
-    );
-    wrapper.appendChild(
-      createFilterEl("pdl-filter-ugoira", "filterUgoira", t("checkbox.filter_ugoira"))
-    );
-    return wrapper;
-  }
-  function createExcludeDownloadedFilter() {
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("pdl-filter-wrap");
-    wrapper.appendChild(
-      createFilterEl(
-        "pdl-filter-exclude_downloaded",
-        "filterExcludeDownloaded",
-        t("checkbox.filter_exclude_downloaded")
-      )
-    );
-    return wrapper;
-  }
-  function createDownloadBar(userId) {
-    const nav = document.querySelector("nav");
-    if (!nav || nav.previousElementSibling) return;
-    const dlBtn = nav.querySelector(".pdl-btn-all");
-    if (dlBtn) {
-      if (dlBtn.getAttribute("pdl-userid") === userId) return;
-      removeDownloadBar();
-    }
-    const doesRequestPageLoaded = [
-      "a[href$='illustrations']",
-      "a[href$='manga']",
-      "a[href*='bookmarks']"
-    ].some((selector) => !!nav.querySelector(selector));
-    if (!doesRequestPageLoaded) return;
-    const dlBar = document.createElement("div");
-    dlBar.classList.add("pdl-dlbar");
-    const statusBar = document.createElement("div");
-    statusBar.classList.add("pdl-dlbar-status_bar");
-    dlBarRef.statusBar = dlBar.appendChild(statusBar);
-    const baseClasses = nav.querySelector("a:not([aria-current])").classList;
-    dlBarRef.abortBtn = dlBar.appendChild(
-      createPdlBtn({
-        attrs: { "pdl-userId": userId },
-        classList: [...baseClasses, "pdl-stop", "pdl-hide"],
-        textContent: t("button.download_stop")
-      })
-    );
-    if (userId !== getSelfId()) {
-      const hasWorks = ["a[href$='illustrations']", "a[href$='manga']"].some(
-        (selector) => !!nav.querySelector(selector)
-      );
-      if (hasWorks) {
-        const el = createPdlBtn({
-          attrs: { "pdl-userid": userId },
-          classList: [...baseClasses, "pdl-btn-all"],
-          textContent: t("button.download_works")
-        });
-        el.addEventListener("click", downloadWorks);
-        dlBar.appendChild(el);
-      }
-      if (nav.querySelector("a[href*='bookmarks']")) {
-        const el = createPdlBtn({
-          attrs: { "pdl-userid": userId, category: "bookmarks" },
-          classList: [...baseClasses, "pdl-btn-all"],
-          textContent: t("button.download_bookmarks")
-        });
-        el.addEventListener("click", downloadBookmarksOrTags);
-        dlBar.appendChild(el);
-      }
-    } else {
-      if (nav.querySelector("a[href*='bookmarks']")) {
-        dlBar.appendChild(
-          createPdlBtn({
-            attrs: { "pdl-userid": userId, category: "bookmarks", rest: "all" },
-            classList: [...baseClasses, "pdl-btn-all"],
-            textContent: t("button.download_bookmarks")
-          })
-        );
-        dlBar.appendChild(
-          createPdlBtn({
-            attrs: {
-              "pdl-userid": userId,
-              category: "bookmarks",
-              rest: "show"
-            },
-            classList: [...baseClasses, "pdl-btn-all"],
-            textContent: t("button.download_bookmarks_public")
-          })
-        );
-        dlBar.appendChild(
-          createPdlBtn({
-            attrs: {
-              "pdl-userid": userId,
-              category: "bookmarks",
-              rest: "hide"
-            },
-            classList: [...baseClasses, "pdl-btn-all"],
-            textContent: t("button.download_bookmarks_private")
-          })
-        );
-        dlBar.querySelectorAll(".pdl-btn-all").forEach((node) => {
-          node.addEventListener("click", downloadBookmarksOrTags);
-        });
-      }
-    }
-    const filter = createFilter();
-    nav.parentElement.insertBefore(filter, nav);
-    nav.appendChild(dlBar);
-  }
-  function removeDownloadBar() {
-    var _a;
-    const dlBarWrap = document.querySelector(".pdl-dlbar");
-    if (dlBarWrap) {
-      dlBarWrap.remove();
-      (_a = document.querySelector(".pdl-filter-wrap")) == null ? void 0 : _a.remove();
-    }
-  }
-  function updateFollowLatestDownloadBarBtnText(prevDlBtn, prevDlAllBtn) {
-    if (location.pathname.includes("r18") && prevDlBtn.textContent !== t("button.download_r18_one_page")) {
-      prevDlBtn.textContent = t("button.download_r18_one_page");
-      prevDlAllBtn.textContent = t("button.download_r18");
-    } else if (!location.pathname.includes("r18") && prevDlBtn.textContent !== t("button.download_all_one_page")) {
-      prevDlBtn.textContent = t("button.download_all_one_page");
-      prevDlAllBtn.textContent = t("button.download_all");
-    }
-  }
-  function createFollowLatestDownloadBar() {
-    const prevDlBtn = document.querySelector(".pdl-btn-all");
-    if (prevDlBtn) {
-      const prevDlAllBtn = document.querySelector(".pdl-dl-all");
-      updateFollowLatestDownloadBarBtnText(prevDlBtn, prevDlAllBtn);
-      return;
-    }
-    const navBar = document.querySelector("section > div:nth-child(3)");
-    if (!navBar || navBar.childElementCount !== 2) {
-      logger.warn("Can not find container for download bar.");
-      return;
-    }
-    const baseClassesEl = document.querySelector(
-      "section > div:first-child a:not([aria-current])"
-    );
-    if (!baseClassesEl) {
-      logger.warn("Can not find styled element for download bar.");
-      return;
-    }
-    const modeSwitch = navBar.children[1];
-    const filter = createFilter();
-    navBar.parentElement.insertBefore(filter, navBar);
-    const dlBar = document.createElement("div");
-    dlBar.classList.add("pdl-dlbar");
-    dlBar.classList.add("pdl-dlbar-follow_latest");
-    const statusBar = document.createElement("div");
-    statusBar.classList.add("pdl-dlbar-status_bar");
-    dlBarRef.statusBar = dlBar.appendChild(statusBar);
-    const baseClasses = baseClassesEl.classList;
-    dlBarRef.abortBtn = dlBar.appendChild(
-      createPdlBtn({
-        attrs: { "pdl-userid": "" },
-        classList: [...baseClasses, "pdl-stop", "pdl-hide"],
-        textContent: t("button.download_stop")
-      })
-    );
-    const dlBtn = createPdlBtn({
-      attrs: { "pdl-userid": "" },
-      classList: [...baseClasses, "pdl-btn-all"],
-      textContent: t("button.download_works")
-    });
-    dlBtn.addEventListener("click", downloadFollowLatest);
-    dlBar.appendChild(dlBtn);
-    const dlAllBtn = createPdlBtn({
-      attrs: { "pdl-userid": "" },
-      classList: [...baseClasses, "pdl-btn-all", "pdl-dl-all"],
-      textContent: t("button.download_works")
-    });
-    dlAllBtn.addEventListener("click", downloadFollowLatest);
-    dlBar.appendChild(dlAllBtn);
-    navBar.insertBefore(dlBar, modeSwitch);
-  }
-  function createSearchDownloadbar() {
-    if (document.querySelector(".pdl-dlbar")) return;
-    const sections = document.querySelectorAll("section");
-    const worksSection = sections[sections.length - 1];
-    const styleRefEle = document.querySelector("nav a:not([aria-current])");
-    if (!worksSection || !styleRefEle) return;
-    const dlBarContainer = worksSection.firstElementChild.firstElementChild;
-    const dlBar = document.createElement("div");
-    dlBar.classList.add("pdl-dlbar");
-    dlBar.classList.add("pdl-dlbar-search");
-    const statusBar = document.createElement("div");
-    statusBar.classList.add("pdl-dlbar-status_bar");
-    dlBarRef.statusBar = dlBar.appendChild(statusBar);
-    const baseClasses = styleRefEle.classList;
-    dlBarRef.abortBtn = dlBar.appendChild(
-      createPdlBtn({
-        attrs: { "pdl-userid": "" },
-        classList: [...baseClasses, "pdl-stop", "pdl-hide"],
-        textContent: t("button.download_stop")
-      })
-    );
-    const dlBtn = createPdlBtn({
-      attrs: { "pdl-userid": "" },
-      classList: [...baseClasses, "pdl-btn-all"],
-      textContent: t("button.download_all_one_page")
-    });
-    dlBtn.addEventListener("click", downloadSearchResult);
-    const filter = createExcludeDownloadedFilter();
-    dlBarContainer.parentElement.insertBefore(filter, dlBarContainer);
-    dlBar.appendChild(dlBtn);
-    dlBarContainer.appendChild(dlBar);
-  }
-  function changeDlbarDisplay() {
-    var _a, _b;
-    document.querySelectorAll(".pdl-dlbar .pdl-btn-all").forEach((ele) => {
-      ele.classList.toggle("pdl-hide");
-    });
-    (_a = document.querySelector(".pdl-dlbar .pdl-stop")) == null ? void 0 : _a.classList.toggle("pdl-hide");
-    document.querySelectorAll("pdl-artwork-tag, pdl-tag-list-button").forEach((ele) => {
-      if (ele.hasAttribute("disabled")) {
-        ele.removeAttribute("disabled");
-      } else {
-        ele.setAttribute("disabled", "");
-      }
-    });
-    (_b = document.querySelector(".pdl-filter-wrap")) == null ? void 0 : _b.classList.toggle("pdl-unavailable");
-  }
-  async function downloadByIds(total, idsGenerators, signal, onProgress) {
-    signal.throwIfAborted();
-    const failed = [];
-    const unavaliable = [];
-    const invalid = [];
-    const tasks2 = [];
-    let completed = 0;
-    let tooManyRequests = false;
-    let wakeTooManyRequest;
-    let wakeInterval;
-    let resolve;
-    let reject;
-    const done = new Promise((r, j) => {
-      resolve = r;
-      reject = j;
-    });
-    signal.addEventListener(
-      "abort",
-      () => {
-        if (tasks2.length) {
-          downloader.abort(tasks2);
-          tasks2.length = 0;
-        }
-        wakeTooManyRequest == null ? void 0 : wakeTooManyRequest();
-        wakeInterval == null ? void 0 : wakeInterval();
-        reject(signal.aborted ? signal.reason : "Unexpected generator error");
-      },
-      { once: true }
-    );
-    const afterEach = (illustId) => {
-      const avaliable = total - failed.length - unavaliable.length - invalid.length;
-      onProgress({
-        illustId,
-        avaliable,
-        completed
-      });
-      if (completed === avaliable) {
-        resolve({ failed, unavaliable });
-      }
-    };
-    onProgress("Downloading...");
-    try {
-      for (const idsGenerator of idsGenerators) {
-        for await (const ids of idsGenerator) {
-          logger.info("Got ids:", ids);
-          signal.throwIfAborted();
-          if (ids.unavaliable.length) {
-            unavaliable.push(...ids.unavaliable);
-          }
-          if (ids.invalid.length) {
-            invalid.push(...ids.invalid);
-          }
-          if (typeof ids.total === "number" && !Number.isNaN(ids.total)) {
-            total = ids.total;
-          }
-          if (ids.avaliable.length) {
-            for (const id of ids.avaliable) {
-              signal.throwIfAborted();
-              if (tooManyRequests) {
-                onProgress("Too many requests, wait 30s");
-                const { wake: wake2, sleep: sleep22 } = wakeableSleep(3e4);
-                wakeTooManyRequest = wake2;
-                await sleep22;
-                signal.throwIfAborted();
-                tooManyRequests = false;
-                onProgress("Downloading...");
-              }
-              let historyData;
-              pixivParser.parse(id).then((pixivMeta) => {
-                const { id: id2, tags, artist, userId, title, comment } = pixivMeta;
-                historyData = {
-                  pid: Number(id2),
-                  user: artist,
-                  userId: Number(userId),
-                  title,
-                  comment,
-                  tags
-                };
-                const downloadConfigs = new PixivDownloadConfig(pixivMeta).getDownloadConfig();
-                tasks2.push(downloadConfigs[0].taskId);
-                return downloader.download(downloadConfigs);
-              }).then(
-                (taskId) => {
-                  historyDb.add(historyData);
-                  if (!signal.aborted) {
-                    tasks2.splice(tasks2.indexOf(taskId[0]), 1);
-                    completed++;
-                    afterEach(id);
-                  }
-                },
-                (reason) => {
-                  if (!signal.aborted) {
-                    reason && logger.error(reason);
-                    if (reason instanceof RequestError && reason.response.status === 429) {
-                      tooManyRequests = true;
-                    }
-                    if (reason instanceof JsonDataError) {
-                      unavaliable.push(id);
-                    } else {
-                      failed.push(id);
-                    }
-                    afterEach(id);
-                  }
-                }
-              );
-              const { wake, sleep: sleep2 } = wakeableSleep(1e3);
-              wakeInterval = wake;
-              await sleep2;
-            }
-          } else {
-            afterEach("no avaliable id");
-          }
-        }
-      }
-    } catch (error) {
-      if (!signal.aborted) {
-        done.catch((reason) => {
-          logger.info("catch unexpected abort: ", reason);
-        });
-        signal.dispatchEvent(new Event("abort"));
-        throw error;
-      }
-    }
-    return done;
-  }
-  const downloadSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z"></path></svg>`;
-  class ArtworkTagButton extends HTMLElement {
-    constructor(tagElement) {
-      super();
-      __publicField(this, "ob");
-      this.tagElement = tagElement;
-      this.bindValue(this.getTagProps());
-      this.render();
-      this.resetTagStyle();
-      this.ob = new MutationObserver((records) => {
-        if (records.some((record) => record.type === "attributes" && record.attributeName === "href")) {
-          this.bindValue(this.getTagProps());
-        }
-        this.changeBtnColor();
-      });
-    }
-    // 为了美观
-    resetTagStyle() {
-      this.tagElement.style.borderTopRightRadius = "0px";
-      this.tagElement.style.borderBottomRightRadius = "0px";
-    }
-    getTagProps() {
-      const tagTitles = this.tagElement.querySelectorAll("div[title]");
-      const tagStr = tagTitles[tagTitles.length - 1].getAttribute("title");
-      const tag = tagStr.startsWith("#") ? tagStr.slice(1) : "未分類";
-      const url2 = new URL(this.tagElement.href);
-      const { searchParams, pathname } = url2;
-      const [, , userId, urlCategory] = pathname.split("/");
-      let category;
-      if (urlCategory === "illustrations" || urlCategory === "artworks") {
-        category = "illusts";
-      } else {
-        category = urlCategory;
-      }
-      return {
-        userId,
-        category,
-        tag,
-        rest: searchParams.get("rest") === "hide" ? "hide" : "show"
-      };
-    }
-    bindValue(props) {
-      this.setAttribute("data-user-id", props.userId);
-      this.setAttribute("data-category", props.category);
-      this.setAttribute("data-tag", props.tag);
-      this.setAttribute("data-bookmark-rest", props.rest);
-    }
-    changeBtnColor() {
-      const { color, backgroundColor } = getComputedStyle(this.tagElement);
-      const btn2 = this.shadowRoot.querySelector("button");
-      btn2.style.color = color;
-      btn2.style.backgroundColor = backgroundColor;
-    }
-    async render() {
-      const shadowRoot = this.attachShadow({ mode: "open" });
-      addStyleToShadow(shadowRoot);
-      shadowRoot.innerHTML = `  <button class="flex h-full items-center pr-2 rounded-e-[4px] disabled:cursor-wait disabled:opacity-70">
-    <hr class="!border-t-0 border-l h-6 pr-2" />
-    <i class="text-sm w-6 fill-current">
-      ${downloadSvg}
-    </i>
-  </button>`;
-      this.changeBtnColor();
-    }
-    connectedCallback() {
-      this.ob.observe(this.tagElement, {
-        attributes: true,
-        attributeFilter: ["class", "status", "href"]
-      });
-    }
-    disconnectedCallback() {
-      this.ob.disconnect();
-    }
-    static get observedAttributes() {
-      return ["disabled"];
-    }
-    attributeChangedCallback(name, oldValue, newValue) {
-      const btn2 = this.shadowRoot.querySelector("button");
-      if (typeof newValue === "string") {
-        btn2.setAttribute("disabled", "");
-      } else {
-        btn2.removeAttribute("disabled");
-      }
-    }
-  }
-  customElements.define("pdl-artwork-tag", ArtworkTagButton);
-  function onProgressCB(progressData) {
-    if (typeof progressData === "string") {
-      updateStatus(progressData);
-    } else {
-      logger.info(
-        "Update progress by",
-        progressData.illustId,
-        ", completed: ",
-        progressData.completed
-      );
-      updateStatus(`Downloading: ${progressData.completed} / ${progressData.avaliable}`);
-    }
-  }
-  async function useDownloadBar(chunksGenerators) {
-    var _a;
-    if (!dlBarRef.abortBtn) return;
-    let total = 0;
-    let failedResult;
-    const idsGenerators = [];
-    !Array.isArray(chunksGenerators) && (chunksGenerators = [chunksGenerators]);
-    isDownloading = true;
-    changeDlbarDisplay();
-    try {
-      await Promise.all(chunksGenerators).then((gens) => {
-        gens.forEach((val) => {
-          total += val.total;
-          idsGenerators.push(val.generator);
-        });
-      });
-    } catch (error) {
-      logger.error(error);
-      updateStatus("Network error, see console");
-      changeDlbarDisplay();
-      isDownloading = false;
-      return;
-    }
-    if (total === 0) {
-      updateStatus("No works");
-    } else {
-      try {
-        logger.info("Total works:", total);
-        const controller = new AbortController();
-        const signal = controller.signal;
-        !signal.throwIfAborted && (signal.throwIfAborted = function() {
-          if (this.aborted) {
-            throw this.reason;
-          }
-        });
-        if (!("reason" in signal)) {
-          const abort = controller.abort;
-          controller.abort = function(reason) {
-            this.signal.reason = reason ? reason : new DOMException("signal is aborted without reason");
-            abort.apply(this);
-          };
-        }
-        (_a = dlBarRef.abortBtn) == null ? void 0 : _a.addEventListener(
-          "click",
-          () => {
-            controller.abort();
-          },
-          { once: true }
-        );
-        const { failed, unavaliable } = await downloadByIds(
-          total,
-          idsGenerators,
-          signal,
-          onProgressCB
-        );
-        if (failed.length || unavaliable.length) {
-          updateStatus(`Failed: ${failed.length + unavaliable.length}. See console.`);
-          console.log("[Pixiv Downloader] Failed: ", failed.join(", "));
-          console.log("[Pixiv Downloader] Unavaliable: ", unavaliable.join(", "));
-          if (failed.length) failedResult = failed;
-        } else {
-          console.log("[Pixiv Downloader] Download complete");
-          updateStatus("Complete");
-        }
-      } catch (error) {
-        if (error instanceof DOMException) {
-          updateStatus("Stop");
-        } else {
-          updateStatus("Error, see console");
-          logger.error(error);
-        }
-      }
-    }
-    changeDlbarDisplay();
-    isDownloading = false;
-    return failedResult;
-  }
-  function getFilterOption() {
-    return {
-      filterExcludeDownloaded: config.get("filterExcludeDownloaded"),
-      filterIllusts: config.get("filterIllusts"),
-      filterManga: config.get("filterManga"),
-      filterUgoira: config.get("filterUgoira")
-    };
-  }
-  function downloadAndRetry(chunksGenerators) {
-    useDownloadBar(chunksGenerators).then((failed) => {
-      if (failed instanceof Array && failed.length) {
-        const gen = async function* () {
-          yield {
-            avaliable: failed,
-            unavaliable: [],
-            invalid: []
-          };
-        };
-        console.log("[Pixiv Downloader] Retry...");
-        useDownloadBar({ total: failed.length, generator: gen() });
-      }
-    });
-  }
-  let isDownloading = false;
-  function downloadWorks(evt) {
-    evt.preventDefault();
-    evt.stopPropagation();
-    if (isDownloading) return;
-    const btn2 = evt.target;
-    const userId = btn2.getAttribute("pdl-userid");
-    const filterOption = getFilterOption();
-    downloader.dirHandleCheck();
-    const ids = pixivParser.getAllWorksGenerator(userId, filterOption);
-    downloadAndRetry(ids);
-  }
-  async function downloadBookmarksOrTags(evt) {
-    evt.preventDefault();
-    evt.stopPropagation();
-    if (isDownloading) return;
-    let userId;
-    let category;
-    let tag;
-    let rest;
-    const btn2 = evt.currentTarget;
-    if (btn2.dataset.userId) {
-      userId = btn2.dataset.userId;
-      category = btn2.dataset.category;
-      tag = btn2.dataset.tag;
-      rest = btn2.dataset.bookmarkRest;
-    } else {
-      userId = btn2.getAttribute("pdl-userid");
-      category = btn2.getAttribute("category");
-      tag = btn2.getAttribute("tag") || "";
-      rest = btn2.getAttribute("rest") || "show";
-    }
-    downloader.dirHandleCheck();
-    const filterOption = getFilterOption();
-    let idsGenerators;
-    if (rest === "all") {
-      const idsShowPromise = pixivParser.getChunksGenerator(
-        userId,
-        "bookmarks",
-        "",
-        "show",
-        filterOption
-      );
-      const idsHidePromise = pixivParser.getChunksGenerator(
-        userId,
-        "bookmarks",
-        "",
-        "hide",
-        filterOption
-      );
-      idsGenerators = [idsShowPromise, idsHidePromise];
-    } else {
-      idsGenerators = pixivParser.getChunksGenerator(userId, category, tag, rest, filterOption);
-    }
-    downloadAndRetry(idsGenerators);
-  }
-  function downloadFollowLatest(evt) {
-    evt.preventDefault();
-    evt.stopPropagation();
-    if (isDownloading) return;
-    const btn2 = evt.target;
-    const mode = location.pathname.includes("r18") ? "r18" : "all";
-    const filterOption = getFilterOption();
-    let idsGenerators;
-    if (btn2.classList.contains("pdl-dl-all")) {
-      idsGenerators = pixivParser.getFollowLatestGenerator(filterOption, mode);
-    } else {
-      const params = new URLSearchParams(location.search);
-      const page = Number(params.get("p")) || 1;
-      idsGenerators = pixivParser.getFollowLatestGenerator(filterOption, mode, page);
-    }
-    downloadAndRetry(idsGenerators);
-  }
-  async function downloadSearchResult(evt) {
-    evt.preventDefault();
-    evt.stopPropagation();
-    if (isDownloading) return;
-    const pdlNodes = document.querySelectorAll("section ul li pdl-button");
-    if (!pdlNodes.length) return;
-    let ids = Array.prototype.map.call(
-      pdlNodes,
-      (node) => node.dataset.id
-    );
-    if (getFilterOption().filterExcludeDownloaded) {
-      const filteredIds = [];
-      for (const id of ids) {
-        const isDownloaded = await historyDb.has(id);
-        !isDownloaded && filteredIds.push(id);
-      }
-      ids = filteredIds;
-    }
-    const idsGenerators = {
-      total: ids.length,
-      generator: async function* () {
-        yield {
-          avaliable: ids,
-          unavaliable: [],
-          invalid: []
-        };
-      }()
-    };
-    downloadAndRetry(idsGenerators);
-  }
   class TagListButton extends HTMLElement {
     constructor(tagUrl, onClick) {
       super();
@@ -20330,6 +25185,19 @@ If you want to offset all timestamps of a track such that the first one is zero,
       const btn2 = shadowRoot.querySelector("button");
       this.bindValue(btn2, this.getTagProps());
       this.onClick && btn2.addEventListener("click", this.onClick);
+      const { downloading, batchDownload } = useBatchDownload();
+      downloading.subscribe((val) => {
+        if (val) {
+          this.setAttribute("disabled", "");
+        } else {
+          this.removeAttribute("disabled");
+        }
+      });
+      this.addEventListener("click", (evt) => {
+        evt.preventDefault();
+        const { userId, category, tag, rest } = this.getTagProps();
+        batchDownload("tagged_artwork", userId, category, tag, rest);
+      });
     }
     static get observedAttributes() {
       return ["disabled"];
@@ -20355,11 +25223,9 @@ If you want to offset all timestamps of a track such that the first one is zero,
     );
     tagElements.forEach((ele) => {
       if (ele.querySelector("pdl-tag-list-button")) return;
-      const btn2 = new TagListButton(ele.href, (evt) => {
+      const btn2 = new TagListButton(ele.href, () => {
         closeBtn == null ? void 0 : closeBtn.click();
-        downloadBookmarksOrTags(evt);
       });
-      if (isDownloading) btn2.setAttribute("disabled", "");
       ele.appendChild(btn2);
     });
   }
@@ -20383,20 +25249,18 @@ If you want to offset all timestamps of a track such that the first one is zero,
     const containers = Array.from(works).map(
       (node) => node.parentElement.parentElement
     );
-    const elementToAppend = Array.from(containers).filter((el) => !el.querySelector("pdl-button"));
+    const elementToAppend = Array.from(containers).filter(
+      (el) => !el.querySelector("pdl-artwork-button")
+    );
     if (!elementToAppend.length) return;
     elementToAppend.forEach((node, idx) => {
-      const wrapper = document.createElement("div");
-      wrapper.classList.add("pdl-wrap-artworks");
-      wrapper.appendChild(
-        new ThumbnailButton({
+      node.appendChild(
+        new ArtworkButton({
           id,
           page: idx,
-          type: ThumbnailBtnType.Gallery,
           onClick: downloadArtwork$1
         })
       );
-      node.appendChild(wrapper);
     });
   }
   let observer;
@@ -20489,6 +25353,103 @@ If you want to offset all timestamps of a track such that the first one is zero,
       })
     );
   }
+  class ArtworkTagButton extends HTMLElement {
+    constructor(tagElement) {
+      super();
+      __publicField(this, "ob");
+      this.tagElement = tagElement;
+      this.bindValue(this.getTagProps());
+      this.render();
+      this.resetTagStyle();
+      this.ob = new MutationObserver((records) => {
+        if (records.some((record) => record.type === "attributes" && record.attributeName === "href")) {
+          this.bindValue(this.getTagProps());
+        }
+        this.changeBtnColor();
+      });
+    }
+    // 为了美观
+    resetTagStyle() {
+      this.tagElement.style.borderTopRightRadius = "0px";
+      this.tagElement.style.borderBottomRightRadius = "0px";
+    }
+    getTagProps() {
+      const tagTitles = this.tagElement.querySelectorAll("div[title]");
+      const tagStr = tagTitles[tagTitles.length - 1].getAttribute("title");
+      const tag = tagStr.startsWith("#") ? tagStr.slice(1) : "未分類";
+      const url2 = new URL(this.tagElement.href);
+      const { searchParams, pathname } = url2;
+      const [, , userId, urlCategory] = pathname.split("/");
+      let category;
+      if (urlCategory === "illustrations" || urlCategory === "artworks") {
+        category = "illusts";
+      } else {
+        category = urlCategory;
+      }
+      return {
+        userId,
+        category,
+        tag,
+        rest: searchParams.get("rest") === "hide" ? "hide" : "show"
+      };
+    }
+    bindValue(props) {
+      this.setAttribute("data-user-id", props.userId);
+      this.setAttribute("data-category", props.category);
+      this.setAttribute("data-tag", props.tag);
+      this.setAttribute("data-bookmark-rest", props.rest);
+    }
+    changeBtnColor() {
+      const { color, backgroundColor } = getComputedStyle(this.tagElement);
+      const btn2 = this.shadowRoot.querySelector("button");
+      btn2.style.color = color;
+      btn2.style.backgroundColor = backgroundColor;
+    }
+    async render() {
+      const shadowRoot = this.attachShadow({ mode: "open" });
+      addStyleToShadow(shadowRoot);
+      shadowRoot.innerHTML = `  <button class="flex h-full items-center pr-2 rounded-e-[4px] disabled:cursor-wait disabled:opacity-70">
+    <hr class="!border-t-0 border-l h-6 pr-2" />
+    <i class="text-sm w-6 fill-current">
+      ${downloadSvg}
+    </i>
+  </button>`;
+      this.changeBtnColor();
+      const { downloading, batchDownload } = useBatchDownload();
+      downloading.subscribe((val) => {
+        if (val) {
+          this.setAttribute("disabled", "");
+        } else {
+          this.removeAttribute("disabled");
+        }
+      });
+      this.addEventListener("click", () => {
+        const { userId, category, tag, rest } = this.getTagProps();
+        batchDownload("tagged_artwork", userId, category, tag, rest);
+      });
+    }
+    connectedCallback() {
+      this.ob.observe(this.tagElement, {
+        attributes: true,
+        attributeFilter: ["class", "status", "href"]
+      });
+    }
+    disconnectedCallback() {
+      this.ob.disconnect();
+    }
+    static get observedAttributes() {
+      return ["disabled"];
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+      const btn2 = this.shadowRoot.querySelector("button");
+      if (typeof newValue === "string") {
+        btn2.setAttribute("disabled", "");
+      } else {
+        btn2.removeAttribute("disabled");
+      }
+    }
+  }
+  customElements.define("pdl-artwork-tag", ArtworkTagButton);
   function createFrequentTagBtn() {
     const tagsEles = Array.from(document.querySelectorAll("a[status]"));
     if (!tagsEles.length) return;
@@ -20496,8 +25457,6 @@ If you want to offset all timestamps of a track such that the first one is zero,
       var _a;
       if (((_a = ele.nextElementSibling) == null ? void 0 : _a.tagName) === "PDL-ARTWORK-TAG") return;
       const artworkTagBtn = new ArtworkTagButton(ele);
-      artworkTagBtn.addEventListener("click", downloadBookmarksOrTags);
-      if (isDownloading) artworkTagBtn.setAttribute("disabled", "");
       ele.parentElement.appendChild(artworkTagBtn);
     });
   }
@@ -20514,31 +25473,15 @@ If you want to offset all timestamps of a track such that the first one is zero,
         createMangaViewerBtn(id);
         break;
       }
-      case !!(param = regexp.userPage.exec(pathname)): {
-        const id = param[1] || param[2];
-        createDownloadBar(id);
-        const matchTagPage = regexp.userPageTags.exec(pathname);
-        if (matchTagPage) {
-          createFrequentTagBtn();
-          createTagListBtn();
-        }
-        break;
-      }
-      case regexp.followLatest.test(pathname): {
-        createFollowLatestDownloadBar();
-        break;
-      }
-      case regexp.searchPage.test(pathname): {
-        createSearchDownloadbar();
+      case regexp.userPageTags.test(pathname): {
+        createFrequentTagBtn();
+        createTagListBtn();
         break;
       }
       case regexp.historyPage.test(pathname): {
         createThumbnailBtn(document.querySelectorAll("span[style]._history-item"));
         break;
       }
-      default:
-        removeDownloadBar();
-        break;
     }
   }
   let firstRun = true;
@@ -20567,8 +25510,6 @@ If you want to offset all timestamps of a track such that the first one is zero,
     }
     pageActions();
   }
-  const downloadBar = `.pdl-dlbar{display:flex;flex-grow:1}.pdl-dlbar.pdl-dlbar-follow_latest{padding:0 8px}.pdl-dlbar .pdl-dlbar-status_bar{flex-grow:1;height:46px;line-height:46px;padding-right:8px;text-align:right;font-weight:700;font-size:16px;color:#858585;white-space:nowrap;cursor:default}.pdl-dlbar .pdl-btn-all,.pdl-dlbar .pdl-stop{background-color:transparent;border:none;padding:0 8px}.pdl-dlbar .pdl-btn-all:hover,.pdl-dlbar .pdl-stop:hover{color:var(--pdl-text1)}.pdl-dlbar .pdl-btn-all:before,.pdl-dlbar .pdl-stop:before{content:"";height:24px;width:24px;transition:background-image .2s ease 0s;background:no-repeat center/85%}.pdl-dlbar .pdl-btn-all:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}.pdl-dlbar .pdl-btn-all:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%231F1F1F' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}.pdl-dlbar .pdl-stop:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}.pdl-dlbar .pdl-stop:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%231F1F1F' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}:root .pdl-dlbar .pdl-btn-all:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root .pdl-dlbar .pdl-btn-all:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%231F1F1F' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root .pdl-dlbar .pdl-stop:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}:root .pdl-dlbar .pdl-stop:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%231F1F1F' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}:root[data-theme=default] .pdl-dlbar .pdl-btn-all:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root[data-theme=default] .pdl-dlbar .pdl-btn-all:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%231F1F1F' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root[data-theme=default] .pdl-dlbar .pdl-stop:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}:root[data-theme=default] .pdl-dlbar .pdl-stop:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%231F1F1F' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}@media (prefers-color-scheme: light){:root .pdl-dlbar .pdl-btn-all:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root .pdl-dlbar .pdl-btn-all:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%231F1F1F' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root .pdl-dlbar .pdl-stop:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}:root .pdl-dlbar .pdl-stop:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%231F1F1F' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}}:root[data-theme=dark] .pdl-dlbar .pdl-btn-all:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root[data-theme=dark] .pdl-dlbar .pdl-btn-all:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23D6D6D6' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root[data-theme=dark] .pdl-dlbar .pdl-stop:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}:root[data-theme=dark] .pdl-dlbar .pdl-stop:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23D6D6D6' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}@media (prefers-color-scheme: dark){:root .pdl-dlbar .pdl-btn-all:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root .pdl-dlbar .pdl-btn-all:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23D6D6D6' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z'%3E%3C/path%3E %3C/svg%3E")}:root .pdl-dlbar .pdl-stop:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23858585' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}:root .pdl-dlbar .pdl-stop:hover:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E %3Cpath fill='%23D6D6D6' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z'%3E%3C/path%3E %3C/svg%3E")}}.pdl-filter-wrap{display:flex;justify-content:flex-end;gap:12px;margin:4px 0;font-weight:700;font-size:14px;line-height:14px;color:#858585;transition:color .2s ease 0s}.pdl-filter-wrap .pdl-filter:hover{color:var(--pdl-text1)}.pdl-filter-wrap .pdl-filter label{padding-left:8px;cursor:pointer}`;
-  const checkbox = '.pdl-checkbox{cursor:pointer;margin:0!important;padding:0!important;vertical-align:top;-webkit-appearance:none;-moz-appearance:none;appearance:none;position:relative;box-sizing:border-box;width:28px;border:2px solid transparent!important;border-radius:14px!important;height:14px;background-color:#858585!important;transition:background-color .2s ease 0s,box-shadow .2s ease 0s}.pdl-checkbox:hover{background-color:var(--pdl-bg3-hover)!important}.pdl-checkbox:checked{background-color:#0096fa!important}.pdl-checkbox:after{content:"";position:absolute;display:block;top:0;left:0;width:10px;height:10px;transform:translate(0);background-color:#fff;border-radius:10px;transition:transform .2s ease 0s}.pdl-checkbox:checked:after{transform:translate(14px)}';
   class Pixiv extends SiteInject {
     inject() {
       super.inject();
@@ -20576,11 +25517,6 @@ If you want to offset all timestamps of a track such that the first one is zero,
         childList: true,
         subtree: true
       });
-    }
-    injectStyle() {
-      super.injectStyle();
-      _GM_addStyle(checkbox);
-      _GM_addStyle(downloadBar);
     }
     observeColorScheme() {
       const onThemeChange = () => {
@@ -20598,11 +25534,198 @@ If you want to offset all timestamps of a track such that the first one is zero,
         subtree: false
       });
     }
+    getBatchDownloadConfig() {
+      return {
+        async avatar(url2) {
+          const userIdMatch = regexp.userPage.exec(url2);
+          let userId;
+          userIdMatch ? userId = userIdMatch[1] || userIdMatch[2] : userId = getSelfId() ?? "";
+          if (!userId) return "";
+          try {
+            const userData = await api.getUserData(userId);
+            return userData.imageBig;
+          } catch (error) {
+            logger.error(error);
+            return "";
+          }
+        },
+        filterOption: {
+          filters: [
+            {
+              id: "exclude_downloaded",
+              type: "exclude",
+              name: t("downloader.category.filter.exclude_downloaded"),
+              checked: false,
+              fn(meta) {
+                return !!meta.id && historyDb.has(meta.id);
+              }
+            },
+            {
+              id: "illust",
+              type: "include",
+              name: t("downloader.category.filter.pixiv_illust"),
+              checked: true,
+              fn(meta) {
+                return meta.illustType === IllustType.illusts;
+              }
+            },
+            {
+              id: "manga",
+              type: "include",
+              name: t("downloader.category.filter.pixiv_manga"),
+              checked: true,
+              fn(meta) {
+                return meta.illustType === IllustType.manga;
+              }
+            },
+            {
+              id: "ugoira",
+              type: "include",
+              name: t("downloader.category.filter.pixiv_ugoira"),
+              checked: true,
+              fn(meta) {
+                return meta.illustType === IllustType.ugoira;
+              }
+            }
+          ],
+          enableTagFilter: true,
+          filterWhenGenerateIngPage: true
+        },
+        pageMatch: [
+          {
+            name: "my_page",
+            match(url2) {
+              const userIdMatch = regexp.userPage.exec(url2);
+              if (!userIdMatch) return false;
+              const userId = userIdMatch[1] || userIdMatch[2];
+              return userId === getSelfId();
+            },
+            genPageId: [
+              {
+                id: "self_bookmark_public",
+                name: t("downloader.download_type.pixiv_bookmark_public"),
+                fn: (...args) => {
+                  return pixivParser.bookmarkGenerator(...args, getSelfId());
+                }
+              },
+              {
+                id: "self_bookmark_private",
+                name: t("downloader.download_type.pixiv_bookmark_private"),
+                fn: (...args) => {
+                  return pixivParser.bookmarkGenerator(...args, getSelfId(), "hide");
+                }
+              }
+            ]
+          },
+          {
+            name: "user_page",
+            match: regexp.userPage,
+            genPageId: [
+              {
+                id: "works",
+                name: t("downloader.download_type.pixiv_works"),
+                fn: (...args) => {
+                  const userIdMatch = regexp.userPage.exec(location.href);
+                  const userId = userIdMatch[1] || userIdMatch[2];
+                  return pixivParser.illustMangaGenerator(...args, userId);
+                }
+              },
+              {
+                id: "bookmark",
+                name: t("downloader.download_type.pixiv_bookmark"),
+                fn: (...args) => {
+                  const userIdMatch = regexp.userPage.exec(location.href);
+                  const userId = userIdMatch[1] || userIdMatch[2];
+                  return pixivParser.bookmarkGenerator(...args, userId);
+                }
+              }
+            ]
+          },
+          {
+            name: "follow_latest",
+            match: regexp.followLatest,
+            genPageId: [
+              {
+                id: "follow_latest_all",
+                name: t("downloader.download_type.pixiv_follow_latest_all"),
+                fn: (...args) => {
+                  return pixivParser.followLatestGenerator(...args, "all");
+                }
+              },
+              {
+                id: "follow_latest_r18",
+                name: t("downloader.download_type.pixiv_follow_latest_r18"),
+                fn: (...args) => {
+                  return pixivParser.followLatestGenerator(...args, "r18");
+                }
+              }
+            ]
+          },
+          {
+            name: "download_specific_tag",
+            match: () => false,
+            // use for user tag download
+            genPageId: [
+              {
+                id: "tagged_artwork",
+                name: "tagged_artwork",
+                fn: (pageRange, checkValidity, userId, category, tag, bookmarkRest = "show") => {
+                  if (category === "bookmarks") {
+                    return pixivParser.taggedArtworkGenerator(
+                      pageRange,
+                      checkValidity,
+                      userId,
+                      category,
+                      tag,
+                      bookmarkRest
+                    );
+                  } else {
+                    return pixivParser.taggedArtworkGenerator(
+                      pageRange,
+                      checkValidity,
+                      userId,
+                      category,
+                      tag
+                    );
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        parseMetaByArtworkId(id) {
+          return pixivParser.parse(id, true);
+        },
+        async downloadByArtworkId(meta, taskId) {
+          downloader.dirHandleCheck();
+          const downloadConfigs = new PixivDownloadConfig(meta).getDownloadConfig();
+          downloadConfigs.forEach((config2) => {
+            config2.taskId = taskId;
+            config2.source.id = taskId;
+          });
+          await downloader.download(downloadConfigs);
+          const { comment, id, tags, artist, userId, title } = meta;
+          const historyData = {
+            pid: Number(id),
+            user: artist,
+            userId: Number(userId),
+            title,
+            comment,
+            tags
+          };
+          historyDb.add(historyData);
+          return id;
+        },
+        onDownloadAbort(taskIds) {
+          downloader.abort(taskIds);
+        }
+      };
+    }
   }
   const yandeParser = {
     async parse(id) {
       const res = await fetch("/post/show/" + id);
-      if (!res.ok) throw new RequestError("Request failed with status code " + res.status, res);
+      if (!res.ok) throw new RequestError(res.url, res.status);
       const html = await res.text();
       const matchImageData = html.match(new RegExp("(?<=Post\\.register_resp\\().+(?=\\);)"));
       if (!matchImageData) throw new Error("Can not parse image data.");
@@ -20698,15 +25821,13 @@ If you want to offset all timestamps of a track such that the first one is zero,
       const btnContainer = image.closest("div");
       btnContainer.style.position = "relative";
       btnContainer.style.width = "max-content";
-      const wrapper = document.createElement("div");
-      wrapper.classList.add("pdl-wrap-artworks", "yande");
-      const btn2 = new ThumbnailButton({
-        id,
-        type: ThumbnailBtnType.Gallery,
-        onClick: downloadArtwork
-      });
-      wrapper.appendChild(btn2);
-      btnContainer.appendChild(wrapper);
+      btnContainer.appendChild(
+        new ArtworkButton({
+          id,
+          site: "yande",
+          onClick: downloadArtwork
+        })
+      );
     }
     createScrollerBtn() {
       const scrollerList = document.querySelector("ul.post-browser-posts");
@@ -20766,6 +25887,9 @@ If you want to offset all timestamps of a track such that the first one is zero,
       query.addEventListener("change", (e) => {
         e.matches ? this.setModalDarkMode() : this.setModalLightMode();
       });
+    }
+    getBatchDownloadConfig() {
+      return void 0;
     }
   }
   function getSiteInjector(host) {
