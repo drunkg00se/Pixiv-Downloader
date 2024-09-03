@@ -8,6 +8,10 @@
   const anchor = `leading-loose anchor underline-offset-2 ${anchorFocus}`;
 
   export let parent: SvelteComponent;
+
+  let showCreditCode: boolean = false;
+
+  $: gridRows = showCreditCode ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]';
 </script>
 
 <ModalWrapper {parent}>
@@ -32,19 +36,26 @@
       </li>
     </ul>
   </article>
-  <footer class="modal-footer relative mt-4 text-sm">
-    <details>
-      <summary class="inline-block cursor-pointer {anchor}"> 脚本还行？请我喝杯可乐吧！ </summary>
-      <div class="text-center truncate flex flex-col items-center mt-4">
-        <img src={creditCode} alt="credit" class=" rounded-full" />
-        <p class="mt-2">想喝香草味冰可乐</p>
+  <footer class="modal-footer mt-4 text-sm">
+    <!-- use `<details>` again when `height: calc-size(auto)` is widely supported -->
+
+    <div class="flex justify-between items-center">
+      <button class={anchor} on:click={() => (showCreditCode = !showCreditCode)}
+        >脚本还行？请我喝杯可乐吧！</button
+      >
+      <a
+        class={anchor}
+        target="_blank"
+        href="https://sleazyfork.org/zh-CN/scripts/432150-pixiv-downloader/feedback"
+        >{t('text.feedback')}</a
+      >
+    </div>
+
+    <div class="grid transition-[grid-template-rows] duration-[400ms] {gridRows}">
+      <div class="flex flex-col items-center gap-2 min-h-0">
+        <img src={creditCode} alt="credit" class="rounded-full" />
+        <p>想喝香草味冰可乐</p>
       </div>
-    </details>
-    <a
-      class=" absolute right-0 top-0 {anchor}"
-      target="_blank"
-      href="https://sleazyfork.org/zh-CN/scripts/432150-pixiv-downloader/feedback"
-      >{t('text.feedback')}</a
-    >
+    </div>
   </footer>
 </ModalWrapper>
