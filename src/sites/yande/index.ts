@@ -110,7 +110,9 @@ export class Yande extends SiteInject {
       const oldBtn = document.querySelector('pdl-button[type]');
       if (oldBtn) oldBtn.remove();
 
-      const id = postId!.textContent ?? '';
+      const id = postId!.textContent;
+      if (!id) return;
+
       document.body.appendChild(
         new ThumbnailButton({
           id,
