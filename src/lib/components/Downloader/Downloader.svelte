@@ -455,7 +455,7 @@
             bind:this={avatarEl}
             src={val}
             alt="batch download"
-            class="object-cover object-center"
+            class="object-cover object-center size-full"
           />
         {/if}
       {/await}
