@@ -3,6 +3,7 @@ import { addStyleToShadow } from '@/lib/util';
 import type { Category } from '@/sites/pixiv/types';
 import type { TagProps } from './artworkTagButton';
 import { useBatchDownload } from '../Downloader/useBatchDownload';
+import { regexp } from '@/lib/regExp';
 
 export class TagListButton extends HTMLElement {
   constructor(
@@ -18,8 +19,11 @@ export class TagListButton extends HTMLElement {
     const url = new URL(this.tagUrl);
     const { searchParams, pathname } = url;
 
-    const pathComponent = pathname.split('/');
-    const [, , userId, urlCategory] = pathComponent;
+    const extractUrlMatch = regexp.userPageTags.exec(pathname);
+    if (!extractUrlMatch) throw new Error(`Could not extract tag props from: ${pathname}`);
+
+    const [, userId, urlCategory, tag] = extractUrlMatch;
+    if (!tag) throw new Error(`Could not extract tag from: ${pathname}`);
 
     let category: Category;
     // urlCategory is one of 'artworks' | 'illustrations' | 'manga' | 'bookmarks'
@@ -32,7 +36,7 @@ export class TagListButton extends HTMLElement {
     return {
       userId,
       category,
-      tag: pathComponent[pathComponent.length - 1],
+      tag: tag,
       rest: searchParams.get('rest') === 'hide' ? 'hide' : 'show'
     } as TagProps;
   }

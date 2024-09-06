@@ -2,6 +2,7 @@ import downloadSvg from '@/assets/download.svg?src';
 import { addStyleToShadow } from '@/lib/util';
 import type { Category, BookmarksRest } from '@/sites/pixiv/types';
 import { useBatchDownload } from '../Downloader/useBatchDownload';
+import { regexp } from '@/lib/regExp';
 
 export interface TagProps {
   userId: string;
@@ -39,6 +40,7 @@ export class ArtworkTagButton extends HTMLElement {
   }
 
   private getTagProps(): TagProps {
+    // element.href does not include tag when frequent tag is selected
     // first title may be the tranlated one
     const tagTitles = this.tagElement.querySelectorAll('div[title]');
     const tagStr = tagTitles[tagTitles.length - 1].getAttribute('title')!;
@@ -48,7 +50,11 @@ export class ArtworkTagButton extends HTMLElement {
 
     const url = new URL(this.tagElement.href);
     const { searchParams, pathname } = url;
-    const [, , userId, urlCategory] = pathname.split('/');
+
+    const extractUrlMatch = regexp.userPageTags.exec(pathname);
+    if (!extractUrlMatch) throw new Error(`Could not extract tag props from: ${pathname}`);
+
+    const [, userId, urlCategory] = extractUrlMatch;
 
     let category: Category;
 
