@@ -19,15 +19,13 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
   <article class="modal-body mt-4">
     <ul class="list-disc list-inside leading-loose">
-      <p>
-        重写了批量下载，请在Pixiv【用户页】【已关注用户的新作】点击页面右方头像进行下载。暂未支持下载搜索结果。
-      </p>
-      <li>新增: 现在批量下载支持自定义下载页数。</li>
-      <li>新增: 现在批量下载支持作品标签黑名单，白名单。</li>
-      <li>新增: 现在进行中断批量下载的页面跳转时会进行提示。</li>
-      <li>修复（Pixiv）: 无法下载【已关注用户的新作】最后一页的问题。</li>
-      <li>修复（Pixiv）: 无法正确获得繁体中文标签的问题。</li>
-      <li>修复（Pixiv）: 一些特殊字符导致保存失败的问题。</li>
+      <li>
+        Fix (Pixiv): Tag's properties are not extracted correctly when the language is set to
+        English.
+      </li>
+      <li>修复（Pixiv）: 收藏标签没有正确更新的问题。</li>
+      <li>修复（Pixiv）: 批量下载按钮用户头像没有正确显示的问题。</li>
+      <li>修复（Yande）: Browse页无法正确显示下载按钮的问题。</li>
     </ul>
   </article>
   <footer class="modal-footer mt-4 text-sm">
