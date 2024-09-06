@@ -123,10 +123,6 @@ export class ArtworkTagButton extends HTMLElement {
     });
   }
 
-  disconnectedCallback() {
-    this.ob.disconnect();
-  }
-
   static get observedAttributes() {
     return ['disabled'];
   }
