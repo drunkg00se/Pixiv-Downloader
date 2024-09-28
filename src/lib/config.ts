@@ -22,6 +22,13 @@ export const enum TagLanguage {
   ENGLISH = 'en'
 }
 
+export const enum HistoryBackupInterval {
+  NEVER = 0,
+  EVERY_DAY = 86400,
+  EVERY_7_DAY = 604800,
+  EVERY_30_DAY = 2592000
+}
+
 export interface ConfigData {
   version: string;
   ugoiraFormat: UgoiraFormat;
@@ -49,6 +56,8 @@ export interface ConfigData {
   webpQuality: number;
   webpMehtod: number;
   pngColor: number;
+  historyBackupInterval: number;
+  lastHistoryBackup: number;
   'pdl-btn-self-bookmark-left': number;
   'pdl-btn-self-bookmark-top': number;
   'pdl-btn-left': number;
@@ -113,6 +122,8 @@ function loadConfig(): Config {
     webpQuality: 95,
     webpMehtod: 4,
     pngColor: 256,
+    historyBackupInterval: HistoryBackupInterval.NEVER,
+    lastHistoryBackup: 0,
     'pdl-btn-self-bookmark-left': 100,
     'pdl-btn-self-bookmark-top': 76,
     'pdl-btn-left': 0,

@@ -50,11 +50,13 @@ const zh = {
     history: {
       title: '下载历史',
       label: {
+        scheduled_backups: '定期备份',
         export: '导出',
         import: '导入',
         clear: '清理'
       },
       options: {
+        scheduled_backups: '以选定的时间间隔自动备份下载历史',
         export_as_json: '将下载历史导出为JSON文件',
         export_as_csv: '将下载历史导出为CSV文件',
         import_json: '导入JSON格式下载历史',
@@ -64,6 +66,12 @@ const zh = {
         export: '导出记录',
         import: '导入记录',
         clear: '清除记录'
+      },
+      select: {
+        backup_interval_never: '不备份',
+        backup_interval_every_day: '每天',
+        backup_interval_every_7_day: '每7天',
+        backup_interval_every_30_day: '每30天'
       }
     },
     button_position: {
@@ -199,11 +207,13 @@ const en: typeof zh = {
     history: {
       title: 'History',
       label: {
+        scheduled_backups: 'Scheduled Backups',
         export: 'Export',
         import: 'Import',
         clear: 'Clear'
       },
       options: {
+        scheduled_backups: 'Automatically back up download history at selected intervals.',
         export_as_json: 'Export download history as JSON file',
         export_as_csv: 'Export download history as CSV file',
         import_json: 'Import JSON format download history',
@@ -213,6 +223,12 @@ const en: typeof zh = {
         export: 'Export',
         import: 'Import',
         clear: 'Clear'
+      },
+      select: {
+        backup_interval_never: 'Never',
+        backup_interval_every_day: 'Every day',
+        backup_interval_every_7_day: '7 days',
+        backup_interval_every_30_day: '30 days'
       }
     },
     button_position: {

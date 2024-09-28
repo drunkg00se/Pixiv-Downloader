@@ -3,6 +3,7 @@ import { GM_registerMenuCommand } from '$';
 import { type ConfigData, config } from '@/lib/config';
 import { type BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 import { PdlApp } from '@/lib/components/App';
+import { useHistoryBackup } from '@/lib/components/Modal/Config/useHistoryBackup';
 
 export abstract class SiteInject {
   private modal!: PdlApp;
@@ -10,6 +11,7 @@ export abstract class SiteInject {
   constructor() {
     this.inject();
     this.observeColorScheme();
+    this.runScheduledTask();
   }
 
   protected inject() {
@@ -54,6 +56,10 @@ export abstract class SiteInject {
         document.documentElement.style.setProperty('--' + key, val as string);
       }
     });
+  }
+
+  protected runScheduledTask() {
+    useHistoryBackup().scheduleBackup();
   }
 
   protected setModalDarkMode() {

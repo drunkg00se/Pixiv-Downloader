@@ -144,3 +144,11 @@ export function getElementText(el: HTMLElement): string {
 
   return str;
 }
+
+export function aDownload(blob: Blob, filename: string) {
+  const el = document.createElement('a');
+  el.href = URL.createObjectURL(blob);
+  el.download = filename;
+  el.click();
+  URL.revokeObjectURL(el.href);
+}
