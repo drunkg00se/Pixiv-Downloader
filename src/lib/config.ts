@@ -29,10 +29,6 @@ export interface ConfigData {
   filenamePattern: string;
   tagLang: TagLanguage;
   showMsg: boolean;
-  filterExcludeDownloaded: boolean;
-  filterIllusts: boolean;
-  filterManga: boolean;
-  filterUgoira: boolean;
   mixEffect: boolean;
   bundleIllusts: boolean;
   bundleManga: boolean;
@@ -93,10 +89,6 @@ function loadConfig(): Config {
     filenamePattern: getDefaultFilename(),
     tagLang: TagLanguage.JAPANESE,
     showMsg: true,
-    filterExcludeDownloaded: false,
-    filterIllusts: true,
-    filterManga: true,
-    filterUgoira: true,
     mixEffect: false,
     bundleIllusts: false,
     bundleManga: false,
