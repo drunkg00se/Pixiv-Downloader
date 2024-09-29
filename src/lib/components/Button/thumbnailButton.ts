@@ -43,9 +43,12 @@ export class ThumbnailButton extends HTMLElement {
   private page?: number;
   private type?: ThumbnailBtnType;
   private onClick: ThumbnailBtnProp['onClick'];
+  private btn: HTMLButtonElement;
 
   constructor(props: ThumbnailBtnProp) {
     super();
+    this.dispatchDownload = this.dispatchDownload.bind(this);
+
     this.status = ThumbnailBtnStatus.Init;
     this.mediaId = this.checkNumberValidity(props.id);
     props.page !== undefined && (this.page = this.checkNumberValidity(props.page));
@@ -53,6 +56,7 @@ export class ThumbnailButton extends HTMLElement {
     this.onClick = props.onClick;
 
     this.render();
+    this.btn = this.shadowRoot!.querySelector('button')!;
   }
 
   private checkNumberValidity(num: number | string): number {
@@ -219,28 +223,34 @@ export class ThumbnailButton extends HTMLElement {
     this.page !== undefined && (this.dataset.page = String(this.page));
   }
 
-  private connectedCallback() {
-    this.shadowRoot!.lastElementChild!.addEventListener('click', (evt) => {
-      evt.preventDefault();
-      evt.stopPropagation();
+  public dispatchDownload(evt?: MouseEvent) {
+    evt?.preventDefault();
+    evt?.stopPropagation();
 
-      this.setAttribute('disabled', '');
-      this.setStatus(ThumbnailBtnStatus.Loading);
+    this.setAttribute('disabled', '');
+    this.setStatus(ThumbnailBtnStatus.Loading);
 
-      Promise.resolve(this.onClick(this))
-        .then(
-          () => {
-            this.setStatus(ThumbnailBtnStatus.Complete);
-          },
-          (err: any) => {
-            if (err) logger.error(err);
-            this.setStatus(ThumbnailBtnStatus.Error);
-          }
-        )
-        .finally(() => {
-          this.removeAttribute('disabled');
-        });
-    });
+    Promise.resolve(this.onClick(this))
+      .then(
+        () => {
+          this.setStatus(ThumbnailBtnStatus.Complete);
+        },
+        (err: any) => {
+          if (err) logger.error(err);
+          this.setStatus(ThumbnailBtnStatus.Error);
+        }
+      )
+      .finally(() => {
+        this.removeAttribute('disabled');
+      });
+  }
+
+  connectedCallback() {
+    this.btn.addEventListener('click', this.dispatchDownload);
+  }
+
+  disconnectedCallback() {
+    this.btn.removeEventListener('click', this.dispatchDownload);
   }
 
   public setProgress(progress: number, updateProgressbar = true) {

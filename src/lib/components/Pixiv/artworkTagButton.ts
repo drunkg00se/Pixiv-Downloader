@@ -3,6 +3,7 @@ import { addStyleToShadow } from '@/lib/util';
 import type { Category, BookmarksRest } from '@/sites/pixiv/types';
 import { useBatchDownload } from '../Downloader/useBatchDownload';
 import { regexp } from '@/lib/regExp';
+import type { Unsubscriber } from 'svelte/store';
 
 export interface TagProps {
   userId: string;
@@ -13,9 +14,12 @@ export interface TagProps {
 
 export class ArtworkTagButton extends HTMLElement {
   private ob: MutationObserver;
+  private unsubscriber!: Unsubscriber;
 
   constructor(private tagElement: HTMLAnchorElement) {
     super();
+
+    this.dispatchDownload = this.dispatchDownload.bind(this);
 
     this.render();
     this.resetTagStyle();
@@ -31,7 +35,29 @@ export class ArtworkTagButton extends HTMLElement {
     this.tagElement.style.borderBottomRightRadius = '0px';
   }
 
-  private getTagProps(): TagProps {
+  private changeBtnColor() {
+    const { color, backgroundColor } = getComputedStyle(this.tagElement);
+    const btn = this.shadowRoot!.querySelector('button')!;
+
+    btn.style.color = color;
+    btn.style.backgroundColor = backgroundColor;
+  }
+
+  private async render() {
+    const shadowRoot = this.attachShadow({ mode: 'open' });
+    addStyleToShadow(shadowRoot);
+
+    shadowRoot.innerHTML = `  <button class="flex h-full items-center pr-2 rounded-e-[4px] disabled:cursor-wait disabled:opacity-70">
+    <hr class="!border-t-0 border-l h-6 pr-2" />
+    <i class="text-sm w-6 fill-current">
+      ${downloadSvg}
+    </i>
+  </button>`;
+
+    this.changeBtnColor();
+  }
+
+  public getTagProps(): TagProps {
     // element.href does not include tag when frequent tag is selected
     // first title may be the tranlated one
     const tagTitles = this.tagElement.querySelectorAll('div[title]');
@@ -65,30 +91,17 @@ export class ArtworkTagButton extends HTMLElement {
     } as TagProps;
   }
 
-  private changeBtnColor() {
-    const { color, backgroundColor } = getComputedStyle(this.tagElement);
-    const btn = this.shadowRoot!.querySelector('button')!;
+  public dispatchDownload() {
+    const { userId, category, tag, rest } = this.getTagProps();
+    const { batchDownload } = useBatchDownload();
 
-    btn.style.color = color;
-    btn.style.backgroundColor = backgroundColor;
+    batchDownload('tagged_artwork', userId, category, tag, rest);
   }
 
-  private async render() {
-    const shadowRoot = this.attachShadow({ mode: 'open' });
-    addStyleToShadow(shadowRoot);
+  connectedCallback() {
+    const { downloading } = useBatchDownload();
 
-    shadowRoot.innerHTML = `  <button class="flex h-full items-center pr-2 rounded-e-[4px] disabled:cursor-wait disabled:opacity-70">
-    <hr class="!border-t-0 border-l h-6 pr-2" />
-    <i class="text-sm w-6 fill-current">
-      ${downloadSvg}
-    </i>
-  </button>`;
-
-    this.changeBtnColor();
-
-    const { downloading, batchDownload } = useBatchDownload();
-
-    downloading.subscribe((val) => {
+    this.unsubscriber = downloading.subscribe((val) => {
       if (val) {
         this.setAttribute('disabled', '');
       } else {
@@ -96,13 +109,8 @@ export class ArtworkTagButton extends HTMLElement {
       }
     });
 
-    this.addEventListener('click', () => {
-      const { userId, category, tag, rest } = this.getTagProps();
-      batchDownload('tagged_artwork', userId, category, tag, rest);
-    });
-  }
+    this.addEventListener('click', this.dispatchDownload);
 
-  connectedCallback() {
     this.ob.observe(this.tagElement, {
       attributes: true,
       attributeFilter: ['status']
@@ -110,6 +118,8 @@ export class ArtworkTagButton extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this.unsubscriber();
+    this.removeEventListener('click', this.dispatchDownload);
     this.ob.disconnect();
   }
 

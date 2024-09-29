@@ -4,18 +4,40 @@ import type { Category } from '@/sites/pixiv/types';
 import type { TagProps } from './artworkTagButton';
 import { useBatchDownload } from '../Downloader/useBatchDownload';
 import { regexp } from '@/lib/regExp';
+import type { Unsubscriber } from 'svelte/store';
 
 export class TagListButton extends HTMLElement {
+  private btn: HTMLButtonElement;
+  private unsubscriber!: Unsubscriber;
+
   constructor(
     private tagUrl: string,
     private onClick?: (evt: MouseEvent) => void
   ) {
     super();
+    this.dispatchDownload = this.dispatchDownload.bind(this);
 
     this.render();
+    this.btn = this.shadowRoot!.querySelector('button')!;
   }
 
-  private getTagProps(): TagProps {
+  private async render() {
+    const shadowRoot = this.attachShadow({ mode: 'open' });
+    addStyleToShadow(shadowRoot);
+
+    shadowRoot.innerHTML = ` 
+  <div class=" flex items-center">    
+    <hr class="!border-t-0 border-l h-6 ml-4 mr-2" />
+    <button class=" h-[38px] w-[38px] btn-icon [&:not([disabled])]:hover:bg-slate-400/30 disabled:cursor-wait disabled:opacity-70">
+      <i class="text-sm w-6 fill-current mx-2">
+      ${downloadSvg}
+      </i>
+    </button>
+  </div>
+  `;
+  }
+
+  public getTagProps(): TagProps {
     const url = new URL(this.tagUrl);
     const { searchParams, pathname } = url;
 
@@ -41,27 +63,20 @@ export class TagListButton extends HTMLElement {
     } as TagProps;
   }
 
-  private async render() {
-    const shadowRoot = this.attachShadow({ mode: 'open' });
-    addStyleToShadow(shadowRoot);
+  public dispatchDownload(evt?: MouseEvent) {
+    // prevent from navigating to specific tag page
+    evt?.preventDefault();
 
-    shadowRoot.innerHTML = ` 
-  <div class=" flex items-center">    
-    <hr class="!border-t-0 border-l h-6 ml-4 mr-2" />
-    <button class=" h-[38px] w-[38px] btn-icon [&:not([disabled])]:hover:bg-slate-400/30 disabled:cursor-wait disabled:opacity-70">
-      <i class="text-sm w-6 fill-current mx-2">
-      ${downloadSvg}
-      </i>
-    </button>
-  </div>
-  `;
+    const { userId, category, tag, rest } = this.getTagProps();
+    const { batchDownload } = useBatchDownload();
 
-    const btn = shadowRoot.querySelector('button')!;
-    this.onClick && btn.addEventListener('click', this.onClick);
+    batchDownload('tagged_artwork', userId, category, tag, rest);
+  }
 
-    const { downloading, batchDownload } = useBatchDownload();
+  connectedCallback() {
+    const { downloading } = useBatchDownload();
 
-    downloading.subscribe((val) => {
+    this.unsubscriber = downloading.subscribe((val) => {
       if (val) {
         this.setAttribute('disabled', '');
       } else {
@@ -69,13 +84,14 @@ export class TagListButton extends HTMLElement {
       }
     });
 
-    this.addEventListener('click', (evt) => {
-      // prevent from navigating to specific tag page
-      evt.preventDefault();
+    this.btn.addEventListener('click', this.dispatchDownload);
+    this.onClick && this.btn.addEventListener('click', this.onClick);
+  }
 
-      const { userId, category, tag, rest } = this.getTagProps();
-      batchDownload('tagged_artwork', userId, category, tag, rest);
-    });
+  disconnectedCallback() {
+    this.unsubscriber();
+    this.btn.removeEventListener('click', this.dispatchDownload);
+    this.onClick && this.btn.removeEventListener('click', this.onClick);
   }
 
   static get observedAttributes() {
