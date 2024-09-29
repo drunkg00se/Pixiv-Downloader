@@ -1,4 +1,4 @@
-import { writable, derived, readonly, type Readable } from 'svelte/store';
+import { writable, derived, readonly, type Readable, get } from 'svelte/store';
 import optionStore from './store';
 import { logger } from '@/lib/logger';
 import { CancelError, RequestError } from '@/lib/error';
@@ -95,7 +95,7 @@ export let useBatchDownload: () => {
 };
 
 export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, true | undefined>) {
-  const artworkCount = writable<number | null>(0);
+  const artworkCount = writable<number>(0);
   const successd = writable<string[]>([]);
   const failed = writable<FailedItem[]>([]);
   const excluded = writable<string[]>([]);
@@ -104,6 +104,7 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
   const tasks: string[] = [];
   const failedTasks: string[] = [];
+  const unavaliableTasks: string[] = [];
 
   let controller: AbortController | null;
   let downloadCompleted!: () => void;
@@ -177,10 +178,8 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
   const checkIfDownloadCompleted = derived(
     [artworkCount, successd, failed, excluded],
-    ([$artworkCount, $successd, $failed, $excluded]) => {
-      if ($artworkCount === null) false;
-      return $artworkCount === $successd.length + $failed.length + $excluded.length;
-    }
+    ([$artworkCount, $successd, $failed, $excluded]) =>
+      $artworkCount === $successd.length + $failed.length + $excluded.length
   );
   checkIfDownloadCompleted.subscribe((isDone) => {
     // resolve waitUntilDownloadComplete when download completed.
@@ -188,12 +187,13 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
   });
 
   function reset() {
-    artworkCount.set(null);
+    artworkCount.set(0);
     successd.set([]);
     failed.set([]);
     excluded.set([]);
     tasks.length = 0;
     failedTasks.length = 0;
+    unavaliableTasks.length = 0;
     controller = null;
     downloadCompleted = () => {};
     downloadAbort = () => {};
@@ -366,13 +366,16 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
       // retry failed downloads
       if ($retryFailed && failedTasks.length) {
-        generator = retryGenerator(failedTasks.slice());
-
-        const controllerTemp = controller;
-        reset();
-        controller = controllerTemp;
-
         writeLog('Info', 'Retry...');
+
+        generator = retryGenerator(
+          get(artworkCount),
+          failedTasks.slice(),
+          unavaliableTasks.slice()
+        );
+        failedTasks.length = 0;
+        unavaliableTasks.length = 0;
+        failed.set([]);
 
         await dispatchDownload(generator, signal);
       }
@@ -437,13 +440,13 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     return generator;
   }
 
-  function* retryGenerator(failedArtworks: string[]) {
+  function* retryGenerator(total: number, failedArtworks: string[], unavaliableTasks: string[]) {
     yield {
-      total: failedArtworks.length,
+      total,
       page: 0,
       avaliable: failedArtworks,
       invalid: [],
-      unavaliable: []
+      unavaliable: unavaliableTasks
     };
   }
 
@@ -493,7 +496,10 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
       // Update artwork count store
       setArtworkCount(total);
       invalid.length && addExcluded(invalid);
-      unavaliable.length && addFailed(unavaliable.map((id) => ({ id, reason: ERROR_MASKED })));
+      if (unavaliable.length) {
+        addFailed(unavaliable.map((id) => ({ id, reason: ERROR_MASKED })));
+        unavaliableTasks.push(...unavaliable);
+      }
 
       // Avoid frequent network requests by the generator.
       if (!avaliable.length) await Promise.race([sleep(1500), waitUntilDownloadComplete]);
