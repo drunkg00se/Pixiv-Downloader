@@ -7,7 +7,8 @@
     InputChip,
     RadioGroup,
     RadioItem,
-    ProgressBar
+    ProgressBar,
+    SlideToggle
   } from '@skeletonlabs/skeleton';
   import optionStore from './store';
   import {
@@ -163,8 +164,15 @@
 
   let pageConfig: BatchDownloadConfig<any, true | undefined>['pageMatch'][number] | null;
 
-  const { selectedFilters, blacklistTag, whitelistTag, downloadAllPages, pageStart, pageEnd } =
-    optionStore;
+  const {
+    selectedFilters,
+    blacklistTag,
+    whitelistTag,
+    downloadAllPages,
+    pageStart,
+    pageEnd,
+    retryFailed
+  } = optionStore;
 
   // dom binding
   let startDownloadEl: HTMLDivElement;
@@ -229,6 +237,9 @@
           >
           <Tab bind:group={tabSet} name="tag_filter" value={1}
             >{t('downloader.tag_filter.tab_name')}</Tab
+          >
+          <Tab bind:group={tabSet} name="tag_filter" value={2}
+            >{t('downloader.others.tab_name')}</Tab
           >
 
           <svelte:fragment slot="panel">
@@ -330,6 +341,12 @@
                 placeholder={t('downloader.tag_filter.placeholder.whitelist_tag')}
                 class="my-4"
               />
+            {:else if tabSet === 2}
+              <div class="flex justify-between items-center text-base text-surface-700-200-token">
+                <p>{t('downloader.others.options.retry_failed')}</p>
+                <SlideToggle size="sm" name="download-retry" bind:checked={$retryFailed}
+                ></SlideToggle>
+              </div>
             {/if}
           </svelte:fragment>
         </TabGroup>

@@ -126,6 +126,13 @@ const zh = {
       }
     },
 
+    others: {
+      tab_name: '其它',
+      options: {
+        retry_failed: '对首次下载失败的图片进行重试'
+      }
+    },
+
     download_type: {
       stop: '停止',
       pixiv_works: '作品',
@@ -262,6 +269,7 @@ const en: typeof zh = {
         pixiv_ugoira: 'Ugoira'
       }
     },
+
     tag_filter: {
       tab_name: 'Tags',
       placeholder: {
@@ -269,6 +277,14 @@ const en: typeof zh = {
         whitelist_tag: 'Whitelist: Only download works with these tags.'
       }
     },
+
+    others: {
+      tab_name: 'others',
+      options: {
+        retry_failed: 'Retry failed image downloads.'
+      }
+    },
+
     download_type: {
       stop: 'Stop',
       pixiv_works: 'Works',

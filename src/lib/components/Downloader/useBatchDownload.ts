@@ -1,4 +1,4 @@
-import { writable, derived, readonly, type Readable } from 'svelte/store';
+import { writable, derived, readonly, type Readable, get } from 'svelte/store';
 import optionStore from './store';
 import { logger } from '@/lib/logger';
 import { CancelError, RequestError } from '@/lib/error';
@@ -79,6 +79,8 @@ interface LogItem {
   message: string;
 }
 
+const ERROR_MASKED = 'Masked.';
+
 export let useBatchDownload: () => {
   artworkCount: Readable<number | null>;
   successd: Readable<string[]>;
@@ -93,7 +95,7 @@ export let useBatchDownload: () => {
 };
 
 export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, true | undefined>) {
-  const artworkCount = writable<number | null>(0);
+  const artworkCount = writable<number>(0);
   const successd = writable<string[]>([]);
   const failed = writable<FailedItem[]>([]);
   const excluded = writable<string[]>([]);
@@ -101,6 +103,9 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
   const log = writable<LogItem>();
 
   const tasks: string[] = [];
+  const failedTasks: string[] = [];
+  const unavaliableTasks: string[] = [];
+
   let controller: AbortController | null;
   let downloadCompleted!: () => void;
   let downloadAbort!: (reason?: any) => void;
@@ -119,12 +124,20 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
   let $downloadAllPages: boolean;
   let $blacklistTag: string[] = [];
   let $whitelistTag: string[] = [];
+  let $retryFailed: boolean = false;
 
   const includeFilters: ((artworkMeta: Partial<any>) => boolean | Promise<boolean>)[] = [];
   const excludeFilters: ((artworkMeta: Partial<any>) => boolean | Promise<boolean>)[] = [];
 
-  const { selectedFilters, blacklistTag, whitelistTag, downloadAllPages, pageStart, pageEnd } =
-    optionStore;
+  const {
+    selectedFilters,
+    blacklistTag,
+    whitelistTag,
+    downloadAllPages,
+    pageStart,
+    pageEnd,
+    retryFailed
+  } = optionStore;
 
   const watchPageRange = derived([downloadAllPages, pageStart, pageEnd], (data) => data);
   watchPageRange.subscribe(([downloadAllPages, pageStart, pageEnd]) => {
@@ -159,12 +172,14 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     $whitelistTag = [...val];
   });
 
+  retryFailed.subscribe((val) => {
+    $retryFailed = val;
+  });
+
   const checkIfDownloadCompleted = derived(
     [artworkCount, successd, failed, excluded],
-    ([$artworkCount, $successd, $failed, $excluded]) => {
-      if ($artworkCount === null) false;
-      return $artworkCount === $successd.length + $failed.length + $excluded.length;
-    }
+    ([$artworkCount, $successd, $failed, $excluded]) =>
+      $artworkCount === $successd.length + $failed.length + $excluded.length
   );
   checkIfDownloadCompleted.subscribe((isDone) => {
     // resolve waitUntilDownloadComplete when download completed.
@@ -172,11 +187,13 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
   });
 
   function reset() {
-    artworkCount.set(null);
+    artworkCount.set(0);
     successd.set([]);
     failed.set([]);
     excluded.set([]);
     tasks.length = 0;
+    failedTasks.length = 0;
+    unavaliableTasks.length = 0;
     controller = null;
     downloadCompleted = () => {};
     downloadAbort = () => {};
@@ -333,10 +350,36 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     controller = new AbortController();
     const signal = controller.signal;
 
+    signal.addEventListener(
+      'abort',
+      () => {
+        downloadAbort?.(signal.reason);
+        downloaderConfig.onDownloadAbort(tasks);
+      },
+      { once: true }
+    );
+
     let generator!: ReturnType<typeof getGenerator>;
     try {
       generator = getGenerator(fnId, ...restArgs);
       await dispatchDownload(generator, signal);
+
+      // retry failed downloads
+      if ($retryFailed && failedTasks.length) {
+        writeLog('Info', 'Retry...');
+
+        generator = retryGenerator(
+          get(artworkCount),
+          failedTasks.slice(),
+          unavaliableTasks.slice()
+        );
+        failedTasks.length = 0;
+        unavaliableTasks.length = 0;
+        failed.set([]);
+
+        await dispatchDownload(generator, signal);
+      }
+
       writeLog('Info', 'Download complete.');
     } catch (error) {
       logger.error(error);
@@ -397,6 +440,16 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     return generator;
   }
 
+  function* retryGenerator(total: number, failedArtworks: string[], unavaliableTasks: string[]) {
+    yield {
+      total,
+      page: 0,
+      avaliable: failedArtworks,
+      invalid: [],
+      unavaliable: unavaliableTasks
+    };
+  }
+
   async function dispatchDownload(
     generator: NonNullable<ReturnType<typeof getGenerator>>,
     signal: AbortSignal
@@ -408,15 +461,6 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
       downloadAbort = reject;
     });
 
-    signal.addEventListener(
-      'abort',
-      () => {
-        downloadAbort?.(signal.reason);
-        downloaderConfig.onDownloadAbort(tasks);
-      },
-      { once: true }
-    );
-
     const THRESHOLD = 5;
     const { parseMetaByArtworkId, downloadByArtworkId } = downloaderConfig;
     const { filterWhenGenerateIngPage } = downloaderConfig.filterOption;
@@ -426,13 +470,15 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
     const failedHanlderFactory = (id: string) => {
       return (reason: any) => {
-        if (!signal.aborted) {
-          addFailed({ id, reason });
-          reason && logger.error(reason);
+        if (signal.aborted) return;
 
-          if (reason instanceof RequestError && reason.status === 429) {
-            status429 = true;
-          }
+        addFailed({ id, reason });
+
+        reason && logger.error(reason);
+        reason !== ERROR_MASKED && failedTasks.push(id);
+
+        if (reason instanceof RequestError && reason.status === 429) {
+          status429 = true;
         }
       };
     };
@@ -447,10 +493,13 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
       signal.throwIfAborted();
 
-      // update artwork count store
+      // Update artwork count store
       setArtworkCount(total);
       invalid.length && addExcluded(invalid);
-      unavaliable.length && addFailed(unavaliable.map((id) => ({ id, reason: 'Masked.' })));
+      if (unavaliable.length) {
+        addFailed(unavaliable.map((id) => ({ id, reason: ERROR_MASKED })));
+        unavaliableTasks.push(...unavaliable);
+      }
 
       // Avoid frequent network requests by the generator.
       if (!avaliable.length) await Promise.race([sleep(1500), waitUntilDownloadComplete]);

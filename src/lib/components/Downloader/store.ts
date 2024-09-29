@@ -7,6 +7,7 @@ interface StoreData {
   downloadAllPages: boolean;
   pageStart: number;
   pageEnd: number;
+  retryFailed: boolean;
 }
 
 const defaultData: StoreData = {
@@ -15,7 +16,8 @@ const defaultData: StoreData = {
   whitelistTag: [],
   downloadAllPages: true,
   pageStart: 1,
-  pageEnd: 1
+  pageEnd: 1,
+  retryFailed: false
 };
 
 const STORAGE_KEY = 'pdl-downloader_option';
@@ -25,9 +27,14 @@ const storeData = (saveData ? JSON.parse(saveData) : defaultData) as StoreData;
 function storeBuilder<T extends StoreData>(data: T): { [K in keyof T]: Writable<T[K]> } {
   const obj: ReturnType<typeof storeBuilder> = {};
 
-  (Object.keys(data) as (keyof T)[]).forEach((key) => {
-    obj[key] = writable(data[key]);
-  });
+  for (const key in defaultData) {
+    if (!(key in data)) {
+      // assign new key
+      obj[key] = writable(defaultData[key as keyof StoreData]);
+    } else {
+      obj[key] = writable(data[key as keyof StoreData]);
+    }
+  }
 
   return obj;
 }
