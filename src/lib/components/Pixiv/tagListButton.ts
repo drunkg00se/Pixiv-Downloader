@@ -41,13 +41,6 @@ export class TagListButton extends HTMLElement {
     } as TagProps;
   }
 
-  private bindValue(btn: HTMLButtonElement, props: TagProps) {
-    btn.setAttribute('data-user-id', props.userId);
-    btn.setAttribute('data-category', props.category);
-    btn.setAttribute('data-tag', props.tag);
-    btn.setAttribute('data-bookmark-rest', props.rest);
-  }
-
   private async render() {
     const shadowRoot = this.attachShadow({ mode: 'open' });
     addStyleToShadow(shadowRoot);
@@ -64,7 +57,6 @@ export class TagListButton extends HTMLElement {
   `;
 
     const btn = shadowRoot.querySelector('button')!;
-    this.bindValue(btn, this.getTagProps());
     this.onClick && btn.addEventListener('click', this.onClick);
 
     const { downloading, batchDownload } = useBatchDownload();

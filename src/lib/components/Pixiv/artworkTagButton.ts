@@ -17,18 +17,10 @@ export class ArtworkTagButton extends HTMLElement {
   constructor(private tagElement: HTMLAnchorElement) {
     super();
 
-    this.bindValue(this.getTagProps());
     this.render();
     this.resetTagStyle();
 
-    this.ob = new MutationObserver((records) => {
-      // observe bookmark rest change when switching between Public and Private
-      if (
-        records.some((record) => record.type === 'attributes' && record.attributeName === 'href')
-      ) {
-        this.bindValue(this.getTagProps());
-      }
-
+    this.ob = new MutationObserver(() => {
       this.changeBtnColor();
     });
   }
@@ -73,16 +65,10 @@ export class ArtworkTagButton extends HTMLElement {
     } as TagProps;
   }
 
-  private bindValue(props: TagProps) {
-    this.setAttribute('data-user-id', props.userId);
-    this.setAttribute('data-category', props.category);
-    this.setAttribute('data-tag', props.tag);
-    this.setAttribute('data-bookmark-rest', props.rest);
-  }
-
   private changeBtnColor() {
     const { color, backgroundColor } = getComputedStyle(this.tagElement);
     const btn = this.shadowRoot!.querySelector('button')!;
+
     btn.style.color = color;
     btn.style.backgroundColor = backgroundColor;
   }
@@ -119,7 +105,7 @@ export class ArtworkTagButton extends HTMLElement {
   connectedCallback() {
     this.ob.observe(this.tagElement, {
       attributes: true,
-      attributeFilter: ['class', 'status', 'href']
+      attributeFilter: ['status']
     });
   }
 
