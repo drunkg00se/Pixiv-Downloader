@@ -351,16 +351,16 @@
           <div
             class="flex flex-grow flex-col justify-between overflow-hidden text-surface-700-200-token"
           >
-            <p class="truncate" class:text-error-500={$log?.type === 'Error'}>
-              {$log?.message ?? ''}
-            </p>
             <p class="truncate">
               {downloadResult}
+            </p>
+            <p class="break-words" class:text-error-500={$log?.type === 'Error'}>
+              {$log?.message ?? ''}
             </p>
           </div>
 
           {#if pageConfig && Array.isArray(pageConfig.genPageId)}
-            <div class=" flex-none btn-group">
+            <div class=" flex-none btn-group self-start">
               {#each pageConfig.genPageId as { name, id }}
                 <button
                   class="btn rounded-none !transform-none !variant-filled-primary"
@@ -377,7 +377,7 @@
             </div>
           {:else if pageConfig && !Array.isArray(pageConfig.genPageId)}
             <button
-              class="btn variant-filled-primary"
+              class="btn variant-filled-primary self-start"
               on:click={() => {
                 startDownload();
               }}
@@ -393,11 +393,11 @@
         <div
           bind:this={stopDownloadEl}
           transition:fade={{ duration: 250 }}
-          class="flex justify-end flex-grow w-full gap-6"
+          class="flex flex-grow w-full gap-6 items-center"
           on:introstart={() => stopDownloadEl.classList.remove('absolute')}
           on:outrostart={() => stopDownloadEl.classList.add('absolute')}
         >
-          <div class="flex flex-grow flex-col justify-between overflow-hidden">
+          <div class="flex flex-grow flex-col justify-between h-full overflow-hidden">
             <ProgressBar
               height="h-4"
               rounded="rounded-md"
