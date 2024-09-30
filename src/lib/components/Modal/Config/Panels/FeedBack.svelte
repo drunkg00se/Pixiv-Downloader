@@ -29,6 +29,11 @@
   <section>
     <p class={sectionTitle}>{t('setting.feedback.label.donate')}</p>
     <ul class={ulClasses}>
+      <li>
+        <p>
+          {@html t('setting.feedback.text.give_me_a_star')}
+        </p>
+      </li>
       <li class=" justify-center">
         <figure>
           <img src={creditCode} alt="credit" class=" rounded-full m-auto" />

@@ -11,7 +11,7 @@
 
   let showCreditCode: boolean = false;
 
-  $: gridRows = showCreditCode ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]';
+  $: gridRows = showCreditCode ? 'grid-rows-[1fr] mt-2' : 'grid-rows-[0fr]';
 </script>
 
 <ModalWrapper {parent}>
@@ -28,25 +28,27 @@
       <li>修复（Yande）: Browse页无法正确显示下载按钮的问题。</li>
     </ul>
   </article>
-  <footer class="modal-footer mt-4 text-sm">
+  <footer class="modal-footer mt-4">
     <!-- use `<details>` again when `height: calc-size(auto)` is widely supported -->
 
-    <div class="flex justify-between items-center">
+    <div class="flex justify-between items-center text-sm">
       <button class={anchor} on:click={() => (showCreditCode = !showCreditCode)}
-        >脚本还行？请我喝杯可乐吧！</button
+        >{t('changelog.credit')}</button
       >
-      <a
-        class={anchor}
-        target="_blank"
-        href="https://sleazyfork.org/zh-CN/scripts/432150-pixiv-downloader/feedback"
-        >{t('text.feedback')}</a
+      <a class={anchor} target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"
+        >{t('changelog.feedback')}</a
       >
     </div>
 
     <div class="grid transition-[grid-template-rows] duration-[400ms] {gridRows}">
-      <div class="flex flex-col items-center gap-2 min-h-0">
+      <div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden">
         <img src={creditCode} alt="credit" class="rounded-full" />
-        <p>想喝香草味冰可乐</p>
+        <p class="flex flex-col h-full justify-evenly">
+          <a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"
+            >{t('changelog.give_me_a_star')}</a
+          >
+          <span>{t('changelog.buy_me_a_drink')}</span>
+        </p>
       </div>
     </div>
   </footer>

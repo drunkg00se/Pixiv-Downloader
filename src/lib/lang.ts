@@ -72,6 +72,9 @@ const zh = {
         backup_interval_every_day: '每天',
         backup_interval_every_7_day: '每7天',
         backup_interval_every_30_day: '每30天'
+      },
+      text: {
+        confirm_clear_history: '真的要清除历史记录吗？'
       }
     },
     button_position: {
@@ -103,12 +106,10 @@ const zh = {
         donate: '赞赏'
       },
       text: {
-        feedback_desc: `				如果你在使用中发现了问题或有改进建议，欢迎到<a
-					href="https://sleazyfork.org/zh-CN/scripts/432150-pixiv-downloader/feedback"
-					target="_blank"
-					class=" anchor">此链接</a
-				>反馈。`,
-        donate_desc: '如果脚本有帮助到你，欢迎扫码请我喝杯可乐 ^_^'
+        feedback_desc: `如果你在使用中发现了问题或有改进建议，欢迎到<a href="https://github.com/drunkg00se/Pixiv-Downloader/issues" target="_blank" class="anchor">此链接</a>反馈。`,
+        give_me_a_star:
+          '如果脚本有帮助到你，<a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor">欢迎点此在GitHub中给我一个 ⭐Star。</a>',
+        donate_desc: '或者，扫码请我喝杯可乐 ^_^'
       }
     }
   },
@@ -156,9 +157,11 @@ const zh = {
     setting: '设置'
   },
 
-  text: {
-    confirm_clear_history: '真的要清除历史记录吗？',
-    feedback: '有问题or想建议？这里反馈'
+  changelog: {
+    feedback: '有问题or想建议？这里反馈',
+    credit: '脚本还行？请点这里支持我！',
+    give_me_a_star: '在GitHub中给我一个 ⭐Star，',
+    buy_me_a_drink: '或者，扫码请我喝杯香草味冰可乐。'
   }
 };
 
@@ -236,6 +239,9 @@ const en: typeof zh = {
         backup_interval_every_day: 'Every day',
         backup_interval_every_7_day: '7 days',
         backup_interval_every_30_day: '30 days'
+      },
+      text: {
+        confirm_clear_history: 'Do you really want to clear history?'
       }
     },
     button_position: {
@@ -267,8 +273,11 @@ const en: typeof zh = {
         donate: 'Donate'
       },
       text: {
-        feedback_desc: `If you encounter any issues or have suggestions for improvements, feel free to provide feedback <a href="https://sleazyfork.org/zh-CN/scripts/432150-pixiv-downloader/feedback" target="_blank" class=" anchor">here</a>.`,
-        donate_desc: '如果脚本有帮助到你，欢迎扫码请我喝杯可乐 ^_^'
+        feedback_desc:
+          'If you encounter any issues or have suggestions for improvements, feel free to provide feedback <a href="https://github.com/drunkg00se/Pixiv-Downloader/issues" target="_blank" class=" anchor">here.</a>',
+        give_me_a_star:
+          'If the script is helpful to you, please <a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor">click here and give me a ⭐Star on GitHub.</a>',
+        donate_desc: 'Or, buy me a cola. ^_^'
       }
     }
   },
@@ -316,9 +325,11 @@ const en: typeof zh = {
     setting: 'Setting'
   },
 
-  text: {
-    confirm_clear_history: 'Do you really want to clear history?',
-    feedback: 'Feedback / Report an issue'
+  changelog: {
+    feedback: 'Feedback / Report an issue',
+    credit: 'Click here to support me!',
+    give_me_a_star: 'Give me a ⭐Star on GitHub.',
+    buy_me_a_drink: 'Or, buy me a vanilla-flavored iced cola.'
   }
 };
 

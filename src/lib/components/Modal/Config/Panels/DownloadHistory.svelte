@@ -33,7 +33,7 @@
   }
 
   function clearDb() {
-    const isConfirm = confirm(t('text.confirm_clear_history'));
+    const isConfirm = confirm(t('setting.history.text.confirm_clear_history'));
     if (!isConfirm) return;
     historyDb.clear().then(() => location.reload());
   }
