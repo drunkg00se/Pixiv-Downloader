@@ -1,0 +1,40 @@
+name: 报告问题 / Issue Report
+description: 提交问题报告 / File an issue report
+labels: [bug, triage]
+body:
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 描述错误 / Describe the bug
+      description: 对错误的简洁明了的描述。 A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: repro-steps
+    attributes:
+      label: 重现步骤 / To Reproduce
+      description: 重现问题的步骤。 Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: 浏览器 / Browser
+      description: |
+        Examples: e.g. Firefox 91, Chrome 93
+    validations:
+      required: true
+  - type: textarea
+    id: browser-logs
+    attributes:
+      label: 浏览器日志 / Browser logs
+      description: |
+        使用 F12 打开控制台以访问浏览器日志。截图通常比原始日志更容易阅读。
+        Access browser logs by using the F12 to bring up the console. Screenshots are typically easier to read than raw logs.
+    validations:
+      required: true
