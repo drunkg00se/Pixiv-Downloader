@@ -338,8 +338,8 @@ export const pixivParser: PixivParser = {
     let cache: FollowLatest;
     let page = startPage;
 
-    function findEarliestId(ids: string[]): number {
-      return Math.min(...ids.map((id) => Number(id)));
+    function findEarliestId(ids: number[]): number {
+      return Math.min(...ids);
     }
 
     async function* yieldData(data: FollowLatest, page: number) {
@@ -360,6 +360,14 @@ export const pixivParser: PixivParser = {
 
         const isValid = await checkValidity(work);
         isValid ? avaliable.push(id) : invalid.push(id);
+      }
+
+      const { ids } = data.page;
+
+      // `data.page.ids` may contains some unavailable IDs that are not included in `data.thumbnails.illust`
+      if (ids.length !== illust.length) {
+        const idDiff = ids.filter((id) => !illust.some((item) => +item.id === id));
+        unavaliable.push(...idDiff.map((id) => String(id)));
       }
 
       yield {
