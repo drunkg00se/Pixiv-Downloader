@@ -209,7 +209,7 @@ export interface GlobalData {
 
 export interface FollowLatest {
   page: {
-    ids: string[];
+    ids: number[];
     // seems always false
     isLastPage: false;
     tags: any[];
