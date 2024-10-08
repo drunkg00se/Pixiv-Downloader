@@ -1,3 +1,5 @@
+/// <reference types="vitest/config" />
+
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { purgeCss } from 'vite-plugin-tailwind-purgecss';
@@ -99,5 +101,9 @@ export default defineConfig({
         }
       }
     })
-  ]
+  ],
+
+  test: {
+    environment: 'jsdom'
+  }
 });
