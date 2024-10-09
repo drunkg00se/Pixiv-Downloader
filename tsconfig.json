@@ -22,7 +22,7 @@
     "allowJs": true,
     "checkJs": true,
     // "isolatedModules": true
-    "types": ["@types/wicg-file-system-access"]
+    "types": ["@types/wicg-file-system-access", "@vitest/browser/providers/playwright"]
   },
   "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.svelte", "src/**/*.js"],
   "references": [

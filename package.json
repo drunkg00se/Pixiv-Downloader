@@ -15,7 +15,8 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "buildCss": "npx tailwindcss -i ./src/lib/components/app.tailwind.css -o ./src/lib/components/app.output.css --postcss",
-    "test": "vitest"
+    "test": "vitest",
+    "test:browser": "vitest --workspace=vitest.workspace.ts"
   },
   "devDependencies": {
     "@poppanator/sveltekit-svg": "^4.2.1",
@@ -29,6 +30,7 @@
     "@types/node": "^20.14.9",
     "@types/upng-js": "^2.1.5",
     "@types/wicg-file-system-access": "^2023.10.5",
+    "@vitest/browser": "^2.1.2",
     "autoprefixer": "^10.4.19",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.57.0",
@@ -37,6 +39,7 @@
     "eslint-plugin-svelte": "^2.41.0",
     "globals": "^15.8.0",
     "jsdom": "^25.0.1",
+    "playwright": "^1.48.0",
     "postcss": "^8.4.39",
     "postcss-prefix-selector": "^1.16.1",
     "postcss-rem-to-responsive-pixel": "^6.0.1",
@@ -54,7 +57,8 @@
     "vite": "^5.2.12",
     "vite-plugin-monkey": "^4.0.0",
     "vite-plugin-tailwind-purgecss": "^0.3.3",
-    "vitest": "^2.1.2"
+    "vitest": "^2.1.2",
+    "vitest-browser-svelte": "^0.0.1"
   },
   "dependencies": {
     "dayjs": "^1.11.11",

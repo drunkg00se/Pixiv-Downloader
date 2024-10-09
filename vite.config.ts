@@ -104,6 +104,12 @@ export default defineConfig({
   ],
 
   test: {
-    environment: 'jsdom'
+    browser: {
+      enabled: true,
+      name: 'chromium',
+      provider: 'playwright',
+      // https://playwright.dev
+      providerOptions: {}
+    }
   }
 });
