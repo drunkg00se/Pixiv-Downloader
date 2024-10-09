@@ -15,8 +15,7 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "buildCss": "npx tailwindcss -i ./src/lib/components/app.tailwind.css -o ./src/lib/components/app.output.css --postcss",
-    "test": "vitest",
-    "test:browser": "vitest --workspace=vitest.workspace.ts"
+    "test": "vitest"
   },
   "devDependencies": {
     "@poppanator/sveltekit-svg": "^4.2.1",
