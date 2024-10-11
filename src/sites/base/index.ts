@@ -8,6 +8,10 @@ import { useHistoryBackup } from '@/lib/components/Modal/Config/useHistoryBackup
 export abstract class SiteInject {
   private modal!: PdlApp;
 
+  static get hostname(): string {
+    throw new Error('`hostname` should be overwritten by a subclass.');
+  }
+
   constructor() {
     this.inject();
     this.observeColorScheme();

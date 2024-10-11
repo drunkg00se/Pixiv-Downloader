@@ -16,6 +16,10 @@ import t from '@/lib/lang';
 import { logger } from '@/lib/logger';
 
 export class Pixiv extends SiteInject {
+  static get hostname(): string {
+    return 'www.pixiv.net';
+  }
+
   public inject(): void {
     super.inject();
 

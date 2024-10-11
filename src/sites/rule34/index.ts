@@ -5,6 +5,10 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 
 export class Rule34 extends SiteInject {
+  static get hostname(): string {
+    return 'rule34.xxx';
+  }
+
   protected inject() {
     super.inject();
     this.pageAction();

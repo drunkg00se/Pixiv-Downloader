@@ -6,6 +6,10 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 
 export class Danbooru extends SiteInject {
+  static get hostname(): string {
+    return 'danbooru.donmai.us';
+  }
+
   protected inject(): void {
     super.inject();
     this.pageAction();

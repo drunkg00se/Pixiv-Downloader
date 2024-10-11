@@ -5,6 +5,10 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 
 export class Yande extends SiteInject {
+  static get hostname(): string {
+    return 'yande.re';
+  }
+
   protected inject() {
     super.inject();
     this.pageAction();
