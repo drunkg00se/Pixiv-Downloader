@@ -1,4 +1,4 @@
-import { createThumbnailBtn } from './thumbnailBtn';
+import { createThumbnailBtn } from './createThumbnailBtn';
 import { fixPixivPreviewer } from '../helpers/fixPixivPreviewer';
 import { regexp } from '@/lib/regExp';
 import { createTagListBtn } from './userPage/tagListButton';
@@ -36,7 +36,7 @@ function pageActions() {
   }
 }
 
-let firstRun = true;
+let firstRunFlag = true;
 export function observerCallback(records: MutationRecord[]) {
   const addedNodes: HTMLElement[] = [];
   records.forEach((record) => {
@@ -54,10 +54,10 @@ export function observerCallback(records: MutationRecord[]) {
   if (!addedNodes.length) return;
 
   //为小图添加下载按钮
-  if (firstRun) {
+  if (firstRunFlag) {
     //排行榜页前50不是动态加载，第一次加载没有Pdlbtn
     createThumbnailBtn(document.querySelectorAll('a'));
-    firstRun = false;
+    firstRunFlag = false;
   } else {
     fixPixivPreviewer(addedNodes);
 

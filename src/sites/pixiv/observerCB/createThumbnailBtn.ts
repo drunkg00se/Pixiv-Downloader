@@ -16,7 +16,6 @@ export function createThumbnailBtn(
     let type: ThumbnailBtnType | undefined;
 
     //  childElementCount检查是否为图片标题节点
-    //  个人页面“精选”图片会新增两次
     if (
       (e.childElementCount !== 0 ||
         e.className.includes('_history-item') ||
