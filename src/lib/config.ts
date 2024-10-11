@@ -78,6 +78,8 @@ function loadConfig(): Config {
         return 'rule34/{artist}';
       case 'yande.re':
         return 'yande/{artist}';
+      case 'booru.allthefallen.moe':
+        return 'ATFbooru/{artist}';
       default:
         return '';
     }

@@ -57,10 +57,18 @@ export default defineConfig({
           'https://www.pixiv.net/*',
           'https://rule34.xxx/*',
           'https://danbooru.donmai.us/*',
-          'https://yande.re/*'
+          'https://yande.re/*',
+          'https://booru.allthefallen.moe/*'
         ],
         noframes: true,
-        connect: ['i.pximg.net', 'source.pixiv.net', 'rule34.xxx', 'donmai.us', 'yande.re']
+        connect: [
+          'i.pximg.net',
+          'source.pixiv.net',
+          'rule34.xxx',
+          'donmai.us',
+          'yande.re',
+          'allthefallen.moe'
+        ]
       },
       build: {
         cssSideEffects: () => {
