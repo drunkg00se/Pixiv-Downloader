@@ -79,10 +79,193 @@ interface LogItem {
   message: string;
 }
 
-const ERROR_MASKED = 'Masked.';
+const enum ChannelMessageType {
+  SET_PENDING,
+  SET_IDLE,
+  ADD_QUEUE,
+  REMOVE_QUEUE,
+  PROCESS_NEXT,
+  QUERY
+}
+
+interface SetStateMessage {
+  type: ChannelMessageType.SET_PENDING | ChannelMessageType.SET_IDLE | ChannelMessageType.QUERY;
+  value: null;
+}
+
+interface HandleQueueMessage {
+  type: ChannelMessageType.ADD_QUEUE | ChannelMessageType.REMOVE_QUEUE;
+  value: string;
+}
+
+interface ProcessNextMessage {
+  type: ChannelMessageType.PROCESS_NEXT;
+  value: string[];
+}
+
+type ChannelMessage = SetStateMessage | HandleQueueMessage | ProcessNextMessage;
+
+function useChannel() {
+  const CHANNEL_NAME = 'pdl_batch-download';
+  const TAB_ID = String(Math.random());
+  const channel = new BroadcastChannel(CHANNEL_NAME);
+  const queue: string[] = [];
+
+  let downloading = false;
+  let pending = false;
+  let onFullfilled: () => void;
+  let onRejected: (reason?: unknown) => void;
+
+  channel.addEventListener('message', (evt) => {
+    const { data }: { data: ChannelMessage } = evt;
+
+    switch (data.type) {
+      case ChannelMessageType.QUERY:
+        logger.info('channel receive: QUERY');
+
+        downloading &&
+          channel.postMessage({
+            type: ChannelMessageType.SET_PENDING,
+            value: null
+          });
+        break;
+      case ChannelMessageType.SET_PENDING:
+        logger.info('channel receive: SET_PENDING');
+
+        !pending && (pending = true);
+        break;
+      case ChannelMessageType.SET_IDLE:
+        logger.info('channel receive: SET_IDLE');
+
+        pending && (pending = false);
+        break;
+      case ChannelMessageType.ADD_QUEUE:
+        logger.info('channel receive: ADD_QUEUE');
+
+        downloading && queue.push(data.value);
+        break;
+      case ChannelMessageType.REMOVE_QUEUE:
+        logger.info('channel receive: REMOVE_QUEUE');
+
+        if (downloading) {
+          const idx = queue.findIndex((id) => id === data.value);
+          idx !== -1 && queue.splice(idx, 1);
+        }
+        break;
+      case ChannelMessageType.PROCESS_NEXT:
+        logger.info('channel receive: PROCESS_NEXT', TAB_ID, data.value);
+
+        if (data.value[0] !== TAB_ID) return;
+
+        queue.push(...data.value.slice(1));
+        pending = false;
+        downloading = true;
+        onFullfilled();
+
+        break;
+      default:
+        break;
+    }
+  });
+
+  window.addEventListener('unload', () => {
+    if (pending) {
+      channel.postMessage({
+        type: ChannelMessageType.REMOVE_QUEUE,
+        value: TAB_ID
+      });
+
+      return;
+    }
+
+    if (downloading) {
+      queue.length
+        ? channel.postMessage({
+            type: ChannelMessageType.PROCESS_NEXT,
+            value: queue
+          })
+        : channel.postMessage({
+            type: ChannelMessageType.SET_IDLE,
+            value: null
+          });
+    }
+  });
+
+  channel.postMessage({
+    type: ChannelMessageType.QUERY,
+    value: null
+  });
+
+  return {
+    async requestDownload() {
+      if (!pending) {
+        downloading = true;
+        channel.postMessage({
+          type: ChannelMessageType.SET_PENDING,
+          value: null
+        });
+
+        logger.info('channel post: SET_PENDING');
+        return;
+      }
+
+      const waitUntilIdle = new Promise<void>((resolve, reject) => {
+        onFullfilled = resolve;
+        onRejected = reject;
+      });
+
+      channel.postMessage({
+        type: ChannelMessageType.ADD_QUEUE,
+        value: TAB_ID
+      });
+
+      logger.info('channel post: ADD_QUEUE', TAB_ID);
+
+      return waitUntilIdle;
+    },
+
+    cancelDownloadRequest(reason?: unknown) {
+      if (!pending) return;
+
+      channel.postMessage({
+        type: ChannelMessageType.REMOVE_QUEUE,
+        value: TAB_ID
+      });
+
+      logger.info('channel post: REMOVE_QUEUE', TAB_ID);
+
+      onRejected(reason);
+    },
+
+    processNextDownload() {
+      if (!downloading) return;
+      downloading = false;
+
+      if (queue.length) {
+        pending = true;
+
+        channel.postMessage({
+          type: ChannelMessageType.PROCESS_NEXT,
+          value: queue
+        });
+
+        queue.length = 0;
+
+        logger.info('channel post: PROCESS_NEXT');
+      } else {
+        channel.postMessage({
+          type: ChannelMessageType.SET_IDLE,
+          value: null
+        });
+
+        logger.info('channel post: SET_IDLE');
+      }
+    }
+  };
+}
 
 export let useBatchDownload: () => {
-  artworkCount: Readable<number | null>;
+  artworkCount: Readable<number>;
   successd: Readable<string[]>;
   failed: Readable<FailedItem[]>;
   excluded: Readable<string[]>;
@@ -94,6 +277,8 @@ export let useBatchDownload: () => {
   throw new Error('You need to call `defineBatchDownload` before using `useBatchDownload`.');
 };
 
+const ERROR_MASKED = 'Masked.';
+
 export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, true | undefined>) {
   const artworkCount = writable<number>(0);
   const successd = writable<string[]>([]);
@@ -101,6 +286,8 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
   const excluded = writable<string[]>([]);
   const downloading = writable<boolean>(false);
   const log = writable<LogItem>();
+
+  const { requestDownload, cancelDownloadRequest, processNextDownload } = useChannel();
 
   const tasks: string[] = [];
   const failedTasks: string[] = [];
@@ -353,6 +540,7 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     signal.addEventListener(
       'abort',
       () => {
+        cancelDownloadRequest(signal.reason);
         downloadAbort?.(signal.reason);
         downloaderConfig.onDownloadAbort(tasks);
       },
@@ -361,6 +549,9 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
     let generator!: ReturnType<typeof getGenerator>;
     try {
+      writeLog('Info', 'Waiting for other downloads to finish...');
+      await requestDownload();
+
       generator = getGenerator(fnId, ...restArgs);
       await dispatchDownload(generator, signal);
 
@@ -397,6 +588,7 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     }
 
     setDownloading(false);
+    processNextDownload();
   }
 
   function getGenerator(fnId: string, ...restArgs: string[]) {

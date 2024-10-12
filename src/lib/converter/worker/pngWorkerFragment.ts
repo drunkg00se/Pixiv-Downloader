@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import type { Image } from '@pdf-lib/upng';
+import type { Image } from 'upng-js';
 import type { EffectImageDecodedData, MixEffectEncodedData } from '../index';
 import type { PngWorkerConfig } from '../adapter/png';
 
