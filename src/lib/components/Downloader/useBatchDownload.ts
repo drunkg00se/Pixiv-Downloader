@@ -549,10 +549,11 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
     let generator!: ReturnType<typeof getGenerator>;
     try {
+      generator = getGenerator(fnId, ...restArgs);
+
       writeLog('Info', 'Waiting for other downloads to finish...');
       await requestDownload();
 
-      generator = getGenerator(fnId, ...restArgs);
       await dispatchDownload(generator, signal);
 
       // retry failed downloads
