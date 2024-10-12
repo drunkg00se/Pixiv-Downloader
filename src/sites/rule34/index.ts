@@ -93,11 +93,11 @@ export class Rule34 extends SiteInject {
     const query = window.matchMedia('(prefers-color-scheme: dark)');
 
     if (query.matches) {
-      this.setModalDarkMode();
+      this.setAppDarkMode();
     }
 
     query.addEventListener('change', (e) => {
-      e.matches ? this.setModalDarkMode() : this.setModalLightMode();
+      e.matches ? this.setAppDarkMode() : this.setAppLightMode();
     });
   }
 

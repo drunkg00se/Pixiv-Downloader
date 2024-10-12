@@ -68,11 +68,11 @@ export abstract class SiteInject {
     useHistoryBackup().scheduleBackup();
   }
 
-  protected setModalDarkMode() {
+  protected setAppDarkMode() {
     this.modal.setAttribute('dark', '');
   }
 
-  protected setModalLightMode() {
+  protected setAppLightMode() {
     this.modal.removeAttribute('dark');
   }
 

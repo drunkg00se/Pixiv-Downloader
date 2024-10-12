@@ -93,13 +93,13 @@ export class Danbooru extends SiteInject {
     const sitePreferDark = siteSetting === 'dark';
 
     if (sitePreferDark || (siteSetting === 'auto' && uaPreferDark)) {
-      this.setModalDarkMode();
+      this.setAppDarkMode();
     }
 
     if (siteSetting === 'auto') {
       query.addEventListener('change', (e) => {
         uaPreferDark = e.matches;
-        uaPreferDark ? this.setModalDarkMode() : this.setModalLightMode();
+        uaPreferDark ? this.setAppDarkMode() : this.setAppLightMode();
       });
     }
   }

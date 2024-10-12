@@ -43,9 +43,9 @@ export class Pixiv extends SiteInject {
         | 'dark';
 
       if (sitePreferDark === 'dark') {
-        this.setModalDarkMode();
+        this.setAppDarkMode();
       } else {
-        this.setModalLightMode();
+        this.setAppLightMode();
       }
     };
     onThemeChange();
