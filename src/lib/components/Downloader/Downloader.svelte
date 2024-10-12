@@ -191,17 +191,8 @@
   initFilterStore();
 
   defineBatchDownload(downloaderConfig);
-  const {
-    artworkCount,
-    successd,
-    failed,
-    excluded,
-    downloading,
-    globalDownloading,
-    log,
-    batchDownload,
-    abort
-  } = useBatchDownload();
+  const { artworkCount, successd, failed, excluded, downloading, log, batchDownload, abort } =
+    useBatchDownload();
 
   watchUrlChange();
   onUrlChange(location.href);
@@ -225,8 +216,7 @@
   }
 
   $: processed = $successd.length + $failed.length + $excluded.length;
-  $: downloadProgress =
-    $downloading && $artworkCount ? (processed / $artworkCount) * 100 : undefined;
+  $: downloadProgress = $artworkCount ? (processed / $artworkCount) * 100 : undefined;
   $: downloadResult =
     !$downloading && $artworkCount
       ? `Completed: ${$successd.length}. Failed: ${$failed.length}. Excluded: ${$excluded.length}.`
@@ -239,7 +229,7 @@
     data-theme="skeleton"
     class="card px-4 fixed right-20 top-36 w-[600px] *:text-sm shadow-xl bg-scroll"
   >
-    {#if !$globalDownloading}
+    {#if !$downloading}
       <div transition:slide class="downloader-filter">
         <TabGroup regionList="text-surface-700-200-token" class="text-sm">
           <Tab bind:group={tabSet} name="category" value={0}
@@ -365,7 +355,7 @@
     {/if}
 
     <div class="flex relative my-4">
-      {#if !$globalDownloading}
+      {#if !$downloading}
         <div
           bind:this={startDownloadEl}
           transition:fade={{ duration: 250 }}
@@ -424,7 +414,7 @@
           on:introstart={() => stopDownloadEl.classList.remove('absolute')}
           on:outrostart={() => stopDownloadEl.classList.add('absolute')}
         >
-          <div class="flex flex-grow flex-col justify-between h-full overflow-hidden gap-[6px]">
+          <div class="flex flex-grow flex-col justify-between h-full overflow-hidden">
             <ProgressBar
               height="h-4"
               rounded="rounded-md"
@@ -437,26 +427,23 @@
               <p class="truncate" class:text-error-500={$log?.type === 'Error'}>
                 {$log?.message ?? ''}
               </p>
-
-              <p class="flex-none">
-                {$downloading && $artworkCount ? `${processed} / ${$artworkCount}` : ''}
+              <p class=" flex-none">
+                {$artworkCount ? `${processed} / ${$artworkCount}` : ''}
               </p>
             </div>
           </div>
 
-          {#if $downloading}
-            <button
-              class="btn variant-filled-primary"
-              on:click={() => {
-                abort();
-              }}
-            >
-              <i class="w-5">
-                {@html stopSvg}
-              </i>
-              <span>{t('downloader.download_type.stop')}</span>
-            </button>
-          {/if}
+          <button
+            class="btn variant-filled-primary"
+            on:click={() => {
+              abort();
+            }}
+          >
+            <i class="w-5">
+              {@html stopSvg}
+            </i>
+            <span>{t('downloader.download_type.stop')}</span>
+          </button>
         </div>
       {/if}
     </div>
@@ -491,7 +478,7 @@
       {/await}
     </div>
 
-    {#if $globalDownloading && !showDownloadMenu}
+    {#if $downloading && !showDownloadMenu}
       <div
         transition:fade={{ duration: 250 }}
         class="!absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"

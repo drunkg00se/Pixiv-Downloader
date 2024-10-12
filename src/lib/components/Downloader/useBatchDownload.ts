@@ -81,19 +81,12 @@ interface LogItem {
 
 const ERROR_MASKED = 'Masked.';
 
-const enum ChannelMessage {
-  DOWNLOADING,
-  IDLE,
-  QUERY
-}
-
 export let useBatchDownload: () => {
-  artworkCount: Readable<number>;
+  artworkCount: Readable<number | null>;
   successd: Readable<string[]>;
   failed: Readable<FailedItem[]>;
   excluded: Readable<string[]>;
   downloading: Readable<boolean>;
-  globalDownloading: Readable<boolean>;
   log: Readable<LogItem>;
   batchDownload(fnId: string, ...restArgs: string[]): Promise<void>;
   abort: () => void;
@@ -107,7 +100,6 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
   const failed = writable<FailedItem[]>([]);
   const excluded = writable<string[]>([]);
   const downloading = writable<boolean>(false);
-  const occupied = writable<boolean>(false); // whther other tab is batch downloading.
   const log = writable<LogItem>();
 
   const tasks: string[] = [];
@@ -118,18 +110,12 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
   let downloadCompleted!: () => void;
   let downloadAbort!: (reason?: any) => void;
 
-  const { postDownloadStart, postDownloadIdle } = useChannel();
-
   const readonlyStore = {
     artworkCount: readonly(artworkCount),
     successd: readonly(successd),
     failed: readonly(failed),
     excluded: readonly(excluded),
     downloading: readonly(downloading),
-    globalDownloading: derived(
-      [downloading, occupied],
-      ([$downloading, $occupied]) => $downloading || $occupied
-    ),
     log: readonly(log)
   };
 
@@ -212,41 +198,6 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     downloadCompleted = () => {};
     downloadAbort = () => {};
     writeLog('Info', 'Reset store.');
-  }
-
-  function useChannel() {
-    const channelName = 'pdl_batch-download';
-    const channel = new BroadcastChannel(channelName);
-
-    channel.addEventListener('message', (evt) => {
-      const { data }: { data: ChannelMessage } = evt;
-
-      if (data === ChannelMessage.DOWNLOADING) {
-        if (get(occupied)) return;
-
-        occupied.set(true);
-        writeLog('Info', 'Already downloading, please wait...');
-      } else if (data === ChannelMessage.QUERY) {
-        if (get(downloading)) {
-          channel.postMessage(ChannelMessage.DOWNLOADING);
-        }
-      } else {
-        occupied.set(false);
-        writeLog('Info', 'Idle.');
-      }
-    });
-
-    channel.postMessage(ChannelMessage.QUERY);
-
-    return {
-      postDownloadStart() {
-        channel.postMessage(ChannelMessage.DOWNLOADING);
-      },
-
-      postDownloadIdle() {
-        channel.postMessage(ChannelMessage.IDLE);
-      }
-    };
   }
 
   function setDownloading(isDownloading: boolean) {
@@ -391,7 +342,6 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
 
   async function batchDownload(fnId: string, ...restArgs: string[]) {
     setDownloading(true);
-    postDownloadStart();
     writeLog('Info', 'Start download...');
 
     // reset store before download start, so we can still access store data after download finished.
@@ -447,7 +397,6 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     }
 
     setDownloading(false);
-    postDownloadIdle();
   }
 
   function getGenerator(fnId: string, ...restArgs: string[]) {

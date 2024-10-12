@@ -99,9 +99,9 @@ export class ArtworkTagButton extends HTMLElement {
   }
 
   connectedCallback() {
-    const { globalDownloading } = useBatchDownload();
+    const { downloading } = useBatchDownload();
 
-    this.unsubscriber = globalDownloading.subscribe((val) => {
+    this.unsubscriber = downloading.subscribe((val) => {
       if (val) {
         this.setAttribute('disabled', '');
       } else {
