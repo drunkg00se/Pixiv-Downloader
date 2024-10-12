@@ -1,21 +1,23 @@
 import t from '@/lib/lang';
 import { GM_registerMenuCommand } from '$';
-import { type ConfigData, config } from '@/lib/config';
+import { type ConfigData, loadConfig } from '@/lib/config';
 import { type BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 import { PdlApp } from '@/lib/components/App';
 import { useHistoryBackup } from '@/lib/components/Modal/Config/useHistoryBackup';
 
 export abstract class SiteInject {
   private modal!: PdlApp;
-
-  static get hostname(): string {
-    throw new Error('`hostname` should be overwritten by a subclass.');
-  }
+  private config: ReturnType<typeof loadConfig>;
 
   constructor() {
+    this.config = loadConfig(this.getCustomConfig() || undefined);
     this.inject();
     this.observeColorScheme();
     this.runScheduledTask();
+  }
+
+  static get hostname(): string {
+    throw new Error('`hostname` should be overwritten by a subclass.');
   }
 
   protected inject() {
@@ -35,8 +37,8 @@ export abstract class SiteInject {
   }
 
   protected injectApp() {
-    const updated = config.get('showMsg');
-    updated && config.set('showMsg', false);
+    const updated = this.config.get('showMsg');
+    updated && this.config.set('showMsg', false);
 
     const downloaderConfig = this.getBatchDownloadConfig();
 
@@ -56,7 +58,7 @@ export abstract class SiteInject {
       ] as (keyof ConfigData)[]
     ).forEach((key) => {
       let val;
-      if ((val = config.get(key)) !== undefined) {
+      if ((val = this.config.get(key)) !== undefined) {
         document.documentElement.style.setProperty('--' + key, val as string);
       }
     });
@@ -79,4 +81,6 @@ export abstract class SiteInject {
   protected abstract getBatchDownloadConfig():
     | undefined
     | BatchDownloadConfig<any, true | undefined>;
+
+  protected abstract getCustomConfig(): Partial<ConfigData> | void;
 }

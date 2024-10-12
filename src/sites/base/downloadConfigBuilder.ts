@@ -52,7 +52,7 @@ export abstract class DownloadConfigBuilder<T extends MediaMeta> {
     title = this.normalizeString(title);
     tags = tags.map((tag) => this.normalizeString(tag));
 
-    const replaceDate = (match: string, p1: string): string => {
+    const replaceDate = (_: string, p1: string): string => {
       const format = p1 || 'YYYY-MM-DD';
       return dayjs(createDate).format(format);
     };

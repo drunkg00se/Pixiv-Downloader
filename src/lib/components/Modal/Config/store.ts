@@ -1,9 +1,15 @@
-import { config } from '@/lib/config';
-import { writable } from 'svelte/store';
+import { config, type ConfigData } from '@/lib/config';
+import { writable, type Writable } from 'svelte/store';
 
-const data = config.getAll();
-const configStore = writable(data);
-
-configStore.subscribe(config.update);
+const configStore: Writable<ConfigData> = writable();
 
 export default configStore;
+
+// initialize stores later in `App.svelte` so we have chance to
+// modify default config in `siteInject`.
+export function initConfigStore() {
+  const data = config.getAll();
+  configStore.set(data);
+  configStore.subscribe(config.update);
+  return configStore;
+}

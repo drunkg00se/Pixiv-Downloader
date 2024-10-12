@@ -6,12 +6,13 @@
   import Config from './Modal/Config/Config.svelte';
   import Downloader from './Downloader/Downloader.svelte';
   import cog from '@/assets/cog.svg?src';
-  import store from './Modal/Config/store';
+  import { initConfigStore } from './Modal/Config/store';
   import t from '../lang';
   import { addStyleToShadow } from '../util';
   import type { BatchDownloadConfig } from './Downloader/useBatchDownload';
 
   initializeStores();
+  const store = initConfigStore();
 
   const modalStore = getModalStore();
 

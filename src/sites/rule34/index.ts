@@ -82,6 +82,13 @@ export class Rule34 extends SiteInject {
     }
   }
 
+  protected getCustomConfig() {
+    return {
+      folderPattern: 'rule34/{artist}',
+      filenamePattern: '{id}_{artist}_{character}'
+    };
+  }
+
   protected observeColorScheme() {
     const query = window.matchMedia('(prefers-color-scheme: dark)');
 

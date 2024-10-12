@@ -148,6 +148,13 @@ export class Yande extends SiteInject {
     }
   }
 
+  protected getCustomConfig() {
+    return {
+      folderPattern: 'yande/{artist}',
+      filenamePattern: '{id}_{artist}_{character}'
+    };
+  }
+
   protected observeColorScheme() {
     const query = window.matchMedia('(prefers-color-scheme: dark)');
 

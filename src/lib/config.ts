@@ -67,37 +67,16 @@ interface Config {
   update(config: ConfigData): void;
 }
 
-function loadConfig(): Config {
-  const getDefaultFolder = () => {
-    switch (location.hostname) {
-      case 'www.pixiv.net':
-        return 'pixiv/{artist}';
-      case 'danbooru.donmai.us':
-        return 'danbooru/{artist}';
-      case 'rule34.xxx':
-        return 'rule34/{artist}';
-      case 'yande.re':
-        return 'yande/{artist}';
-      case 'booru.allthefallen.moe':
-        return 'ATFbooru/{artist}';
-      default:
-        return '';
-    }
-  };
+export let config: Config;
 
-  const getDefaultFilename = () => {
-    if (location.hostname === 'www.pixiv.net') {
-      return '{artist}_{title}_{id}_p{page}';
-    } else {
-      return '{id}_{artist}_{character}';
-    }
-  };
+export function loadConfig(customConfig: Partial<ConfigData> = {}): Config {
+  if (config) throw new Error('`config` has already been defined.');
 
   const defaultConfig: Readonly<ConfigData> = Object.freeze({
     version: __VERSION__,
     ugoiraFormat: UgoiraFormat.ZIP,
-    folderPattern: getDefaultFolder(),
-    filenamePattern: getDefaultFilename(),
+    folderPattern: '',
+    filenamePattern: '{id}',
     tagLang: TagLanguage.JAPANESE,
     showMsg: true,
     mixEffect: false,
@@ -121,55 +100,54 @@ function loadConfig(): Config {
     'pdl-btn-self-bookmark-left': 100,
     'pdl-btn-self-bookmark-top': 76,
     'pdl-btn-left': 0,
-    'pdl-btn-top': 100
+    'pdl-btn-top': 100,
+    ...customConfig
   });
 
-  let config: ConfigData;
+  let configData: ConfigData;
 
   if (!localStorage.pdlSetting) {
-    config = Object.assign({}, defaultConfig);
+    configData = Object.assign({}, defaultConfig);
   } else {
     try {
-      config = JSON.parse(localStorage.pdlSetting);
+      configData = JSON.parse(localStorage.pdlSetting);
     } catch (error) {
       logger.error('Use default config because: ', error);
-      config = Object.assign({}, defaultConfig);
+      configData = Object.assign({}, defaultConfig);
     }
   }
 
-  if (config.version !== defaultConfig.version) {
+  if (configData.version !== defaultConfig.version) {
     // 更新设置
-    config = {
+    configData = {
       ...defaultConfig,
-      ...config,
+      ...configData,
       version: defaultConfig.version,
       showMsg: true
     };
-    localStorage.pdlSetting = JSON.stringify(config);
+    localStorage.pdlSetting = JSON.stringify(configData);
   }
 
-  return {
+  return (config = {
     get<T extends keyof ConfigData>(key: T): ConfigData[T] {
-      return config[key] ?? defaultConfig[key];
+      return configData[key] ?? defaultConfig[key];
     },
 
     set<T extends keyof ConfigData>(key: T, value: ConfigData[T]): void {
-      if (config[key] !== value) {
-        config[key] = value;
-        localStorage.pdlSetting = JSON.stringify(config);
+      if (configData[key] !== value) {
+        configData[key] = value;
+        localStorage.pdlSetting = JSON.stringify(configData);
         logger.info('Config set:', key, value);
       }
     },
 
     getAll(): ConfigData {
-      return { ...config };
+      return { ...configData };
     },
 
     update(newConfig: ConfigData) {
-      config = { ...newConfig };
-      localStorage.pdlSetting = JSON.stringify(config);
+      configData = { ...newConfig };
+      localStorage.pdlSetting = JSON.stringify(configData);
     }
-  };
+  });
 }
-
-export const config = loadConfig();

@@ -29,6 +29,13 @@ export class Pixiv extends SiteInject {
     });
   }
 
+  protected getCustomConfig() {
+    return {
+      folderPattern: 'pixiv/{artist}',
+      filenamePattern: '{artist}_{title}_{id}_p{page}'
+    };
+  }
+
   protected observeColorScheme() {
     const onThemeChange = () => {
       const sitePreferDark = document.documentElement.getAttribute('data-theme') as

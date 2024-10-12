@@ -104,6 +104,13 @@ export class Danbooru extends SiteInject {
     }
   }
 
+  protected getCustomConfig() {
+    return {
+      folderPattern: 'danbooru/{artist}',
+      filenamePattern: '{id}_{artist}_{character}'
+    };
+  }
+
   protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any, true | undefined> {
     // TODO
     return undefined;
