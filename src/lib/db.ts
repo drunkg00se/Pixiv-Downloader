@@ -24,10 +24,16 @@ interface EffectImageItem {
   delays: number[];
 }
 
+interface CacheItem {
+  pid: number;
+  page: Uint8Array | null;
+}
+
 class HistoryDb extends Dexie {
   private history!: Table<HistoryItem, number>;
   private imageEffect!: Table<EffectImageItem, string>;
-  private caches!: Map<number, Uint8Array | null>;
+  private caches!: Map<CacheItem['pid'], CacheItem['page']>;
+  private channel: BroadcastChannel;
 
   constructor() {
     super('PdlHistory');
@@ -41,6 +47,54 @@ class HistoryDb extends Dexie {
       this.caches = new Map(datas.map((data) => [data.pid, data.page || null]));
       logger.timeEnd('loadDb');
     });
+
+    this.channel = this.initChannel();
+  }
+
+  private initChannel() {
+    const CHANNEL_NAME = 'pdl_sync-cache';
+    const channel = new BroadcastChannel(CHANNEL_NAME);
+
+    channel.onmessage = (evt) => {
+      const { data }: { data: CacheItem | CacheItem[] | undefined } = evt;
+      if (data === undefined) {
+        this.caches && this.caches.clear();
+        logger.info('clear database cache');
+        return;
+      }
+
+      if (Array.isArray(data)) {
+        data.forEach((item) => {
+          this.caches.set(item.pid, item.page);
+        });
+        logger.info('Sync database cache:', data.length);
+      } else {
+        this.caches.set(data.pid, data.page);
+      }
+    };
+
+    return channel;
+  }
+
+  private syncCacheViaChannel(item?: CacheItem | CacheItem[]) {
+    this.channel.postMessage(item);
+  }
+
+  private updateCache(item: CacheItem | CacheItem[]) {
+    if (Array.isArray(item)) {
+      item.forEach((cache) => {
+        this.caches.set(cache.pid, cache.page);
+      });
+      this.syncCacheViaChannel(item);
+    } else {
+      this.caches.set(item.pid, item.page);
+      this.syncCacheViaChannel(item);
+    }
+  }
+
+  private clearCache() {
+    this.caches && this.caches.clear();
+    this.syncCacheViaChannel();
   }
 
   private throwIfInvalidNumber(num: number | string): number {
@@ -94,20 +148,20 @@ class HistoryDb extends Dexie {
           // not fully downloaded
           const u8arr = await this.updatePageArray(page, historyItem.page);
           this.history.put({ ...historyData, page: u8arr });
-          this.caches.set(pid, u8arr);
+          this.updateCache({ pid, page: u8arr });
         } else if (historyItem) {
-          // fully downloaded
+          // fully downloaded, update artwork meta
           delete historyData.page;
           this.history.put(historyData as HistoryItem);
         } else {
           // new download
           const u8arr = await this.updatePageArray(page);
           this.history.put({ ...historyData, page: u8arr });
-          this.caches.set(pid, u8arr);
+          this.updateCache({ pid, page: u8arr });
         }
       } else {
         this.history.put(historyData as HistoryItem);
-        this.caches.set(pid, null);
+        this.updateCache({ pid, page: null });
       }
     });
   }
@@ -121,9 +175,12 @@ class HistoryDb extends Dexie {
       }
     }) as HistoryItem[];
 
-    historyItems.forEach((data) => {
-      this.caches.set(data.pid, data.page || null);
-    });
+    const cacheItems: CacheItem[] = historyItems.map((item) => ({
+      pid: item.pid,
+      page: item.page || null
+    }));
+    this.updateCache(cacheItems);
+
     return this.history.bulkPut(historyItems);
   }
 
@@ -196,7 +253,7 @@ class HistoryDb extends Dexie {
   }
 
   public clear() {
-    this.caches && this.caches.clear();
+    this.clearCache();
     return this.history.clear();
   }
 
