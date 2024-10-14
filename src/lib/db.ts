@@ -32,8 +32,6 @@ interface CacheItem {
 class HistoryDb extends Dexie {
   private history!: Table<HistoryItem, number>;
   private imageEffect!: Table<EffectImageItem, string>;
-  private caches!: Map<CacheItem['pid'], CacheItem['page']>;
-  private channel: BroadcastChannel;
 
   constructor() {
     super('PdlHistory');
@@ -41,63 +39,9 @@ class HistoryDb extends Dexie {
       history: 'pid, userId, user, title, *tags',
       imageEffect: 'id'
     });
-
-    logger.time('loadDb');
-    this.history.toArray().then((datas) => {
-      this.caches = new Map(datas.map((data) => [data.pid, data.page || null]));
-      logger.timeEnd('loadDb');
-    });
-
-    this.channel = this.initChannel();
   }
 
-  private initChannel() {
-    const CHANNEL_NAME = 'pdl_sync-cache';
-    const channel = new BroadcastChannel(CHANNEL_NAME);
-
-    channel.onmessage = (evt) => {
-      const { data }: { data: CacheItem | CacheItem[] | undefined } = evt;
-      if (data === undefined) {
-        this.caches && this.caches.clear();
-        logger.info('clear database cache');
-        return;
-      }
-
-      if (Array.isArray(data)) {
-        data.forEach((item) => {
-          this.caches.set(item.pid, item.page);
-        });
-        logger.info('Sync database cache:', data.length);
-      } else {
-        this.caches.set(data.pid, data.page);
-      }
-    };
-
-    return channel;
-  }
-
-  private syncCacheViaChannel(item?: CacheItem | CacheItem[]) {
-    this.channel.postMessage(item);
-  }
-
-  private updateCache(item: CacheItem | CacheItem[]) {
-    if (Array.isArray(item)) {
-      item.forEach((cache) => {
-        this.caches.set(cache.pid, cache.page);
-      });
-      this.syncCacheViaChannel(item);
-    } else {
-      this.caches.set(item.pid, item.page);
-      this.syncCacheViaChannel(item);
-    }
-  }
-
-  private clearCache() {
-    this.caches && this.caches.clear();
-    this.syncCacheViaChannel();
-  }
-
-  private throwIfInvalidNumber(num: number | string): number {
+  protected throwIfInvalidNumber(num: number | string): number {
     if (typeof num === 'string') {
       if (num !== '') {
         num = +num;
@@ -113,7 +57,7 @@ class HistoryDb extends Dexie {
     return num;
   }
 
-  private async updatePageArray(page: number, pageArray?: Uint8Array): Promise<Uint8Array> {
+  protected updatePageArray(page: number, pageArray?: Uint8Array): Uint8Array {
     const byteIndex = Math.floor(page / 8);
     const bitIndex = page % 8;
 
@@ -136,32 +80,26 @@ class HistoryDb extends Dexie {
 
   public async add(historyData: HistoryData) {
     const { pid, page } = historyData;
-    this.throwIfInvalidNumber(pid);
 
     return this.transaction('rw', this.history, async () => {
       if (page !== undefined) {
         this.throwIfInvalidNumber(page);
 
-        const historyItem = await this.history.get(pid);
+        const historyItem = await this.get(pid);
 
-        if (historyItem?.page) {
-          // not fully downloaded
-          const u8arr = await this.updatePageArray(page, historyItem.page);
-          this.history.put({ ...historyData, page: u8arr });
-          this.updateCache({ pid, page: u8arr });
-        } else if (historyItem) {
-          // fully downloaded, update artwork meta
+        if (historyItem && historyItem.page === undefined) {
+          // all pages have been downloaded, update artwork meta
           delete historyData.page;
           this.history.put(historyData as HistoryItem);
         } else {
-          // new download
-          const u8arr = await this.updatePageArray(page);
+          // historyItem = undefined: not downloaded
+          // historyItem.page !== undefined: not fully downloaded
+          const u8arr = this.updatePageArray(page, historyItem?.page);
           this.history.put({ ...historyData, page: u8arr });
-          this.updateCache({ pid, page: u8arr });
         }
       } else {
+        // all pages downloaded
         this.history.put(historyData as HistoryItem);
-        this.updateCache({ pid, page: null });
       }
     });
   }
@@ -175,65 +113,34 @@ class HistoryDb extends Dexie {
       }
     }) as HistoryItem[];
 
-    const cacheItems: CacheItem[] = historyItems.map((item) => ({
-      pid: item.pid,
-      page: item.page || null
-    }));
-    this.updateCache(cacheItems);
-
     return this.history.bulkPut(historyItems);
   }
 
   public async has(pid: number | string): Promise<boolean> {
-    pid = this.throwIfInvalidNumber(pid);
-
-    if (this.caches) {
-      return this.caches.has(pid);
-    } else {
-      return !!(await this.history.get(pid));
-    }
+    return !!(await this.get(pid));
   }
 
   /**
    * Returns `true` if the page has been downloaded, `false` if it hasn't,
-   *
-   * @param {number | string} pid
-   * @param {number} page
-   * @returns {boolean}
    */
   public async hasPage(pid: number | string, page: number): Promise<boolean> {
-    pid = this.throwIfInvalidNumber(pid);
     this.throwIfInvalidNumber(page);
+
+    const historyItem = await this.get(pid);
+    if (!historyItem) return false;
+    if (!historyItem.page) return true;
 
     const byteIndex = Math.floor(page / 8);
     const bitIndex = page % 8;
+    return (
+      !(byteIndex > historyItem.page.length - 1) &&
+      (historyItem.page[byteIndex] & (1 << bitIndex)) !== 0
+    );
+  }
 
-    if (this.caches) {
-      const cachesData = this.caches.get(pid);
-
-      if (cachesData === null) {
-        return true;
-      } else if (cachesData) {
-        return (
-          !(byteIndex > cachesData.length - 1) && (cachesData[byteIndex] & (1 << bitIndex)) !== 0
-        );
-      }
-
-      return false;
-    } else {
-      const historyItem = await this.history.get(pid);
-
-      if (!historyItem) {
-        return false;
-      } else if (!historyItem.page) {
-        return true;
-      }
-
-      return (
-        !(byteIndex > historyItem.page.length - 1) &&
-        (historyItem.page[byteIndex] & (1 << bitIndex)) !== 0
-      );
-    }
+  public get(pid: number | string): Promise<HistoryItem | undefined> {
+    pid = this.throwIfInvalidNumber(pid);
+    return this.history.get(pid);
   }
 
   public getAll(): Promise<HistoryItem[]> {
@@ -252,8 +159,7 @@ class HistoryDb extends Dexie {
     });
   }
 
-  public clear() {
-    this.clearCache();
+  public clear(): Promise<void> {
     return this.history.clear();
   }
 
@@ -270,8 +176,140 @@ class HistoryDb extends Dexie {
   }
 }
 
-let instance: HistoryDb;
-const SingletonHistoryDb = new Proxy(HistoryDb, {
+class CachedHistoryDb extends HistoryDb {
+  private cache: Map<CacheItem['pid'], CacheItem['page']> = new Map();
+  private initCachePromise: Promise<void>;
+  private channel: BroadcastChannel;
+
+  constructor() {
+    super();
+    this.initCachePromise = this.initCache();
+    this.channel = this.initChannel();
+  }
+
+  private async initCache() {
+    logger.time('loadDb');
+    const historyItems = await this.getAll();
+
+    let historyItem: HistoryItem;
+    for (let i = 0; (historyItem = historyItems[i++]); ) {
+      const { pid, page = null } = historyItem;
+      this.cache.set(pid, page);
+    }
+    logger.timeEnd('loadDb');
+  }
+
+  private initChannel() {
+    const CHANNEL_NAME = 'pdl_sync-cache';
+    const channel = new BroadcastChannel(CHANNEL_NAME);
+
+    channel.onmessage = (evt) => {
+      const { data }: { data: CacheItem | CacheItem[] | undefined } = evt;
+      if (data === undefined) {
+        this.cache.clear();
+        logger.info('clear database cache');
+        return;
+      }
+
+      if (Array.isArray(data)) {
+        data.forEach((item) => {
+          this.cache.set(item.pid, item.page);
+        });
+        logger.info('Sync database cache:', data.length);
+      } else {
+        this.cache.set(data.pid, data.page);
+      }
+    };
+
+    return channel;
+  }
+
+  private syncCacheViaChannel(item?: CacheItem | CacheItem[]) {
+    this.channel.postMessage(item);
+  }
+
+  private updateCache(item: CacheItem | CacheItem[]) {
+    if (Array.isArray(item)) {
+      item.forEach((cache) => {
+        this.cache.set(cache.pid, cache.page);
+      });
+    } else {
+      this.cache.set(item.pid, item.page);
+    }
+    this.syncCacheViaChannel(item);
+  }
+
+  private clearCache() {
+    this.cache.clear();
+    this.syncCacheViaChannel();
+  }
+
+  private async getCache(pid: number | string): Promise<CacheItem['page'] | undefined> {
+    pid = this.throwIfInvalidNumber(pid);
+    await this.initCachePromise;
+    return this.cache.get(pid);
+  }
+
+  public async add(historyData: HistoryData): Promise<void> {
+    const { pid, page } = historyData;
+
+    if (page === undefined) {
+      // all pages downloaded
+      !(await this.has(pid)) && this.updateCache({ pid, page: null });
+    } else {
+      // only one page downloaded
+      this.throwIfInvalidNumber(page);
+
+      const pageArray = await this.getCache(pid);
+      if (pageArray !== null) {
+        // not downloaded | not fully downloaded
+        this.updateCache({ pid, page: this.updatePageArray(page, pageArray) });
+      } else {
+        this.updateCache({ pid, page: null });
+      }
+    }
+
+    return super.add(historyData);
+  }
+
+  public import(objArr: HistoryImportObject[]) {
+    const cacheItems: CacheItem[] = objArr.map((historyObj) => {
+      return {
+        pid: historyObj.pid,
+        page: historyObj.page ? new Uint8Array(Object.values(historyObj.page)) : null
+      };
+    });
+    this.updateCache(cacheItems);
+
+    return super.import(objArr);
+  }
+
+  public async has(pid: number | string): Promise<boolean> {
+    pid = this.throwIfInvalidNumber(pid);
+    await this.initCachePromise;
+    return this.cache.has(pid);
+  }
+
+  public async hasPage(pid: number | string, page: number): Promise<boolean> {
+    this.throwIfInvalidNumber(page);
+
+    const cachesData = await this.getCache(pid);
+    if (cachesData === undefined) return false;
+    if (cachesData === null) return true;
+
+    const byteIndex = Math.floor(page / 8);
+    const bitIndex = page % 8;
+    return !(byteIndex > cachesData.length - 1) && (cachesData[byteIndex] & (1 << bitIndex)) !== 0;
+  }
+
+  public clear(): Promise<void> {
+    this.clearCache();
+    return super.clear();
+  }
+}
+
+let instance: CachedHistoryDb;
+const SingletonHistoryDb = new Proxy(CachedHistoryDb, {
   construct(target) {
     if (!instance) {
       return (instance = new target());
