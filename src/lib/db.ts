@@ -308,15 +308,4 @@ class CachedHistoryDb extends HistoryDb {
   }
 }
 
-let instance: CachedHistoryDb;
-const SingletonHistoryDb = new Proxy(CachedHistoryDb, {
-  construct(target) {
-    if (!instance) {
-      return (instance = new target());
-    }
-
-    return instance;
-  }
-});
-
-export const historyDb = new SingletonHistoryDb();
+export const historyDb = new CachedHistoryDb();
