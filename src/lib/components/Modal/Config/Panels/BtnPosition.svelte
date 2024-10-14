@@ -4,7 +4,7 @@
   import t from '@/lib/lang';
   import { env } from '@/lib/env';
   import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
 
   export let bg = 'bg-white/30 dark:bg-black/15';
   export let border = 'divide-y-[1px] *:border-surface-300-600-token';
@@ -46,28 +46,26 @@
   // 预览按钮
 
   let buttonContainer: HTMLDivElement;
-  const sampleBtn = new ThumbnailButton({
-    id: '0',
-    onClick: () => void 0
-  });
 
-  const sampleBookmarkBtn = new ThumbnailButton({
-    id: '0',
-    type: ThumbnailBtnType.PixivMyBookmark,
-    onClick: () => void 0
-  });
+  onMount(() => {
+    const sampleBtn = new ThumbnailButton({
+      id: '0',
+      onClick: () => void 0
+    });
+    sampleBtn.setAttribute('disabled', '');
 
-  sampleBtn.setAttribute('disabled', '');
-  sampleBookmarkBtn.setAttribute('disabled', '');
-
-  onMount(async () => {
     buttonContainer.appendChild(sampleBtn);
-    if (env.isPixiv()) {
-      buttonContainer.appendChild(sampleBookmarkBtn);
 
-      await tick();
-      sampleBookmarkBtn.dataset.status = 'complete';
-    }
+    if (!env.isPixiv()) return;
+
+    const sampleBookmarkBtn = new ThumbnailButton({
+      id: '0',
+      type: ThumbnailBtnType.PixivMyBookmark,
+      onClick: () => void 0
+    });
+    sampleBookmarkBtn.setAttribute('disabled', '');
+
+    buttonContainer.appendChild(sampleBookmarkBtn);
   });
 </script>
 
