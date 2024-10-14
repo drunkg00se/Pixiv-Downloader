@@ -161,7 +161,7 @@ const zh = {
     feedback: '有问题or想建议？这里反馈',
     credit: '脚本还行？请点这里支持我！',
     give_me_a_star: '在GitHub中给我一个 ⭐Star，',
-    buy_me_a_drink: '或者，扫码请我喝杯香草味冰可乐。'
+    buy_me_a_drink: '或者，扫码请我喝杯香草味冰可乐。^_^'
   }
 };
 
@@ -329,7 +329,7 @@ const en: typeof zh = {
     feedback: 'Feedback / Report an issue',
     credit: 'Click here to support me!',
     give_me_a_star: 'Give me a ⭐Star on GitHub.',
-    buy_me_a_drink: 'Or, buy me a vanilla-flavored iced cola.'
+    buy_me_a_drink: 'Or, buy me a vanilla-flavored iced cola. ^_^'
   }
 };
 

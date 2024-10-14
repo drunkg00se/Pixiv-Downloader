@@ -47,6 +47,7 @@ export default defineConfig({
         icon: 'https://www.pixiv.net/favicon.ico',
         license: 'MIT',
         version,
+        supportURL: 'https://github.com/drunkg00se/Pixiv-Downloader/issues',
         description: {
           '': 'Pixiv | Danbooru | Rule34 | Yande. 一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。',
           'zh-TW':

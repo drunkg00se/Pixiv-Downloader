@@ -19,15 +19,11 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
   <article class="modal-body mt-4">
     <ul class="list-disc list-inside leading-loose">
-      <p>祝各位假期愉快 ^_^</p>
-      <li>
-        新增（批量下载）：重新支持批量下载完成后对下载失败的图片进行重试，请在批量下载面板【其它】中启用。
-      </li>
-      <li>
-        新增（下载历史）：现在可以在【设置】【下载历史】中设置定期自动备份下载历史，避免清理浏览器导致记录意外丢失。
-      </li>
-      <li>调整（批量下载）：不再支持多个标签页同时进行批量下载，以避免过于频繁的网络请求。</li>
-      <li>修复（批量下载）：某些情况下批量下载【已关注用户的新作】时无法完成下载的问题。</li>
+      <li>New: Add support for all the fallen booru.</li>
+      <li>优化：现在支持多标签页排队进行批量下载。</li>
+      <li>优化：下载按钮现在会响应式更新完成状态。</li>
+      <li>优化：导入，清除历史记录不再刷新页面。</li>
+      <li>修复：Pixiv浏览记录页不显示下载按钮的问题。</li>
     </ul>
   </article>
   <footer class="modal-footer mt-4">
