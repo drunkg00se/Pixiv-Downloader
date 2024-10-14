@@ -2,6 +2,7 @@ import { historyDb } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import btnStyle from '@/assets/styles/thumbnailButton.scss?inline';
 import svgGroup from '@/assets/thumbnailButtonIcon.svg?src';
+import type { Unsubscriber } from 'svelte/store';
 
 const iconTypeMap: Record<string, string> = {
   init: '#pdl-download',
@@ -44,6 +45,8 @@ export class ThumbnailButton extends HTMLElement {
   private type?: ThumbnailBtnType;
   private onClick: ThumbnailBtnProp['onClick'];
   private btn: HTMLButtonElement;
+  private unsubscriber?: Unsubscriber;
+  private connectedFlag = false;
 
   constructor(props: ThumbnailBtnProp) {
     super();
@@ -79,7 +82,7 @@ export class ThumbnailButton extends HTMLElement {
     return ['data-id', 'data-status', 'data-page', 'data-type', 'disabled'];
   }
 
-  private attributeChangedCallback(
+  attributeChangedCallback(
     name: 'data-id' | 'data-status' | 'data-page' | 'data-type' | 'disabled',
     oldValue: string | null,
     newValue: string | null
@@ -122,7 +125,7 @@ export class ThumbnailButton extends HTMLElement {
     try {
       if (id === null) throw new Error('Attribute "data-id" is required.');
       this.mediaId = this.checkNumberValidity(id);
-      this.updateDownloadStatus();
+      this.connectedFlag && this.observerDb()();
     } catch (error) {
       logger.error(error);
       this.dataset.id = String(this.mediaId);
@@ -146,7 +149,7 @@ export class ThumbnailButton extends HTMLElement {
         this.page = this.checkNumberValidity(page);
       }
 
-      this.updateDownloadStatus();
+      this.connectedFlag && this.observerDb()();
     } catch (error) {
       logger.error(error);
       if (this.page === undefined) {
@@ -188,25 +191,6 @@ export class ThumbnailButton extends HTMLElement {
     );
   }
 
-  private updateDownloadStatus() {
-    // Danbooru pool的id不作记录
-    if (this.type !== ThumbnailBtnType.DanbooruPool) {
-      if (this.page !== undefined) {
-        historyDb.hasPage(this.mediaId, this.page).then((pageDownloaded) => {
-          pageDownloaded
-            ? this.setStatus(ThumbnailBtnStatus.Complete)
-            : this.setStatus(ThumbnailBtnStatus.Init);
-        });
-      } else {
-        historyDb.has(this.mediaId).then((hasId: boolean) => {
-          hasId
-            ? this.setStatus(ThumbnailBtnStatus.Complete)
-            : this.setStatus(ThumbnailBtnStatus.Init);
-        });
-      }
-    }
-  }
-
   private render() {
     const shadowRoot = this.attachShadow({ mode: 'open' });
     shadowRoot.innerHTML = `    <style>${btnStyle}</style>${svgGroup}<button class="pdl-thumbnail">
@@ -215,8 +199,6 @@ export class ThumbnailButton extends HTMLElement {
       </svg>
       <span></span>
     </button>`;
-
-    this.updateDownloadStatus();
 
     this.dataset.id = String(this.mediaId);
     this.type && (this.dataset.type = this.type);
@@ -245,12 +227,31 @@ export class ThumbnailButton extends HTMLElement {
       });
   }
 
+  private observerDb() {
+    return historyDb.subscribe(async () => {
+      // Danbooru pool的id不作记录
+      if (this.type === ThumbnailBtnType.DanbooruPool) return;
+
+      const downloaded = await historyDb.has(this.mediaId, this.page);
+
+      if (this.status === ThumbnailBtnStatus.Complete) {
+        !downloaded && this.setStatus(ThumbnailBtnStatus.Init);
+      } else {
+        downloaded && this.setStatus(ThumbnailBtnStatus.Complete);
+      }
+    });
+  }
+
   connectedCallback() {
+    this.connectedFlag = true;
     this.btn.addEventListener('click', this.dispatchDownload);
+    this.unsubscriber = this.observerDb();
   }
 
   disconnectedCallback() {
+    this.connectedFlag = false;
     this.btn.removeEventListener('click', this.dispatchDownload);
+    this.unsubscriber?.();
   }
 
   public setProgress(progress: number, updateProgressbar = true) {

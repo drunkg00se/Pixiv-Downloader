@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 import { logger } from './logger';
 import { generateCsv } from './util';
+import type { Readable, Unsubscriber } from 'svelte/store';
 
 interface HistoryItemBase {
   pid: number;
@@ -116,26 +117,22 @@ class HistoryDb extends Dexie {
     return this.history.bulkPut(historyItems);
   }
 
-  public async has(pid: number | string): Promise<boolean> {
-    return !!(await this.get(pid));
-  }
+  public async has(pid: number | string, page?: number): Promise<boolean> {
+    if (page === undefined) {
+      return !!(await this.get(pid));
+    } else {
+      this.throwIfInvalidNumber(page);
+      const historyItem = await this.get(pid);
+      if (!historyItem) return false;
+      if (!historyItem.page) return true;
 
-  /**
-   * Returns `true` if the page has been downloaded, `false` if it hasn't,
-   */
-  public async hasPage(pid: number | string, page: number): Promise<boolean> {
-    this.throwIfInvalidNumber(page);
-
-    const historyItem = await this.get(pid);
-    if (!historyItem) return false;
-    if (!historyItem.page) return true;
-
-    const byteIndex = Math.floor(page / 8);
-    const bitIndex = page % 8;
-    return (
-      !(byteIndex > historyItem.page.length - 1) &&
-      (historyItem.page[byteIndex] & (1 << bitIndex)) !== 0
-    );
+      const byteIndex = Math.floor(page / 8);
+      const bitIndex = page % 8;
+      return (
+        !(byteIndex > historyItem.page.length - 1) &&
+        (historyItem.page[byteIndex] & (1 << bitIndex)) !== 0
+      );
+    }
   }
 
   public get(pid: number | string): Promise<HistoryItem | undefined> {
@@ -176,8 +173,10 @@ class HistoryDb extends Dexie {
   }
 }
 
+type HistoryCache = Map<CacheItem['pid'], CacheItem['page']>;
+
 class CachedHistoryDb extends HistoryDb {
-  private cache: Map<CacheItem['pid'], CacheItem['page']> = new Map();
+  protected cache: HistoryCache = new Map();
   private initCachePromise: Promise<void>;
   private channel: BroadcastChannel;
 
@@ -187,7 +186,7 @@ class CachedHistoryDb extends HistoryDb {
     this.channel = this.initChannel();
   }
 
-  private async initCache() {
+  protected async initCache() {
     logger.time('loadDb');
     const historyItems = await this.getAll();
 
@@ -199,11 +198,11 @@ class CachedHistoryDb extends HistoryDb {
     logger.timeEnd('loadDb');
   }
 
-  private initChannel() {
+  protected initChannel() {
     const CHANNEL_NAME = 'pdl_sync-cache';
     const channel = new BroadcastChannel(CHANNEL_NAME);
 
-    channel.onmessage = (evt) => {
+    channel.addEventListener('message', (evt) => {
       const { data }: { data: CacheItem | CacheItem[] | undefined } = evt;
       if (data === undefined) {
         this.cache.clear();
@@ -219,7 +218,7 @@ class CachedHistoryDb extends HistoryDb {
       } else {
         this.cache.set(data.pid, data.page);
       }
-    };
+    });
 
     return channel;
   }
@@ -228,7 +227,7 @@ class CachedHistoryDb extends HistoryDb {
     this.channel.postMessage(item);
   }
 
-  private updateCache(item: CacheItem | CacheItem[]) {
+  protected updateCache(item: CacheItem | CacheItem[]) {
     if (Array.isArray(item)) {
       item.forEach((cache) => {
         this.cache.set(cache.pid, cache.page);
@@ -239,7 +238,7 @@ class CachedHistoryDb extends HistoryDb {
     this.syncCacheViaChannel(item);
   }
 
-  private clearCache() {
+  protected clearCache() {
     this.cache.clear();
     this.syncCacheViaChannel();
   }
@@ -284,22 +283,25 @@ class CachedHistoryDb extends HistoryDb {
     return super.import(objArr);
   }
 
-  public async has(pid: number | string): Promise<boolean> {
+  public async has(pid: number | string, page?: number): Promise<boolean> {
     pid = this.throwIfInvalidNumber(pid);
     await this.initCachePromise;
-    return this.cache.has(pid);
-  }
 
-  public async hasPage(pid: number | string, page: number): Promise<boolean> {
-    this.throwIfInvalidNumber(page);
+    if (page === undefined) {
+      return this.cache.has(pid);
+    } else {
+      this.throwIfInvalidNumber(page);
 
-    const cachesData = await this.getCache(pid);
-    if (cachesData === undefined) return false;
-    if (cachesData === null) return true;
+      const cachesData = await this.getCache(pid);
+      if (cachesData === undefined) return false;
+      if (cachesData === null) return true;
 
-    const byteIndex = Math.floor(page / 8);
-    const bitIndex = page % 8;
-    return !(byteIndex > cachesData.length - 1) && (cachesData[byteIndex] & (1 << bitIndex)) !== 0;
+      const byteIndex = Math.floor(page / 8);
+      const bitIndex = page % 8;
+      return (
+        !(byteIndex > cachesData.length - 1) && (cachesData[byteIndex] & (1 << bitIndex)) !== 0
+      );
+    }
   }
 
   public clear(): Promise<void> {
@@ -308,4 +310,48 @@ class CachedHistoryDb extends HistoryDb {
   }
 }
 
-export const historyDb = new CachedHistoryDb();
+type Subscription = (val: HistoryCache) => void;
+class ReadableHistoryDb extends CachedHistoryDb implements Readable<HistoryCache> {
+  private subscribers: Set<Subscription> = new Set();
+
+  private runSubscription() {
+    logger.info('runSubscription', this.subscribers.size);
+    this.subscribers.forEach((subscription) => {
+      subscription(this.cache);
+    });
+  }
+
+  protected async initCache(): Promise<void> {
+    await super.initCache();
+    this.runSubscription();
+  }
+
+  protected initChannel(): BroadcastChannel {
+    const channel = super.initChannel();
+    channel.addEventListener('message', () => {
+      this.runSubscription();
+    });
+
+    return channel;
+  }
+
+  protected updateCache(item: CacheItem | CacheItem[]): void {
+    super.updateCache(item);
+    this.runSubscription();
+  }
+
+  protected clearCache(): void {
+    super.clearCache();
+    this.runSubscription();
+  }
+
+  public subscribe(subscription: Subscription): Unsubscriber {
+    this.subscribers.add(subscription);
+    subscription(this.cache);
+    return () => {
+      this.subscribers.delete(subscription);
+    };
+  }
+}
+
+export const historyDb = new ReadableHistoryDb();
