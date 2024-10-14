@@ -1,17 +1,19 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.3.0
+// @version            1.3.1
 // @author             ruaruarua
 // @description        Pixiv | Danbooru | Rule34 | Yande. 一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。
 // @description:zh-TW  Pixiv | Danbooru | Rule34 | Yande. 一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。
 // @description:en     Pixiv | Danbooru | Rule34 | Yande. Download artworks with one click. Batch download artworks or download by tags. Convert ugoira formats: Gif | Apng | Webp | Webm | MP4. Customize image file name, save path. Save / export download history.
 // @license            MIT
 // @icon               https://www.pixiv.net/favicon.ico
+// @supportURL         https://github.com/drunkg00se/Pixiv-Downloader/issues
 // @match              https://www.pixiv.net/*
 // @match              https://rule34.xxx/*
 // @match              https://danbooru.donmai.us/*
 // @match              https://yande.re/*
+// @match              https://booru.allthefallen.moe/*
 // @require            https://unpkg.com/dexie@3.2.7/dist/dexie.min.js
 // @require            https://unpkg.com/jszip@3.9.1/dist/jszip.min.js
 // @require            https://unpkg.com/gif.js@0.2.0/dist/gif.js
@@ -25,6 +27,7 @@
 // @connect            rule34.xxx
 // @connect            donmai.us
 // @connect            yande.re
+// @connect            allthefallen.moe
 // @grant              GM_download
 // @grant              GM_getResourceText
 // @grant              GM_info
@@ -34,7 +37,7 @@
 // @noframes
 // ==/UserScript==
 
-(t=>{const r=new CSSStyleSheet;r.replaceSync(t),window._pdlShadowStyle=r})(` .anim-indeterminate.svelte-12wvf64{transform-origin:0% 50%;animation:svelte-12wvf64-anim-indeterminate 2s infinite linear}@keyframes svelte-12wvf64-anim-indeterminate{0%{transform:translate(0) scaleX(0)}40%{transform:translate(0) scaleX(.4)}to{transform:translate(100%) scaleX(.5)}}*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}:before,:after{--tw-content: ""}:host [data-theme=skeleton],:host{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}:host [data-theme=skeleton]{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h3{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}dl,dd,h1,h3,hr,figure,p{margin:0}fieldset{margin:0;padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}[type=text],input:where(:not([type])),[type=email],[type=url],[type=password],[type=number],[type=date],[type=datetime-local],[type=month],[type=search],[type=tel],[type=time],[type=week],[multiple],textarea,select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0;padding:8px 12px;font-size:16px;line-height:24px;--tw-shadow: 0 0 #0000}[type=text]:focus,input:where(:not([type])):focus,[type=email]:focus,[type=url]:focus,[type=password]:focus,[type=number]:focus,[type=date]:focus,[type=datetime-local]:focus,[type=month]:focus,[type=search]:focus,[type=tel]:focus,[type=time]:focus,[type=week]:focus,[multiple]:focus,textarea:focus,select:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);border-color:#2563eb}input::-moz-placeholder,textarea::-moz-placeholder{color:#6b7280;opacity:1}input::placeholder,textarea::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 8px center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:initial;background-position:initial;background-repeat:unset;background-size:initial;padding-right:12px;-webkit-print-color-adjust:unset;print-color-adjust:unset}[type=checkbox],[type=radio]{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;flex-shrink:0;height:16px;width:16px;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow: 0 0 #0000}[type=checkbox]{border-radius:0}[type=radio]{border-radius:100%}[type=checkbox]:focus,[type=radio]:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 2px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}[type=checkbox]:checked,[type=radio]:checked{border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}[type=checkbox]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=checkbox]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=radio]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=radio]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:checked:hover,[type=checkbox]:checked:focus,[type=radio]:checked:hover,[type=radio]:checked:focus{border-color:transparent;background-color:currentColor}[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}@media (forced-colors: active){[type=checkbox]:indeterminate{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:indeterminate:hover,[type=checkbox]:indeterminate:focus{border-color:transparent;background-color:currentColor}[type=file]{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type=file]:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}:host [data-theme=skeleton]{background-color:rgb(var(--color-surface-50));font-size:16px;line-height:24px;font-family:var(--theme-font-family-base);color:rgba(var(--theme-font-color-base))}:host .dark [data-theme=skeleton]{background-color:rgb(var(--color-surface-900));color:rgba(var(--theme-font-color-dark))}::-moz-selection{background-color:rgb(var(--color-primary-500) / .3)}::selection{background-color:rgb(var(--color-primary-500) / .3)}:host [data-theme=skeleton]{-webkit-tap-highlight-color:rgba(128,128,128,.5);scrollbar-color:rgba(0,0,0,.2) rgba(255,255,255,.05)}:host [data-theme=skeleton]{scrollbar-color:rgba(128,128,128,.5) rgba(0,0,0,.1);scrollbar-width:thin}:host.dark{scrollbar-color:rgba(255,255,255,.1) rgba(0,0,0,.05)}hr:not(.divider){display:block;border-top-width:1px;border-style:solid;border-color:rgb(var(--color-surface-300))}.dark hr:not(.divider){border-color:rgb(var(--color-surface-600))}fieldset,label{display:block}::-moz-placeholder{color:rgb(var(--color-surface-500))}::placeholder{color:rgb(var(--color-surface-500))}.dark ::-moz-placeholder{color:rgb(var(--color-surface-400))}.dark ::placeholder{color:rgb(var(--color-surface-400))}:is(.dark input::-webkit-calendar-picker-indicator){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z'/%3E%3C/svg%3E") no-repeat 50% 50%;pointer-events:none;height:16px;width:16px;border-radius:9999px;background-size:contain;opacity:0}input[type=search]:focus::-webkit-search-cancel-button{pointer-events:auto;opacity:1}:is(.dark input[type=search]::-webkit-search-cancel-button){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}progress{webkit-appearance:none;-moz-appearance:none;-webkit-appearance:none;appearance:none;height:8px;width:100%;overflow:hidden;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-400))}.dark progress{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-400))}.dark progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-value{background-color:rgb(var(--color-surface-900))}.dark progress::-webkit-progress-value{background-color:rgb(var(--color-surface-50))}::-moz-progress-bar{background-color:rgb(var(--color-surface-900))}.dark ::-moz-progress-bar{background-color:rgb(var(--color-surface-50))}:indeterminate::-moz-progress-bar{width:0}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled{cursor:not-allowed;opacity:.5}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}input[type=file]:not(.file-dropzone-input)::file-selector-button{font-size:14px;line-height:20px;padding:6px 12px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50));margin-right:8px;border-width:0px}input[type=file]:not(.file-dropzone-input)::file-selector-button>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}input[type=file]:not(.file-dropzone-input)::file-selector-button:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.dark input[type=file]:not(.file-dropzone-input)::file-selector-button{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}[type=range]{width:100%;accent-color:rgb(var(--color-surface-900) / 1)}:is(.dark [type=range]){accent-color:rgb(var(--color-surface-50) / 1)}[data-sort]{cursor:pointer}[data-sort]:hover:hover,.dark [data-sort]:hover:hover{background-color:rgb(var(--color-primary-500) / .1)}[data-sort]:after{margin-left:8px!important;opacity:0;--tw-content: "\u2193" !important;content:var(--tw-content)!important}[data-popup]{position:absolute;top:0;left:0;display:none;transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}:host [data-theme=skeleton]{--theme-font-family-base: system-ui;--theme-font-family-heading: system-ui;--theme-font-color-base: 0 0 0;--theme-font-color-dark: 255 255 255;--theme-rounded-base: 9999px;--theme-rounded-container: 8px;--theme-border-base: 1px;--on-primary: 0 0 0;--on-secondary: 255 255 255;--on-tertiary: 0 0 0;--on-success: 0 0 0;--on-warning: 0 0 0;--on-error: 255 255 255;--on-surface: 255 255 255;--color-primary-50: 219 245 236;--color-primary-100: 207 241 230;--color-primary-200: 195 238 224;--color-primary-300: 159 227 205;--color-primary-400: 87 207 167;--color-primary-500: 15 186 129;--color-primary-600: 14 167 116;--color-primary-700: 11 140 97;--color-primary-800: 9 112 77;--color-primary-900: 7 91 63;--color-secondary-50: 229 227 251;--color-secondary-100: 220 218 250;--color-secondary-200: 211 209 249;--color-secondary-300: 185 181 245;--color-secondary-400: 132 126 237;--color-secondary-500: 79 70 229;--color-secondary-600: 71 63 206;--color-secondary-700: 59 53 172;--color-secondary-800: 47 42 137;--color-secondary-900: 39 34 112;--color-tertiary-50: 219 242 252;--color-tertiary-100: 207 237 251;--color-tertiary-200: 195 233 250;--color-tertiary-300: 159 219 246;--color-tertiary-400: 86 192 240;--color-tertiary-500: 14 165 233;--color-tertiary-600: 13 149 210;--color-tertiary-700: 11 124 175;--color-tertiary-800: 8 99 140;--color-tertiary-900: 7 81 114;--color-success-50: 237 247 220;--color-success-100: 230 245 208;--color-success-200: 224 242 197;--color-success-300: 206 235 162;--color-success-400: 169 219 92;--color-success-500: 132 204 22;--color-success-600: 119 184 20;--color-success-700: 99 153 17;--color-success-800: 79 122 13;--color-success-900: 65 100 11;--color-warning-50: 252 244 218;--color-warning-100: 251 240 206;--color-warning-200: 250 236 193;--color-warning-300: 247 225 156;--color-warning-400: 240 202 82;--color-warning-500: 234 179 8;--color-warning-600: 211 161 7;--color-warning-700: 176 134 6;--color-warning-800: 140 107 5;--color-warning-900: 115 88 4;--color-error-50: 249 221 234;--color-error-100: 246 209 228;--color-error-200: 244 198 221;--color-error-300: 238 163 200;--color-error-400: 225 94 159;--color-error-500: 212 25 118;--color-error-600: 191 23 106;--color-error-700: 159 19 89;--color-error-800: 127 15 71;--color-error-900: 104 12 58;--color-surface-50: 228 230 238;--color-surface-100: 219 222 233;--color-surface-200: 210 214 227;--color-surface-300: 182 189 210;--color-surface-400: 128 140 177;--color-surface-500: 73 90 143;--color-surface-600: 66 81 129;--color-surface-700: 55 68 107;--color-surface-800: 44 54 86;--color-surface-900: 36 44 70}[data-theme=skeleton] h1,[data-theme=skeleton] h3{font-weight:700}[data-theme=skeleton]{background-image:radial-gradient(at 0% 0%,rgba(var(--color-secondary-500) / .33) 0px,transparent 50%),radial-gradient(at 98% 1%,rgba(var(--color-error-500) / .33) 0px,transparent 50%);background-attachment:fixed;background-position:center;background-repeat:no-repeat;background-size:cover}*{scrollbar-color:initial;scrollbar-width:initial}*,:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}.h3{font-size:20px;line-height:28px;font-family:var(--theme-font-family-heading)}.anchor{--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));text-decoration-line:underline}.anchor:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}:is(.dark .anchor){--tw-text-opacity: 1;color:rgb(var(--color-primary-500) / var(--tw-text-opacity))}.time{font-size:14px;line-height:20px;--tw-text-opacity: 1;color:rgb(var(--color-surface-500) / var(--tw-text-opacity))}:is(.dark .time){--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-size:12px;line-height:16px;--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .3);border-radius:4px;padding:2px 4px}:is(.dark .code){--tw-text-opacity: 1;color:rgb(var(--color-primary-400) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .2)}.del{position:relative;display:block;padding:2px 2px 2px 20px;text-decoration:none}.del:before{position:absolute;left:4px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.del:before{content:"\u2212"}.del{--tw-bg-opacity: 1;background-color:rgb(var(--color-error-500) / var(--tw-bg-opacity));font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;color:rgb(var(--on-error))}.alert{display:flex;flex-direction:column;align-items:flex-start;padding:16px;color:rgb(var(--color-surface-900));border-radius:var(--theme-rounded-container)}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.dark .alert{color:rgb(var(--color-surface-50))}.\\!btn:disabled{cursor:not-allowed!important;opacity:.5!important}.btn:disabled,.btn-icon:disabled,.btn-group>*:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!btn:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:disabled:hover,.btn-icon:disabled:hover,.btn-group>*:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.btn:disabled:active,.btn-icon:disabled:active,.btn-group>*:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!btn{font-size:16px!important;line-height:24px!important;padding:9px 20px!important;white-space:nowrap!important;text-align:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important;border-radius:var(--theme-rounded-base)!important}.btn{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base)}.\\!btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.\\!btn:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:active{--tw-scale-x: 95% !important;--tw-scale-y: 95% !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important;--tw-brightness: brightness(.9) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-sm{padding:6px 12px;font-size:14px;line-height:20px}.btn-icon{font-size:16px;line-height:24px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;padding:0;aspect-ratio:1 / 1;width:43px;border-radius:9999px}.btn-icon>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-icon:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon-sm{aspect-ratio:1 / 1;width:33px;font-size:14px;line-height:20px}.btn-group{display:inline-flex;flex-direction:row;overflow:hidden;border-radius:var(--theme-rounded-base);isolation:isolate}.btn-group>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(0px * var(--tw-space-x-reverse));margin-left:calc(0px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button,.btn-group a{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;color:inherit!important;text-decoration-line:none!important}.btn-group button>:not([hidden])~:not([hidden]),.btn-group a>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button:hover,.btn-group a:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);background-color:rgb(var(--color-surface-50) / 3%)}.btn-group button:active,.btn-group a:active{background-color:rgb(var(--color-surface-900) / 3%)}.btn-group>*+*{border-top-width:0px;border-left-width:1px;border-color:rgb(var(--color-surface-500) / .2)}.card{background-color:rgb(var(--color-surface-100));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(23 23 23 / .05);border-radius:var(--theme-rounded-container)}.dark .card{background-color:rgb(var(--color-surface-800));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(250 250 250 / .05)}a.card{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}a.card:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!chip{cursor:pointer!important;white-space:nowrap!important;padding:6px 12px!important;text-align:center!important;font-size:12px!important;line-height:16px!important;border-radius:4px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important}.chip{cursor:pointer;white-space:nowrap;padding:6px 12px;text-align:center;font-size:12px;line-height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.\\!chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}a.chip:hover,button.chip:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}a.\\!chip:hover,button.\\!chip:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!chip:disabled{cursor:not-allowed!important;opacity:.5!important}.chip:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!chip:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.chip:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.label>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.\\!input{width:100%!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.2s!important;background-color:rgb(var(--color-surface-200))!important;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base)!important;border-color:rgb(var(--color-surface-400))!important}.input,.textarea,.select,.input-group{width:100%;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.2s;background-color:rgb(var(--color-surface-200));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .input,.dark .textarea,.dark .select,.dark .input-group{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.dark .\\!input{background-color:rgb(var(--color-surface-700))!important;border-color:rgb(var(--color-surface-500))!important}.\\!input:hover{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:hover,.textarea:hover,.select:hover,.input-group:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:focus,.textarea:focus,.select:focus,.input-group:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus-within{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))!important}.input:focus-within,.textarea:focus-within,.select:focus-within,.input-group:focus-within{--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.\\!input{border-radius:var(--theme-rounded-base)!important}.input,.input-group{border-radius:var(--theme-rounded-base)}.textarea,.select{border-radius:var(--theme-rounded-container)}.select>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select{padding:8px 32px 8px 8px}.select[size]{background-image:none}.select optgroup>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select optgroup{font-weight:700}.select optgroup option{margin-left:0;padding-left:0}.select optgroup option:first-of-type{margin-top:12px}.select optgroup option:last-child{margin-bottom:12px!important}.select option{cursor:pointer;padding:8px 16px;background-color:rgb(var(--color-surface-200));border-radius:var(--theme-rounded-base)}.dark .select option{background-color:rgb(var(--color-surface-700))}.select option:checked{background:rgb(var(--color-primary-500)) linear-gradient(0deg,rgb(var(--color-primary-500)),rgb(var(--color-primary-500)));color:rgb(var(--on-primary))}.checkbox,.radio{height:20px;width:20px;cursor:pointer;border-radius:4px;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;background-color:rgb(var(--color-surface-200));border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .checkbox,.dark .radio{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.checkbox:hover,.radio:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.checkbox:focus,.radio:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.checkbox:checked,.checkbox:indeterminate,.radio:checked{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:hover,.checkbox:indeterminate:hover,.radio:checked:hover{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:focus,.checkbox:indeterminate:focus,.radio:checked:focus{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)}.radio{border-radius:var(--theme-rounded-base)}.\\!input[type=file]{padding:4px!important}.input[type=file]{padding:4px}.\\!input[type=color]{height:40px!important;width:40px!important;cursor:pointer!important;overflow:hidden!important;border-style:none!important;border-radius:var(--theme-rounded-base)!important;-webkit-appearance:none!important}.input[type=color]{height:40px;width:40px;cursor:pointer;overflow:hidden;border-style:none;border-radius:var(--theme-rounded-base);-webkit-appearance:none}.\\!input[type=color]::-webkit-color-swatch-wrapper{padding:0!important}.input[type=color]::-webkit-color-swatch-wrapper{padding:0}.\\!input[type=color]::-webkit-color-swatch{border-style:none!important}.input[type=color]::-webkit-color-swatch{border-style:none}.\\!input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input[type=color]::-moz-color-swatch{border-style:none!important}.input[type=color]::-moz-color-swatch{border-style:none}.\\!input:disabled{cursor:not-allowed!important;opacity:.5!important}.input:disabled,.textarea:disabled,.select:disabled,.input-group>input:disabled,.input-group>textarea:disabled,.input-group>select:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!input:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:disabled:hover,.textarea:disabled:hover,.select:disabled:hover,.input-group>input:disabled:hover,.input-group>textarea:disabled:hover,.input-group>select:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!input[readonly],.input[readonly],.textarea[readonly],.select[readonly]{cursor:not-allowed!important;border-color:transparent!important}.\\!input[readonly]:hover,.input[readonly]:hover,.textarea[readonly]:hover,.select[readonly]:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input-group{display:grid;overflow:hidden}.input-group input,.input-group select{border-width:0px;background-color:transparent;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.input-group select option{background-color:rgb(var(--color-surface-200))}.dark .input-group select option{background-color:rgb(var(--color-surface-700))}.input-group div,.input-group a,.input-group button{display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:16px}.input-group-divider input,.input-group-divider select,.input-group-divider div,.input-group-divider a{border-left-width:1px;border-color:rgb(var(--color-surface-400));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;min-width:-moz-fit-content!important;min-width:fit-content!important}.dark .input-group-divider input,.dark .input-group-divider select,.dark .input-group-divider div,.dark .input-group-divider a{border-color:rgb(var(--color-surface-500))}.input-group-divider input:focus,.input-group-divider select:focus,.input-group-divider div:focus,.input-group-divider a:focus{border-color:rgb(var(--color-surface-400))}.dark .input-group-divider input:focus,.dark .input-group-divider select:focus,.dark .input-group-divider div:focus,.dark .input-group-divider a:focus{border-color:rgb(var(--color-surface-500))}.input-group-divider *:first-child{border-left-width:0px!important}.input-group-shim{background-color:rgb(var(--color-surface-400) / .1);color:rgb(var(--color-surface-600))}.dark .input-group-shim{color:rgb(var(--color-surface-300))}.input-error{--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}:is(.dark .input-error){--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::-moz-placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.list{list-style-type:none}.list>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.list li{display:flex;align-items:center;border-radius:var(--theme-rounded-base)}.list li>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.placeholder{height:20px;background-color:rgb(var(--color-surface-300));border-radius:var(--theme-rounded-base)}.dark .placeholder{background-color:rgb(var(--color-surface-600))}.w-modal{width:100%;max-width:640px}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-style:auto;outline-color:-webkit-focus-ring-color}.variant-filled{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .variant-filled{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.\\!variant-filled-primary{--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-filled-primary{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .variant-filled-primary){--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .\\!variant-filled-primary){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-ghost-surface{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .variant-ghost-surface){--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}.variant-soft,.variant-soft-surface{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .variant-soft,.dark .variant-soft-surface{color:rgb(var(--color-surface-200))}:is(.dark .variant-soft),:is(.dark .variant-soft-surface){background-color:rgb(var(--color-surface-500) / .2)}@media (min-width: 768px){.h3{font-size:24px;line-height:32px}}@media (min-width: 1024px){.alert{flex-direction:row;align-items:center}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(0px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0px * var(--tw-space-y-reverse));--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-width:0px!important}.visible{visibility:visible}.static{position:static}.fixed{position:fixed}.\\!absolute{position:absolute!important}.absolute{position:absolute}.relative{position:relative}.bottom-0{bottom:0}.bottom-24{bottom:96px}.left-0{left:0}.left-1\\/2{left:50%}.right-0{right:0}.right-2{right:8px}.right-20{right:80px}.right-4{right:16px}.top-0{top:0}.top-1\\/2{top:50%}.top-2{top:8px}.top-36{top:144px}.-z-10{z-index:-10}.z-\\[999\\]{z-index:999}.row-span-2{grid-row:span 2 / span 2}.row-start-1{grid-row-start:1}.\\!m-0{margin:0!important}.m-auto{margin:auto}.mx-2{margin-left:8px;margin-right:8px}.my-4{margin-top:16px;margin-bottom:16px}.my-\\[1px\\]{margin-top:1px;margin-bottom:1px}.ml-1{margin-left:4px}.ml-3{margin-left:12px}.ml-4{margin-left:16px}.mr-2{margin-right:8px}.mr-6{margin-right:24px}.mt-2{margin-top:8px}.mt-4{margin-top:16px}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.contents{display:contents}.hidden{display:none}.size-14{width:56px;height:56px}.size-full{width:100%;height:100%}.h-0{height:0px}.h-10{height:40px}.h-2{height:8px}.h-4{height:16px}.h-48{height:192px}.h-6{height:24px}.h-8{height:32px}.h-\\[38px\\]{height:38px}.h-auto{height:auto}.h-fit{height:-moz-fit-content;height:fit-content}.h-full{height:100%}.h-screen{height:100vh}.max-h-\\[200px\\]{max-height:200px}.min-h-0{min-height:0px}.min-h-full{min-height:100%}.w-0{width:0px}.w-12{width:48px}.w-16{width:64px}.w-20{width:80px}.w-32{width:128px}.w-36{width:144px}.w-48{width:192px}.w-5{width:20px}.w-6{width:24px}.w-8{width:32px}.w-\\[140px\\]{width:140px}.w-\\[38px\\]{width:38px}.w-\\[50\\%\\]{width:50%}.w-\\[600px\\]{width:600px}.w-full{width:100%}.w-screen{width:100vw}.max-w-full{max-width:100%}.flex-1{flex:1 1 0%}.flex-auto{flex:1 1 auto}.flex-none{flex:none}.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.basis-0{flex-basis:0px}.origin-\\[50\\%_50\\%\\]{transform-origin:50% 50%}.-translate-x-1\\/2{--tw-translate-x: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-x-full{--tw-translate-x: -100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\\/2{--tw-translate-y: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-0{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-\\[calc\\(100\\%-44px\\)\\]{--tw-translate-x: calc(100% - 44px) ;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-full{--tw-translate-x: 100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-90{--tw-rotate: -90deg;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-\\[0\\.8\\]{--tw-scale-x: .8;--tw-scale-y: .8;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!transform-none{transform:none!important}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.\\!cursor-default{cursor:default!important}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-\\[0px_1fr\\]{grid-template-columns:0px 1fr}.grid-cols-\\[140px_1fr\\]{grid-template-columns:140px 1fr}.grid-cols-\\[auto_1fr_auto\\]{grid-template-columns:auto 1fr auto}.grid-cols-\\[auto_1fr_auto_auto\\]{grid-template-columns:auto 1fr auto auto}.grid-rows-\\[0fr\\]{grid-template-rows:0fr}.grid-rows-\\[1fr\\]{grid-template-rows:1fr}.grid-rows-\\[auto_1fr\\]{grid-template-rows:auto 1fr}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.\\!items-stretch{align-items:stretch!important}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.justify-evenly{justify-content:space-evenly}.gap-1{gap:4px}.gap-14{gap:56px}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.gap-6{gap:24px}.gap-\\[6px\\]{gap:6px}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(8px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(8px * var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.divide-y-\\[1px\\]>:not([hidden])~:not([hidden]){--tw-divide-y-reverse: 0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.self-start{align-self:flex-start}.self-stretch{align-self:stretch}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-y-hidden{overflow-y:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.break-words{overflow-wrap:break-word}.rounded{border-radius:4px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:8px}.rounded-md{border-radius:6px}.rounded-none{border-radius:0}.rounded-e-\\[4px\\]{border-start-end-radius:4px;border-end-end-radius:4px}.rounded-s-full{border-start-start-radius:9999px;border-end-start-radius:9999px}.border{border-width:1px}.border-0{border-width:0px}.\\!border-t-0{border-top-width:0px!important}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l{border-left-width:1px}.\\!border-surface-700{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-700) / var(--tw-border-opacity))!important}.border-surface-400\\/20{border-color:rgb(var(--color-surface-400) / .2)}.bg-primary-500{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.bg-primary-500\\/30{background-color:rgb(var(--color-primary-500) / .3)}.bg-surface-400{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-400) / var(--tw-bg-opacity))}.bg-surface-400\\/20{background-color:rgb(var(--color-surface-400) / .2)}.bg-surface-900{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-900) / var(--tw-bg-opacity))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity: 1;background-color:rgb(255 255 255 / var(--tw-bg-opacity))}.bg-white\\/30{background-color:#ffffff4d}.bg-white\\/75{background-color:#ffffffbf}.bg-scroll{background-attachment:scroll}.fill-current{fill:currentColor}.fill-primary-500{fill:rgb(var(--color-primary-500) / 1)}.fill-slate-700{fill:#334155}.fill-transparent{fill:transparent}.stroke-primary-500{stroke:rgb(var(--color-primary-500) / 1)}.stroke-primary-500\\/30{stroke:rgb(var(--color-primary-500) / .3)}.stroke-surface-500\\/30{stroke:rgb(var(--color-surface-500) / .3)}.stroke-surface-900{stroke:rgb(var(--color-surface-900) / 1)}.object-cover{-o-object-fit:cover;object-fit:cover}.object-center{-o-object-position:center;object-position:center}.\\!p-0{padding:0!important}.p-0{padding:0}.p-1{padding:4px}.p-2{padding:8px}.p-4{padding:16px}.\\!px-1{padding-left:4px!important;padding-right:4px!important}.\\!py-2{padding-top:8px!important;padding-bottom:8px!important}.\\!py-\\[7px\\]{padding-top:7px!important;padding-bottom:7px!important}.px-3{padding-left:12px;padding-right:12px}.px-4{padding-left:16px;padding-right:16px}.px-8{padding-left:32px;padding-right:32px}.py-1{padding-top:4px;padding-bottom:4px}.py-2{padding-top:8px;padding-bottom:8px}.py-6{padding-top:24px;padding-bottom:24px}.pb-6{padding-bottom:24px}.pl-6{padding-left:24px}.pr-0{padding-right:0}.pr-2{padding-right:8px}.pr-4{padding-right:16px}.pr-6{padding-right:24px}.pt-4{padding-top:16px}.text-center{text-align:center}.text-2xl{font-size:24px;line-height:32px}.text-\\[12px\\]{font-size:12px}.text-base{font-size:16px;line-height:24px}.text-sm{font-size:14px;line-height:20px}.text-xs{font-size:12px;line-height:16px}.font-bold{font-weight:700}.italic{font-style:italic}.leading-\\[14px\\]{line-height:14px}.leading-loose{line-height:2}.\\!text-error-500{--tw-text-opacity: 1 !important;color:rgb(var(--color-error-500) / var(--tw-text-opacity))!important}.text-error-500{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.text-surface-400{--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.underline-offset-2{text-underline-offset:2px}.accent-surface-900{accent-color:rgb(var(--color-surface-900) / 1)}.opacity-40{opacity:.4}.opacity-50{opacity:.5}.opacity-70{opacity:.7}.mix-blend-hard-light{mix-blend-mode:hard-light}.shadow{--tw-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);--tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.shadow-xl{--tw-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);--tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.-outline-offset-\\[3px\\]{outline-offset:-3px}.\\!ring-0{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.blur{--tw-blur: blur(8px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\\[1px\\]{--tw-blur: blur(1px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-xl{--tw-drop-shadow: drop-shadow(0 20px 13px rgb(0 0 0 / .03)) drop-shadow(0 8px 5px rgb(0 0 0 / .08));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur: blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-columns\\]{transition-property:grid-template-columns;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-rows\\]{transition-property:grid-template-rows;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[stroke-dashoffset\\]{transition-property:stroke-dashoffset;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[transform\\]{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[width\\]{transition-property:width;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.delay-100{transition-delay:.1s}.duration-100{transition-duration:.1s}.duration-\\[200ms\\]{transition-duration:.2s}.duration-\\[250ms\\]{transition-duration:.25s}.duration-\\[400ms\\]{transition-duration:.4s}.bg-surface-backdrop-token{background-color:rgb(var(--color-surface-400) / .7)}.dark .bg-surface-backdrop-token{background-color:rgb(var(--color-surface-900) / .7)}.bg-surface-100-800-token{background-color:rgb(var(--color-surface-100))}.dark .bg-surface-100-800-token{background-color:rgb(var(--color-surface-800))}.bg-surface-200-700-token{background-color:rgb(var(--color-surface-200))}.dark .bg-surface-200-700-token{background-color:rgb(var(--color-surface-700))}.bg-surface-900-50-token{background-color:rgb(var(--color-surface-900))}.dark .bg-surface-900-50-token{background-color:rgb(var(--color-surface-50))}.border-token{border-width:var(--theme-border-base)}.border-surface-400-500-token{border-color:rgb(var(--color-surface-400))}.dark .border-surface-400-500-token{border-color:rgb(var(--color-surface-500))}.border-surface-900-50-token{border-color:rgb(var(--color-surface-900))}.dark .border-surface-900-50-token{border-color:rgb(var(--color-surface-50))}.border-surface-800-100-token{border-color:rgb(var(--color-surface-800))}.dark .border-surface-800-100-token{border-color:rgb(var(--color-surface-100))}.rounded-token{border-radius:var(--theme-rounded-base)}.rounded-container-token{border-radius:var(--theme-rounded-container)}.rounded-tl-container-token{border-top-left-radius:var(--theme-rounded-container)}.rounded-tr-container-token{border-top-right-radius:var(--theme-rounded-container)}.fill-token{fill:rgba(var(--theme-font-color-base))}.dark .fill-token{fill:rgba(var(--theme-font-color-dark))}.text-surface-700-200-token{color:rgb(var(--color-surface-700))}.dark .text-surface-700-200-token{color:rgb(var(--color-surface-200))}.scrollbar-thin::-webkit-scrollbar-track{background-color:var(--scrollbar-track);border-radius:var(--scrollbar-track-radius)}.scrollbar-thin::-webkit-scrollbar-track:hover{background-color:var(--scrollbar-track-hover, var(--scrollbar-track))}.scrollbar-thin::-webkit-scrollbar-track:active{background-color:var(--scrollbar-track-active, var(--scrollbar-track-hover, var(--scrollbar-track)))}.scrollbar-thin::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:var(--scrollbar-thumb-radius)}.scrollbar-thin::-webkit-scrollbar-thumb:hover{background-color:var(--scrollbar-thumb-hover, var(--scrollbar-thumb))}.scrollbar-thin::-webkit-scrollbar-thumb:active{background-color:var(--scrollbar-thumb-active, var(--scrollbar-thumb-hover, var(--scrollbar-thumb)))}.scrollbar-thin::-webkit-scrollbar-corner{background-color:var(--scrollbar-corner);border-radius:var(--scrollbar-corner-radius)}.scrollbar-thin::-webkit-scrollbar-corner:hover{background-color:var(--scrollbar-corner-hover, var(--scrollbar-corner))}.scrollbar-thin::-webkit-scrollbar-corner:active{background-color:var(--scrollbar-corner-active, var(--scrollbar-corner-hover, var(--scrollbar-corner)))}.scrollbar-thin{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb, initial) var(--scrollbar-track, initial)}.scrollbar-thin::-webkit-scrollbar{display:block;width:8px;height:8px}.scrollbar-track-transparent{--scrollbar-track: transparent !important}.scrollbar-thumb-slate-400\\/50{--scrollbar-thumb: rgb(148 163 184 / .5) !important}.scrollbar-corner-transparent{--scrollbar-corner: transparent !important}.has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}:is(.dark .has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked)){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.hover\\:variant-soft:hover,.hover\\:variant-soft-surface:hover{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .hover\\:variant-soft:hover,.dark .hover\\:variant-soft-surface:hover{color:rgb(var(--color-surface-200))}:is(.dark .hover\\:variant-soft:hover){background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .hover\\:variant-soft-surface:hover){background-color:rgb(var(--color-surface-500) / .2)}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){background-color:rgb(var(--color-primary-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-primary-700))}.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){color:rgb(var(--color-primary-200))}:is(.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled])){background-color:rgb(var(--color-primary-500) / .2)}.\\*\\:\\!m-0>*{margin:0!important}.\\*\\:items-center>*{align-items:center}.\\*\\:\\!rounded-none>*{border-radius:0!important}.\\*\\:py-4>*{padding-top:16px;padding-bottom:16px}.\\*\\:text-sm>*{font-size:14px;line-height:20px}.\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-300))}.dark .\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-600))}.hover\\:translate-x-0:hover{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\\:text-xl:hover{font-size:20px;line-height:28px}.hover\\:opacity-100:hover{opacity:1}.hover\\:brightness-110:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.hover\\:brightness-\\[105\\%\\]:hover{--tw-brightness: brightness(105%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\\:decoration-wavy:focus{text-decoration-style:wavy}.focus\\:\\!outline-none:focus{outline:2px solid transparent!important;outline-offset:2px!important}.disabled\\:cursor-wait:disabled{cursor:wait}.disabled\\:opacity-70:disabled{opacity:.7}.dark\\:\\!border-surface-200:is(.dark *){--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-200) / var(--tw-border-opacity))!important}.dark\\:border-surface-500\\/20:is(.dark *){border-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-black\\/15:is(.dark *){background-color:#00000026}.dark\\:bg-surface-300:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-300) / var(--tw-bg-opacity))}.dark\\:bg-surface-500\\/20:is(.dark *){background-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-surface-700:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-700) / var(--tw-bg-opacity))}.dark\\:fill-slate-200:is(.dark *){fill:#e2e8f0}.dark\\:stroke-surface-50:is(.dark *){stroke:rgb(var(--color-surface-50) / 1)}.dark\\:accent-surface-50:is(.dark *){accent-color:rgb(var(--color-surface-50) / 1)}.dark\\:hover\\:brightness-110:hover:is(.dark *){--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}@media (min-width: 768px){.md\\:h-\\[600px\\]{height:600px}.md\\:max-w-screen-md{max-width:768px}.md\\:max-w-screen-sm{max-width:640px}.md\\:flex-row{flex-direction:row}.md\\:\\!items-baseline{align-items:baseline!important}}@media (min-width: 1024px){.lg\\:max-w-screen-md{max-width:768px}}@media (min-width: 1280px){.xl\\:max-w-screen-lg{max-width:1024px}}.\\[\\&\\:last-child\\]\\:\\*\\:pt-4>*:last-child{padding-top:16px}.\\[\\&\\:not\\(\\:last-child\\)\\]\\:\\*\\:py-4>*:not(:last-child){padding-top:16px;padding-bottom:16px}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:hover\\:bg-slate-400\\/30:hover:not([disabled]){background-color:#94a3b84d}.\\[\\&\\>input\\]\\:\\!min-w-0>input{min-width:0px!important}.\\[\\&\\>input\\]\\:\\!border-transparent>input{border-color:transparent!important} `);
+(t=>{const r=new CSSStyleSheet;r.replaceSync(t),window._pdlShadowStyle=r})(` .anim-indeterminate.svelte-12wvf64{transform-origin:0% 50%;animation:svelte-12wvf64-anim-indeterminate 2s infinite linear}@keyframes svelte-12wvf64-anim-indeterminate{0%{transform:translate(0) scaleX(0)}40%{transform:translate(0) scaleX(.4)}to{transform:translate(100%) scaleX(.5)}}*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}:before,:after{--tw-content: ""}:host [data-theme=skeleton],:host{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}:host [data-theme=skeleton]{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h3{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}dl,dd,h1,h3,hr,figure,p{margin:0}fieldset{margin:0;padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}[type=text],input:where(:not([type])),[type=email],[type=url],[type=password],[type=number],[type=date],[type=datetime-local],[type=month],[type=search],[type=tel],[type=time],[type=week],[multiple],textarea,select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0;padding:8px 12px;font-size:16px;line-height:24px;--tw-shadow: 0 0 #0000}[type=text]:focus,input:where(:not([type])):focus,[type=email]:focus,[type=url]:focus,[type=password]:focus,[type=number]:focus,[type=date]:focus,[type=datetime-local]:focus,[type=month]:focus,[type=search]:focus,[type=tel]:focus,[type=time]:focus,[type=week]:focus,[multiple]:focus,textarea:focus,select:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);border-color:#2563eb}input::-moz-placeholder,textarea::-moz-placeholder{color:#6b7280;opacity:1}input::placeholder,textarea::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 8px center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:initial;background-position:initial;background-repeat:unset;background-size:initial;padding-right:12px;-webkit-print-color-adjust:unset;print-color-adjust:unset}[type=checkbox],[type=radio]{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;flex-shrink:0;height:16px;width:16px;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow: 0 0 #0000}[type=checkbox]{border-radius:0}[type=radio]{border-radius:100%}[type=checkbox]:focus,[type=radio]:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 2px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}[type=checkbox]:checked,[type=radio]:checked{border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}[type=checkbox]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=checkbox]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=radio]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=radio]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:checked:hover,[type=checkbox]:checked:focus,[type=radio]:checked:hover,[type=radio]:checked:focus{border-color:transparent;background-color:currentColor}[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}@media (forced-colors: active){[type=checkbox]:indeterminate{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:indeterminate:hover,[type=checkbox]:indeterminate:focus{border-color:transparent;background-color:currentColor}[type=file]{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type=file]:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}:host [data-theme=skeleton]{background-color:rgb(var(--color-surface-50));font-size:16px;line-height:24px;font-family:var(--theme-font-family-base);color:rgba(var(--theme-font-color-base))}:host .dark [data-theme=skeleton]{background-color:rgb(var(--color-surface-900));color:rgba(var(--theme-font-color-dark))}::-moz-selection{background-color:rgb(var(--color-primary-500) / .3)}::selection{background-color:rgb(var(--color-primary-500) / .3)}:host [data-theme=skeleton]{-webkit-tap-highlight-color:rgba(128,128,128,.5);scrollbar-color:rgba(0,0,0,.2) rgba(255,255,255,.05)}:host [data-theme=skeleton]{scrollbar-color:rgba(128,128,128,.5) rgba(0,0,0,.1);scrollbar-width:thin}:host.dark{scrollbar-color:rgba(255,255,255,.1) rgba(0,0,0,.05)}hr:not(.divider){display:block;border-top-width:1px;border-style:solid;border-color:rgb(var(--color-surface-300))}.dark hr:not(.divider){border-color:rgb(var(--color-surface-600))}fieldset,label{display:block}::-moz-placeholder{color:rgb(var(--color-surface-500))}::placeholder{color:rgb(var(--color-surface-500))}.dark ::-moz-placeholder{color:rgb(var(--color-surface-400))}.dark ::placeholder{color:rgb(var(--color-surface-400))}:is(.dark input::-webkit-calendar-picker-indicator){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z'/%3E%3C/svg%3E") no-repeat 50% 50%;pointer-events:none;height:16px;width:16px;border-radius:9999px;background-size:contain;opacity:0}input[type=search]:focus::-webkit-search-cancel-button{pointer-events:auto;opacity:1}:is(.dark input[type=search]::-webkit-search-cancel-button){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}progress{webkit-appearance:none;-moz-appearance:none;-webkit-appearance:none;appearance:none;height:8px;width:100%;overflow:hidden;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-400))}.dark progress{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-400))}.dark progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-value{background-color:rgb(var(--color-surface-900))}.dark progress::-webkit-progress-value{background-color:rgb(var(--color-surface-50))}::-moz-progress-bar{background-color:rgb(var(--color-surface-900))}.dark ::-moz-progress-bar{background-color:rgb(var(--color-surface-50))}:indeterminate::-moz-progress-bar{width:0}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled{cursor:not-allowed;opacity:.5}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}input[type=file]:not(.file-dropzone-input)::file-selector-button{font-size:14px;line-height:20px;padding:6px 12px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50));margin-right:8px;border-width:0px}input[type=file]:not(.file-dropzone-input)::file-selector-button>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}input[type=file]:not(.file-dropzone-input)::file-selector-button:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.dark input[type=file]:not(.file-dropzone-input)::file-selector-button{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}[type=range]{width:100%;accent-color:rgb(var(--color-surface-900) / 1)}:is(.dark [type=range]){accent-color:rgb(var(--color-surface-50) / 1)}[data-sort]{cursor:pointer}[data-sort]:hover:hover,.dark [data-sort]:hover:hover{background-color:rgb(var(--color-primary-500) / .1)}[data-sort]:after{margin-left:8px!important;opacity:0;--tw-content: "\u2193" !important;content:var(--tw-content)!important}[data-popup]{position:absolute;top:0;left:0;display:none;transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}:host [data-theme=skeleton]{--theme-font-family-base: system-ui;--theme-font-family-heading: system-ui;--theme-font-color-base: 0 0 0;--theme-font-color-dark: 255 255 255;--theme-rounded-base: 9999px;--theme-rounded-container: 8px;--theme-border-base: 1px;--on-primary: 0 0 0;--on-secondary: 255 255 255;--on-tertiary: 0 0 0;--on-success: 0 0 0;--on-warning: 0 0 0;--on-error: 255 255 255;--on-surface: 255 255 255;--color-primary-50: 219 245 236;--color-primary-100: 207 241 230;--color-primary-200: 195 238 224;--color-primary-300: 159 227 205;--color-primary-400: 87 207 167;--color-primary-500: 15 186 129;--color-primary-600: 14 167 116;--color-primary-700: 11 140 97;--color-primary-800: 9 112 77;--color-primary-900: 7 91 63;--color-secondary-50: 229 227 251;--color-secondary-100: 220 218 250;--color-secondary-200: 211 209 249;--color-secondary-300: 185 181 245;--color-secondary-400: 132 126 237;--color-secondary-500: 79 70 229;--color-secondary-600: 71 63 206;--color-secondary-700: 59 53 172;--color-secondary-800: 47 42 137;--color-secondary-900: 39 34 112;--color-tertiary-50: 219 242 252;--color-tertiary-100: 207 237 251;--color-tertiary-200: 195 233 250;--color-tertiary-300: 159 219 246;--color-tertiary-400: 86 192 240;--color-tertiary-500: 14 165 233;--color-tertiary-600: 13 149 210;--color-tertiary-700: 11 124 175;--color-tertiary-800: 8 99 140;--color-tertiary-900: 7 81 114;--color-success-50: 237 247 220;--color-success-100: 230 245 208;--color-success-200: 224 242 197;--color-success-300: 206 235 162;--color-success-400: 169 219 92;--color-success-500: 132 204 22;--color-success-600: 119 184 20;--color-success-700: 99 153 17;--color-success-800: 79 122 13;--color-success-900: 65 100 11;--color-warning-50: 252 244 218;--color-warning-100: 251 240 206;--color-warning-200: 250 236 193;--color-warning-300: 247 225 156;--color-warning-400: 240 202 82;--color-warning-500: 234 179 8;--color-warning-600: 211 161 7;--color-warning-700: 176 134 6;--color-warning-800: 140 107 5;--color-warning-900: 115 88 4;--color-error-50: 249 221 234;--color-error-100: 246 209 228;--color-error-200: 244 198 221;--color-error-300: 238 163 200;--color-error-400: 225 94 159;--color-error-500: 212 25 118;--color-error-600: 191 23 106;--color-error-700: 159 19 89;--color-error-800: 127 15 71;--color-error-900: 104 12 58;--color-surface-50: 228 230 238;--color-surface-100: 219 222 233;--color-surface-200: 210 214 227;--color-surface-300: 182 189 210;--color-surface-400: 128 140 177;--color-surface-500: 73 90 143;--color-surface-600: 66 81 129;--color-surface-700: 55 68 107;--color-surface-800: 44 54 86;--color-surface-900: 36 44 70}[data-theme=skeleton] h1,[data-theme=skeleton] h3{font-weight:700}[data-theme=skeleton]{background-image:radial-gradient(at 0% 0%,rgba(var(--color-secondary-500) / .33) 0px,transparent 50%),radial-gradient(at 98% 1%,rgba(var(--color-error-500) / .33) 0px,transparent 50%);background-attachment:fixed;background-position:center;background-repeat:no-repeat;background-size:cover}*{scrollbar-color:initial;scrollbar-width:initial}*,:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}.h3{font-size:20px;line-height:28px;font-family:var(--theme-font-family-heading)}.anchor{--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));text-decoration-line:underline}.anchor:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}:is(.dark .anchor){--tw-text-opacity: 1;color:rgb(var(--color-primary-500) / var(--tw-text-opacity))}.time{font-size:14px;line-height:20px;--tw-text-opacity: 1;color:rgb(var(--color-surface-500) / var(--tw-text-opacity))}:is(.dark .time){--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-size:12px;line-height:16px;--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .3);border-radius:4px;padding:2px 4px}:is(.dark .code){--tw-text-opacity: 1;color:rgb(var(--color-primary-400) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .2)}.del{position:relative;display:block;padding:2px 2px 2px 20px;text-decoration:none}.del:before{position:absolute;left:4px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.del:before{content:"\u2212"}.del{--tw-bg-opacity: 1;background-color:rgb(var(--color-error-500) / var(--tw-bg-opacity));font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;color:rgb(var(--on-error))}.alert{display:flex;flex-direction:column;align-items:flex-start;padding:16px;color:rgb(var(--color-surface-900));border-radius:var(--theme-rounded-container)}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.dark .alert{color:rgb(var(--color-surface-50))}.\\!btn:disabled{cursor:not-allowed!important;opacity:.5!important}.btn:disabled,.btn-icon:disabled,.btn-group>*:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!btn:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:disabled:hover,.btn-icon:disabled:hover,.btn-group>*:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.btn:disabled:active,.btn-icon:disabled:active,.btn-group>*:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!btn{font-size:16px!important;line-height:24px!important;padding:9px 20px!important;white-space:nowrap!important;text-align:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important;border-radius:var(--theme-rounded-base)!important}.btn{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base)}.\\!btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.\\!btn:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:active{--tw-scale-x: 95% !important;--tw-scale-y: 95% !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important;--tw-brightness: brightness(.9) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-sm{padding:6px 12px;font-size:14px;line-height:20px}.btn-icon{font-size:16px;line-height:24px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;padding:0;aspect-ratio:1 / 1;width:43px;border-radius:9999px}.btn-icon>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-icon:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon-sm{aspect-ratio:1 / 1;width:33px;font-size:14px;line-height:20px}.btn-group{display:inline-flex;flex-direction:row;overflow:hidden;border-radius:var(--theme-rounded-base);isolation:isolate}.btn-group>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(0px * var(--tw-space-x-reverse));margin-left:calc(0px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button,.btn-group a{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;color:inherit!important;text-decoration-line:none!important}.btn-group button>:not([hidden])~:not([hidden]),.btn-group a>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button:hover,.btn-group a:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);background-color:rgb(var(--color-surface-50) / 3%)}.btn-group button:active,.btn-group a:active{background-color:rgb(var(--color-surface-900) / 3%)}.btn-group>*+*{border-top-width:0px;border-left-width:1px;border-color:rgb(var(--color-surface-500) / .2)}.card{background-color:rgb(var(--color-surface-100));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(23 23 23 / .05);border-radius:var(--theme-rounded-container)}.dark .card{background-color:rgb(var(--color-surface-800));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(250 250 250 / .05)}a.card{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}a.card:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!chip{cursor:pointer!important;white-space:nowrap!important;padding:6px 12px!important;text-align:center!important;font-size:12px!important;line-height:16px!important;border-radius:4px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important}.chip{cursor:pointer;white-space:nowrap;padding:6px 12px;text-align:center;font-size:12px;line-height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.\\!chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}a.chip:hover,button.chip:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}a.\\!chip:hover,button.\\!chip:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!chip:disabled{cursor:not-allowed!important;opacity:.5!important}.chip:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!chip:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.chip:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.label>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.\\!input{width:100%!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.2s!important;background-color:rgb(var(--color-surface-200))!important;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base)!important;border-color:rgb(var(--color-surface-400))!important}.input,.textarea,.select,.input-group{width:100%;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.2s;background-color:rgb(var(--color-surface-200));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .input,.dark .textarea,.dark .select,.dark .input-group{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.dark .\\!input{background-color:rgb(var(--color-surface-700))!important;border-color:rgb(var(--color-surface-500))!important}.\\!input:hover{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:hover,.textarea:hover,.select:hover,.input-group:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:focus,.textarea:focus,.select:focus,.input-group:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus-within{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))!important}.input:focus-within,.textarea:focus-within,.select:focus-within,.input-group:focus-within{--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.\\!input{border-radius:var(--theme-rounded-base)!important}.input,.input-group{border-radius:var(--theme-rounded-base)}.textarea,.select{border-radius:var(--theme-rounded-container)}.select>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select{padding:8px 32px 8px 8px}.select[size]{background-image:none}.select optgroup>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select optgroup{font-weight:700}.select optgroup option{margin-left:0;padding-left:0}.select optgroup option:first-of-type{margin-top:12px}.select optgroup option:last-child{margin-bottom:12px!important}.select option{cursor:pointer;padding:8px 16px;background-color:rgb(var(--color-surface-200));border-radius:var(--theme-rounded-base)}.dark .select option{background-color:rgb(var(--color-surface-700))}.select option:checked{background:rgb(var(--color-primary-500)) linear-gradient(0deg,rgb(var(--color-primary-500)),rgb(var(--color-primary-500)));color:rgb(var(--on-primary))}.checkbox,.radio{height:20px;width:20px;cursor:pointer;border-radius:4px;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;background-color:rgb(var(--color-surface-200));border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .checkbox,.dark .radio{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.checkbox:hover,.radio:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.checkbox:focus,.radio:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.checkbox:checked,.checkbox:indeterminate,.radio:checked{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:hover,.checkbox:indeterminate:hover,.radio:checked:hover{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:focus,.checkbox:indeterminate:focus,.radio:checked:focus{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)}.radio{border-radius:var(--theme-rounded-base)}.\\!input[type=file]{padding:4px!important}.input[type=file]{padding:4px}.\\!input[type=color]{height:40px!important;width:40px!important;cursor:pointer!important;overflow:hidden!important;border-style:none!important;border-radius:var(--theme-rounded-base)!important;-webkit-appearance:none!important}.input[type=color]{height:40px;width:40px;cursor:pointer;overflow:hidden;border-style:none;border-radius:var(--theme-rounded-base);-webkit-appearance:none}.\\!input[type=color]::-webkit-color-swatch-wrapper{padding:0!important}.input[type=color]::-webkit-color-swatch-wrapper{padding:0}.\\!input[type=color]::-webkit-color-swatch{border-style:none!important}.input[type=color]::-webkit-color-swatch{border-style:none}.\\!input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input[type=color]::-moz-color-swatch{border-style:none!important}.input[type=color]::-moz-color-swatch{border-style:none}.\\!input:disabled{cursor:not-allowed!important;opacity:.5!important}.input:disabled,.textarea:disabled,.select:disabled,.input-group>input:disabled,.input-group>textarea:disabled,.input-group>select:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!input:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:disabled:hover,.textarea:disabled:hover,.select:disabled:hover,.input-group>input:disabled:hover,.input-group>textarea:disabled:hover,.input-group>select:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!input[readonly],.input[readonly],.textarea[readonly],.select[readonly]{cursor:not-allowed!important;border-color:transparent!important}.\\!input[readonly]:hover,.input[readonly]:hover,.textarea[readonly]:hover,.select[readonly]:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input-group{display:grid;overflow:hidden}.input-group input,.input-group select{border-width:0px;background-color:transparent;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.input-group select option{background-color:rgb(var(--color-surface-200))}.dark .input-group select option{background-color:rgb(var(--color-surface-700))}.input-group div,.input-group a,.input-group button{display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:16px}.input-group-divider input,.input-group-divider select,.input-group-divider div,.input-group-divider a{border-left-width:1px;border-color:rgb(var(--color-surface-400));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;min-width:-moz-fit-content!important;min-width:fit-content!important}.dark .input-group-divider input,.dark .input-group-divider select,.dark .input-group-divider div,.dark .input-group-divider a{border-color:rgb(var(--color-surface-500))}.input-group-divider input:focus,.input-group-divider select:focus,.input-group-divider div:focus,.input-group-divider a:focus{border-color:rgb(var(--color-surface-400))}.dark .input-group-divider input:focus,.dark .input-group-divider select:focus,.dark .input-group-divider div:focus,.dark .input-group-divider a:focus{border-color:rgb(var(--color-surface-500))}.input-group-divider *:first-child{border-left-width:0px!important}.input-group-shim{background-color:rgb(var(--color-surface-400) / .1);color:rgb(var(--color-surface-600))}.dark .input-group-shim{color:rgb(var(--color-surface-300))}.input-error{--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}:is(.dark .input-error){--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::-moz-placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.list{list-style-type:none}.list>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.list li{display:flex;align-items:center;border-radius:var(--theme-rounded-base)}.list li>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.placeholder{height:20px;background-color:rgb(var(--color-surface-300));border-radius:var(--theme-rounded-base)}.dark .placeholder{background-color:rgb(var(--color-surface-600))}.w-modal{width:100%;max-width:640px}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-style:auto;outline-color:-webkit-focus-ring-color}.variant-filled{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .variant-filled{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.\\!variant-filled-primary{--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-filled-primary{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .variant-filled-primary){--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .\\!variant-filled-primary){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-ghost-surface{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .variant-ghost-surface){--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}.variant-soft,.variant-soft-surface{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .variant-soft,.dark .variant-soft-surface{color:rgb(var(--color-surface-200))}:is(.dark .variant-soft),:is(.dark .variant-soft-surface){background-color:rgb(var(--color-surface-500) / .2)}@media (min-width: 768px){.h3{font-size:24px;line-height:32px}}@media (min-width: 1024px){.alert{flex-direction:row;align-items:center}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(0px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0px * var(--tw-space-y-reverse));--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-width:0px!important}.visible{visibility:visible}.static{position:static}.fixed{position:fixed}.\\!absolute{position:absolute!important}.absolute{position:absolute}.relative{position:relative}.bottom-0{bottom:0}.bottom-24{bottom:96px}.left-0{left:0}.left-1\\/2{left:50%}.right-0{right:0}.right-2{right:8px}.right-20{right:80px}.right-4{right:16px}.top-0{top:0}.top-1\\/2{top:50%}.top-2{top:8px}.top-36{top:144px}.-z-10{z-index:-10}.z-\\[999\\]{z-index:999}.row-span-2{grid-row:span 2 / span 2}.row-start-1{grid-row-start:1}.\\!m-0{margin:0!important}.m-auto{margin:auto}.mx-2{margin-left:8px;margin-right:8px}.my-4{margin-top:16px;margin-bottom:16px}.my-\\[1px\\]{margin-top:1px;margin-bottom:1px}.ml-1{margin-left:4px}.ml-3{margin-left:12px}.ml-4{margin-left:16px}.mr-2{margin-right:8px}.mr-6{margin-right:24px}.mt-2{margin-top:8px}.mt-4{margin-top:16px}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.contents{display:contents}.hidden{display:none}.size-14{width:56px;height:56px}.size-full{width:100%;height:100%}.h-0{height:0px}.h-10{height:40px}.h-2{height:8px}.h-4{height:16px}.h-48{height:192px}.h-6{height:24px}.h-8{height:32px}.h-\\[38px\\]{height:38px}.h-auto{height:auto}.h-fit{height:-moz-fit-content;height:fit-content}.h-full{height:100%}.h-screen{height:100vh}.max-h-\\[200px\\]{max-height:200px}.min-h-0{min-height:0px}.min-h-full{min-height:100%}.w-0{width:0px}.w-12{width:48px}.w-16{width:64px}.w-20{width:80px}.w-32{width:128px}.w-36{width:144px}.w-48{width:192px}.w-5{width:20px}.w-6{width:24px}.w-8{width:32px}.w-\\[140px\\]{width:140px}.w-\\[38px\\]{width:38px}.w-\\[50\\%\\]{width:50%}.w-\\[600px\\]{width:600px}.w-full{width:100%}.w-screen{width:100vw}.max-w-full{max-width:100%}.flex-1{flex:1 1 0%}.flex-auto{flex:1 1 auto}.flex-none{flex:none}.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.basis-0{flex-basis:0px}.origin-\\[50\\%_50\\%\\]{transform-origin:50% 50%}.-translate-x-1\\/2{--tw-translate-x: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-x-full{--tw-translate-x: -100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\\/2{--tw-translate-y: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-0{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-\\[calc\\(100\\%-44px\\)\\]{--tw-translate-x: calc(100% - 44px) ;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-full{--tw-translate-x: 100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-90{--tw-rotate: -90deg;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-\\[0\\.8\\]{--tw-scale-x: .8;--tw-scale-y: .8;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!transform-none{transform:none!important}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.\\!cursor-default{cursor:default!important}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-\\[0px_1fr\\]{grid-template-columns:0px 1fr}.grid-cols-\\[140px_1fr\\]{grid-template-columns:140px 1fr}.grid-cols-\\[auto_1fr_auto\\]{grid-template-columns:auto 1fr auto}.grid-cols-\\[auto_1fr_auto_auto\\]{grid-template-columns:auto 1fr auto auto}.grid-rows-\\[0fr\\]{grid-template-rows:0fr}.grid-rows-\\[1fr\\]{grid-template-rows:1fr}.grid-rows-\\[auto_1fr\\]{grid-template-rows:auto 1fr}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.\\!items-stretch{align-items:stretch!important}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.justify-evenly{justify-content:space-evenly}.gap-1{gap:4px}.gap-14{gap:56px}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.gap-6{gap:24px}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(8px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(8px * var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.divide-y-\\[1px\\]>:not([hidden])~:not([hidden]){--tw-divide-y-reverse: 0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.self-start{align-self:flex-start}.self-stretch{align-self:stretch}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-y-hidden{overflow-y:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.break-words{overflow-wrap:break-word}.rounded{border-radius:4px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:8px}.rounded-md{border-radius:6px}.rounded-none{border-radius:0}.rounded-e-\\[4px\\]{border-start-end-radius:4px;border-end-end-radius:4px}.rounded-s-full{border-start-start-radius:9999px;border-end-start-radius:9999px}.border{border-width:1px}.border-0{border-width:0px}.\\!border-t-0{border-top-width:0px!important}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l{border-left-width:1px}.\\!border-surface-700{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-700) / var(--tw-border-opacity))!important}.border-surface-400\\/20{border-color:rgb(var(--color-surface-400) / .2)}.bg-primary-500{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.bg-primary-500\\/30{background-color:rgb(var(--color-primary-500) / .3)}.bg-surface-400{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-400) / var(--tw-bg-opacity))}.bg-surface-400\\/20{background-color:rgb(var(--color-surface-400) / .2)}.bg-surface-900{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-900) / var(--tw-bg-opacity))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity: 1;background-color:rgb(255 255 255 / var(--tw-bg-opacity))}.bg-white\\/30{background-color:#ffffff4d}.bg-white\\/75{background-color:#ffffffbf}.bg-scroll{background-attachment:scroll}.fill-current{fill:currentColor}.fill-primary-500{fill:rgb(var(--color-primary-500) / 1)}.fill-slate-700{fill:#334155}.fill-transparent{fill:transparent}.stroke-primary-500{stroke:rgb(var(--color-primary-500) / 1)}.stroke-primary-500\\/30{stroke:rgb(var(--color-primary-500) / .3)}.stroke-surface-500\\/30{stroke:rgb(var(--color-surface-500) / .3)}.stroke-surface-900{stroke:rgb(var(--color-surface-900) / 1)}.object-cover{-o-object-fit:cover;object-fit:cover}.object-center{-o-object-position:center;object-position:center}.\\!p-0{padding:0!important}.p-0{padding:0}.p-1{padding:4px}.p-2{padding:8px}.p-4{padding:16px}.\\!px-1{padding-left:4px!important;padding-right:4px!important}.\\!py-2{padding-top:8px!important;padding-bottom:8px!important}.\\!py-\\[7px\\]{padding-top:7px!important;padding-bottom:7px!important}.px-3{padding-left:12px;padding-right:12px}.px-4{padding-left:16px;padding-right:16px}.px-8{padding-left:32px;padding-right:32px}.py-1{padding-top:4px;padding-bottom:4px}.py-2{padding-top:8px;padding-bottom:8px}.py-6{padding-top:24px;padding-bottom:24px}.pb-6{padding-bottom:24px}.pl-6{padding-left:24px}.pr-0{padding-right:0}.pr-2{padding-right:8px}.pr-4{padding-right:16px}.pr-6{padding-right:24px}.pt-4{padding-top:16px}.text-center{text-align:center}.text-2xl{font-size:24px;line-height:32px}.text-\\[12px\\]{font-size:12px}.text-base{font-size:16px;line-height:24px}.text-sm{font-size:14px;line-height:20px}.text-xs{font-size:12px;line-height:16px}.font-bold{font-weight:700}.italic{font-style:italic}.leading-\\[14px\\]{line-height:14px}.leading-loose{line-height:2}.\\!text-error-500{--tw-text-opacity: 1 !important;color:rgb(var(--color-error-500) / var(--tw-text-opacity))!important}.text-error-500{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.text-surface-400{--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.underline-offset-2{text-underline-offset:2px}.accent-surface-900{accent-color:rgb(var(--color-surface-900) / 1)}.opacity-40{opacity:.4}.opacity-50{opacity:.5}.opacity-70{opacity:.7}.mix-blend-hard-light{mix-blend-mode:hard-light}.shadow{--tw-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);--tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.shadow-xl{--tw-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);--tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.-outline-offset-\\[3px\\]{outline-offset:-3px}.\\!ring-0{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.blur{--tw-blur: blur(8px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\\[1px\\]{--tw-blur: blur(1px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-xl{--tw-drop-shadow: drop-shadow(0 20px 13px rgb(0 0 0 / .03)) drop-shadow(0 8px 5px rgb(0 0 0 / .08));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur: blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-columns\\]{transition-property:grid-template-columns;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-rows\\]{transition-property:grid-template-rows;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[stroke-dashoffset\\]{transition-property:stroke-dashoffset;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[transform\\]{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[width\\]{transition-property:width;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.delay-100{transition-delay:.1s}.duration-100{transition-duration:.1s}.duration-\\[200ms\\]{transition-duration:.2s}.duration-\\[250ms\\]{transition-duration:.25s}.duration-\\[400ms\\]{transition-duration:.4s}.bg-surface-backdrop-token{background-color:rgb(var(--color-surface-400) / .7)}.dark .bg-surface-backdrop-token{background-color:rgb(var(--color-surface-900) / .7)}.bg-surface-100-800-token{background-color:rgb(var(--color-surface-100))}.dark .bg-surface-100-800-token{background-color:rgb(var(--color-surface-800))}.bg-surface-200-700-token{background-color:rgb(var(--color-surface-200))}.dark .bg-surface-200-700-token{background-color:rgb(var(--color-surface-700))}.bg-surface-900-50-token{background-color:rgb(var(--color-surface-900))}.dark .bg-surface-900-50-token{background-color:rgb(var(--color-surface-50))}.border-token{border-width:var(--theme-border-base)}.border-surface-400-500-token{border-color:rgb(var(--color-surface-400))}.dark .border-surface-400-500-token{border-color:rgb(var(--color-surface-500))}.border-surface-900-50-token{border-color:rgb(var(--color-surface-900))}.dark .border-surface-900-50-token{border-color:rgb(var(--color-surface-50))}.border-surface-800-100-token{border-color:rgb(var(--color-surface-800))}.dark .border-surface-800-100-token{border-color:rgb(var(--color-surface-100))}.rounded-token{border-radius:var(--theme-rounded-base)}.rounded-container-token{border-radius:var(--theme-rounded-container)}.rounded-tl-container-token{border-top-left-radius:var(--theme-rounded-container)}.rounded-tr-container-token{border-top-right-radius:var(--theme-rounded-container)}.fill-token{fill:rgba(var(--theme-font-color-base))}.dark .fill-token{fill:rgba(var(--theme-font-color-dark))}.text-surface-700-200-token{color:rgb(var(--color-surface-700))}.dark .text-surface-700-200-token{color:rgb(var(--color-surface-200))}.scrollbar-thin::-webkit-scrollbar-track{background-color:var(--scrollbar-track);border-radius:var(--scrollbar-track-radius)}.scrollbar-thin::-webkit-scrollbar-track:hover{background-color:var(--scrollbar-track-hover, var(--scrollbar-track))}.scrollbar-thin::-webkit-scrollbar-track:active{background-color:var(--scrollbar-track-active, var(--scrollbar-track-hover, var(--scrollbar-track)))}.scrollbar-thin::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:var(--scrollbar-thumb-radius)}.scrollbar-thin::-webkit-scrollbar-thumb:hover{background-color:var(--scrollbar-thumb-hover, var(--scrollbar-thumb))}.scrollbar-thin::-webkit-scrollbar-thumb:active{background-color:var(--scrollbar-thumb-active, var(--scrollbar-thumb-hover, var(--scrollbar-thumb)))}.scrollbar-thin::-webkit-scrollbar-corner{background-color:var(--scrollbar-corner);border-radius:var(--scrollbar-corner-radius)}.scrollbar-thin::-webkit-scrollbar-corner:hover{background-color:var(--scrollbar-corner-hover, var(--scrollbar-corner))}.scrollbar-thin::-webkit-scrollbar-corner:active{background-color:var(--scrollbar-corner-active, var(--scrollbar-corner-hover, var(--scrollbar-corner)))}.scrollbar-thin{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb, initial) var(--scrollbar-track, initial)}.scrollbar-thin::-webkit-scrollbar{display:block;width:8px;height:8px}.scrollbar-track-transparent{--scrollbar-track: transparent !important}.scrollbar-thumb-slate-400\\/50{--scrollbar-thumb: rgb(148 163 184 / .5) !important}.scrollbar-corner-transparent{--scrollbar-corner: transparent !important}.has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}:is(.dark .has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked)){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.hover\\:variant-soft:hover,.hover\\:variant-soft-surface:hover{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .hover\\:variant-soft:hover,.dark .hover\\:variant-soft-surface:hover{color:rgb(var(--color-surface-200))}:is(.dark .hover\\:variant-soft:hover){background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .hover\\:variant-soft-surface:hover){background-color:rgb(var(--color-surface-500) / .2)}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){background-color:rgb(var(--color-primary-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-primary-700))}.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){color:rgb(var(--color-primary-200))}:is(.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled])){background-color:rgb(var(--color-primary-500) / .2)}.\\*\\:\\!m-0>*{margin:0!important}.\\*\\:items-center>*{align-items:center}.\\*\\:\\!rounded-none>*{border-radius:0!important}.\\*\\:py-4>*{padding-top:16px;padding-bottom:16px}.\\*\\:text-sm>*{font-size:14px;line-height:20px}.\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-300))}.dark .\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-600))}.hover\\:translate-x-0:hover{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\\:text-xl:hover{font-size:20px;line-height:28px}.hover\\:opacity-100:hover{opacity:1}.hover\\:brightness-110:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.hover\\:brightness-\\[105\\%\\]:hover{--tw-brightness: brightness(105%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\\:decoration-wavy:focus{text-decoration-style:wavy}.focus\\:\\!outline-none:focus{outline:2px solid transparent!important;outline-offset:2px!important}.disabled\\:cursor-wait:disabled{cursor:wait}.disabled\\:opacity-70:disabled{opacity:.7}.dark\\:\\!border-surface-200:is(.dark *){--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-200) / var(--tw-border-opacity))!important}.dark\\:border-surface-500\\/20:is(.dark *){border-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-black\\/15:is(.dark *){background-color:#00000026}.dark\\:bg-surface-300:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-300) / var(--tw-bg-opacity))}.dark\\:bg-surface-500\\/20:is(.dark *){background-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-surface-700:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-700) / var(--tw-bg-opacity))}.dark\\:fill-slate-200:is(.dark *){fill:#e2e8f0}.dark\\:stroke-surface-50:is(.dark *){stroke:rgb(var(--color-surface-50) / 1)}.dark\\:accent-surface-50:is(.dark *){accent-color:rgb(var(--color-surface-50) / 1)}.dark\\:hover\\:brightness-110:hover:is(.dark *){--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}@media (min-width: 768px){.md\\:h-\\[600px\\]{height:600px}.md\\:max-w-screen-md{max-width:768px}.md\\:max-w-screen-sm{max-width:640px}.md\\:flex-row{flex-direction:row}.md\\:\\!items-baseline{align-items:baseline!important}}@media (min-width: 1024px){.lg\\:max-w-screen-md{max-width:768px}}@media (min-width: 1280px){.xl\\:max-w-screen-lg{max-width:1024px}}.\\[\\&\\:last-child\\]\\:\\*\\:pt-4>*:last-child{padding-top:16px}.\\[\\&\\:not\\(\\:last-child\\)\\]\\:\\*\\:py-4>*:not(:last-child){padding-top:16px;padding-bottom:16px}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:hover\\:bg-slate-400\\/30:hover:not([disabled]){background-color:#94a3b84d}.\\[\\&\\>input\\]\\:\\!min-w-0>input{min-width:0px!important}.\\[\\&\\>input\\]\\:\\!border-transparent>input{border-color:transparent!important} `);
 
 (function (Dexie, dayjs, JSZip, GIF) {
   'use strict';
@@ -265,8 +268,8 @@
       __publicField(this, "duplicateFilenameCached", {});
       this.updateDirHandleChannel = new BroadcastChannel(channelName);
       this.updateDirHandleChannel.onmessage = (evt) => {
-        const data2 = evt.data;
-        switch (data2.kind) {
+        const data = evt.data;
+        switch (data.kind) {
           case 1:
             this.dirHandleStatus = 1;
             logger.info("正在选择目录");
@@ -283,7 +286,7 @@
             break;
           case 2:
             this.dirHandleStatus = 2;
-            this.dirHandle = data2.handle;
+            this.dirHandle = data.handle;
             logger.info("更新dirHandle", this.dirHandle);
             this.processCachedTasks();
             break;
@@ -300,7 +303,7 @@
             if (!this.dirHandle) {
               if (this.dirHandleStatus === 0)
                 this.dirHandleStatus = 2;
-              this.dirHandle = data2.handle;
+              this.dirHandle = data.handle;
               logger.info("首次获取dirHandle", this.dirHandle);
             }
             break;
@@ -536,33 +539,14 @@
     HistoryBackupInterval2[HistoryBackupInterval2["EVERY_30_DAY"] = 2592e3] = "EVERY_30_DAY";
     return HistoryBackupInterval2;
   })(HistoryBackupInterval || {});
-  function loadConfig() {
-    const getDefaultFolder = () => {
-      switch (location.hostname) {
-        case "www.pixiv.net":
-          return "pixiv/{artist}";
-        case "danbooru.donmai.us":
-          return "danbooru/{artist}";
-        case "rule34.xxx":
-          return "rule34/{artist}";
-        case "yande.re":
-          return "yande/{artist}";
-        default:
-          return "";
-      }
-    };
-    const getDefaultFilename = () => {
-      if (location.hostname === "www.pixiv.net") {
-        return "{artist}_{title}_{id}_p{page}";
-      } else {
-        return "{id}_{artist}_{character}";
-      }
-    };
+  let config;
+  function loadConfig(customConfig = {}) {
+    if (config) throw new Error("`config` has already been defined.");
     const defaultConfig = Object.freeze({
-      version: "1.3.0",
+      version: "1.3.1",
       ugoiraFormat: "zip",
-      folderPattern: getDefaultFolder(),
-      filenamePattern: getDefaultFilename(),
+      folderPattern: "",
+      filenamePattern: "{id}",
       tagLang: "ja",
       showMsg: true,
       mixEffect: false,
@@ -586,49 +570,49 @@
       "pdl-btn-self-bookmark-left": 100,
       "pdl-btn-self-bookmark-top": 76,
       "pdl-btn-left": 0,
-      "pdl-btn-top": 100
+      "pdl-btn-top": 100,
+      ...customConfig
     });
-    let config2;
+    let configData;
     if (!localStorage.pdlSetting) {
-      config2 = Object.assign({}, defaultConfig);
+      configData = Object.assign({}, defaultConfig);
     } else {
       try {
-        config2 = JSON.parse(localStorage.pdlSetting);
+        configData = JSON.parse(localStorage.pdlSetting);
       } catch (error) {
         logger.error("Use default config because: ", error);
-        config2 = Object.assign({}, defaultConfig);
+        configData = Object.assign({}, defaultConfig);
       }
     }
-    if (config2.version !== defaultConfig.version) {
-      config2 = {
+    if (configData.version !== defaultConfig.version) {
+      configData = {
         ...defaultConfig,
-        ...config2,
+        ...configData,
         version: defaultConfig.version,
         showMsg: true
       };
-      localStorage.pdlSetting = JSON.stringify(config2);
+      localStorage.pdlSetting = JSON.stringify(configData);
     }
-    return {
+    return config = {
       get(key) {
-        return config2[key] ?? defaultConfig[key];
+        return configData[key] ?? defaultConfig[key];
       },
       set(key, value) {
-        if (config2[key] !== value) {
-          config2[key] = value;
-          localStorage.pdlSetting = JSON.stringify(config2);
+        if (configData[key] !== value) {
+          configData[key] = value;
+          localStorage.pdlSetting = JSON.stringify(configData);
           logger.info("Config set:", key, value);
         }
       },
       getAll() {
-        return { ...config2 };
+        return { ...configData };
       },
       update(newConfig) {
-        config2 = { ...newConfig };
-        localStorage.pdlSetting = JSON.stringify(config2);
+        configData = { ...newConfig };
+        localStorage.pdlSetting = JSON.stringify(configData);
       }
     };
   }
-  const config = loadConfig();
   function gmDownloadDataUrl(blob, downloadMeta) {
     return readBlobAsDataUrl(blob).then((dataUrl) => {
       return new Promise((resolve, reject) => {
@@ -880,15 +864,9 @@
       super("PdlHistory");
       __publicField(this, "history");
       __publicField(this, "imageEffect");
-      __publicField(this, "caches");
       this.version(3).stores({
         history: "pid, userId, user, title, *tags",
         imageEffect: "id"
-      });
-      logger.time("loadDb");
-      this.history.toArray().then((datas) => {
-        this.caches = new Map(datas.map((data2) => [data2.pid, data2.page || null]));
-        logger.timeEnd("loadDb");
       });
     }
     throwIfInvalidNumber(num) {
@@ -904,45 +882,21 @@
       }
       return num;
     }
-    async updatePageArray(page, pageArray) {
-      const byteIndex = Math.floor(page / 8);
-      const bitIndex = page % 8;
-      if (!pageArray) {
-        const newArr = new Uint8Array(byteIndex + 1);
-        newArr[byteIndex] |= 1 << bitIndex;
-        return newArr;
-      } else if (byteIndex > pageArray.length - 1) {
-        const newArr = new Uint8Array(byteIndex + 1);
-        newArr.set(pageArray);
-        newArr[byteIndex] |= 1 << bitIndex;
-        return newArr;
-      } else {
-        pageArray[byteIndex] |= 1 << bitIndex;
-        return pageArray;
-      }
-    }
     async add(historyData) {
       const { pid, page } = historyData;
-      this.throwIfInvalidNumber(pid);
       return this.transaction("rw", this.history, async () => {
         if (page !== void 0) {
           this.throwIfInvalidNumber(page);
-          const historyItem = await this.history.get(pid);
-          if (historyItem == null ? void 0 : historyItem.page) {
-            const u8arr = await this.updatePageArray(page, historyItem.page);
-            this.history.put({ ...historyData, page: u8arr });
-            this.caches.set(pid, u8arr);
-          } else if (historyItem) {
+          const historyItem = await this.get(pid);
+          if (historyItem && historyItem.page === void 0) {
             delete historyData.page;
             this.history.put(historyData);
           } else {
-            const u8arr = await this.updatePageArray(page);
+            const u8arr = HistoryDb.updatePageData(page, historyItem == null ? void 0 : historyItem.page);
             this.history.put({ ...historyData, page: u8arr });
-            this.caches.set(pid, u8arr);
           }
         } else {
           this.history.put(historyData);
-          this.caches.set(pid, null);
         }
       });
     }
@@ -954,48 +908,22 @@
           return historyObj;
         }
       });
-      historyItems.forEach((data2) => {
-        this.caches.set(data2.pid, data2.page || null);
-      });
       return this.history.bulkPut(historyItems);
     }
-    async has(pid) {
-      pid = this.throwIfInvalidNumber(pid);
-      if (this.caches) {
-        return this.caches.has(pid);
+    async has(pid, page) {
+      if (page === void 0) {
+        return !!await this.get(pid);
       } else {
-        return !!await this.history.get(pid);
+        this.throwIfInvalidNumber(page);
+        const historyItem = await this.get(pid);
+        if (!historyItem) return false;
+        if (!historyItem.page) return true;
+        return HistoryDb.isPageInData(page, historyItem.page);
       }
     }
-    /**
-     * Returns `true` if the page has been downloaded, `false` if it hasn't,
-     *
-     * @param {number | string} pid
-     * @param {number} page
-     * @returns {boolean}
-     */
-    async hasPage(pid, page) {
+    get(pid) {
       pid = this.throwIfInvalidNumber(pid);
-      this.throwIfInvalidNumber(page);
-      const byteIndex = Math.floor(page / 8);
-      const bitIndex = page % 8;
-      if (this.caches) {
-        const cachesData = this.caches.get(pid);
-        if (cachesData === null) {
-          return true;
-        } else if (cachesData) {
-          return !(byteIndex > cachesData.length - 1) && (cachesData[byteIndex] & 1 << bitIndex) !== 0;
-        }
-        return false;
-      } else {
-        const historyItem = await this.history.get(pid);
-        if (!historyItem) {
-          return false;
-        } else if (!historyItem.page) {
-          return true;
-        }
-        return !(byteIndex > historyItem.page.length - 1) && (historyItem.page[byteIndex] & 1 << bitIndex) !== 0;
-      }
+      return this.history.get(pid);
     }
     getAll() {
       return this.history.toArray();
@@ -1011,7 +939,6 @@
       });
     }
     clear() {
-      this.caches && this.caches.clear();
       return this.history.clear();
     }
     // Firefox does not support storing `ImageData`, so it will always return `undefined`.
@@ -1023,17 +950,173 @@
     addImageEffect(effectData) {
       return this.imageEffect.put(effectData);
     }
-  }
-  let instance$p;
-  const SingletonHistoryDb = new Proxy(HistoryDb, {
-    construct(target) {
-      if (!instance$p) {
-        return instance$p = new target();
+    static updatePageData(page, pageData) {
+      const byteIndex = Math.floor(page / 8);
+      const bitIndex = page % 8;
+      if (!pageData) {
+        const newArr = new Uint8Array(byteIndex + 1);
+        newArr[byteIndex] |= 1 << bitIndex;
+        return newArr;
+      } else if (byteIndex > pageData.length - 1) {
+        const newArr = new Uint8Array(byteIndex + 1);
+        newArr.set(pageData);
+        newArr[byteIndex] |= 1 << bitIndex;
+        return newArr;
+      } else {
+        pageData[byteIndex] |= 1 << bitIndex;
+        return pageData;
       }
-      return instance$p;
     }
-  });
-  const historyDb = new SingletonHistoryDb();
+    static isPageInData(page, pageData) {
+      const byteIndex = Math.floor(page / 8);
+      const bitIndex = page % 8;
+      return !(byteIndex > pageData.length - 1) && (pageData[byteIndex] & 1 << bitIndex) !== 0;
+    }
+  }
+  class CachedHistoryDb extends HistoryDb {
+    constructor() {
+      super();
+      __publicField(this, "cache", /* @__PURE__ */ new Map());
+      __publicField(this, "initCachePromise");
+      __publicField(this, "channel");
+      this.initCachePromise = this.initCache();
+      this.channel = this.initChannel();
+    }
+    async initCache() {
+      logger.time("loadDb");
+      const historyItems = await this.getAll();
+      let historyItem;
+      for (let i = 0; historyItem = historyItems[i++]; ) {
+        const { pid, page = null } = historyItem;
+        this.cache.set(pid, page);
+      }
+      logger.timeEnd("loadDb");
+    }
+    initChannel() {
+      const CHANNEL_NAME = "pdl_sync-cache";
+      const channel = new BroadcastChannel(CHANNEL_NAME);
+      channel.addEventListener("message", (evt) => {
+        const { data } = evt;
+        if (data === void 0) {
+          this.cache.clear();
+          logger.info("clear database cache");
+          return;
+        }
+        if (Array.isArray(data)) {
+          data.forEach((item) => {
+            this.cache.set(item.pid, item.page);
+          });
+          logger.info("Sync database cache:", data.length);
+        } else {
+          this.cache.set(data.pid, data.page);
+        }
+      });
+      return channel;
+    }
+    syncCacheViaChannel(item) {
+      this.channel.postMessage(item);
+    }
+    updateCache(item) {
+      if (Array.isArray(item)) {
+        item.forEach((cache) => {
+          this.cache.set(cache.pid, cache.page);
+        });
+      } else {
+        this.cache.set(item.pid, item.page);
+      }
+      this.syncCacheViaChannel(item);
+    }
+    clearCache() {
+      this.cache.clear();
+      this.syncCacheViaChannel();
+    }
+    async getCache(pid) {
+      pid = this.throwIfInvalidNumber(pid);
+      await this.initCachePromise;
+      return this.cache.get(pid);
+    }
+    async add(historyData) {
+      const { pid, page } = historyData;
+      if (page === void 0) {
+        !await this.has(pid) && this.updateCache({ pid, page: null });
+      } else {
+        this.throwIfInvalidNumber(page);
+        const pageData = await this.getCache(pid);
+        if (pageData !== null) {
+          this.updateCache({ pid, page: HistoryDb.updatePageData(page, pageData) });
+        } else {
+          this.updateCache({ pid, page: null });
+        }
+      }
+      return super.add(historyData);
+    }
+    import(objArr) {
+      const cacheItems = objArr.map((historyObj) => {
+        return {
+          pid: historyObj.pid,
+          page: historyObj.page ? new Uint8Array(Object.values(historyObj.page)) : null
+        };
+      });
+      this.updateCache(cacheItems);
+      return super.import(objArr);
+    }
+    async has(pid, page) {
+      pid = this.throwIfInvalidNumber(pid);
+      await this.initCachePromise;
+      if (page === void 0) {
+        return this.cache.has(pid);
+      } else {
+        this.throwIfInvalidNumber(page);
+        const cachesData = await this.getCache(pid);
+        if (cachesData === void 0) return false;
+        if (cachesData === null) return true;
+        return HistoryDb.isPageInData(page, cachesData);
+      }
+    }
+    clear() {
+      this.clearCache();
+      return super.clear();
+    }
+  }
+  class ReadableHistoryDb extends CachedHistoryDb {
+    constructor() {
+      super(...arguments);
+      __publicField(this, "subscribers", /* @__PURE__ */ new Set());
+    }
+    runSubscription() {
+      logger.info("runSubscription", this.subscribers.size);
+      this.subscribers.forEach((subscription) => {
+        subscription(this.cache);
+      });
+    }
+    async initCache() {
+      await super.initCache();
+      this.runSubscription();
+    }
+    initChannel() {
+      const channel = super.initChannel();
+      channel.addEventListener("message", () => {
+        this.runSubscription();
+      });
+      return channel;
+    }
+    updateCache(item) {
+      super.updateCache(item);
+      this.runSubscription();
+    }
+    clearCache() {
+      super.clearCache();
+      this.runSubscription();
+    }
+    subscribe(subscription) {
+      this.subscribers.add(subscription);
+      subscription(this.cache);
+      return () => {
+        this.subscribers.delete(subscription);
+      };
+    }
+  }
+  const historyDb = new ReadableHistoryDb();
   const rule34Parser = {
     async parse(id) {
       var _a, _b, _c, _d, _e, _f;
@@ -1203,6 +1286,8 @@
       __publicField(this, "type");
       __publicField(this, "onClick");
       __publicField(this, "btn");
+      __publicField(this, "unsubscriber");
+      __publicField(this, "connectedFlag", false);
       this.dispatchDownload = this.dispatchDownload.bind(this);
       this.status = "init";
       this.mediaId = this.checkNumberValidity(props.id);
@@ -1262,7 +1347,7 @@
       try {
         if (id === null) throw new Error('Attribute "data-id" is required.');
         this.mediaId = this.checkNumberValidity(id);
-        this.updateDownloadStatus();
+        this.connectedFlag && this.observerDb()();
       } catch (error) {
         logger.error(error);
         this.dataset.id = String(this.mediaId);
@@ -1283,7 +1368,7 @@
         } else {
           this.page = this.checkNumberValidity(page);
         }
-        this.updateDownloadStatus();
+        this.connectedFlag && this.observerDb()();
       } catch (error) {
         logger.error(error);
         if (this.page === void 0) {
@@ -1320,31 +1405,6 @@
         }
       );
     }
-    updateDownloadStatus() {
-      if (this.type !== "danbooru-pool") {
-        if (this.page !== void 0) {
-          historyDb.hasPage(this.mediaId, this.page).then((pageDownloaded) => {
-            pageDownloaded ? this.setStatus(
-              "complete"
-              /* Complete */
-            ) : this.setStatus(
-              "init"
-              /* Init */
-            );
-          });
-        } else {
-          historyDb.has(this.mediaId).then((hasId) => {
-            hasId ? this.setStatus(
-              "complete"
-              /* Complete */
-            ) : this.setStatus(
-              "init"
-              /* Init */
-            );
-          });
-        }
-      }
-    }
     render() {
       const shadowRoot = this.attachShadow({ mode: "open" });
       shadowRoot.innerHTML = `    <style>${btnStyle}</style>${svgGroup}<button class="pdl-thumbnail">
@@ -1353,7 +1413,6 @@
       </svg>
       <span></span>
     </button>`;
-      this.updateDownloadStatus();
       this.dataset.id = String(this.mediaId);
       this.type && (this.dataset.type = this.type);
       this.page !== void 0 && (this.dataset.page = String(this.page));
@@ -1384,11 +1443,33 @@
         this.removeAttribute("disabled");
       });
     }
+    observerDb() {
+      return historyDb.subscribe(async () => {
+        if (this.type === "danbooru-pool") return;
+        const downloaded = await historyDb.has(this.mediaId, this.page);
+        if (this.status === "complete") {
+          !downloaded && this.setStatus(
+            "init"
+            /* Init */
+          );
+        } else {
+          downloaded && this.setStatus(
+            "complete"
+            /* Complete */
+          );
+        }
+      });
+    }
     connectedCallback() {
+      this.connectedFlag = true;
       this.btn.addEventListener("click", this.dispatchDownload);
+      this.unsubscriber = this.observerDb();
     }
     disconnectedCallback() {
+      var _a;
+      this.connectedFlag = false;
       this.btn.removeEventListener("click", this.dispatchDownload);
+      (_a = this.unsubscriber) == null ? void 0 : _a.call(this);
     }
     setProgress(progress, updateProgressbar = true) {
       if (progress < 0 || progress > 100) throw new RangeError('Value "progress" must between 0-100');
@@ -1476,7 +1557,7 @@
       artist = this.normalizeString(artist);
       title = this.normalizeString(title);
       tags = tags.map((tag) => this.normalizeString(tag));
-      const replaceDate = (match, p1) => {
+      const replaceDate = (_, p1) => {
         const format = p1 || "YYYY-MM-DD";
         return dayjs(createDate).format(format);
       };
@@ -1683,7 +1764,7 @@
       feedback: "有问题or想建议？这里反馈",
       credit: "脚本还行？请点这里支持我！",
       give_me_a_star: "在GitHub中给我一个 ⭐Star，",
-      buy_me_a_drink: "或者，扫码请我喝杯香草味冰可乐。"
+      buy_me_a_drink: "或者，扫码请我喝杯香草味冰可乐。^_^"
     }
   };
   const en = {
@@ -1841,7 +1922,7 @@
       feedback: "Feedback / Report an issue",
       credit: "Click here to support me!",
       give_me_a_star: "Give me a ⭐Star on GitHub.",
-      buy_me_a_drink: "Or, buy me a vanilla-flavored iced cola."
+      buy_me_a_drink: "Or, buy me a vanilla-flavored iced cola. ^_^"
     }
   };
   const messages = {
@@ -2071,8 +2152,8 @@
   function svg_element(name) {
     return document.createElementNS("http://www.w3.org/2000/svg", name);
   }
-  function text(data2) {
-    return document.createTextNode(data2);
+  function text(data) {
+    return document.createTextNode(data);
   }
   function space() {
     return text(" ");
@@ -2141,11 +2222,11 @@
   function children(element2) {
     return Array.from(element2.childNodes);
   }
-  function set_data(text2, data2) {
-    data2 = "" + data2;
-    if (text2.data === data2) return;
+  function set_data(text2, data) {
+    data = "" + data;
+    if (text2.data === data) return;
     text2.data = /** @type {string} */
-    data2;
+    data;
   }
   function set_input_value(input, value) {
     input.value = value == null ? "" : value;
@@ -3532,57 +3613,174 @@
   const STORAGE_KEY = "pdl-downloader_option";
   const saveData = localStorage.getItem(STORAGE_KEY);
   const storeData = saveData ? JSON.parse(saveData) : defaultData;
-  function storeBuilder(data2) {
+  function storeBuilder(data) {
     const obj = {};
     for (const key in defaultData) {
-      if (!(key in data2)) {
+      if (!(key in data)) {
         obj[key] = writable(defaultData[key]);
       } else {
-        obj[key] = writable(data2[key]);
+        obj[key] = writable(data[key]);
       }
     }
     return obj;
   }
   const optionStore = storeBuilder(storeData);
-  const watchStoreData = derived(Object.values(optionStore), (data2) => {
+  const watchStoreData = derived(Object.values(optionStore), (data) => {
     const obj = {};
     Object.keys(optionStore).forEach((key, idx) => {
-      obj[key] = data2[idx];
+      obj[key] = data[idx];
     });
     return obj;
   });
   watchStoreData.subscribe((val) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
   });
-  const ERROR_MASKED = "Masked.";
+  function useChannel() {
+    const CHANNEL_NAME = "pdl_batch-download";
+    const TAB_ID = String(Math.random());
+    const channel = new BroadcastChannel(CHANNEL_NAME);
+    const queue = [];
+    let downloading = false;
+    let pending = false;
+    let onFullfilled;
+    let onRejected;
+    channel.addEventListener("message", (evt) => {
+      const { data } = evt;
+      switch (data.type) {
+        case 5:
+          logger.info("channel receive: QUERY");
+          downloading && channel.postMessage({
+            type: 0,
+            value: null
+          });
+          break;
+        case 0:
+          logger.info("channel receive: SET_PENDING");
+          !pending && (pending = true);
+          break;
+        case 1:
+          logger.info("channel receive: SET_IDLE");
+          pending && (pending = false);
+          break;
+        case 2:
+          logger.info("channel receive: ADD_QUEUE");
+          downloading && queue.push(data.value);
+          break;
+        case 3:
+          logger.info("channel receive: REMOVE_QUEUE");
+          if (downloading) {
+            const idx = queue.findIndex((id) => id === data.value);
+            idx !== -1 && queue.splice(idx, 1);
+          }
+          break;
+        case 4:
+          logger.info("channel receive: PROCESS_NEXT", TAB_ID, data.value);
+          if (data.value[0] !== TAB_ID) return;
+          queue.push(...data.value.slice(1));
+          pending = false;
+          downloading = true;
+          onFullfilled();
+          break;
+      }
+    });
+    window.addEventListener("unload", () => {
+      if (pending) {
+        channel.postMessage({
+          type: 3,
+          value: TAB_ID
+        });
+        return;
+      }
+      if (downloading) {
+        queue.length ? channel.postMessage({
+          type: 4,
+          value: queue
+        }) : channel.postMessage({
+          type: 1,
+          value: null
+        });
+      }
+    });
+    channel.postMessage({
+      type: 5,
+      value: null
+    });
+    return {
+      async requestDownload() {
+        if (!pending) {
+          downloading = true;
+          channel.postMessage({
+            type: 0,
+            value: null
+          });
+          logger.info("channel post: SET_PENDING");
+          return;
+        }
+        const waitUntilIdle = new Promise((resolve, reject) => {
+          onFullfilled = resolve;
+          onRejected = reject;
+        });
+        channel.postMessage({
+          type: 2,
+          value: TAB_ID
+        });
+        logger.info("channel post: ADD_QUEUE", TAB_ID);
+        return waitUntilIdle;
+      },
+      cancelDownloadRequest(reason) {
+        if (!pending) return;
+        channel.postMessage({
+          type: 3,
+          value: TAB_ID
+        });
+        logger.info("channel post: REMOVE_QUEUE", TAB_ID);
+        onRejected(reason);
+      },
+      processNextDownload() {
+        if (!downloading) return;
+        downloading = false;
+        if (queue.length) {
+          pending = true;
+          channel.postMessage({
+            type: 4,
+            value: queue
+          });
+          queue.length = 0;
+          logger.info("channel post: PROCESS_NEXT");
+        } else {
+          channel.postMessage({
+            type: 1,
+            value: null
+          });
+          logger.info("channel post: SET_IDLE");
+        }
+      }
+    };
+  }
   let useBatchDownload = () => {
     throw new Error("You need to call `defineBatchDownload` before using `useBatchDownload`.");
   };
+  const ERROR_MASKED = "Masked.";
   function defineBatchDownload(downloaderConfig) {
     const artworkCount = writable(0);
     const successd = writable([]);
     const failed = writable([]);
     const excluded = writable([]);
     const downloading = writable(false);
-    const occupied = writable(false);
     const log = writable();
+    const { requestDownload, cancelDownloadRequest, processNextDownload } = useChannel();
     const tasks2 = [];
     const failedTasks = [];
     const unavaliableTasks = [];
     let controller;
     let downloadCompleted;
     let downloadAbort;
-    const { postDownloadStart, postDownloadIdle } = useChannel();
     const readonlyStore = {
       artworkCount: readonly(artworkCount),
       successd: readonly(successd),
       failed: readonly(failed),
       excluded: readonly(excluded),
       downloading: readonly(downloading),
-      globalDownloading: derived(
-        [downloading, occupied],
-        ([$downloading, $occupied]) => $downloading || $occupied
-      ),
       log: readonly(log)
     };
     let $pageStart;
@@ -3602,7 +3800,7 @@
       pageEnd,
       retryFailed
     } = optionStore;
-    const watchPageRange = derived([downloadAllPages, pageStart, pageEnd], (data2) => data2);
+    const watchPageRange = derived([downloadAllPages, pageStart, pageEnd], (data) => data);
     watchPageRange.subscribe(([downloadAllPages2, pageStart2, pageEnd2]) => {
       $downloadAllPages = downloadAllPages2;
       $pageStart = pageStart2;
@@ -3653,46 +3851,6 @@
       downloadAbort = () => {
       };
       writeLog("Info", "Reset store.");
-    }
-    function useChannel() {
-      const channelName = "pdl_batch-download";
-      const channel = new BroadcastChannel(channelName);
-      channel.addEventListener("message", (evt) => {
-        const { data: data2 } = evt;
-        if (data2 === 0) {
-          if (get_store_value(occupied)) return;
-          occupied.set(true);
-          writeLog("Info", "Already downloading, please wait...");
-        } else if (data2 === 2) {
-          if (get_store_value(downloading)) {
-            channel.postMessage(
-              0
-              /* DOWNLOADING */
-            );
-          }
-        } else {
-          occupied.set(false);
-          writeLog("Info", "Idle.");
-        }
-      });
-      channel.postMessage(
-        2
-        /* QUERY */
-      );
-      return {
-        postDownloadStart() {
-          channel.postMessage(
-            0
-            /* DOWNLOADING */
-          );
-        },
-        postDownloadIdle() {
-          channel.postMessage(
-            1
-            /* IDLE */
-          );
-        }
-      };
     }
     function setDownloading(isDownloading) {
       downloading.update((val) => {
@@ -3801,7 +3959,6 @@
     }
     async function batchDownload(fnId, ...restArgs) {
       setDownloading(true);
-      postDownloadStart();
       writeLog("Info", "Start download...");
       reset();
       controller = new AbortController();
@@ -3809,6 +3966,7 @@
       signal.addEventListener(
         "abort",
         () => {
+          cancelDownloadRequest(signal.reason);
           downloadAbort == null ? void 0 : downloadAbort(signal.reason);
           downloaderConfig.onDownloadAbort(tasks2);
         },
@@ -3817,6 +3975,8 @@
       let generator;
       try {
         generator = getGenerator(fnId, ...restArgs);
+        writeLog("Info", "Waiting for other downloads to finish...");
+        await requestDownload();
         await dispatchDownload(generator, signal);
         if ($retryFailed && failedTasks.length) {
           writeLog("Info", "Retry...");
@@ -3842,7 +4002,7 @@
         }
       }
       setDownloading(false);
-      postDownloadIdle();
+      processNextDownload();
     }
     function getGenerator(fnId, ...restArgs) {
       let genFn;
@@ -4315,7 +4475,7 @@
   const get_trail_slot_context$2 = (ctx) => ({});
   const get_lead_slot_changes$2 = (dirty) => ({});
   const get_lead_slot_context$2 = (ctx) => ({});
-  function create_if_block_2$6(ctx) {
+  function create_if_block_2$7(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -4391,7 +4551,7 @@
       }
     };
   }
-  function create_if_block_1$8(ctx) {
+  function create_if_block_1$9(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -4467,7 +4627,7 @@
       }
     };
   }
-  function create_if_block$f(ctx) {
+  function create_if_block$g(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -4556,7 +4716,7 @@
     let current;
     let if_block0 = (
       /*$$slots*/
-      ctx[8].lead && create_if_block_2$6(ctx)
+      ctx[8].lead && create_if_block_2$7(ctx)
     );
     const default_slot_template = (
       /*#slots*/
@@ -4571,11 +4731,11 @@
     );
     let if_block1 = (
       /*$$slots*/
-      ctx[8].trail && create_if_block_1$8(ctx)
+      ctx[8].trail && create_if_block_1$9(ctx)
     );
     let if_block2 = (
       /*$$slots*/
-      ctx[8].headline && create_if_block$f(ctx)
+      ctx[8].headline && create_if_block$g(ctx)
     );
     return {
       c() {
@@ -4637,7 +4797,7 @@
               transition_in(if_block0, 1);
             }
           } else {
-            if_block0 = create_if_block_2$6(ctx2);
+            if_block0 = create_if_block_2$7(ctx2);
             if_block0.c();
             transition_in(if_block0, 1);
             if_block0.m(div1, t0);
@@ -4688,7 +4848,7 @@
               transition_in(if_block1, 1);
             }
           } else {
-            if_block1 = create_if_block_1$8(ctx2);
+            if_block1 = create_if_block_1$9(ctx2);
             if_block1.c();
             transition_in(if_block1, 1);
             if_block1.m(div1, null);
@@ -4716,7 +4876,7 @@
               transition_in(if_block2, 1);
             }
           } else {
-            if_block2 = create_if_block$f(ctx2);
+            if_block2 = create_if_block$g(ctx2);
             if_block2.c();
             transition_in(if_block2, 1);
             if_block2.m(div2, null);
@@ -5253,7 +5413,7 @@
       }
     };
   }
-  function create_if_block$e(ctx) {
+  function create_if_block$f(ctx) {
     let div;
     let each_blocks = [];
     let each_1_lookup = /* @__PURE__ */ new Map();
@@ -5569,7 +5729,7 @@
     }
     let if_block = (
       /*chipValues*/
-      ctx[16].length && create_if_block$e(ctx)
+      ctx[16].length && create_if_block$f(ctx)
     );
     return {
       c() {
@@ -5783,7 +5943,7 @@
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block$e(ctx2);
+            if_block = create_if_block$f(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(div1, null);
@@ -6477,7 +6637,7 @@
       }
     };
   }
-  function create_if_block_2$5(ctx) {
+  function create_if_block_2$6(ctx) {
     let input;
     let mounted;
     let dispose;
@@ -6564,7 +6724,7 @@
       }
     };
   }
-  function create_if_block_1$7(ctx) {
+  function create_if_block_1$8(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -6640,7 +6800,7 @@
       }
     };
   }
-  function create_if_block$d(ctx) {
+  function create_if_block$e(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -6735,14 +6895,14 @@
       if (
         /*multiple*/
         ctx2[4]
-      ) return create_if_block_2$5;
+      ) return create_if_block_2$6;
       return create_else_block$4;
     }
     let current_block_type = select_block_type(ctx);
     let if_block0 = current_block_type(ctx);
     let if_block1 = (
       /*$$slots*/
-      ctx[14].lead && create_if_block_1$7(ctx)
+      ctx[14].lead && create_if_block_1$8(ctx)
     );
     const default_slot_template = (
       /*#slots*/
@@ -6757,7 +6917,7 @@
     );
     let if_block2 = (
       /*$$slots*/
-      ctx[14].trail && create_if_block$d(ctx)
+      ctx[14].trail && create_if_block$e(ctx)
     );
     return {
       c() {
@@ -6858,7 +7018,7 @@
               transition_in(if_block1, 1);
             }
           } else {
-            if_block1 = create_if_block_1$7(ctx2);
+            if_block1 = create_if_block_1$8(ctx2);
             if_block1.c();
             transition_in(if_block1, 1);
             if_block1.m(div2, t1);
@@ -6909,7 +7069,7 @@
               transition_in(if_block2, 1);
             }
           } else {
-            if_block2 = create_if_block$d(ctx2);
+            if_block2 = create_if_block$e(ctx2);
             if_block2.c();
             transition_in(if_block2, 1);
             if_block2.m(div2, null);
@@ -7394,7 +7554,7 @@
       });
     }
   }
-  function create_if_block$c(ctx) {
+  function create_if_block$d(ctx) {
     let text_1;
     let text_1_class_value;
     let current;
@@ -7509,7 +7669,7 @@
       /*value*/
       ctx[0] != void 0 && /*value*/
       ctx[0] >= 0 && /*$$slots*/
-      ctx[13].default && create_if_block$c(ctx)
+      ctx[13].default && create_if_block$d(ctx)
     );
     return {
       c() {
@@ -7666,7 +7826,7 @@
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block$c(ctx2);
+            if_block = create_if_block$d(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(svg, null);
@@ -8414,7 +8574,7 @@
     child_ctx[23] = list[i];
     return child_ctx;
   }
-  function create_if_block_2$4(ctx) {
+  function create_if_block_2$5(ctx) {
     let label_1;
     let current;
     const default_slot_template = (
@@ -8498,7 +8658,7 @@
       }
     };
   }
-  function create_if_block_1$6(ctx) {
+  function create_if_block_1$7(ctx) {
     let datalist;
     let datalist_id_value;
     let each_value = ensure_array_like(
@@ -8600,7 +8760,7 @@
       }
     };
   }
-  function create_if_block$b(ctx) {
+  function create_if_block$c(ctx) {
     let div;
     let current;
     const trail_slot_template = (
@@ -8684,7 +8844,7 @@
     let dispose;
     let if_block0 = (
       /*$$slots*/
-      ctx[12].default && create_if_block_2$4(ctx)
+      ctx[12].default && create_if_block_2$5(ctx)
     );
     let input_levels = [
       { type: "range" },
@@ -8731,11 +8891,11 @@
       /*ticked*/
       ctx[6] && /*tickmarks*/
       ctx[8] && /*tickmarks*/
-      ctx[8].length && create_if_block_1$6(ctx)
+      ctx[8].length && create_if_block_1$7(ctx)
     );
     let if_block2 = (
       /*$$slots*/
-      ctx[12].trail && create_if_block$b(ctx)
+      ctx[12].trail && create_if_block$c(ctx)
     );
     return {
       c() {
@@ -8819,7 +8979,7 @@
               transition_in(if_block0, 1);
             }
           } else {
-            if_block0 = create_if_block_2$4(ctx2);
+            if_block0 = create_if_block_2$5(ctx2);
             if_block0.c();
             transition_in(if_block0, 1);
             if_block0.m(div1, t0);
@@ -8889,7 +9049,7 @@
           if (if_block1) {
             if_block1.p(ctx2, dirty);
           } else {
-            if_block1 = create_if_block_1$6(ctx2);
+            if_block1 = create_if_block_1$7(ctx2);
             if_block1.c();
             if_block1.m(div0, null);
           }
@@ -8908,7 +9068,7 @@
               transition_in(if_block2, 1);
             }
           } else {
-            if_block2 = create_if_block$b(ctx2);
+            if_block2 = create_if_block$c(ctx2);
             if_block2.c();
             transition_in(if_block2, 1);
             if_block2.m(div1, null);
@@ -9056,7 +9216,7 @@
       });
     }
   }
-  function create_if_block$a(ctx) {
+  function create_if_block$b(ctx) {
     let div;
     let current;
     const default_slot_template = (
@@ -9161,7 +9321,7 @@
     }
     let if_block = (
       /*$$slots*/
-      ctx[10].default && create_if_block$a(ctx)
+      ctx[10].default && create_if_block$b(ctx)
     );
     return {
       c() {
@@ -9354,7 +9514,7 @@
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block$a(ctx2);
+            if_block = create_if_block$b(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(label_1, null);
@@ -9600,7 +9760,7 @@
   }
   const get_panel_slot_changes = (dirty) => ({});
   const get_panel_slot_context = (ctx) => ({});
-  function create_if_block$9(ctx) {
+  function create_if_block$a(ctx) {
     let div;
     let div_class_value;
     let current;
@@ -9713,7 +9873,7 @@
     );
     let if_block = (
       /*$$slots*/
-      ctx[5].panel && create_if_block$9(ctx)
+      ctx[5].panel && create_if_block$a(ctx)
     );
     return {
       c() {
@@ -9794,7 +9954,7 @@
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block$9(ctx2);
+            if_block = create_if_block$a(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(div1, null);
@@ -9929,7 +10089,7 @@
   }
   const get_lead_slot_changes = (dirty) => ({});
   const get_lead_slot_context = (ctx) => ({});
-  function create_if_block$8(ctx) {
+  function create_if_block$9(ctx) {
     let div;
     let current;
     const lead_slot_template = (
@@ -10034,7 +10194,7 @@
     }
     let if_block = (
       /*$$slots*/
-      ctx[12].lead && create_if_block$8(ctx)
+      ctx[12].lead && create_if_block$9(ctx)
     );
     const default_slot_template = (
       /*#slots*/
@@ -10199,7 +10359,7 @@
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block$8(ctx2);
+            if_block = create_if_block$9(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(div2, t1);
@@ -10511,7 +10671,7 @@
       );
     }
   }
-  function create_if_block$7(ctx) {
+  function create_if_block$8(ctx) {
     let previous_key = (
       /*$modalStore*/
       ctx[14]
@@ -10650,7 +10810,7 @@
       }
     };
   }
-  function create_if_block_1$5(ctx) {
+  function create_if_block_1$6(ctx) {
     var _a, _b, _c, _d;
     let div;
     let t0;
@@ -10675,11 +10835,11 @@
       if (
         /*$modalStore*/
         ctx2[14][0].type === "alert"
-      ) return create_if_block_2$3;
+      ) return create_if_block_2$4;
       if (
         /*$modalStore*/
         ctx2[14][0].type === "confirm"
-      ) return create_if_block_3$2;
+      ) return create_if_block_3$3;
       if (
         /*$modalStore*/
         ctx2[14][0].type === "prompt"
@@ -11304,7 +11464,7 @@
       }
     };
   }
-  function create_if_block_3$2(ctx) {
+  function create_if_block_3$3(ctx) {
     let footer;
     let button0;
     let t0;
@@ -11402,7 +11562,7 @@
       }
     };
   }
-  function create_if_block_2$3(ctx) {
+  function create_if_block_2$4(ctx) {
     let footer;
     let button;
     let t2;
@@ -11478,7 +11638,7 @@
     let current;
     let mounted;
     let dispose;
-    const if_block_creators = [create_if_block_1$5, create_else_block$3];
+    const if_block_creators = [create_if_block_1$6, create_else_block$3];
     const if_blocks = [];
     function select_block_type(ctx2, dirty) {
       if (
@@ -11670,7 +11830,7 @@
     );
     let if_block = (
       /*$modalStore*/
-      ctx[14].length > 0 && create_if_block$7(ctx)
+      ctx[14].length > 0 && create_if_block$8(ctx)
     );
     return {
       c() {
@@ -11711,7 +11871,7 @@
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block$7(ctx2);
+            if_block = create_if_block$8(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(if_block_anchor.parentNode, if_block_anchor);
@@ -12049,7 +12209,7 @@
   }
   const creditCode = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAAA8AXHiAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxMAAAsTAQCanBgAADzWSURBVHhe7Z0HnBRF9sdrMyxZoiCegKCCOZ3xzKcCgp56CoqKohj+6pmznBGMGM+cQDALBgwneuZ4nieGU5KKIoqAIrCEDf1/3zddQ29vd09P2oD++BQzW93TXV316uWqLvhZUCowv8P8+OOP5uOPPzY9evQwvXr1MoWFhe6RYDiOY2bPnm2+/vprs+WWW5p27dq5R37bWCEwNTU1K6WDfvNYvny5M2LECKd58+bOjjvu6Hz77bfukXB88803zuabb+60aNHCueqqq5xVq1a5R+JB+t79tmZBnms5U7IqQWdrHhYvXmymTZvm/hWNlStXmpkzZxohMOVCcK9UKCkpMT/88INZtmyZqa6uNgUFBe6RaHzxxRdm6dKl7l9rJKqieX0Txi+//GKGDh1qhKOYs846y1RVRc+fsrIy0759eyWOyspK2Ll7JBxrr722ef31182ECRPMyJEjTXFxsXskHOeee67p27ev+b//+79Y92iqWGMJCy4yb9481YNeeOGFlBwINbNbt26qV8G94g567969lYDXWmsttyYatIM2iWqLGuLWrnlYYwmrdevWyoHATz/9ZL777jv9HgYIqmPHjqaoqEg5FmIUAsg1xo4dax588EFz/fXXm/Lycrd2zUOTIiy4CDqNKMluTThatmxpNt54YxVPiMXvv/8+JaF07dpVCYvrw1nywVHatm1rDjvsMLU64+hk6G60Jc4zNyY0GcJCPI0ePdoMGjTIiAWmXCUKDNr+++9vNthgA7PeeuupmEs1kB06dFDCgqDgcg0tqrj/zTffbAYPHmzGjRuXUk9sVJDGL5OZ3OghHMfZZpttYDmO6DXOl19+6R4JhwyEI7PdmTNnjn5PhX/9619Oq1at9B4nn3yyuiDiQvrR/ZY7VFRUOMJFtT177723s2TJEvdI44b0xZImw7FQjvv166cc5auvvjJTp05VMREFzu3UqZPp3r27fk8FxJQ9LxXH4t633Xab2XrrrVVfSsVBM0GzZs3MlVdeaf70pz+Z4cOHm+bNm7tHmgCaCscC77//vtOmTRudwZtuuqkjg+8eiQYz/7PPPnNk8N2aYMyePdvp3LmzXn+PPfZwfv31V/dIXcyfP9/Zbrvt9Ny+ffsqV4xC3DYEAU4lhOz+1fjRpDiWtNdstdVWZt9999W/P/30UzNlyhT9ngrXXHON2XHHHdWHFAUh2mRYZtGiRZEcCwcnliOAy6XyYV133XXahlGjRrk18dGiRYuU4aVGh8bAscTaiz0jZ8yYoSEUabrqWmLxuUfCIaJEzxcCcObNm+fW1gXtsHrcH/7wh0iO+MUXXzg9evTQc//4xz86QojukbrgulZXEmPCrQ0HoaFrr73WkYngiBUcW3+jD9PRC/OFRsGx3nvvPXPUUUeZ++67L5aesv7665tjjjlGvwuRmXvuuUe/R0EGXj/Ri15++WX9HgS87zvttJN+h3NFcSFcHzhhgYjPSP1HjAJ1kwARsfoZhaefflq565gxY8xTTz0Vyy1BKOqGG25QVwb6Z4OjoTnWgQce6EjHafD3zTffdGuj8c477ziiaMfiFkBEpiNEo+eLEhzKHeEMIt6cCy+8UC3EKC767rvvOq1bt9ZrCqG7tcE47rjj9DzKs88+69YGg/tvttlmei5t5j5xMHPmTGejjTbSvtxnn30y0uVyhUbBsbB40FGYccOGDdMwTCrgm8IaYyb/73//M//+97/dI8HgfOl09XSjR4VxAOrx2F922WVm1113jeQUePJFIdfv1sMfBvxjOGy32GILs+2227q1wXj44YfNl19+qd+HDBlixEjR76lAG0jd6dmzp+qhcazgvKKhORbWkrDv5Iw++OCDI60xi0cffVR1LazEl156ya0NBj6s//znP8ot0tFZoiDErHqTEIxytygsXLjQefHFF9UqTKVL3nXXXcq9hRidV155Ja22LliwQP176HQNCThWAYQlM7NBg1b//e9/zX777adcoFWrVkaIxuy99956LIxr4IV+5plnVNfBw17fPh70tY8++kitVThFrjgEz/PEE08ohxswYECsjInGBumTpQ3OsZiRzOKLLrrIKSkpUa5Fot3PP//snpFbYOkxo9PhBL8jPcCxGlzHgiPhozn99NONKPJah2ed2GBcEGT+8MMPk7E0eTb99IPcKeJuf//732OnxdQnPvnkkzUnAbChOZYX0qnO3/72N+eBBx5QX04criImv3PEEUeolYjfB+4X9jtSj+WRndLSUmfatGlubV288MILzvHHH+98+umnbk1d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";
   const githubMark = `<svg viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg>`;
-  function create_if_block$6(ctx) {
+  function create_if_block$7(ctx) {
     let div1;
     let section;
     let t0;
@@ -12171,7 +12331,7 @@
     let current;
     let if_block = (
       /*$modalStore*/
-      ctx[2][0] && create_if_block$6(ctx)
+      ctx[2][0] && create_if_block$7(ctx)
     );
     return {
       c() {
@@ -12195,7 +12355,7 @@
               transition_in(if_block, 1);
             }
           } else {
-            if_block = create_if_block$6(ctx2);
+            if_block = create_if_block$7(ctx2);
             if_block.c();
             transition_in(if_block, 1);
             if_block.m(if_block_anchor.parentNode, if_block_anchor);
@@ -12290,7 +12450,7 @@
     let img;
     let img_src_value;
     let t17;
-    let p1;
+    let p;
     let a1;
     let t19;
     let span;
@@ -12300,10 +12460,10 @@
     return {
       c() {
         header = element("header");
-        header.textContent = `Pixiv Downloader ${"1.3.0"}`;
+        header.textContent = `Pixiv Downloader ${"1.3.1"}`;
         t2 = space();
         article = element("article");
-        article.innerHTML = `<ul class="list-disc list-inside leading-loose"><p>祝各位假期愉快 ^_^</p> <li>新增（批量下载）：重新支持批量下载完成后对下载失败的图片进行重试，请在批量下载面板【其它】中启用。</li> <li>新增（下载历史）：现在可以在【设置】【下载历史】中设置定期自动备份下载历史，避免清理浏览器导致记录意外丢失。</li> <li>调整（批量下载）：不再支持多个标签页同时进行批量下载，以避免过于频繁的网络请求。</li> <li>修复（批量下载）：某些情况下批量下载【已关注用户的新作】时无法完成下载的问题。</li></ul>`;
+        article.innerHTML = `<ul class="list-disc list-inside leading-loose"><li>New: Add support for all the fallen booru.</li> <li>优化：现在支持多标签页排队进行批量下载。</li> <li>优化：下载按钮现在会响应式更新完成状态。</li> <li>优化：导入，清除历史记录不再刷新页面。</li> <li>修复：Pixiv浏览记录页不显示下载按钮的问题。</li></ul>`;
         t12 = space();
         footer = element("footer");
         div0 = element("div");
@@ -12317,7 +12477,7 @@
         div1 = element("div");
         img = element("img");
         t17 = space();
-        p1 = element("p");
+        p = element("p");
         a1 = element("a");
         a1.textContent = `${t("changelog.give_me_a_star")}`;
         t19 = space();
@@ -12346,7 +12506,7 @@
         attr(a1, "href", "https://github.com/drunkg00se/Pixiv-Downloader");
         attr(a1, "target", "_blank");
         attr(a1, "class", "anchor");
-        attr(p1, "class", "flex flex-col h-full justify-evenly");
+        attr(p, "class", "flex flex-col h-full justify-evenly");
         attr(div1, "class", "flex justify-center items-center min-h-0 gap-14 overflow-hidden");
         attr(div2, "class", div2_class_value = "grid transition-[grid-template-rows] duration-[400ms] " + /*gridRows*/
         ctx[2]);
@@ -12369,10 +12529,10 @@
         append(div2, div1);
         append(div1, img);
         append(div1, t17);
-        append(div1, p1);
-        append(p1, a1);
-        append(p1, t19);
-        append(p1, span);
+        append(div1, p);
+        append(p, a1);
+        append(p, t19);
+        append(p, span);
         if (!mounted) {
           dispose = listen(
             button,
@@ -12476,9 +12636,13 @@
   const check = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>check</title><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>`;
   const folderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" /></svg>`;
   const fileSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6Z" /></svg>`;
-  const data = config.getAll();
-  const configStore = writable(data);
-  configStore.subscribe(config.update);
+  const configStore = writable();
+  function initConfigStore() {
+    const data = config.getAll();
+    configStore.set(data);
+    configStore.subscribe(config.update);
+    return configStore;
+  }
   function get_each_context$3(ctx, list, i) {
     const child_ctx = ctx.slice();
     child_ctx[40] = list[i];
@@ -12524,7 +12688,7 @@
       }
     };
   }
-  function create_if_block_2$2(ctx) {
+  function create_if_block_2$3(ctx) {
     let input;
     let mounted;
     let dispose;
@@ -12650,7 +12814,7 @@
       }
     };
   }
-  function create_if_block_1$4(ctx) {
+  function create_if_block_1$5(ctx) {
     let li0;
     let p0;
     let t1;
@@ -13015,7 +13179,7 @@
       }
     };
   }
-  function create_if_block$5(ctx) {
+  function create_if_block$6(ctx) {
     let li;
     let div;
     let p0;
@@ -13405,7 +13569,7 @@
       if (
         /*subDirectoryAvailable*/
         ctx2[6]
-      ) return create_if_block_2$2;
+      ) return create_if_block_2$3;
       return create_else_block$2;
     }
     let current_block_type = select_block_type(ctx);
@@ -13437,7 +13601,7 @@
     binding_callbacks.push(() => bind(slidetoggle, "checked", slidetoggle_checked_binding));
     let if_block1 = (
       /*$store*/
-      ctx[7].useFileSystemAccess && create_if_block_1$4(ctx)
+      ctx[7].useFileSystemAccess && create_if_block_1$5(ctx)
     );
     let each_value = ensure_array_like(
       /*templates*/
@@ -13447,7 +13611,7 @@
     for (let i = 0; i < each_value.length; i += 1) {
       each_blocks[i] = create_each_block$3(get_each_context$3(ctx, each_value, i));
     }
-    let if_block2 = show_if && create_if_block$5(ctx);
+    let if_block2 = show_if && create_if_block$6(ctx);
     return {
       c() {
         div4 = element("div");
@@ -13734,7 +13898,7 @@
               transition_in(if_block1, 1);
             }
           } else {
-            if_block1 = create_if_block_1$4(ctx2);
+            if_block1 = create_if_block_1$5(ctx2);
             if_block1.c();
             transition_in(if_block1, 1);
             if_block1.m(ul0, null);
@@ -15542,7 +15706,7 @@
     });
   }
   function importJSON(file) {
-    return readHistoryFile("application/json", file).then((data2) => historyDb.import(data2));
+    return readHistoryFile("application/json", file).then((data) => historyDb.import(data));
   }
   function exportAsJSON() {
     return historyDb.getAll().then((datas) => {
@@ -15576,21 +15740,198 @@
       scheduleBackup
     };
   }
-  function create_default_slot$3(ctx) {
-    let t_1_value = t("setting.history.button.import") + "";
-    let t_1;
+  function create_if_block_3$2(ctx) {
+    let progressradial;
+    let current;
+    progressradial = new ProgressRadial({
+      props: {
+        stroke: 80,
+        width: "w-5",
+        meter: "stroke-primary-500",
+        track: "stroke-primary-500/30"
+      }
+    });
     return {
       c() {
-        t_1 = text(t_1_value);
+        create_component(progressradial.$$.fragment);
       },
       m(target, anchor) {
-        insert(target, t_1, anchor);
+        mount_component(progressradial, target, anchor);
+        current = true;
       },
-      p: noop,
+      i(local) {
+        if (current) return;
+        transition_in(progressradial.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(progressradial.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        destroy_component(progressradial, detaching);
+      }
+    };
+  }
+  function create_if_block_2$2(ctx) {
+    let progressradial;
+    let current;
+    progressradial = new ProgressRadial({
+      props: {
+        stroke: 80,
+        width: "w-5",
+        meter: "stroke-primary-500",
+        track: "stroke-primary-500/30"
+      }
+    });
+    return {
+      c() {
+        create_component(progressradial.$$.fragment);
+      },
+      m(target, anchor) {
+        mount_component(progressradial, target, anchor);
+        current = true;
+      },
+      i(local) {
+        if (current) return;
+        transition_in(progressradial.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(progressradial.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        destroy_component(progressradial, detaching);
+      }
+    };
+  }
+  function create_if_block_1$4(ctx) {
+    let progressradial;
+    let current;
+    progressradial = new ProgressRadial({
+      props: {
+        stroke: 80,
+        width: "w-5",
+        meter: "stroke-primary-500",
+        track: "stroke-primary-500/30"
+      }
+    });
+    return {
+      c() {
+        create_component(progressradial.$$.fragment);
+      },
+      m(target, anchor) {
+        mount_component(progressradial, target, anchor);
+        current = true;
+      },
+      i(local) {
+        if (current) return;
+        transition_in(progressradial.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(progressradial.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        destroy_component(progressradial, detaching);
+      }
+    };
+  }
+  function create_default_slot$3(ctx) {
+    let t0;
+    let span;
+    let current;
+    let if_block = (
+      /*$importPending*/
+      ctx[7] && create_if_block_1$4()
+    );
+    return {
+      c() {
+        if (if_block) if_block.c();
+        t0 = space();
+        span = element("span");
+        span.textContent = `${t("setting.history.button.import")}`;
+      },
+      m(target, anchor) {
+        if (if_block) if_block.m(target, anchor);
+        insert(target, t0, anchor);
+        insert(target, span, anchor);
+        current = true;
+      },
+      p(ctx2, dirty) {
+        if (
+          /*$importPending*/
+          ctx2[7]
+        ) {
+          if (if_block) {
+            if (dirty[0] & /*$importPending*/
+            128) {
+              transition_in(if_block, 1);
+            }
+          } else {
+            if_block = create_if_block_1$4();
+            if_block.c();
+            transition_in(if_block, 1);
+            if_block.m(t0.parentNode, t0);
+          }
+        } else if (if_block) {
+          group_outros();
+          transition_out(if_block, 1, 1, () => {
+            if_block = null;
+          });
+          check_outros();
+        }
+      },
+      i(local) {
+        if (current) return;
+        transition_in(if_block);
+        current = true;
+      },
+      o(local) {
+        transition_out(if_block);
+        current = false;
+      },
       d(detaching) {
         if (detaching) {
-          detach(t_1);
+          detach(t0);
+          detach(span);
         }
+        if (if_block) if_block.d(detaching);
+      }
+    };
+  }
+  function create_if_block$5(ctx) {
+    let progressradial;
+    let current;
+    progressradial = new ProgressRadial({
+      props: {
+        stroke: 80,
+        width: "w-5",
+        meter: "stroke-primary-500",
+        track: "stroke-primary-500/30"
+      }
+    });
+    return {
+      c() {
+        create_component(progressradial.$$.fragment);
+      },
+      m(target, anchor) {
+        mount_component(progressradial, target, anchor);
+        current = true;
+      },
+      i(local) {
+        if (current) return;
+        transition_in(progressradial.$$.fragment, local);
+        current = true;
+      },
+      o(local) {
+        transition_out(progressradial.$$.fragment, local);
+        current = false;
+      },
+      d(detaching) {
+        destroy_component(progressradial, detaching);
       }
     };
   }
@@ -15622,48 +15963,77 @@
     let p3;
     let t12;
     let button0;
-    let t14;
+    let t13;
+    let span0;
+    let t15;
     let li2;
     let p4;
-    let t16;
+    let t17;
     let button1;
     let t18;
+    let span1;
+    let t20;
     let section2;
     let p5;
-    let t19_value = t("setting.history.label.import") + "";
-    let t19;
-    let t20;
+    let t21_value = t("setting.history.label.import") + "";
+    let t21;
+    let t22;
     let ul2;
     let li3;
     let p6;
-    let t22;
+    let t24;
     let filebutton;
-    let t23;
+    let updating_disabled;
+    let t25;
     let section3;
     let p7;
-    let t24_value = t("setting.history.label.clear") + "";
-    let t24;
-    let t25;
+    let t26_value = t("setting.history.label.clear") + "";
+    let t26;
+    let t27;
     let ul3;
     let li4;
     let p8;
-    let t27;
+    let t29;
     let button2;
+    let t30;
+    let span2;
     let current;
     let mounted;
     let dispose;
-    filebutton = new FileButton({
-      props: {
-        name: "import-file",
-        accept: ".json",
-        $$slots: { default: [create_default_slot$3] },
-        $$scope: { ctx }
-      }
-    });
+    let if_block0 = (
+      /*$exportJsonPending*/
+      ctx[5] && create_if_block_3$2()
+    );
+    let if_block1 = (
+      /*$exportCsvPending*/
+      ctx[6] && create_if_block_2$2()
+    );
+    function filebutton_disabled_binding(value) {
+      ctx[25](value);
+    }
+    let filebutton_props = {
+      name: "import-file",
+      accept: ".json",
+      $$slots: { default: [create_default_slot$3] },
+      $$scope: { ctx }
+    };
+    if (
+      /*$importPending*/
+      ctx[7] !== void 0
+    ) {
+      filebutton_props.disabled = /*$importPending*/
+      ctx[7];
+    }
+    filebutton = new FileButton({ props: filebutton_props });
+    binding_callbacks.push(() => bind(filebutton, "disabled", filebutton_disabled_binding));
     filebutton.$on(
       "change",
-      /*importFromJSON*/
-      ctx[7]
+      /*wrapImportFromJSON*/
+      ctx[10]
+    );
+    let if_block2 = (
+      /*$clearPending*/
+      ctx[8] && create_if_block$5()
     );
     return {
       c() {
@@ -15697,37 +16067,46 @@
         p3.textContent = `${t("setting.history.options.export_as_json")}`;
         t12 = space();
         button0 = element("button");
-        button0.textContent = `${t("setting.history.button.export")}`;
-        t14 = space();
+        if (if_block0) if_block0.c();
+        t13 = space();
+        span0 = element("span");
+        span0.textContent = `${t("setting.history.button.export")}`;
+        t15 = space();
         li2 = element("li");
         p4 = element("p");
         p4.textContent = `${t("setting.history.options.export_as_csv")}`;
-        t16 = space();
+        t17 = space();
         button1 = element("button");
-        button1.textContent = `${t("setting.history.button.export")}`;
+        if (if_block1) if_block1.c();
         t18 = space();
+        span1 = element("span");
+        span1.textContent = `${t("setting.history.button.export")}`;
+        t20 = space();
         section2 = element("section");
         p5 = element("p");
-        t19 = text(t19_value);
-        t20 = space();
+        t21 = text(t21_value);
+        t22 = space();
         ul2 = element("ul");
         li3 = element("li");
         p6 = element("p");
         p6.textContent = `${t("setting.history.options.import_json")}`;
-        t22 = space();
+        t24 = space();
         create_component(filebutton.$$.fragment);
-        t23 = space();
+        t25 = space();
         section3 = element("section");
         p7 = element("p");
-        t24 = text(t24_value);
-        t25 = space();
+        t26 = text(t26_value);
+        t27 = space();
         ul3 = element("ul");
         li4 = element("li");
         p8 = element("p");
         p8.textContent = `${t("setting.history.options.clear_history")}`;
-        t27 = space();
+        t29 = space();
         button2 = element("button");
-        button2.textContent = `${t("setting.history.button.clear")}`;
+        if (if_block2) if_block2.c();
+        t30 = space();
+        span2 = element("span");
+        span2.textContent = `${t("setting.history.button.clear")}`;
         attr(
           p0,
           "class",
@@ -15750,7 +16129,7 @@
           ctx[4].historyBackupInterval === void 0
         ) add_render_callback(() => (
           /*select_change_handler*/
-          ctx[16].call(select)
+          ctx[24].call(select)
         ));
         attr(
           ul0,
@@ -15765,8 +16144,12 @@
           ctx[1]
         );
         attr(p3, "class", "flex-auto");
+        button0.disabled = /*$exportJsonPending*/
+        ctx[5];
         attr(button0, "class", "btn variant-filled");
         attr(p4, "class", "flex-auto");
+        button1.disabled = /*$exportCsvPending*/
+        ctx[6];
         attr(button1, "class", "btn variant-filled");
         attr(
           ul1,
@@ -15794,6 +16177,8 @@
           ctx[1]
         );
         attr(p8, "class", "flex-auto");
+        button2.disabled = /*$clearPending*/
+        ctx[8];
         attr(button2, "class", "btn variant-filled");
         attr(
           ul3,
@@ -15839,31 +16224,40 @@
         append(li1, p3);
         append(li1, t12);
         append(li1, button0);
-        append(ul1, t14);
+        if (if_block0) if_block0.m(button0, null);
+        append(button0, t13);
+        append(button0, span0);
+        append(ul1, t15);
         append(ul1, li2);
         append(li2, p4);
-        append(li2, t16);
+        append(li2, t17);
         append(li2, button1);
-        append(div, t18);
+        if (if_block1) if_block1.m(button1, null);
+        append(button1, t18);
+        append(button1, span1);
+        append(div, t20);
         append(div, section2);
         append(section2, p5);
-        append(p5, t19);
-        append(section2, t20);
+        append(p5, t21);
+        append(section2, t22);
         append(section2, ul2);
         append(ul2, li3);
         append(li3, p6);
-        append(li3, t22);
+        append(li3, t24);
         mount_component(filebutton, li3, null);
-        append(div, t23);
+        append(div, t25);
         append(div, section3);
         append(section3, p7);
-        append(p7, t24);
-        append(section3, t25);
+        append(p7, t26);
+        append(section3, t27);
         append(section3, ul3);
         append(ul3, li4);
         append(li4, p8);
-        append(li4, t27);
+        append(li4, t29);
         append(li4, button2);
+        if (if_block2) if_block2.m(button2, null);
+        append(button2, t30);
+        append(button2, span2);
         current = true;
         if (!mounted) {
           dispose = [
@@ -15871,32 +16265,32 @@
               select,
               "change",
               /*select_change_handler*/
-              ctx[16]
+              ctx[24]
             ),
             listen(
               button0,
               "click",
-              /*exportAsJSON*/
-              ctx[5]
+              /*wrapExportAsJSON*/
+              ctx[14]
             ),
             listen(
               button1,
               "click",
-              /*exportAsCSV*/
-              ctx[6]
+              /*wrapExportAsCSV*/
+              ctx[16]
             ),
             listen(
               button2,
               "click",
-              /*clearDb*/
-              ctx[8]
+              /*wrapClearDb*/
+              ctx[12]
             )
           ];
           mounted = true;
         }
       },
-      p(ctx2, [dirty]) {
-        if (!current || dirty & /*sectionTitle*/
+      p(ctx2, dirty) {
+        if (!current || dirty[0] & /*sectionTitle*/
         2) {
           attr(
             p0,
@@ -15905,12 +16299,12 @@
             ctx2[1]
           );
         }
-        if (!current || dirty & /*inputClasses*/
+        if (!current || dirty[0] & /*inputClasses*/
         4 && select_class_value !== (select_class_value = "select " + /*inputClasses*/
         ctx2[2])) {
           attr(select, "class", select_class_value);
         }
-        if (dirty & /*$configStore*/
+        if (dirty[0] & /*$configStore*/
         16) {
           select_option(
             select,
@@ -15918,7 +16312,7 @@
             ctx2[4].historyBackupInterval
           );
         }
-        if (!current || dirty & /*ulClasses*/
+        if (!current || dirty[0] & /*ulClasses*/
         8) {
           attr(
             ul0,
@@ -15927,7 +16321,7 @@
             ctx2[3]
           );
         }
-        if (!current || dirty & /*sectionTitle*/
+        if (!current || dirty[0] & /*sectionTitle*/
         2) {
           attr(
             p2,
@@ -15936,7 +16330,61 @@
             ctx2[1]
           );
         }
-        if (!current || dirty & /*ulClasses*/
+        if (
+          /*$exportJsonPending*/
+          ctx2[5]
+        ) {
+          if (if_block0) {
+            if (dirty[0] & /*$exportJsonPending*/
+            32) {
+              transition_in(if_block0, 1);
+            }
+          } else {
+            if_block0 = create_if_block_3$2();
+            if_block0.c();
+            transition_in(if_block0, 1);
+            if_block0.m(button0, t13);
+          }
+        } else if (if_block0) {
+          group_outros();
+          transition_out(if_block0, 1, 1, () => {
+            if_block0 = null;
+          });
+          check_outros();
+        }
+        if (!current || dirty[0] & /*$exportJsonPending*/
+        32) {
+          button0.disabled = /*$exportJsonPending*/
+          ctx2[5];
+        }
+        if (
+          /*$exportCsvPending*/
+          ctx2[6]
+        ) {
+          if (if_block1) {
+            if (dirty[0] & /*$exportCsvPending*/
+            64) {
+              transition_in(if_block1, 1);
+            }
+          } else {
+            if_block1 = create_if_block_2$2();
+            if_block1.c();
+            transition_in(if_block1, 1);
+            if_block1.m(button1, t18);
+          }
+        } else if (if_block1) {
+          group_outros();
+          transition_out(if_block1, 1, 1, () => {
+            if_block1 = null;
+          });
+          check_outros();
+        }
+        if (!current || dirty[0] & /*$exportCsvPending*/
+        64) {
+          button1.disabled = /*$exportCsvPending*/
+          ctx2[6];
+        }
+        if (!current || dirty[0] & /*ulClasses*/
         8) {
           attr(
             ul1,
@@ -15945,7 +16393,7 @@
             ctx2[3]
           );
         }
-        if (!current || dirty & /*sectionTitle*/
+        if (!current || dirty[0] & /*sectionTitle*/
         2) {
           attr(
             p5,
@@ -15955,12 +16403,20 @@
           );
         }
         const filebutton_changes = {};
-        if (dirty & /*$$scope*/
-        524288) {
+        if (dirty[0] & /*$importPending*/
+        128 | dirty[1] & /*$$scope*/
+        4) {
           filebutton_changes.$$scope = { dirty, ctx: ctx2 };
         }
+        if (!updating_disabled && dirty[0] & /*$importPending*/
+        128) {
+          updating_disabled = true;
+          filebutton_changes.disabled = /*$importPending*/
+          ctx2[7];
+          add_flush_callback(() => updating_disabled = false);
+        }
         filebutton.$set(filebutton_changes);
-        if (!current || dirty & /*ulClasses*/
+        if (!current || dirty[0] & /*ulClasses*/
         8) {
           attr(
             ul2,
@@ -15969,7 +16425,7 @@
             ctx2[3]
           );
         }
-        if (!current || dirty & /*sectionTitle*/
+        if (!current || dirty[0] & /*sectionTitle*/
         2) {
           attr(
             p7,
@@ -15978,7 +16434,34 @@
             ctx2[1]
           );
         }
-        if (!current || dirty & /*ulClasses*/
+        if (
+          /*$clearPending*/
+          ctx2[8]
+        ) {
+          if (if_block2) {
+            if (dirty[0] & /*$clearPending*/
+            256) {
+              transition_in(if_block2, 1);
+            }
+          } else {
+            if_block2 = create_if_block$5();
+            if_block2.c();
+            transition_in(if_block2, 1);
+            if_block2.m(button2, t30);
+          }
+        } else if (if_block2) {
+          group_outros();
+          transition_out(if_block2, 1, 1, () => {
+            if_block2 = null;
+          });
+          check_outros();
+        }
+        if (!current || dirty[0] & /*$clearPending*/
+        256) {
+          button2.disabled = /*$clearPending*/
+          ctx2[8];
+        }
+        if (!current || dirty[0] & /*ulClasses*/
         8) {
           attr(
             ul3,
@@ -15987,7 +16470,7 @@
             ctx2[3]
           );
         }
-        if (!current || dirty & /*sectionSpace*/
+        if (!current || dirty[0] & /*sectionSpace*/
         1) {
           attr(
             div,
@@ -15999,18 +16482,27 @@
       },
       i(local) {
         if (current) return;
+        transition_in(if_block0);
+        transition_in(if_block1);
         transition_in(filebutton.$$.fragment, local);
+        transition_in(if_block2);
         current = true;
       },
       o(local) {
+        transition_out(if_block0);
+        transition_out(if_block1);
         transition_out(filebutton.$$.fragment, local);
+        transition_out(if_block2);
         current = false;
       },
       d(detaching) {
         if (detaching) {
           detach(div);
         }
+        if (if_block0) if_block0.d();
+        if (if_block1) if_block1.d();
         destroy_component(filebutton);
+        if (if_block2) if_block2.d();
         mounted = false;
         run_all(dispose);
       }
@@ -16020,6 +16512,10 @@
     let ulClasses;
     let inputClasses;
     let $configStore;
+    let $exportJsonPending;
+    let $exportCsvPending;
+    let $importPending;
+    let $clearPending;
     component_subscribe($$self, configStore, ($$value) => $$invalidate(4, $configStore = $$value));
     let { bg = "bg-white/30 dark:bg-black/15" } = $$props;
     let { border = "divide-y-[1px] *:border-surface-300-600-token" } = $$props;
@@ -16030,38 +16526,65 @@
     let { inputWidth = "w-32" } = $$props;
     let { sectionSpace = `space-y-4` } = $$props;
     let { sectionTitle = "font-bold" } = $$props;
-    const { importJSON: importJSON2, exportAsJSON: exportAsJSON2, exportAsCSV: exportAsCSV2 } = useHistoryBackup();
-    function importFromJSON(evt) {
+    function usePendingButton(fn) {
+      const store = writable(false);
+      const wrapFn = async (...args) => {
+        store.set(true);
+        const result = await fn(...args);
+        store.set(false);
+        return result;
+      };
+      return { store, wrapFn };
+    }
+    async function importFromJSON(evt) {
       var _a;
       const file = (_a = evt.currentTarget.files) == null ? void 0 : _a[0];
       if (!file) return;
-      importJSON2(file).then(() => location.reload(), (err) => alert(err == null ? void 0 : err.message));
+      try {
+        await importJSON2(file);
+      } catch (error) {
+        logger.error(error);
+        alert(error);
+      }
     }
     function clearDb() {
       const isConfirm = confirm(t("setting.history.text.confirm_clear_history"));
       if (!isConfirm) return;
-      historyDb.clear().then(() => location.reload());
+      return historyDb.clear();
     }
+    const { importJSON: importJSON2, exportAsJSON: exportAsJSON2, exportAsCSV: exportAsCSV2 } = useHistoryBackup();
+    const { store: importPending, wrapFn: wrapImportFromJSON } = usePendingButton(importFromJSON);
+    component_subscribe($$self, importPending, (value) => $$invalidate(7, $importPending = value));
+    const { store: clearPending, wrapFn: wrapClearDb } = usePendingButton(clearDb);
+    component_subscribe($$self, clearPending, (value) => $$invalidate(8, $clearPending = value));
+    const { store: exportJsonPending, wrapFn: wrapExportAsJSON } = usePendingButton(exportAsJSON2);
+    component_subscribe($$self, exportJsonPending, (value) => $$invalidate(5, $exportJsonPending = value));
+    const { store: exportCsvPending, wrapFn: wrapExportAsCSV } = usePendingButton(exportAsCSV2);
+    component_subscribe($$self, exportCsvPending, (value) => $$invalidate(6, $exportCsvPending = value));
     function select_change_handler() {
       $configStore.historyBackupInterval = select_value(this);
       configStore.set($configStore);
     }
+    function filebutton_disabled_binding(value) {
+      $importPending = value;
+      importPending.set($importPending);
+    }
     $$self.$$set = ($$new_props) => {
-      $$invalidate(18, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
-      if ("bg" in $$new_props) $$invalidate(9, bg = $$new_props.bg);
-      if ("border" in $$new_props) $$invalidate(10, border = $$new_props.border);
-      if ("padding" in $$new_props) $$invalidate(11, padding = $$new_props.padding);
-      if ("margin" in $$new_props) $$invalidate(12, margin = $$new_props.margin);
-      if ("rounded" in $$new_props) $$invalidate(13, rounded = $$new_props.rounded);
-      if ("inputRounded" in $$new_props) $$invalidate(14, inputRounded = $$new_props.inputRounded);
-      if ("inputWidth" in $$new_props) $$invalidate(15, inputWidth = $$new_props.inputWidth);
+      $$invalidate(32, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+      if ("bg" in $$new_props) $$invalidate(17, bg = $$new_props.bg);
+      if ("border" in $$new_props) $$invalidate(18, border = $$new_props.border);
+      if ("padding" in $$new_props) $$invalidate(19, padding = $$new_props.padding);
+      if ("margin" in $$new_props) $$invalidate(20, margin = $$new_props.margin);
+      if ("rounded" in $$new_props) $$invalidate(21, rounded = $$new_props.rounded);
+      if ("inputRounded" in $$new_props) $$invalidate(22, inputRounded = $$new_props.inputRounded);
+      if ("inputWidth" in $$new_props) $$invalidate(23, inputWidth = $$new_props.inputWidth);
       if ("sectionSpace" in $$new_props) $$invalidate(0, sectionSpace = $$new_props.sectionSpace);
       if ("sectionTitle" in $$new_props) $$invalidate(1, sectionTitle = $$new_props.sectionTitle);
     };
     $$self.$$.update = () => {
       $$invalidate(3, ulClasses = `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${$$props.class ?? ""}`);
-      if ($$self.$$.dirty & /*inputWidth, inputRounded*/
-      49152) {
+      if ($$self.$$.dirty[0] & /*inputWidth, inputRounded*/
+      12582912) {
         $$invalidate(2, inputClasses = `${inputWidth} ${inputRounded} shrink-0`);
       }
     };
@@ -16072,10 +16595,18 @@
       inputClasses,
       ulClasses,
       $configStore,
-      exportAsJSON2,
-      exportAsCSV2,
-      importFromJSON,
-      clearDb,
+      $exportJsonPending,
+      $exportCsvPending,
+      $importPending,
+      $clearPending,
+      importPending,
+      wrapImportFromJSON,
+      clearPending,
+      wrapClearDb,
+      exportJsonPending,
+      wrapExportAsJSON,
+      exportCsvPending,
+      wrapExportAsCSV,
       bg,
       border,
       padding,
@@ -16083,23 +16614,33 @@
       rounded,
       inputRounded,
       inputWidth,
-      select_change_handler
+      select_change_handler,
+      filebutton_disabled_binding
     ];
   }
   class DownloadHistory extends SvelteComponent {
     constructor(options) {
       super();
-      init(this, options, instance$6, create_fragment$6, safe_not_equal, {
-        bg: 9,
-        border: 10,
-        padding: 11,
-        margin: 12,
-        rounded: 13,
-        inputRounded: 14,
-        inputWidth: 15,
-        sectionSpace: 0,
-        sectionTitle: 1
-      });
+      init(
+        this,
+        options,
+        instance$6,
+        create_fragment$6,
+        safe_not_equal,
+        {
+          bg: 17,
+          border: 18,
+          padding: 19,
+          margin: 20,
+          rounded: 21,
+          inputRounded: 22,
+          inputWidth: 23,
+          sectionSpace: 0,
+          sectionTitle: 1
+        },
+        null,
+        [-1, -1]
+      );
     }
   }
   function create_default_slot_3$2(ctx) {
@@ -16313,7 +16854,7 @@
         }
         const rangeslider0_changes = {};
         if (dirty & /*$$scope, bookmarkBtnLeft*/
-        134217760) {
+        33554464) {
           rangeslider0_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_value && dirty & /*bookmarkBtnLeft*/
@@ -16326,7 +16867,7 @@
         rangeslider0.$set(rangeslider0_changes);
         const rangeslider1_changes = {};
         if (dirty & /*$$scope, bookmarkBtnTop*/
-        134217792) {
+        33554496) {
           rangeslider1_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_value_1 && dirty & /*bookmarkBtnTop*/
@@ -16613,7 +17154,7 @@
         }
         const rangeslider0_changes = {};
         if (dirty & /*$$scope, btnLeft*/
-        134217736) {
+        33554440) {
           rangeslider0_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_value && dirty & /*btnLeft*/
@@ -16626,7 +17167,7 @@
         rangeslider0.$set(rangeslider0_changes);
         const rangeslider1_changes = {};
         if (dirty & /*$$scope, btnTop*/
-        134217744) {
+        33554448) {
           rangeslider1_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_value_1 && dirty & /*btnTop*/
@@ -16689,7 +17230,7 @@
   function instance$5($$self, $$props, $$invalidate) {
     let ulClasses;
     let $store;
-    component_subscribe($$self, configStore, ($$value) => $$invalidate(24, $store = $$value));
+    component_subscribe($$self, configStore, ($$value) => $$invalidate(23, $store = $$value));
     let { bg = "bg-white/30 dark:bg-black/15" } = $$props;
     let { border = "divide-y-[1px] *:border-surface-300-600-token" } = $$props;
     let { padding = "px-4 *:py-4" } = $$props;
@@ -16705,21 +17246,18 @@
       set_store_value(configStore, $store[key] = val, $store);
     }
     let buttonContainer;
-    const sampleBtn = new ThumbnailButton({ id: "0", onClick: () => void 0 });
-    const sampleBookmarkBtn = new ThumbnailButton({
-      id: "0",
-      type: ThumbnailBtnType.PixivMyBookmark,
-      onClick: () => void 0
-    });
-    sampleBtn.setAttribute("disabled", "");
-    sampleBookmarkBtn.setAttribute("disabled", "");
-    onMount(async () => {
+    onMount(() => {
+      const sampleBtn = new ThumbnailButton({ id: "0", onClick: () => void 0 });
+      sampleBtn.setAttribute("disabled", "");
       buttonContainer.appendChild(sampleBtn);
-      if (env.isPixiv()) {
-        buttonContainer.appendChild(sampleBookmarkBtn);
-        await tick();
-        sampleBookmarkBtn.dataset.status = "complete";
-      }
+      if (!env.isPixiv()) return;
+      const sampleBookmarkBtn = new ThumbnailButton({
+        id: "0",
+        type: ThumbnailBtnType.PixivMyBookmark,
+        onClick: () => void 0
+      });
+      sampleBookmarkBtn.setAttribute("disabled", "");
+      buttonContainer.appendChild(sampleBookmarkBtn);
     });
     function div0_binding($$value) {
       binding_callbacks[$$value ? "unshift" : "push"](() => {
@@ -16748,7 +17286,7 @@
     }
     const change_handler_3 = () => updateBtnPosConfig("pdl-btn-self-bookmark-top", bookmarkBtnTop);
     $$self.$$set = ($$new_props) => {
-      $$invalidate(26, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+      $$invalidate(24, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
       if ("bg" in $$new_props) $$invalidate(0, bg = $$new_props.bg);
       if ("border" in $$new_props) $$invalidate(10, border = $$new_props.border);
       if ("padding" in $$new_props) $$invalidate(11, padding = $$new_props.padding);
@@ -18381,14 +18919,14 @@
   const downloadMultipleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9,1V7H5L12,14L19,7H15V1H9M5,16V18H19V16H5M5,20V22H19V20H5Z" /></svg>`;
   function get_each_context(ctx, list, i) {
     const child_ctx = ctx.slice();
-    child_ctx[81] = list[i].name;
-    child_ctx[82] = list[i].id;
+    child_ctx[79] = list[i].name;
+    child_ctx[80] = list[i].id;
     return child_ctx;
   }
   function get_each_context_1(ctx, list, i) {
     const child_ctx = ctx.slice();
-    child_ctx[82] = list[i].id;
-    child_ctx[81] = list[i].name;
+    child_ctx[80] = list[i].id;
+    child_ctx[79] = list[i].name;
     return child_ctx;
   }
   function create_if_block_5(ctx) {
@@ -18399,13 +18937,13 @@
     let if_block1;
     let div1_transition;
     let current;
-    let if_block0 = !/*$globalDownloading*/
-    ctx[17] && create_if_block_10(ctx);
+    let if_block0 = !/*$downloading*/
+    ctx[5] && create_if_block_9(ctx);
     const if_block_creators = [create_if_block_6, create_else_block];
     const if_blocks = [];
     function select_block_type_1(ctx2, dirty) {
-      if (!/*$globalDownloading*/
-      ctx2[17]) return 0;
+      if (!/*$downloading*/
+      ctx2[5]) return 0;
       return 1;
     }
     current_block_type_index = select_block_type_1(ctx);
@@ -18430,16 +18968,16 @@
         current = true;
       },
       p(ctx2, dirty) {
-        if (!/*$globalDownloading*/
-        ctx2[17]) {
+        if (!/*$downloading*/
+        ctx2[5]) {
           if (if_block0) {
             if_block0.p(ctx2, dirty);
-            if (dirty[0] & /*$globalDownloading*/
-            131072) {
+            if (dirty[0] & /*$downloading*/
+            32) {
               transition_in(if_block0, 1);
             }
           } else {
-            if_block0 = create_if_block_10(ctx2);
+            if_block0 = create_if_block_9(ctx2);
             if_block0.c();
             transition_in(if_block0, 1);
             if_block0.m(div1, t_1);
@@ -18504,7 +19042,7 @@
       }
     };
   }
-  function create_if_block_10(ctx) {
+  function create_if_block_9(ctx) {
     let div;
     let tabgroup;
     let t_1;
@@ -18541,8 +19079,8 @@
       p(ctx2, dirty) {
         const tabgroup_changes = {};
         if (dirty[0] & /*$downloadAllPages, $pageEnd, $pageStart, downloaderConfig, $selectedFilters, tabSet, $whitelistTag, $blacklistTag, $retryFailed*/
-        16584705 | dirty[2] & /*$$scope*/
-        33554432) {
+        8327169 | dirty[2] & /*$$scope*/
+        8388608) {
           tabgroup_changes.$$scope = { dirty, ctx: ctx2 };
         }
         tabgroup.$set(tabgroup_changes);
@@ -18641,7 +19179,7 @@
     let updating_group_2;
     let current;
     function tab0_group_binding(value) {
-      ctx[53](value);
+      ctx[51](value);
     }
     let tab0_props = {
       name: "category",
@@ -18659,7 +19197,7 @@
     tab0 = new Tab({ props: tab0_props });
     binding_callbacks.push(() => bind(tab0, "group", tab0_group_binding));
     function tab1_group_binding(value) {
-      ctx[54](value);
+      ctx[52](value);
     }
     let tab1_props = {
       name: "tag_filter",
@@ -18677,7 +19215,7 @@
     tab1 = new Tab({ props: tab1_props });
     binding_callbacks.push(() => bind(tab1, "group", tab1_group_binding));
     function tab2_group_binding(value) {
-      ctx[55](value);
+      ctx[53](value);
     }
     let tab2_props = {
       name: "tag_filter",
@@ -18713,7 +19251,7 @@
       p(ctx2, dirty) {
         const tab0_changes = {};
         if (dirty[2] & /*$$scope*/
-        33554432) {
+        8388608) {
           tab0_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group && dirty[0] & /*tabSet*/
@@ -18726,7 +19264,7 @@
         tab0.$set(tab0_changes);
         const tab1_changes = {};
         if (dirty[2] & /*$$scope*/
-        33554432) {
+        8388608) {
           tab1_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group_1 && dirty[0] & /*tabSet*/
@@ -18739,7 +19277,7 @@
         tab1.$set(tab1_changes);
         const tab2_changes = {};
         if (dirty[2] & /*$$scope*/
-        33554432) {
+        8388608) {
           tab2_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group_2 && dirty[0] & /*tabSet*/
@@ -18775,7 +19313,7 @@
       }
     };
   }
-  function create_if_block_13(ctx) {
+  function create_if_block_12(ctx) {
     let div;
     let p;
     let t1;
@@ -18783,15 +19321,15 @@
     let updating_checked;
     let current;
     function slidetoggle_checked_binding(value) {
-      ctx[52](value);
+      ctx[50](value);
     }
     let slidetoggle_props = { size: "sm", name: "download-retry" };
     if (
       /*$retryFailed*/
-      ctx[23] !== void 0
+      ctx[22] !== void 0
     ) {
       slidetoggle_props.checked = /*$retryFailed*/
-      ctx[23];
+      ctx[22];
     }
     slidetoggle = new SlideToggle({ props: slidetoggle_props });
     binding_callbacks.push(() => bind(slidetoggle, "checked", slidetoggle_checked_binding));
@@ -18814,10 +19352,10 @@
       p(ctx2, dirty) {
         const slidetoggle_changes = {};
         if (!updating_checked && dirty[0] & /*$retryFailed*/
-        8388608) {
+        4194304) {
           updating_checked = true;
           slidetoggle_changes.checked = /*$retryFailed*/
-          ctx2[23];
+          ctx2[22];
           add_flush_callback(() => updating_checked = false);
         }
         slidetoggle.$set(slidetoggle_changes);
@@ -18839,7 +19377,7 @@
       }
     };
   }
-  function create_if_block_12(ctx) {
+  function create_if_block_11(ctx) {
     let inputchip0;
     let updating_value;
     let t_1;
@@ -18847,7 +19385,7 @@
     let updating_value_1;
     let current;
     function inputchip0_value_binding(value) {
-      ctx[50](value);
+      ctx[48](value);
     }
     let inputchip0_props = {
       allowUpperCase: true,
@@ -18857,15 +19395,15 @@
     };
     if (
       /*$blacklistTag*/
-      ctx[21] !== void 0
+      ctx[20] !== void 0
     ) {
       inputchip0_props.value = /*$blacklistTag*/
-      ctx[21];
+      ctx[20];
     }
     inputchip0 = new InputChip({ props: inputchip0_props });
     binding_callbacks.push(() => bind(inputchip0, "value", inputchip0_value_binding));
     function inputchip1_value_binding(value) {
-      ctx[51](value);
+      ctx[49](value);
     }
     let inputchip1_props = {
       allowUpperCase: true,
@@ -18876,10 +19414,10 @@
     };
     if (
       /*$whitelistTag*/
-      ctx[22] !== void 0
+      ctx[21] !== void 0
     ) {
       inputchip1_props.value = /*$whitelistTag*/
-      ctx[22];
+      ctx[21];
     }
     inputchip1 = new InputChip({ props: inputchip1_props });
     binding_callbacks.push(() => bind(inputchip1, "value", inputchip1_value_binding));
@@ -18898,19 +19436,19 @@
       p(ctx2, dirty) {
         const inputchip0_changes = {};
         if (!updating_value && dirty[0] & /*$blacklistTag*/
-        2097152) {
+        1048576) {
           updating_value = true;
           inputchip0_changes.value = /*$blacklistTag*/
-          ctx2[21];
+          ctx2[20];
           add_flush_callback(() => updating_value = false);
         }
         inputchip0.$set(inputchip0_changes);
         const inputchip1_changes = {};
         if (!updating_value_1 && dirty[0] & /*$whitelistTag*/
-        4194304) {
+        2097152) {
           updating_value_1 = true;
           inputchip1_changes.value = /*$whitelistTag*/
-          ctx2[22];
+          ctx2[21];
           add_flush_callback(() => updating_value_1 = false);
         }
         inputchip1.$set(inputchip1_changes);
@@ -18935,7 +19473,7 @@
       }
     };
   }
-  function create_if_block_11(ctx) {
+  function create_if_block_10(ctx) {
     let div1;
     let div0;
     let t0;
@@ -19011,7 +19549,7 @@
         attr(input0, "min", 1);
         attr(input0, "step", "1");
         input0.disabled = /*$downloadAllPages*/
-        ctx[18];
+        ctx[17];
         attr(label0, "class", "input-group input-group-divider flex [&>input]:!min-w-0 [&>input]:!border-transparent border-surface-400/20 dark:border-surface-500/20 bg-surface-400/20 dark:bg-surface-500/20");
         attr(i1, "class", "w-6 fill-current");
         attr(div4, "class", "input-group-shim !px-1 flex-none");
@@ -19020,7 +19558,7 @@
         attr(input1, "min", "1");
         attr(input1, "step", "1");
         input1.disabled = /*$downloadAllPages*/
-        ctx[18];
+        ctx[17];
         attr(label1, "class", "input-group input-group-divider flex [&>input]:!min-w-0 [&>input]:!border-transparent border-surface-400/20 dark:border-surface-500/20 bg-surface-400/20 dark:bg-surface-500/20");
         attr(div5, "class", "flex justify-between items-center gap-4 w-full");
         attr(div6, "class", "flex justify-between items-center my-4 gap-4");
@@ -19048,7 +19586,7 @@
         set_input_value(
           input0,
           /*$pageStart*/
-          ctx[19]
+          ctx[18]
         );
         append(div5, t3);
         append(div5, label1);
@@ -19060,7 +19598,7 @@
         set_input_value(
           input1,
           /*$pageEnd*/
-          ctx[20]
+          ctx[19]
         );
         current = true;
         if (!mounted) {
@@ -19069,25 +19607,25 @@
               null,
               input0,
               /*pageStart*/
-              ctx[30]
+              ctx[29]
             )),
             listen(
               input0,
               "input",
               /*input0_input_handler*/
-              ctx[48]
+              ctx[46]
             ),
             action_destroyer(nonNegativeInt.call(
               null,
               input1,
               /*pageEnd*/
-              ctx[31]
+              ctx[30]
             )),
             listen(
               input1,
               "input",
               /*input1_input_handler*/
-              ctx[49]
+              ctx[47]
             )
           ];
           mounted = true;
@@ -19118,37 +19656,37 @@
         }
         const radiogroup_changes = {};
         if (dirty[0] & /*$downloadAllPages*/
-        262144 | dirty[2] & /*$$scope*/
-        33554432) {
+        131072 | dirty[2] & /*$$scope*/
+        8388608) {
           radiogroup_changes.$$scope = { dirty, ctx: ctx2 };
         }
         radiogroup.$set(radiogroup_changes);
         if (!current || dirty[0] & /*$downloadAllPages*/
-        262144) {
+        131072) {
           input0.disabled = /*$downloadAllPages*/
-          ctx2[18];
+          ctx2[17];
         }
         if (dirty[0] & /*$pageStart*/
-        524288 && to_number(input0.value) !== /*$pageStart*/
-        ctx2[19]) {
+        262144 && to_number(input0.value) !== /*$pageStart*/
+        ctx2[18]) {
           set_input_value(
             input0,
             /*$pageStart*/
-            ctx2[19]
+            ctx2[18]
           );
         }
         if (!current || dirty[0] & /*$downloadAllPages*/
-        262144) {
+        131072) {
           input1.disabled = /*$downloadAllPages*/
-          ctx2[18];
+          ctx2[17];
         }
         if (dirty[0] & /*$pageEnd*/
-        1048576 && to_number(input1.value) !== /*$pageEnd*/
-        ctx2[20]) {
+        524288 && to_number(input1.value) !== /*$pageEnd*/
+        ctx2[19]) {
           set_input_value(
             input1,
             /*$pageEnd*/
-            ctx2[20]
+            ctx2[19]
           );
         }
       },
@@ -19184,7 +19722,7 @@
     let div1;
     let t1_value = (
       /*name*/
-      ctx[81] + ""
+      ctx[79] + ""
     );
     let t1;
     let t2;
@@ -19193,7 +19731,7 @@
     let dispose;
     binding_group = init_binding_group(
       /*$$binding_groups*/
-      ctx[45][0]
+      ctx[43][0]
     );
     return {
       c() {
@@ -19206,7 +19744,7 @@
         t2 = space();
         attr(input, "type", "checkbox");
         input.__value = input_value_value = /*id*/
-        ctx[82];
+        ctx[80];
         set_input_value(input, input.__value);
         attr(div0, "class", "w-0 h-0 overflow-hidden hidden");
         attr(div1, "class", "!m-0");
@@ -19228,7 +19766,7 @@
             input,
             "change",
             /*input_change_handler*/
-            ctx[44]
+            ctx[42]
           );
           mounted = true;
         }
@@ -19236,7 +19774,7 @@
       p(ctx2, dirty) {
         if (dirty[0] & /*downloaderConfig*/
         1 && input_value_value !== (input_value_value = /*id*/
-        ctx2[82])) {
+        ctx2[80])) {
           input.__value = input_value_value;
           set_input_value(input, input.__value);
           value_has_changed = true;
@@ -19248,7 +19786,7 @@
         }
         if (dirty[0] & /*downloaderConfig*/
         1 && t1_value !== (t1_value = /*name*/
-        ctx2[81] + "")) set_data(t1, t1_value);
+        ctx2[79] + "")) set_data(t1, t1_value);
       },
       d(detaching) {
         if (detaching) {
@@ -19304,7 +19842,7 @@
     let updating_group_1;
     let current;
     function radioitem0_group_binding(value) {
-      ctx[46](value);
+      ctx[44](value);
     }
     let radioitem0_props = {
       class: "text-sm !py-[7px]",
@@ -19315,15 +19853,15 @@
     };
     if (
       /*$downloadAllPages*/
-      ctx[18] !== void 0
+      ctx[17] !== void 0
     ) {
       radioitem0_props.group = /*$downloadAllPages*/
-      ctx[18];
+      ctx[17];
     }
     radioitem0 = new RadioItem({ props: radioitem0_props });
     binding_callbacks.push(() => bind(radioitem0, "group", radioitem0_group_binding));
     function radioitem1_group_binding(value) {
-      ctx[47](value);
+      ctx[45](value);
     }
     let radioitem1_props = {
       class: "text-sm !py-[7px]",
@@ -19334,10 +19872,10 @@
     };
     if (
       /*$downloadAllPages*/
-      ctx[18] !== void 0
+      ctx[17] !== void 0
     ) {
       radioitem1_props.group = /*$downloadAllPages*/
-      ctx[18];
+      ctx[17];
     }
     radioitem1 = new RadioItem({ props: radioitem1_props });
     binding_callbacks.push(() => bind(radioitem1, "group", radioitem1_group_binding));
@@ -19356,27 +19894,27 @@
       p(ctx2, dirty) {
         const radioitem0_changes = {};
         if (dirty[2] & /*$$scope*/
-        33554432) {
+        8388608) {
           radioitem0_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group && dirty[0] & /*$downloadAllPages*/
-        262144) {
+        131072) {
           updating_group = true;
           radioitem0_changes.group = /*$downloadAllPages*/
-          ctx2[18];
+          ctx2[17];
           add_flush_callback(() => updating_group = false);
         }
         radioitem0.$set(radioitem0_changes);
         const radioitem1_changes = {};
         if (dirty[2] & /*$$scope*/
-        33554432) {
+        8388608) {
           radioitem1_changes.$$scope = { dirty, ctx: ctx2 };
         }
         if (!updating_group_1 && dirty[0] & /*$downloadAllPages*/
-        262144) {
+        131072) {
           updating_group_1 = true;
           radioitem1_changes.group = /*$downloadAllPages*/
-          ctx2[18];
+          ctx2[17];
           add_flush_callback(() => updating_group_1 = false);
         }
         radioitem1.$set(radioitem1_changes);
@@ -19406,7 +19944,7 @@
     let if_block;
     let if_block_anchor;
     let current;
-    const if_block_creators = [create_if_block_11, create_if_block_12, create_if_block_13];
+    const if_block_creators = [create_if_block_10, create_if_block_11, create_if_block_12];
     const if_blocks = [];
     function select_block_type(ctx2, dirty) {
       if (
@@ -19497,20 +20035,23 @@
     let p0;
     let t1_value = (
       /*$log*/
-      (((_a = ctx[24]) == null ? void 0 : _a.message) ?? "") + ""
+      (((_a = ctx[23]) == null ? void 0 : _a.message) ?? "") + ""
     );
     let t1;
     let t2;
     let p1;
     let t3_value = (
-      /*$downloading*/
-      ctx[5] && /*$artworkCount*/
+      /*$artworkCount*/
       ctx[4] ? `${/*processed*/
     ctx[2]} / ${/*$artworkCount*/
     ctx[4]}` : ""
     );
     let t3;
     let t4;
+    let button;
+    let i;
+    let t5;
+    let span;
     let div2_transition;
     let current;
     let mounted;
@@ -19528,10 +20069,6 @@
         )
       }
     });
-    let if_block = (
-      /*$downloading*/
-      ctx[5] && create_if_block_9(ctx)
-    );
     return {
       c() {
         var _a2;
@@ -19546,17 +20083,23 @@
         p1 = element("p");
         t3 = text(t3_value);
         t4 = space();
-        if (if_block) if_block.c();
+        button = element("button");
+        i = element("i");
+        t5 = space();
+        span = element("span");
+        span.textContent = `${t("downloader.download_type.stop")}`;
         attr(p0, "class", "truncate");
         toggle_class(
           p0,
           "text-error-500",
           /*$log*/
-          ((_a2 = ctx[24]) == null ? void 0 : _a2.type) === "Error"
+          ((_a2 = ctx[23]) == null ? void 0 : _a2.type) === "Error"
         );
         attr(p1, "class", "flex-none");
         attr(div0, "class", "flex items-center justify-between gap-4 basis-0 text-surface-700-200-token");
-        attr(div1, "class", "flex flex-grow flex-col justify-between h-full overflow-hidden gap-[6px]");
+        attr(div1, "class", "flex flex-grow flex-col justify-between h-full overflow-hidden");
+        attr(i, "class", "w-5");
+        attr(button, "class", "btn variant-filled-primary");
         attr(div2, "class", "flex flex-grow w-full gap-6 items-center");
       },
       m(target, anchor) {
@@ -19571,22 +20114,32 @@
         append(div0, p1);
         append(p1, t3);
         append(div2, t4);
-        if (if_block) if_block.m(div2, null);
-        ctx[62](div2);
+        append(div2, button);
+        append(button, i);
+        i.innerHTML = stopSvg;
+        append(button, t5);
+        append(button, span);
+        ctx[60](div2);
         current = true;
         if (!mounted) {
           dispose = [
             listen(
+              button,
+              "click",
+              /*click_handler_2*/
+              ctx[59]
+            ),
+            listen(
               div2,
               "introstart",
               /*introstart_handler_1*/
-              ctx[63]
+              ctx[61]
             ),
             listen(
               div2,
               "outrostart",
               /*outrostart_handler_1*/
-              ctx[64]
+              ctx[62]
             )
           ];
           mounted = true;
@@ -19600,38 +20153,22 @@
         ctx2[15];
         progressbar.$set(progressbar_changes);
         if ((!current || dirty[0] & /*$log*/
-        16777216) && t1_value !== (t1_value = /*$log*/
-        (((_a2 = ctx2[24]) == null ? void 0 : _a2.message) ?? "") + "")) set_data(t1, t1_value);
+        8388608) && t1_value !== (t1_value = /*$log*/
+        (((_a2 = ctx2[23]) == null ? void 0 : _a2.message) ?? "") + "")) set_data(t1, t1_value);
         if (!current || dirty[0] & /*$log*/
-        16777216) {
+        8388608) {
           toggle_class(
             p0,
             "text-error-500",
             /*$log*/
-            ((_b = ctx2[24]) == null ? void 0 : _b.type) === "Error"
+            ((_b = ctx2[23]) == null ? void 0 : _b.type) === "Error"
           );
         }
-        if ((!current || dirty[0] & /*$downloading, $artworkCount, processed*/
-        52) && t3_value !== (t3_value = /*$downloading*/
-        ctx2[5] && /*$artworkCount*/
+        if ((!current || dirty[0] & /*$artworkCount, processed*/
+        20) && t3_value !== (t3_value = /*$artworkCount*/
         ctx2[4] ? `${/*processed*/
       ctx2[2]} / ${/*$artworkCount*/
       ctx2[4]}` : "")) set_data(t3, t3_value);
-        if (
-          /*$downloading*/
-          ctx2[5]
-        ) {
-          if (if_block) {
-            if_block.p(ctx2, dirty);
-          } else {
-            if_block = create_if_block_9(ctx2);
-            if_block.c();
-            if_block.m(div2, null);
-          }
-        } else if (if_block) {
-          if_block.d(1);
-          if_block = null;
-        }
       },
       i(local) {
         if (current) return;
@@ -19658,8 +20195,7 @@
           detach(div2);
         }
         destroy_component(progressbar);
-        if (if_block) if_block.d();
-        ctx[62](null);
+        ctx[60](null);
         if (detaching && div2_transition) div2_transition.end();
         mounted = false;
         run_all(dispose);
@@ -19676,7 +20212,7 @@
     let p1;
     let t2_value = (
       /*$log*/
-      (((_a = ctx[24]) == null ? void 0 : _a.message) ?? "") + ""
+      (((_a = ctx[23]) == null ? void 0 : _a.message) ?? "") + ""
     );
     let t2;
     let t3;
@@ -19727,7 +20263,7 @@
           p1,
           "text-error-500",
           /*$log*/
-          ((_a2 = ctx[24]) == null ? void 0 : _a2.type) === "Error"
+          ((_a2 = ctx[23]) == null ? void 0 : _a2.type) === "Error"
         );
         attr(div0, "class", "flex flex-grow flex-col justify-between overflow-hidden text-surface-700-200-token");
         attr(div1, "class", "flex justify-end flex-grow w-full gap-4");
@@ -19742,7 +20278,7 @@
         append(p1, t2);
         append(div1, t3);
         if (if_block) if_block.m(div1, null);
-        ctx[58](div1);
+        ctx[56](div1);
         current = true;
         if (!mounted) {
           dispose = [
@@ -19750,13 +20286,13 @@
               div1,
               "introstart",
               /*introstart_handler*/
-              ctx[59]
+              ctx[57]
             ),
             listen(
               div1,
               "outrostart",
               /*outrostart_handler*/
-              ctx[60]
+              ctx[58]
             )
           ];
           mounted = true;
@@ -19771,15 +20307,15 @@
           ctx2[14]
         );
         if ((!current || dirty[0] & /*$log*/
-        16777216) && t2_value !== (t2_value = /*$log*/
-        (((_a2 = ctx2[24]) == null ? void 0 : _a2.message) ?? "") + "")) set_data(t2, t2_value);
+        8388608) && t2_value !== (t2_value = /*$log*/
+        (((_a2 = ctx2[23]) == null ? void 0 : _a2.message) ?? "") + "")) set_data(t2, t2_value);
         if (!current || dirty[0] & /*$log*/
-        16777216) {
+        8388608) {
           toggle_class(
             p1,
             "text-error-500",
             /*$log*/
-            ((_b = ctx2[24]) == null ? void 0 : _b.type) === "Error"
+            ((_b = ctx2[23]) == null ? void 0 : _b.type) === "Error"
           );
         }
         if (current_block_type === (current_block_type = select_block_type_2(ctx2, dirty)) && if_block) {
@@ -19818,53 +20354,10 @@
         if (if_block) {
           if_block.d();
         }
-        ctx[58](null);
+        ctx[56](null);
         if (detaching && div1_transition) div1_transition.end();
         mounted = false;
         run_all(dispose);
-      }
-    };
-  }
-  function create_if_block_9(ctx) {
-    let button;
-    let i;
-    let t0;
-    let span;
-    let mounted;
-    let dispose;
-    return {
-      c() {
-        button = element("button");
-        i = element("i");
-        t0 = space();
-        span = element("span");
-        span.textContent = `${t("downloader.download_type.stop")}`;
-        attr(i, "class", "w-5");
-        attr(button, "class", "btn variant-filled-primary");
-      },
-      m(target, anchor) {
-        insert(target, button, anchor);
-        append(button, i);
-        i.innerHTML = stopSvg;
-        append(button, t0);
-        append(button, span);
-        if (!mounted) {
-          dispose = listen(
-            button,
-            "click",
-            /*click_handler_2*/
-            ctx[61]
-          );
-          mounted = true;
-        }
-      },
-      p: noop,
-      d(detaching) {
-        if (detaching) {
-          detach(button);
-        }
-        mounted = false;
-        dispose();
       }
     };
   }
@@ -19902,7 +20395,7 @@
             button,
             "click",
             /*click_handler_1*/
-            ctx[57]
+            ctx[55]
           );
           mounted = true;
         }
@@ -19949,7 +20442,7 @@
       },
       p(ctx2, dirty) {
         if (dirty[0] & /*startDownload, pageConfig*/
-        33554434) {
+        16777218) {
           each_value = ensure_array_like(
             /*pageConfig*/
             ctx2[1].genPageId
@@ -19986,7 +20479,7 @@
     let span;
     let t1_value = (
       /*name*/
-      ctx[81] + ""
+      ctx[79] + ""
     );
     let t1;
     let t2;
@@ -19995,9 +20488,9 @@
     function click_handler() {
       return (
         /*click_handler*/
-        ctx[56](
+        ctx[54](
           /*id*/
-          ctx[82]
+          ctx[80]
         )
       );
     }
@@ -20029,7 +20522,7 @@
         ctx = new_ctx;
         if (dirty[0] & /*pageConfig*/
         2 && t1_value !== (t1_value = /*name*/
-        ctx[81] + "")) set_data(t1, t1_value);
+        ctx[79] + "")) set_data(t1, t1_value);
       },
       d(detaching) {
         if (detaching) {
@@ -20061,13 +20554,13 @@
       pending: create_pending_block,
       then: create_then_block,
       catch: create_catch_block,
-      value: 80
+      value: 78
     };
     handle_promise(promise2 = /*avatarUpdated*/
     ctx[11], info);
     let if_block0 = (
-      /*$globalDownloading*/
-      ctx[17] && !/*showDownloadMenu*/
+      /*$downloading*/
+      ctx[5] && !/*showDownloadMenu*/
       ctx[13] && create_if_block_3(ctx)
     );
     const if_block_creators = [create_if_block_1$1, create_if_block_2];
@@ -20124,7 +20617,7 @@
             div2,
             "click",
             /*click_handler_3*/
-            ctx[72]
+            ctx[70]
           );
           mounted = true;
         }
@@ -20149,14 +20642,14 @@
           ctx[13]);
         }
         if (
-          /*$globalDownloading*/
-          ctx[17] && !/*showDownloadMenu*/
+          /*$downloading*/
+          ctx[5] && !/*showDownloadMenu*/
           ctx[13]
         ) {
           if (if_block0) {
             if_block0.p(ctx, dirty);
-            if (dirty[0] & /*$globalDownloading, showDownloadMenu*/
-            139264) {
+            if (dirty[0] & /*$downloading, showDownloadMenu*/
+            8224) {
               transition_in(if_block0, 1);
             }
           } else {
@@ -20247,7 +20740,7 @@
     let if_block_anchor;
     let if_block = (
       /*val*/
-      ctx[80] && create_if_block_4(ctx)
+      ctx[78] && create_if_block_4(ctx)
     );
     return {
       c() {
@@ -20261,7 +20754,7 @@
       p(ctx2, dirty) {
         if (
           /*val*/
-          ctx2[80]
+          ctx2[78]
         ) {
           if (if_block) {
             if_block.p(ctx2, dirty);
@@ -20290,18 +20783,18 @@
       c() {
         img = element("img");
         if (!src_url_equal(img.src, img_src_value = /*val*/
-        ctx[80])) attr(img, "src", img_src_value);
+        ctx[78])) attr(img, "src", img_src_value);
         attr(img, "alt", "batch download");
         attr(img, "class", "object-cover object-center size-full");
       },
       m(target, anchor) {
         insert(target, img, anchor);
-        ctx[65](img);
+        ctx[63](img);
       },
       p(ctx2, dirty) {
         if (dirty[0] & /*avatarUpdated*/
         2048 && !src_url_equal(img.src, img_src_value = /*val*/
-        ctx2[80])) {
+        ctx2[78])) {
           attr(img, "src", img_src_value);
         }
       },
@@ -20309,7 +20802,7 @@
         if (detaching) {
           detach(img);
         }
-        ctx[65](null);
+        ctx[63](null);
       }
     };
   }
@@ -20396,7 +20889,7 @@
       m(target, anchor) {
         insert(target, i, anchor);
         i.innerHTML = downloadMultipleSvg;
-        ctx[69](i);
+        ctx[67](i);
         current = true;
         if (!mounted) {
           dispose = [
@@ -20404,13 +20897,13 @@
               i,
               "introstart",
               /*introstart_handler_3*/
-              ctx[70]
+              ctx[68]
             ),
             listen(
               i,
               "outrostart",
               /*outrostart_handler_3*/
-              ctx[71]
+              ctx[69]
             )
           ];
           mounted = true;
@@ -20439,7 +20932,7 @@
         if (detaching) {
           detach(i);
         }
-        ctx[69](null);
+        ctx[67](null);
         if (detaching && i_transition) i_transition.end();
         mounted = false;
         run_all(dispose);
@@ -20489,7 +20982,7 @@
         append(div, t2);
         append(div, span1);
         append(span1, t3);
-        ctx[66](div);
+        ctx[64](div);
         current = true;
         if (!mounted) {
           dispose = [
@@ -20497,13 +20990,13 @@
               div,
               "introstart",
               /*introstart_handler_2*/
-              ctx[67]
+              ctx[65]
             ),
             listen(
               div,
               "outrostart",
               /*outrostart_handler_2*/
-              ctx[68]
+              ctx[66]
             )
           ];
           mounted = true;
@@ -20545,7 +21038,7 @@
         if (detaching) {
           detach(div);
         }
-        ctx[66](null);
+        ctx[64](null);
         if (detaching && div_transition) div_transition.end();
         mounted = false;
         run_all(dispose);
@@ -20664,7 +21157,6 @@
     let $artworkCount;
     let $downloading;
     let $selectedFilters;
-    let $globalDownloading;
     let $downloadAllPages;
     let $pageStart;
     let $pageEnd;
@@ -20770,12 +21262,12 @@
     let pageConfig;
     const { selectedFilters, blacklistTag, whitelistTag, downloadAllPages, pageStart, pageEnd, retryFailed } = optionStore;
     component_subscribe($$self, selectedFilters, (value) => $$invalidate(16, $selectedFilters = value));
-    component_subscribe($$self, blacklistTag, (value) => $$invalidate(21, $blacklistTag = value));
-    component_subscribe($$self, whitelistTag, (value) => $$invalidate(22, $whitelistTag = value));
-    component_subscribe($$self, downloadAllPages, (value) => $$invalidate(18, $downloadAllPages = value));
-    component_subscribe($$self, pageStart, (value) => $$invalidate(19, $pageStart = value));
-    component_subscribe($$self, pageEnd, (value) => $$invalidate(20, $pageEnd = value));
-    component_subscribe($$self, retryFailed, (value) => $$invalidate(23, $retryFailed = value));
+    component_subscribe($$self, blacklistTag, (value) => $$invalidate(20, $blacklistTag = value));
+    component_subscribe($$self, whitelistTag, (value) => $$invalidate(21, $whitelistTag = value));
+    component_subscribe($$self, downloadAllPages, (value) => $$invalidate(17, $downloadAllPages = value));
+    component_subscribe($$self, pageStart, (value) => $$invalidate(18, $pageStart = value));
+    component_subscribe($$self, pageEnd, (value) => $$invalidate(19, $pageEnd = value));
+    component_subscribe($$self, retryFailed, (value) => $$invalidate(22, $retryFailed = value));
     let startDownloadEl;
     let stopDownloadEl;
     let avatarEl;
@@ -20788,14 +21280,13 @@
     let showDownloadMenu = false;
     initFilterStore();
     defineBatchDownload(downloaderConfig);
-    const { artworkCount, successd, failed, excluded, downloading, globalDownloading, log, batchDownload, abort } = useBatchDownload();
+    const { artworkCount, successd, failed, excluded, downloading, log, batchDownload, abort } = useBatchDownload();
     component_subscribe($$self, artworkCount, (value) => $$invalidate(4, $artworkCount = value));
-    component_subscribe($$self, successd, (value) => $$invalidate(43, $successd = value));
-    component_subscribe($$self, failed, (value) => $$invalidate(42, $failed = value));
-    component_subscribe($$self, excluded, (value) => $$invalidate(41, $excluded = value));
+    component_subscribe($$self, successd, (value) => $$invalidate(41, $successd = value));
+    component_subscribe($$self, failed, (value) => $$invalidate(40, $failed = value));
+    component_subscribe($$self, excluded, (value) => $$invalidate(39, $excluded = value));
     component_subscribe($$self, downloading, (value) => $$invalidate(5, $downloading = value));
-    component_subscribe($$self, globalDownloading, (value) => $$invalidate(17, $globalDownloading = value));
-    component_subscribe($$self, log, (value) => $$invalidate(24, $log = value));
+    component_subscribe($$self, log, (value) => $$invalidate(23, $log = value));
     watchUrlChange();
     onUrlChange(location.href);
     downloading.subscribe((val) => {
@@ -20919,16 +21410,16 @@
         }
       }
       if ($$self.$$.dirty[1] & /*$successd, $failed, $excluded*/
-      7168) {
+      1792) {
         $$invalidate(2, processed = $successd.length + $failed.length + $excluded.length);
       }
-      if ($$self.$$.dirty[0] & /*$downloading, $artworkCount, processed*/
-      52) {
-        $$invalidate(15, downloadProgress = $downloading && $artworkCount ? processed / $artworkCount * 100 : void 0);
+      if ($$self.$$.dirty[0] & /*$artworkCount, processed*/
+      20) {
+        $$invalidate(15, downloadProgress = $artworkCount ? processed / $artworkCount * 100 : void 0);
       }
       if ($$self.$$.dirty[0] & /*$downloading, $artworkCount*/
       48 | $$self.$$.dirty[1] & /*$successd, $failed, $excluded*/
-      7168) {
+      1792) {
         $$invalidate(14, downloadResult = !$downloading && $artworkCount ? `Completed: ${$successd.length}. Failed: ${$failed.length}. Excluded: ${$excluded.length}.` : "");
       }
     };
@@ -20950,7 +21441,6 @@
       downloadResult,
       downloadProgress,
       $selectedFilters,
-      $globalDownloading,
       $downloadAllPages,
       $pageStart,
       $pageEnd,
@@ -20971,7 +21461,6 @@
       failed,
       excluded,
       downloading,
-      globalDownloading,
       log,
       abort,
       $excluded,
@@ -21085,7 +21574,7 @@
             button,
             "click",
             /*click_handler*/
-            ctx[13]
+            ctx[14]
           );
           mounted = true;
         }
@@ -21113,7 +21602,7 @@
       props: {
         components: (
           /*components*/
-          ctx[5]
+          ctx[6]
         ),
         class: "!p-0"
       }
@@ -21145,7 +21634,7 @@
         if (if_block0) if_block0.m(div, null);
         append(div, t1);
         if (if_block1) if_block1.m(div, null);
-        ctx[14](div);
+        ctx[15](div);
         current = true;
         if (!mounted) {
           dispose = [
@@ -21153,12 +21642,12 @@
               window,
               "keydown",
               /*handleKeydown*/
-              ctx[7],
+              ctx[8],
               true
             ),
             listen(div, "keydown", stop_propagation(
               /*keydown_handler*/
-              ctx[12]
+              ctx[13]
             )),
             listen(div, "mousedown", preventBackDropClick, true),
             listen(div, "mouseup", preventBackDropClick, true)
@@ -21229,7 +21718,7 @@
         destroy_component(modal);
         if (if_block0) if_block0.d();
         if (if_block1) if_block1.d();
-        ctx[14](null);
+        ctx[15](null);
         mounted = false;
         run_all(dispose);
       }
@@ -21245,8 +21734,9 @@
   function instance($$self, $$props, $$invalidate) {
     let darkMode;
     let $store;
-    component_subscribe($$self, configStore, ($$value) => $$invalidate(3, $store = $$value));
     initializeStores();
+    const store = initConfigStore();
+    component_subscribe($$self, store, (value) => $$invalidate(3, $store = value));
     const modalStore = getModalStore();
     const components = {
       changelog: { ref: Changelog },
@@ -21302,13 +21792,13 @@
       });
     }
     $$self.$$set = ($$props2) => {
-      if ("dark" in $$props2) $$invalidate(8, dark = $$props2.dark);
-      if ("updated" in $$props2) $$invalidate(9, updated = $$props2.updated);
+      if ("dark" in $$props2) $$invalidate(9, dark = $$props2.dark);
+      if ("updated" in $$props2) $$invalidate(10, updated = $$props2.updated);
       if ("downloaderConfig" in $$props2) $$invalidate(0, downloaderConfig = $$props2.downloaderConfig);
     };
     $$self.$$.update = () => {
       if ($$self.$$.dirty & /*dark*/
-      256) {
+      512) {
         $$invalidate(2, darkMode = dark ? "dark" : "");
       }
     };
@@ -21317,6 +21807,7 @@
       root,
       darkMode,
       $store,
+      store,
       modalStore,
       components,
       settingModal,
@@ -21334,18 +21825,18 @@
     constructor(options) {
       super();
       init(this, options, instance, create_fragment, safe_not_equal, {
-        dark: 8,
-        updated: 9,
+        dark: 9,
+        updated: 10,
         downloaderConfig: 0,
-        showChangelog: 10,
-        showSetting: 11
+        showChangelog: 11,
+        showSetting: 12
       });
     }
     get showChangelog() {
-      return this.$$.ctx[10];
+      return this.$$.ctx[11];
     }
     get showSetting() {
-      return this.$$.ctx[11];
+      return this.$$.ctx[12];
     }
   }
   const PdlApp = create_custom_element(
@@ -21368,9 +21859,14 @@
   class SiteInject {
     constructor() {
       __publicField(this, "modal");
+      __publicField(this, "config");
+      this.config = loadConfig(this.getCustomConfig() || void 0);
       this.inject();
       this.observeColorScheme();
       this.runScheduledTask();
+    }
+    static get hostname() {
+      throw new Error("`hostname` should be overwritten by a subclass.");
     }
     inject() {
       this.injectApp();
@@ -21388,8 +21884,8 @@
       );
     }
     injectApp() {
-      const updated = config.get("showMsg");
-      updated && config.set("showMsg", false);
+      const updated = this.config.get("showMsg");
+      updated && this.config.set("showMsg", false);
       const downloaderConfig = this.getBatchDownloadConfig();
       const modal = new PdlApp({ updated, downloaderConfig });
       document.body.append(modal);
@@ -21403,7 +21899,7 @@
         "pdl-btn-top"
       ].forEach((key) => {
         let val;
-        if ((val = config.get(key)) !== void 0) {
+        if ((val = this.config.get(key)) !== void 0) {
           document.documentElement.style.setProperty("--" + key, val);
         }
       });
@@ -21411,10 +21907,10 @@
     runScheduledTask() {
       useHistoryBackup().scheduleBackup();
     }
-    setModalDarkMode() {
+    setAppDarkMode() {
       this.modal.setAttribute("dark", "");
     }
-    setModalLightMode() {
+    setAppLightMode() {
       this.modal.removeAttribute("dark");
     }
   }
@@ -21441,6 +21937,9 @@
   }
   customElements.define("pdl-artwork-button", ArtworkButton);
   class Rule34 extends SiteInject {
+    static get hostname() {
+      return "rule34.xxx";
+    }
     inject() {
       super.inject();
       this.pageAction();
@@ -21497,13 +21996,19 @@
         this.createThumbnailBtn();
       }
     }
+    getCustomConfig() {
+      return {
+        folderPattern: "rule34/{artist}",
+        filenamePattern: "{id}_{artist}_{character}"
+      };
+    }
     observeColorScheme() {
       const query = window.matchMedia("(prefers-color-scheme: dark)");
       if (query.matches) {
-        this.setModalDarkMode();
+        this.setAppDarkMode();
       }
       query.addEventListener("change", (e) => {
-        e.matches ? this.setModalDarkMode() : this.setModalLightMode();
+        e.matches ? this.setAppDarkMode() : this.setAppLightMode();
       });
     }
     getBatchDownloadConfig() {
@@ -21712,6 +22217,9 @@
     }
   }
   class Danbooru extends SiteInject {
+    static get hostname() {
+      return "danbooru.donmai.us";
+    }
     inject() {
       super.inject();
       this.pageAction();
@@ -21780,14 +22288,20 @@
       const siteSetting = document.body.getAttribute("data-current-user-theme");
       const sitePreferDark = siteSetting === "dark";
       if (sitePreferDark || siteSetting === "auto" && uaPreferDark) {
-        this.setModalDarkMode();
+        this.setAppDarkMode();
       }
       if (siteSetting === "auto") {
         query.addEventListener("change", (e) => {
           uaPreferDark = e.matches;
-          uaPreferDark ? this.setModalDarkMode() : this.setModalLightMode();
+          uaPreferDark ? this.setAppDarkMode() : this.setAppLightMode();
         });
       }
+    }
+    getCustomConfig() {
+      return {
+        folderPattern: "danbooru/{artist}",
+        filenamePattern: "{id}_{artist}_{character}"
+      };
     }
     getBatchDownloadConfig() {
       return void 0;
@@ -21823,9 +22337,11 @@
       ].some((className) => node.classList.contains(className))) {
         return isLinkToArtworksPage[1];
       }
-    } else if (node.className.includes("_history-item")) {
-      const result = regexp.historyThumbnailsId.exec(node.getAttribute("style") || "");
-      if (result) return result[0];
+    } else if (node instanceof HTMLSpanElement && node.className.includes("_history-item")) {
+      const img = node.querySelector("img");
+      if (!img) return "";
+      const matchPid = regexp.historyThumbnailsId.exec(img.src);
+      if (matchPid) return matchPid[0];
     } else {
       const isActivityThumb = regexp.activityHref.exec(node.getAttribute("href") || "");
       if (isActivityThumb && node.classList.contains("work")) {
@@ -21850,9 +22366,9 @@
       logger.info("Fetch url:", url2);
       const res = await fetch(url2, init2);
       if (!res.ok) throw new RequestError(res.url, res.status);
-      const data2 = await res.json();
-      if (data2.error) throw new JsonDataError(data2.message);
-      return data2.body;
+      const data = await res.json();
+      if (data.error) throw new JsonDataError(data.message);
+      return data.body;
     }
     return {
       async getJson(url2) {
@@ -22053,8 +22569,8 @@
       do {
         const chunk = selectedIds.splice(0, ARTWORKS_PER_PAGE);
         const queryStr = chunk.map((id) => "ids[]=" + id).join("&") + `&work_category=illustManga&is_first_page=0&lang=ja`;
-        const data2 = await api.getJson(baseUrl + queryStr);
-        const workDatas = Object.values(data2.works).sort((a, b) => Number(b.id) - Number(a.id));
+        const data = await api.getJson(baseUrl + queryStr);
+        const workDatas = Object.values(data.works).sort((a, b) => Number(b.id) - Number(a.id));
         const avaliable = [];
         const invalid = [];
         const unavaliable = [];
@@ -22150,11 +22666,11 @@
       function findEarliestId(ids2) {
         return Math.min(...ids2);
       }
-      async function* yieldData(data22, page2) {
+      async function* yieldData(data2, page2) {
         const avaliable = [];
         const invalid = [];
         const unavaliable = [];
-        const { illust } = data22.thumbnails;
+        const { illust } = data2.thumbnails;
         for (let i = 0; i < illust.length; i++) {
           const work = illust[i];
           const { id, isMasked } = work;
@@ -22165,7 +22681,7 @@
           const isValid = await checkValidity(work);
           isValid ? avaliable.push(id) : invalid.push(id);
         }
-        const { ids: ids2 } = data22.page;
+        const { ids: ids2 } = data2.page;
         if (ids2.length !== illust.length) {
           const idDiff = ids2.filter((id) => !illust.some((item) => +item.id === id));
           unavaliable.push(...idDiff.map((id) => String(id)));
@@ -22178,12 +22694,12 @@
           unavaliable
         };
       }
-      const data2 = await api.getFollowLatestWorks(page, mode);
-      const ids = data2.page.ids;
+      const data = await api.getFollowLatestWorks(page, mode);
+      const ids = data.page.ids;
       total = ids.length;
       earliestId = findEarliestId(ids);
       if (endPage === startPage) {
-        yield* yieldData(data2, startPage);
+        yield* yieldData(data, startPage);
         return;
       }
       if (total === ARTWORKS_PER_PAGE) {
@@ -22196,15 +22712,15 @@
           total += secondIds.length;
         }
       }
-      yield* yieldData(data2, startPage);
+      yield* yieldData(data, startPage);
       if (total === ARTWORKS_PER_PAGE) return;
       if (total < ARTWORKS_PER_PAGE * 2 || endPage - startPage === 1) {
         yield* yieldData(cache, page);
         return;
       }
       while (++page <= endPage) {
-        const data22 = await api.getFollowLatestWorks(page, mode);
-        const ids2 = data22.page.ids;
+        const data2 = await api.getFollowLatestWorks(page, mode);
+        const ids2 = data2.page.ids;
         const pageEarliestId = findEarliestId(ids2);
         if (pageEarliestId >= earliestId) {
           logger.info("getFollowLatestGenerator: got duplicate works");
@@ -22214,7 +22730,7 @@
         earliestId = pageEarliestId;
         total += ids2.length;
         yield* yieldData(cache, page - 1);
-        cache = data22;
+        cache = data2;
       }
       yield* yieldData(cache, page - 1);
     }
@@ -22222,9 +22738,9 @@
   function createCompressor() {
     const zip = new JSZip();
     return {
-      add(id, name, data2) {
+      add(id, name, data) {
         var _a;
-        (_a = zip.folder(id)) == null ? void 0 : _a.file(name, data2);
+        (_a = zip.folder(id)) == null ? void 0 : _a.file(name, data);
       },
       bundle(id, comment) {
         const folder = zip.folder(id);
@@ -22247,12 +22763,12 @@
         (_a = zip.folder(id)) == null ? void 0 : _a.forEach(() => count++);
         return count;
       },
-      async unzip(data2) {
+      async unzip(data) {
         const id = Math.random().toString(36);
         let folder = zip.folder(id);
         if (!folder) throw TypeError("Can not get new root folder");
         const filesPromises = [];
-        folder = await folder.loadAsync(data2);
+        folder = await folder.loadAsync(data);
         folder.forEach((_, file) => {
           filesPromises.push(file.async("blob"));
         });
@@ -22370,12 +22886,12 @@
   function mixPngEffect(convertMeta) {
     logger.info("Start convert:", convertMeta.id);
     logger.time(convertMeta.id);
-    const { illust, data: data2 } = convertMeta.source;
+    const { illust, data } = convertMeta.source;
     let p;
-    if (data2 instanceof Blob) {
-      p = data2.arrayBuffer();
+    if (data instanceof Blob) {
+      p = data.arrayBuffer();
     } else {
-      p = Promise.resolve(data2);
+      p = Promise.resolve(data);
     }
     return p.then((effect) => {
       return new Promise((resolve, reject) => {
@@ -22454,8 +22970,8 @@
             logger.warn("Convert stop manually." + convertMeta.id);
             reject(new CancelError());
           } else {
-            const data2 = evt.data;
-            if (typeof data2 !== "object") {
+            const data = evt.data;
+            if (typeof data !== "object") {
               (_a = convertMeta.onProgress) == null ? void 0 : _a.call(convertMeta, evt.data);
             } else {
               logger.timeEnd(convertMeta.id);
@@ -23264,8 +23780,8 @@
               }
             });
           }
-          function measureData(data2) {
-            let result = data2.byteLength || data2.length || data2.size;
+          function measureData(data) {
+            let result = data.byteLength || data.length || data.size;
             if (!Number.isInteger(result)) {
               throw new Error("Failed to determine size of element");
             }
@@ -23283,11 +23799,11 @@
             }
             this.pos = offset;
           };
-          this.write = function(data2) {
+          this.write = function(data) {
             let newEntry = {
               offset: this.pos,
-              data: data2,
-              length: measureData(data2)
+              data,
+              length: measureData(data)
             }, isAppend = newEntry.offset >= this.length;
             this.pos += newEntry.length;
             this.length = Math.max(this.length, this.pos);
@@ -24289,10 +24805,10 @@
       __privateAdd(this, _maxPos, 0);
       __privateSet(this, _target, target);
     }
-    write(data2) {
-      __privateMethod(this, _ensureSize, ensureSize_fn).call(this, this.pos + data2.byteLength);
-      __privateGet(this, _bytes).set(data2, this.pos);
-      this.pos += data2.byteLength;
+    write(data) {
+      __privateMethod(this, _ensureSize, ensureSize_fn).call(this, this.pos + data.byteLength);
+      __privateGet(this, _bytes).set(data, this.pos);
+      this.pos += data.byteLength;
       __privateSet(this, _maxPos, Math.max(__privateGet(this, _maxPos), this.pos));
     }
     finalize() {
@@ -24325,12 +24841,12 @@
       __privateAdd(this, _sections, []);
       __privateSet(this, _target2, target);
     }
-    write(data2) {
+    write(data) {
       __privateGet(this, _sections).push({
-        data: data2.slice(),
+        data: data.slice(),
         start: this.pos
       });
-      this.pos += data2.byteLength;
+      this.pos += data.byteLength;
     }
     flush() {
       var _a, _b;
@@ -24390,10 +24906,10 @@
         throw new Error("Invalid StreamTarget options: chunkSize must be an integer not smaller than 1024.");
       }
     }
-    write(data2) {
-      __privateMethod(this, _writeDataIntoChunks, writeDataIntoChunks_fn).call(this, data2, this.pos);
+    write(data) {
+      __privateMethod(this, _writeDataIntoChunks, writeDataIntoChunks_fn).call(this, data, this.pos);
       __privateMethod(this, _flushChunks, flushChunks_fn).call(this);
-      this.pos += data2.byteLength;
+      this.pos += data.byteLength;
     }
     finalize() {
       __privateMethod(this, _flushChunks, flushChunks_fn).call(this, true);
@@ -24403,13 +24919,13 @@
   _chunkSize = /* @__PURE__ */ new WeakMap();
   _chunks = /* @__PURE__ */ new WeakMap();
   _writeDataIntoChunks = /* @__PURE__ */ new WeakSet();
-  writeDataIntoChunks_fn = function(data2, position) {
+  writeDataIntoChunks_fn = function(data, position) {
     let chunkIndex = __privateGet(this, _chunks).findIndex((x) => x.start <= position && position < x.start + __privateGet(this, _chunkSize));
     if (chunkIndex === -1)
       chunkIndex = __privateMethod(this, _createChunk, createChunk_fn).call(this, position);
     let chunk = __privateGet(this, _chunks)[chunkIndex];
     let relativePosition = position - chunk.start;
-    let toWrite = data2.subarray(0, Math.min(__privateGet(this, _chunkSize) - relativePosition, data2.byteLength));
+    let toWrite = data.subarray(0, Math.min(__privateGet(this, _chunkSize) - relativePosition, data.byteLength));
     chunk.data.set(toWrite, relativePosition);
     let section = {
       start: relativePosition,
@@ -24425,8 +24941,8 @@
       }
       __privateMethod(this, _flushChunks, flushChunks_fn).call(this);
     }
-    if (toWrite.byteLength < data2.byteLength) {
-      __privateMethod(this, _writeDataIntoChunks, writeDataIntoChunks_fn).call(this, data2.subarray(toWrite.byteLength), position + toWrite.byteLength);
+    if (toWrite.byteLength < data.byteLength) {
+      __privateMethod(this, _writeDataIntoChunks, writeDataIntoChunks_fn).call(this, data.subarray(toWrite.byteLength), position + toWrite.byteLength);
     }
   };
   _insertSectionIntoChunk = /* @__PURE__ */ new WeakSet();
@@ -24485,9 +25001,9 @@
     constructor(target) {
       var _a;
       super(new StreamTarget({
-        onData: (data2, position) => target.stream.write({
+        onData: (data, position) => target.stream.write({
           type: "write",
-          data: data2,
+          data,
           position
         }),
         chunkSize: (_a = target.options) == null ? void 0 : _a.chunkSize
@@ -24549,10 +25065,10 @@
       __privateMethod(this, _writeHeader, writeHeader_fn).call(this);
     }
     addVideoChunk(sample, meta, timestamp, compositionTimeOffset) {
-      let data2 = new Uint8Array(sample.byteLength);
-      sample.copyTo(data2);
+      let data = new Uint8Array(sample.byteLength);
+      sample.copyTo(data);
       this.addVideoChunkRaw(
-        data2,
+        data,
         sample.type,
         timestamp ?? sample.timestamp,
         sample.duration,
@@ -24560,14 +25076,14 @@
         compositionTimeOffset
       );
     }
-    addVideoChunkRaw(data2, type, timestamp, duration, meta, compositionTimeOffset) {
+    addVideoChunkRaw(data, type, timestamp, duration, meta, compositionTimeOffset) {
       __privateMethod(this, _ensureNotFinalized, ensureNotFinalized_fn).call(this);
       if (!__privateGet(this, _options).video)
         throw new Error("No video track declared.");
       if (typeof __privateGet(this, _options).fastStart === "object" && __privateGet(this, _videoTrack).samples.length === __privateGet(this, _options).fastStart.expectedVideoChunks) {
         throw new Error(`Cannot add more video chunks than specified in 'fastStart' (${__privateGet(this, _options).fastStart.expectedVideoChunks}).`);
       }
-      let videoSample = __privateMethod(this, _createSampleForTrack, createSampleForTrack_fn).call(this, __privateGet(this, _videoTrack), data2, type, timestamp, duration, meta, compositionTimeOffset);
+      let videoSample = __privateMethod(this, _createSampleForTrack, createSampleForTrack_fn).call(this, __privateGet(this, _videoTrack), data, type, timestamp, duration, meta, compositionTimeOffset);
       if (__privateGet(this, _options).fastStart === "fragmented" && __privateGet(this, _audioTrack)) {
         while (__privateGet(this, _audioSampleQueue).length > 0 && __privateGet(this, _audioSampleQueue)[0].decodeTimestamp <= videoSample.decodeTimestamp) {
           let audioSample = __privateGet(this, _audioSampleQueue).shift();
@@ -24583,18 +25099,18 @@
       }
     }
     addAudioChunk(sample, meta, timestamp) {
-      let data2 = new Uint8Array(sample.byteLength);
-      sample.copyTo(data2);
-      this.addAudioChunkRaw(data2, sample.type, timestamp ?? sample.timestamp, sample.duration, meta);
+      let data = new Uint8Array(sample.byteLength);
+      sample.copyTo(data);
+      this.addAudioChunkRaw(data, sample.type, timestamp ?? sample.timestamp, sample.duration, meta);
     }
-    addAudioChunkRaw(data2, type, timestamp, duration, meta) {
+    addAudioChunkRaw(data, type, timestamp, duration, meta) {
       __privateMethod(this, _ensureNotFinalized, ensureNotFinalized_fn).call(this);
       if (!__privateGet(this, _options).audio)
         throw new Error("No audio track declared.");
       if (typeof __privateGet(this, _options).fastStart === "object" && __privateGet(this, _audioTrack).samples.length === __privateGet(this, _options).fastStart.expectedAudioChunks) {
         throw new Error(`Cannot add more audio chunks than specified in 'fastStart' (${__privateGet(this, _options).fastStart.expectedAudioChunks}).`);
       }
-      let audioSample = __privateMethod(this, _createSampleForTrack, createSampleForTrack_fn).call(this, __privateGet(this, _audioTrack), data2, type, timestamp, duration, meta);
+      let audioSample = __privateMethod(this, _createSampleForTrack, createSampleForTrack_fn).call(this, __privateGet(this, _audioTrack), data, type, timestamp, duration, meta);
       if (__privateGet(this, _options).fastStart === "fragmented" && __privateGet(this, _videoTrack)) {
         while (__privateGet(this, _videoSampleQueue).length > 0 && __privateGet(this, _videoSampleQueue)[0].decodeTimestamp <= audioSample.decodeTimestamp) {
           let videoSample = __privateGet(this, _videoSampleQueue).shift();
@@ -24636,9 +25152,9 @@
           let currentChunkPos = __privateGet(this, _writer).pos + movieBoxSize + mdatSize;
           for (let chunk of __privateGet(this, _finalizedChunks)) {
             chunk.offset = currentChunkPos;
-            for (let { data: data2 } of chunk.samples) {
-              currentChunkPos += data2.byteLength;
-              mdatSize += data2.byteLength;
+            for (let { data } of chunk.samples) {
+              currentChunkPos += data.byteLength;
+              mdatSize += data.byteLength;
             }
           }
           if (currentChunkPos < 2 ** 32)
@@ -24851,7 +25367,7 @@
     return configBytes;
   };
   _createSampleForTrack = /* @__PURE__ */ new WeakSet();
-  createSampleForTrack_fn = function(track, data2, type, timestamp, duration, meta, compositionTimeOffset) {
+  createSampleForTrack_fn = function(track, data, type, timestamp, duration, meta, compositionTimeOffset) {
     let presentationTimestampInSeconds = timestamp / 1e6;
     let decodeTimestampInSeconds = (timestamp - (compositionTimeOffset ?? 0)) / 1e6;
     let durationInSeconds = duration / 1e6;
@@ -24869,8 +25385,8 @@
       presentationTimestamp: presentationTimestampInSeconds,
       decodeTimestamp: decodeTimestampInSeconds,
       duration: durationInSeconds,
-      data: data2,
-      size: data2.byteLength,
+      data,
+      size: data.byteLength,
       type,
       // Will be refined once the next sample comes in
       timescaleUnitsToNextSample: intoTimescale(durationInSeconds, track.timescale)
@@ -25218,7 +25734,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
           doConvert(queue.shift());
         }
       },
-      addFrame(taskId, data2, delay, order) {
+      addFrame(taskId, data, delay, order) {
         if (!(taskId in framesData)) {
           framesData[taskId] = {
             id: taskId,
@@ -25228,10 +25744,10 @@ If you want to offset all timestamps of a track such that the first one is zero,
         }
         if (order === void 0) {
           const length = framesData[taskId].data.length;
-          framesData[taskId]["data"][length] = data2;
+          framesData[taskId]["data"][length] = data;
           framesData[taskId]["delays"][length] = delay;
         } else {
-          framesData[taskId]["data"][order] = data2;
+          framesData[taskId]["data"][order] = data;
           framesData[taskId]["delays"][order] = delay;
         }
       },
@@ -25364,12 +25880,12 @@ If you want to offset all timestamps of a track such that the first one is zero,
           const { taskId } = pixivConfig;
           const effectData = await historyDb.getImageEffect(effectId);
           if (effectData && effectData.data[0] instanceof ArrayBuffer) {
-            const { data: data2, delays, width, height } = effectData;
+            const { data, delays, width, height } = effectData;
             const { blob } = await converter.appendPixivEffect(
               taskId,
               pixivConfig.source.extendName,
               imgBlob,
-              { frames: data2, delays, width, height },
+              { frames: data, delays, width, height },
               onProgress
             );
             return blob;
@@ -25750,8 +26266,8 @@ If you want to offset all timestamps of a track such that the first one is zero,
       batchDownload("tagged_artwork", userId, category, tag, rest);
     }
     connectedCallback() {
-      const { globalDownloading } = useBatchDownload();
-      this.unsubscriber = globalDownloading.subscribe((val) => {
+      const { downloading } = useBatchDownload();
+      this.unsubscriber = downloading.subscribe((val) => {
         if (val) {
           this.setAttribute("disabled", "");
         } else {
@@ -25983,8 +26499,8 @@ If you want to offset all timestamps of a track such that the first one is zero,
       batchDownload("tagged_artwork", userId, category, tag, rest);
     }
     connectedCallback() {
-      const { globalDownloading } = useBatchDownload();
-      this.unsubscriber = globalDownloading.subscribe((val) => {
+      const { downloading } = useBatchDownload();
+      this.unsubscriber = downloading.subscribe((val) => {
         if (val) {
           this.setAttribute("disabled", "");
         } else {
@@ -26049,7 +26565,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
       }
     }
   }
-  let firstRun = true;
+  let firstRunFlag = true;
   function observerCallback(records) {
     const addedNodes = [];
     records.forEach((record) => {
@@ -26061,9 +26577,9 @@ If you want to offset all timestamps of a track such that the first one is zero,
       });
     });
     if (!addedNodes.length) return;
-    if (firstRun) {
+    if (firstRunFlag) {
       createThumbnailBtn(document.querySelectorAll("a"));
-      firstRun = false;
+      firstRunFlag = false;
     } else {
       fixPixivPreviewer(addedNodes);
       const thumbnails = addedNodes.reduce((prev, current) => {
@@ -26076,6 +26592,9 @@ If you want to offset all timestamps of a track such that the first one is zero,
     pageActions();
   }
   class Pixiv extends SiteInject {
+    static get hostname() {
+      return "www.pixiv.net";
+    }
     inject() {
       super.inject();
       new MutationObserver(observerCallback).observe(document.body, {
@@ -26083,13 +26602,19 @@ If you want to offset all timestamps of a track such that the first one is zero,
         subtree: true
       });
     }
+    getCustomConfig() {
+      return {
+        folderPattern: "pixiv/{artist}",
+        filenamePattern: "{artist}_{title}_{id}_p{page}"
+      };
+    }
     observeColorScheme() {
       const onThemeChange = () => {
         const sitePreferDark = document.documentElement.getAttribute("data-theme");
         if (sitePreferDark === "dark") {
-          this.setModalDarkMode();
+          this.setAppDarkMode();
         } else {
-          this.setModalLightMode();
+          this.setAppLightMode();
         }
       };
       onThemeChange();
@@ -26339,6 +26864,9 @@ If you want to offset all timestamps of a track such that the first one is zero,
     historyDb.add(historyData);
   }
   class Yande extends SiteInject {
+    static get hostname() {
+      return "yande.re";
+    }
     inject() {
       super.inject();
       this.pageAction();
@@ -26445,31 +26973,45 @@ If you want to offset all timestamps of a track such that the first one is zero,
         this.createThumbnailBtn(Array.from(btnContainers));
       }
     }
+    getCustomConfig() {
+      return {
+        folderPattern: "yande/{artist}",
+        filenamePattern: "{id}_{artist}_{character}"
+      };
+    }
     observeColorScheme() {
       const query = window.matchMedia("(prefers-color-scheme: dark)");
       if (query.matches) {
-        this.setModalDarkMode();
+        this.setAppDarkMode();
       }
       query.addEventListener("change", (e) => {
-        e.matches ? this.setModalDarkMode() : this.setModalLightMode();
+        e.matches ? this.setAppDarkMode() : this.setAppLightMode();
       });
     }
     getBatchDownloadConfig() {
       return void 0;
     }
   }
-  function getSiteInjector(host) {
-    const sitesAdapter = {
-      "danbooru.donmai.us": Danbooru,
-      "www.pixiv.net": Pixiv,
-      "rule34.xxx": Rule34,
-      "yande.re": Yande
-    };
-    if (host in sitesAdapter) {
-      return sitesAdapter[host];
+  class ATFbooru extends Danbooru {
+    static get hostname() {
+      return "booru.allthefallen.moe";
+    }
+    getCustomConfig() {
+      return {
+        folderPattern: "ATFbooru/{artist}",
+        filenamePattern: "{id}_{artist}_{character}"
+      };
     }
   }
-  const siteInject = getSiteInjector(location.host);
+  function getSiteInjector() {
+    const sitesAdapter = [Pixiv, Danbooru, Rule34, Yande, ATFbooru];
+    for (let i = 0; i < sitesAdapter.length; i++) {
+      if (location.hostname === sitesAdapter[i].hostname) {
+        return sitesAdapter[i];
+      }
+    }
+  }
+  const siteInject = getSiteInjector();
   siteInject && new siteInject();
 
 })(Dexie, dayjs, JSZip, GIF);
