@@ -5,6 +5,7 @@
   import { useHistoryBackup } from '../useHistoryBackup';
   import configStore from '../store';
   import { HistoryBackupInterval } from '@/lib/config';
+  import { logger } from '@/lib/logger';
 
   export let bg = 'bg-white/30 dark:bg-black/15';
   export let border = 'divide-y-[1px] *:border-surface-300-600-token';
@@ -22,20 +23,22 @@
 
   const { importJSON, exportAsJSON, exportAsCSV } = useHistoryBackup();
 
-  function importFromJSON(evt: Event) {
+  async function importFromJSON(evt: Event) {
     const file = (evt.currentTarget as HTMLInputElement).files?.[0];
     if (!file) return;
 
-    importJSON(file).then(
-      () => location.reload(),
-      (err) => alert(err?.message)
-    );
+    try {
+      await importJSON(file);
+    } catch (error) {
+      logger.error(error);
+      alert(error);
+    }
   }
 
   function clearDb() {
     const isConfirm = confirm(t('setting.history.text.confirm_clear_history'));
     if (!isConfirm) return;
-    historyDb.clear().then(() => location.reload());
+    return historyDb.clear();
   }
 </script>
 
