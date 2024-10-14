@@ -58,27 +58,6 @@ class HistoryDb extends Dexie {
     return num;
   }
 
-  protected updatePageArray(page: number, pageArray?: Uint8Array): Uint8Array {
-    const byteIndex = Math.floor(page / 8);
-    const bitIndex = page % 8;
-
-    if (!pageArray) {
-      const newArr = new Uint8Array(byteIndex + 1);
-      newArr[byteIndex] |= 1 << bitIndex;
-
-      return newArr;
-    } else if (byteIndex > pageArray.length - 1) {
-      const newArr = new Uint8Array(byteIndex + 1);
-      newArr.set(pageArray);
-      newArr[byteIndex] |= 1 << bitIndex;
-
-      return newArr;
-    } else {
-      pageArray[byteIndex] |= 1 << bitIndex;
-      return pageArray;
-    }
-  }
-
   public async add(historyData: HistoryData) {
     const { pid, page } = historyData;
 
@@ -95,7 +74,7 @@ class HistoryDb extends Dexie {
         } else {
           // historyItem = undefined: not downloaded
           // historyItem.page !== undefined: not fully downloaded
-          const u8arr = this.updatePageArray(page, historyItem?.page);
+          const u8arr = HistoryDb.updatePageData(page, historyItem?.page);
           this.history.put({ ...historyData, page: u8arr });
         }
       } else {
@@ -123,15 +102,10 @@ class HistoryDb extends Dexie {
     } else {
       this.throwIfInvalidNumber(page);
       const historyItem = await this.get(pid);
+
       if (!historyItem) return false;
       if (!historyItem.page) return true;
-
-      const byteIndex = Math.floor(page / 8);
-      const bitIndex = page % 8;
-      return (
-        !(byteIndex > historyItem.page.length - 1) &&
-        (historyItem.page[byteIndex] & (1 << bitIndex)) !== 0
-      );
+      return HistoryDb.isPageInData(page, historyItem.page);
     }
   }
 
@@ -170,6 +144,33 @@ class HistoryDb extends Dexie {
 
   public addImageEffect(effectData: EffectImageItem) {
     return this.imageEffect.put(effectData);
+  }
+
+  static updatePageData(page: number, pageData?: Uint8Array): Uint8Array {
+    const byteIndex = Math.floor(page / 8);
+    const bitIndex = page % 8;
+
+    if (!pageData) {
+      const newArr = new Uint8Array(byteIndex + 1);
+      newArr[byteIndex] |= 1 << bitIndex;
+
+      return newArr;
+    } else if (byteIndex > pageData.length - 1) {
+      const newArr = new Uint8Array(byteIndex + 1);
+      newArr.set(pageData);
+      newArr[byteIndex] |= 1 << bitIndex;
+
+      return newArr;
+    } else {
+      pageData[byteIndex] |= 1 << bitIndex;
+      return pageData;
+    }
+  }
+
+  static isPageInData(page: number, pageData: Uint8Array): boolean {
+    const byteIndex = Math.floor(page / 8);
+    const bitIndex = page % 8;
+    return !(byteIndex > pageData.length - 1) && (pageData[byteIndex] & (1 << bitIndex)) !== 0;
   }
 }
 
@@ -259,10 +260,10 @@ class CachedHistoryDb extends HistoryDb {
       // only one page downloaded
       this.throwIfInvalidNumber(page);
 
-      const pageArray = await this.getCache(pid);
-      if (pageArray !== null) {
+      const pageData = await this.getCache(pid);
+      if (pageData !== null) {
         // not downloaded | not fully downloaded
-        this.updateCache({ pid, page: this.updatePageArray(page, pageArray) });
+        this.updateCache({ pid, page: HistoryDb.updatePageData(page, pageData) });
       } else {
         this.updateCache({ pid, page: null });
       }
@@ -293,14 +294,10 @@ class CachedHistoryDb extends HistoryDb {
       this.throwIfInvalidNumber(page);
 
       const cachesData = await this.getCache(pid);
+
       if (cachesData === undefined) return false;
       if (cachesData === null) return true;
-
-      const byteIndex = Math.floor(page / 8);
-      const bitIndex = page % 8;
-      return (
-        !(byteIndex > cachesData.length - 1) && (cachesData[byteIndex] & (1 << bitIndex)) !== 0
-      );
+      return HistoryDb.isPageInData(page, cachesData);
     }
   }
 
