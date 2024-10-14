@@ -1,11 +1,12 @@
 <script lang="ts">
   import { historyDb } from '@/lib/db';
-  import { FileButton } from '@skeletonlabs/skeleton';
+  import { FileButton, ProgressRadial } from '@skeletonlabs/skeleton';
   import t from '@/lib/lang';
   import { useHistoryBackup } from '../useHistoryBackup';
   import configStore from '../store';
   import { HistoryBackupInterval } from '@/lib/config';
   import { logger } from '@/lib/logger';
+  import { writable } from 'svelte/store';
 
   export let bg = 'bg-white/30 dark:bg-black/15';
   export let border = 'divide-y-[1px] *:border-surface-300-600-token';
@@ -21,7 +22,20 @@
   export let sectionSpace = `space-y-4`;
   export let sectionTitle = 'font-bold';
 
-  const { importJSON, exportAsJSON, exportAsCSV } = useHistoryBackup();
+  function usePendingButton<T extends (...args: any[]) => any>(fn: T) {
+    const store = writable(false);
+    const wrapFn = async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+      store.set(true);
+      const result = await fn(...args);
+      store.set(false);
+      return result;
+    };
+
+    return {
+      store,
+      wrapFn
+    };
+  }
 
   async function importFromJSON(evt: Event) {
     const file = (evt.currentTarget as HTMLInputElement).files?.[0];
@@ -40,6 +54,13 @@
     if (!isConfirm) return;
     return historyDb.clear();
   }
+
+  const { importJSON, exportAsJSON, exportAsCSV } = useHistoryBackup();
+
+  const { store: importPending, wrapFn: wrapImportFromJSON } = usePendingButton(importFromJSON);
+  const { store: clearPending, wrapFn: wrapClearDb } = usePendingButton(clearDb);
+  const { store: exportJsonPending, wrapFn: wrapExportAsJSON } = usePendingButton(exportAsJSON);
+  const { store: exportCsvPending, wrapFn: wrapExportAsCSV } = usePendingButton(exportAsCSV);
 </script>
 
 <div class={sectionSpace}>
@@ -71,15 +92,39 @@
     <ul class={ulClasses}>
       <li>
         <p class="flex-auto">{t('setting.history.options.export_as_json')}</p>
-        <button class="btn variant-filled" on:click={exportAsJSON}
-          >{t('setting.history.button.export')}</button
+        <button
+          disabled={$exportJsonPending}
+          class="btn variant-filled"
+          on:click={wrapExportAsJSON}
         >
+          {#if $exportJsonPending}
+            <ProgressRadial
+              stroke={80}
+              width="w-5"
+              meter="stroke-primary-500"
+              track="stroke-primary-500/30"
+            />
+          {/if}
+          <span>
+            {t('setting.history.button.export')}
+          </span>
+        </button>
       </li>
       <li>
         <p class="flex-auto">{t('setting.history.options.export_as_csv')}</p>
-        <button class="btn variant-filled" on:click={exportAsCSV}
-          >{t('setting.history.button.export')}</button
-        >
+        <button disabled={$exportCsvPending} class="btn variant-filled" on:click={wrapExportAsCSV}>
+          {#if $exportCsvPending}
+            <ProgressRadial
+              stroke={80}
+              width="w-5"
+              meter="stroke-primary-500"
+              track="stroke-primary-500/30"
+            />
+          {/if}
+          <span>
+            {t('setting.history.button.export')}
+          </span>
+        </button>
       </li>
     </ul>
   </section>
@@ -89,9 +134,24 @@
     <ul class={ulClasses}>
       <li>
         <p class="flex-auto">{t('setting.history.options.import_json')}</p>
-        <FileButton name="import-file" accept=".json" on:change={importFromJSON}
-          >{t('setting.history.button.import')}</FileButton
+        <FileButton
+          bind:disabled={$importPending}
+          name="import-file"
+          accept=".json"
+          on:change={wrapImportFromJSON}
         >
+          {#if $importPending}
+            <ProgressRadial
+              stroke={80}
+              width="w-5"
+              meter="stroke-primary-500"
+              track="stroke-primary-500/30"
+            />
+          {/if}
+          <span>
+            {t('setting.history.button.import')}
+          </span>
+        </FileButton>
       </li>
     </ul>
   </section>
@@ -101,9 +161,19 @@
     <ul class={ulClasses}>
       <li>
         <p class="flex-auto">{t('setting.history.options.clear_history')}</p>
-        <button class="btn variant-filled" on:click={clearDb}
-          >{t('setting.history.button.clear')}</button
-        >
+        <button disabled={$clearPending} class="btn variant-filled" on:click={wrapClearDb}>
+          {#if $clearPending}
+            <ProgressRadial
+              stroke={80}
+              width="w-5"
+              meter="stroke-primary-500"
+              track="stroke-primary-500/30"
+            />
+          {/if}
+          <span>
+            {t('setting.history.button.clear')}
+          </span>
+        </button>
       </li>
     </ul>
   </section>
