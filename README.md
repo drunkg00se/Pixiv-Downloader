@@ -1,4 +1,4 @@
-<img width='1166' src = 'https://p.sda1.dev/19/9cb2c0bac85515f7b6d430eee921bc56/screenshot_1_.png' />
+<img width='1080' src = 'https://p.sda1.dev/19/c6a3e925e3d274972c1b20c7831762cc/output-90.webp' />
 
 # Pixiv Downloader
 
