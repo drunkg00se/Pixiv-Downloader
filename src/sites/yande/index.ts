@@ -159,18 +159,6 @@ export class Yande extends SiteInject {
     return ['{artist}', '{character}', '{id}', '{date}'];
   }
 
-  protected observeColorScheme() {
-    const query = window.matchMedia('(prefers-color-scheme: dark)');
-
-    if (query.matches) {
-      this.setAppDarkMode();
-    }
-
-    query.addEventListener('change', (e) => {
-      e.matches ? this.setAppDarkMode() : this.setAppLightMode();
-    });
-  }
-
   protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any, true | undefined> {
     // TODO
     return undefined;

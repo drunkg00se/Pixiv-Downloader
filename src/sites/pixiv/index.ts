@@ -45,20 +45,16 @@ export class Pixiv extends SiteInject {
       const sitePreferDark = document.documentElement.getAttribute('data-theme') as
         | 'default'
         | 'dark';
-
-      if (sitePreferDark === 'dark') {
-        this.setAppDarkMode();
-      } else {
-        this.setAppLightMode();
-      }
+      sitePreferDark === 'dark' ? this.setAppDarkMode() : this.setAppLightMode();
     };
-    onThemeChange();
 
     new MutationObserver(onThemeChange).observe(document.documentElement, {
       attributes: true,
       childList: false,
       subtree: false
     });
+
+    onThemeChange();
   }
 
   protected getBatchDownloadConfig(): BatchDownloadConfig<PixivMeta, true> {

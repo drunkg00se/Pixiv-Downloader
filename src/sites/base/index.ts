@@ -12,7 +12,6 @@ export abstract class SiteInject {
   constructor() {
     this.config = loadConfig(this.getCustomConfig() || undefined);
     this.inject();
-    this.observeColorScheme();
     this.runScheduledTask();
   }
 
@@ -45,9 +44,11 @@ export abstract class SiteInject {
       downloaderConfig: this.getBatchDownloadConfig(),
       filenameTemplate: this.getFilenameTemplate()
     });
-    document.body.append(modal);
 
     this.modal = modal;
+    this.observeColorScheme();
+
+    document.body.append(modal);
   }
 
   protected injectStyle() {
@@ -78,7 +79,15 @@ export abstract class SiteInject {
     this.modal.removeAttribute('dark');
   }
 
-  protected abstract observeColorScheme(): void;
+  protected observeColorScheme() {
+    const query = window.matchMedia('(prefers-color-scheme: dark)');
+
+    query.matches && this.setAppDarkMode();
+
+    query.addEventListener('change', (e) => {
+      e.matches ? this.setAppDarkMode() : this.setAppLightMode();
+    });
+  }
 
   protected abstract getBatchDownloadConfig():
     | undefined
