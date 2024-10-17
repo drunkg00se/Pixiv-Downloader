@@ -9,7 +9,7 @@
   import store from '../store';
   import { env } from '@/lib/env';
   import { downloader } from '@/lib/downloader';
-  import { tick } from 'svelte';
+  import { getContext, tick } from 'svelte';
 
   export let bg = 'bg-white/30 dark:bg-black/15';
   export let border = 'divide-y-[1px] *:border-surface-300-600-token';
@@ -23,7 +23,7 @@
   export let sectionSpace = `space-y-4`;
   export let sectionTitle = 'font-bold';
 
-  export let templates: string[] = [];
+  export let templates: string[] = getContext('filenameTemplate');
 
   let directoryRef: HTMLInputElement;
   let filenameRef: HTMLInputElement;

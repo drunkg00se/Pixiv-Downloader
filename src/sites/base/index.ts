@@ -40,9 +40,11 @@ export abstract class SiteInject {
     const updated = this.config.get('showMsg');
     updated && this.config.set('showMsg', false);
 
-    const downloaderConfig = this.getBatchDownloadConfig();
-
-    const modal = new PdlApp({ updated, downloaderConfig });
+    const modal = new PdlApp({
+      updated,
+      downloaderConfig: this.getBatchDownloadConfig(),
+      filenameTemplate: this.getFilenameTemplate()
+    });
     document.body.append(modal);
 
     this.modal = modal;
@@ -83,4 +85,6 @@ export abstract class SiteInject {
     | BatchDownloadConfig<any, true | undefined>;
 
   protected abstract getCustomConfig(): Partial<ConfigData> | void;
+
+  protected abstract getFilenameTemplate(): string[];
 }

@@ -9,6 +9,7 @@ export type PdlApp = HTMLElement & {
 };
 
 interface PdlAppProps {
+  filenameTemplate: string[];
   updated: boolean;
   downloaderConfig?: BatchDownloadConfig<any, true | undefined>;
 }
@@ -19,17 +20,20 @@ interface PdlAppConstructor {
 
 export const PdlApp: PdlAppConstructor = create_custom_element(
   App,
-  { dark: { type: 'Boolean' }, updated: { type: 'Boolean' }, downloaderConfig: {} },
+  {
+    dark: { type: 'Boolean' },
+    updated: { type: 'Boolean' },
+    filenameTemplate: {},
+    downloaderConfig: {}
+  },
   [],
   ['showChangelog', 'showSetting'],
   true,
   (customElementConstructor: any) => {
     return class extends customElementConstructor {
-      constructor(props: {
-        updated: boolean;
-        downloaderConfig?: BatchDownloadConfig<any, true | undefined>;
-      }) {
+      constructor(props: PdlAppProps) {
         super();
+        this.filenameTemplate = props.filenameTemplate;
         this.updated = props.updated ?? false;
         this.downloaderConfig = props.downloaderConfig;
       }

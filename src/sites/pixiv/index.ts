@@ -36,6 +36,10 @@ export class Pixiv extends SiteInject {
     };
   }
 
+  protected getFilenameTemplate(): string[] {
+    return ['{artist}', '{artistID}', '{title}', '{id}', '{page}', '{tags}', '{date}'];
+  }
+
   protected observeColorScheme() {
     const onThemeChange = () => {
       const sitePreferDark = document.documentElement.getAttribute('data-theme') as

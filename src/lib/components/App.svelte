@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, setContext } from 'svelte';
   import { Modal, getModalStore, initializeStores } from '@skeletonlabs/skeleton';
   import type { ModalSettings, ModalComponent } from '@skeletonlabs/skeleton';
   import Changelog from './Modal/Changelog/Changelog.svelte';
@@ -11,10 +11,16 @@
   import { addStyleToShadow } from '../util';
   import type { BatchDownloadConfig } from './Downloader/useBatchDownload';
 
+  export let dark = false;
+  export let updated = false;
+  export let filenameTemplate: string[] = [];
+  export let downloaderConfig: BatchDownloadConfig<any, true | undefined> | undefined;
+  setContext('filenameTemplate', filenameTemplate);
+
   initializeStores();
   const store = initConfigStore();
-
   const modalStore = getModalStore();
+  let root: HTMLDivElement;
 
   const components: Record<string, ModalComponent> = {
     changelog: { ref: Changelog },
@@ -31,12 +37,6 @@
     component: 'setting'
   };
 
-  export let dark = false;
-
-  export let updated = false;
-
-  export let downloaderConfig: BatchDownloadConfig<any, true | undefined> | undefined;
-
   export function showChangelog() {
     modalStore.trigger(changelogModal);
   }
@@ -45,7 +45,6 @@
     modalStore.trigger(settingModal);
   }
 
-  let root: HTMLDivElement;
   onMount(async () => {
     const shadow = root.getRootNode() as ShadowRoot;
 

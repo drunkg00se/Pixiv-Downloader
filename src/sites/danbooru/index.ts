@@ -111,6 +111,10 @@ export class Danbooru extends SiteInject {
     };
   }
 
+  protected getFilenameTemplate(): string[] {
+    return ['{artist}', '{character}', '{id}', '{date}'];
+  }
+
   protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any, true | undefined> {
     // TODO
     return undefined;

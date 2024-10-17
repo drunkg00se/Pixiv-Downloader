@@ -14,16 +14,12 @@
   import { env } from '@/lib/env';
 
   export let parent: SvelteComponent;
-  const templates = env.isPixiv()
-    ? ['{artist}', '{artistID}', '{title}', '{id}', '{page}', '{tags}', '{date}']
-    : ['{artist}', '{character}', '{id}', '{date}'];
 
   let slected = 0;
   const optionList = [
     {
       name: t('setting.save_to.title'),
-      component: SaveTo,
-      props: { templates }
+      component: SaveTo
     },
     {
       name: t('setting.ugoira.title'),
@@ -104,7 +100,6 @@
     >
       <svelte:component
         this={optionList[slected].component}
-        {...optionList[slected].props}
         bg="bg-white/30 dark:bg-surface-500/20 backdrop-blur-sm"
       />
     </div>

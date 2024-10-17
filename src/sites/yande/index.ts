@@ -155,6 +155,10 @@ export class Yande extends SiteInject {
     };
   }
 
+  protected getFilenameTemplate(): string[] {
+    return ['{artist}', '{character}', '{id}', '{date}'];
+  }
+
   protected observeColorScheme() {
     const query = window.matchMedia('(prefers-color-scheme: dark)');
 
