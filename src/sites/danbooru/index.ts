@@ -57,6 +57,7 @@ export class Danbooru extends SiteInject {
       const btn = new ThumbnailButton({
         id: poolId,
         type: ThumbnailBtnType.DanbooruPool,
+        shouldObserveDb: false, // Danbooru pool的id不作记录
         onClick: downloadPoolArtwork
       });
 

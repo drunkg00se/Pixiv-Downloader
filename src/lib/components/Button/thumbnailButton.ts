@@ -35,28 +35,31 @@ export interface ThumbnailBtnProp {
   id: string | number;
   page?: number;
   type?: ThumbnailBtnType;
+  shouldObserveDb?: boolean;
   onClick: (btn: ThumbnailButton) => any;
 }
 
 export class ThumbnailButton extends HTMLElement {
-  private status: ThumbnailBtnStatus;
+  private btn: HTMLButtonElement;
+  private status: ThumbnailBtnStatus = ThumbnailBtnStatus.Init;
   private mediaId: number;
   private page?: number;
   private type?: ThumbnailBtnType;
   private onClick: ThumbnailBtnProp['onClick'];
-  private btn: HTMLButtonElement;
   private unsubscriber?: Unsubscriber;
   private connectedFlag = false;
+  private shouldObserveDb = true;
 
   constructor(props: ThumbnailBtnProp) {
     super();
     this.dispatchDownload = this.dispatchDownload.bind(this);
 
-    this.status = ThumbnailBtnStatus.Init;
     this.mediaId = this.checkNumberValidity(props.id);
-    props.page !== undefined && (this.page = this.checkNumberValidity(props.page));
     this.type = props.type;
     this.onClick = props.onClick;
+
+    props.page !== undefined && (this.page = this.checkNumberValidity(props.page));
+    props.shouldObserveDb !== undefined && (this.shouldObserveDb = props.shouldObserveDb);
 
     this.render();
     this.btn = this.shadowRoot!.querySelector('button')!;
@@ -125,7 +128,7 @@ export class ThumbnailButton extends HTMLElement {
     try {
       if (id === null) throw new Error('Attribute "data-id" is required.');
       this.mediaId = this.checkNumberValidity(id);
-      this.connectedFlag && this.observerDb()();
+      this.connectedFlag && this.shouldObserveDb && this.observeDb()();
     } catch (error) {
       logger.error(error);
       this.dataset.id = String(this.mediaId);
@@ -149,7 +152,7 @@ export class ThumbnailButton extends HTMLElement {
         this.page = this.checkNumberValidity(page);
       }
 
-      this.connectedFlag && this.observerDb()();
+      this.connectedFlag && this.shouldObserveDb && this.observeDb()();
     } catch (error) {
       logger.error(error);
       if (this.page === undefined) {
@@ -176,19 +179,7 @@ export class ThumbnailButton extends HTMLElement {
     this.status = status as ThumbnailBtnStatus;
     useEl.setAttribute('xlink:href', iconTypeMap[status]);
 
-    useEl.animate(
-      [
-        {
-          opacity: 0.5
-        },
-        {
-          opactiy: 1
-        }
-      ],
-      {
-        duration: 200
-      }
-    );
+    useEl.animate([{ opacity: 0.5 }, { opactiy: 1 }], { duration: 200 });
   }
 
   private render() {
@@ -227,11 +218,8 @@ export class ThumbnailButton extends HTMLElement {
       });
   }
 
-  private observerDb() {
+  private observeDb() {
     return historyDb.subscribe(async () => {
-      // Danbooru pool的id不作记录
-      if (this.type === ThumbnailBtnType.DanbooruPool) return;
-
       const downloaded = await historyDb.has(this.mediaId, this.page);
 
       if (this.status === ThumbnailBtnStatus.Complete) {
@@ -245,7 +233,7 @@ export class ThumbnailButton extends HTMLElement {
   connectedCallback() {
     this.connectedFlag = true;
     this.btn.addEventListener('click', this.dispatchDownload);
-    this.unsubscriber = this.observerDb();
+    this.shouldObserveDb && (this.unsubscriber = this.observeDb());
   }
 
   disconnectedCallback() {
