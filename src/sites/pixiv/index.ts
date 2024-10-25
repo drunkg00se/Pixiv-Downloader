@@ -60,10 +60,16 @@ export class Pixiv extends SiteInject {
   protected getBatchDownloadConfig(): BatchDownloadConfig<PixivMeta, true> {
     return {
       async avatar(url: string) {
-        const userIdMatch = regexp.userPage.exec(url);
-
         let userId: string;
-        userIdMatch ? (userId = userIdMatch[1] || userIdMatch[2]) : (userId = getSelfId() ?? '');
+        let matchReg: RegExpExecArray | null;
+
+        if ((matchReg = regexp.series.exec(url))) {
+          userId = matchReg[1];
+        } else if ((matchReg = regexp.userPage.exec(url))) {
+          userId = matchReg[1] || matchReg[2];
+        } else {
+          userId = getSelfId() ?? '';
+        }
 
         if (!userId) return '';
 
@@ -208,7 +214,7 @@ export class Pixiv extends SiteInject {
               name: t('downloader.download_type.pixiv_series'),
               fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
                 const matchSeries = regexp.series.exec(location.pathname)!;
-                return pixivParser.seriesGenerator(...args, matchSeries[0]);
+                return pixivParser.seriesGenerator(...args, matchSeries[2]);
               }
             }
           ]

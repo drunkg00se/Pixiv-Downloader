@@ -12,5 +12,5 @@ export const regexp = {
   followLatest: /\/bookmark_new_illust(?:_r18)?\.php/,
   historyPage: /\/history\.php/,
   historyThumbnailsId: /\d+(?=_)/,
-  series: /(?<=\/user\/[0-9]+\/series\/)[0-9]+/
+  series: /\/user\/([0-9]+)\/series\/([0-9]+)/
 };
