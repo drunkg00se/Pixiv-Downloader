@@ -200,6 +200,21 @@ export class Pixiv extends SiteInject {
         },
 
         {
+          name: 'series',
+          match: regexp.series,
+          genPageId: [
+            {
+              id: 'series',
+              name: t('downloader.download_type.pixiv_series'),
+              fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
+                const matchSeries = regexp.series.exec(location.pathname)!;
+                return pixivParser.seriesGenerator(...args, matchSeries[0]);
+              }
+            }
+          ]
+        },
+
+        {
           name: 'download_specific_tag',
           match: () => false, // use for user tag download
           genPageId: [

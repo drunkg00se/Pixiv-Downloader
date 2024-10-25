@@ -593,3 +593,77 @@ interface extraDataCommon {
     };
   };
 }
+
+interface SeriesIllustThumbnail extends UserPageWorksItem {
+  seriesId: string;
+  seriesTitle: string;
+}
+
+export interface SeriesData {
+  tagTranslation: Record<
+    string, // tag in unicode format
+    {
+      en: string;
+      ko: string;
+      zh: string;
+      zh_tw: string;
+      romaji: string;
+    }
+  >;
+  thumbnails: {
+    illust: SeriesIllustThumbnail[];
+    novel: [];
+    novelSeries: [];
+    novelDraft: [];
+    collection: [];
+  };
+  illustSeries: {
+    id: string;
+    userId: string;
+    title: string;
+    description: string;
+    caption: string;
+    total: number;
+    content_order: null;
+    url: string;
+    coverImageSl: number;
+    firstIllustId: string;
+    latestIllustId: string;
+    createDate: string;
+    updateDate: string;
+    watchCount: null;
+    isWatched: boolean;
+    isNotifying: boolean;
+  }[];
+  requests: [];
+  users: {
+    partial: number;
+    comment: string;
+    followedBack: boolean;
+    userId: string;
+    name: string;
+    image: string;
+    imageBig: string;
+    premium: boolean;
+    isFollowed: boolean;
+    isMypixiv: boolean;
+    isBlocking: boolean;
+    background: null;
+    commission: null;
+  }[];
+  page: {
+    series: {
+      workId: string;
+      order: number;
+    }[];
+    isSetCover: boolean;
+    seriesId: number;
+    otherSeriesId: string;
+    recentUpdatedWorkIds: number[];
+    total: number;
+    isWatched: boolean;
+    isNotifying: boolean;
+  };
+  extraData: extraDataCommon;
+  zoneConfig: Record<string, { url: string }>;
+}

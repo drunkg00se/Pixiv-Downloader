@@ -65,6 +65,7 @@ interface PixivParser extends SiteParser<PixivMeta> {
       ]
     | [userId: string, category: Exclude<Category, 'bookmarks'>, tag: string]
   >;
+  seriesGenerator: GenerateIdWithValidation<PixivMeta, [seriesId: string]>;
 }
 
 export const pixivParser: PixivParser = {
@@ -435,5 +436,71 @@ export const pixivParser: PixivParser = {
 
     // yield last page
     yield* yieldData(cache!, page - 1);
+  },
+
+  async *seriesGenerator(pageRange, checkValidity, seriesId) {
+    const [startPage = 1, endPage = 0] = pageRange ?? [];
+    let yieldedId = 0;
+    let total = 0;
+    let currentPage = startPage;
+
+    do {
+      const seriesData = await api.getSeriesData(seriesId, currentPage);
+      const { series } = seriesData.page;
+      if (!series.length) throw new Error(`Invalid page: ${currentPage}`);
+
+      const { illust } = seriesData.thumbnails;
+
+      if (!total) {
+        // work for now since the series is sorted in descending order
+        const isLastPage = series.some(({ order }) => order === 1);
+        const totalWorkCount = seriesData.page.total;
+
+        if (isLastPage) {
+          total = series.length;
+        } else if (endPage === 0) {
+          total = totalWorkCount;
+        } else {
+          const artworksPerPage = series.length;
+          const lastPage = Math.ceil(totalWorkCount / artworksPerPage);
+
+          if (endPage >= lastPage) {
+            const lastPageWorkCount = totalWorkCount % artworksPerPage || artworksPerPage;
+            total = (lastPage - startPage) * artworksPerPage + lastPageWorkCount;
+          } else {
+            total = (endPage - startPage + 1) * artworksPerPage;
+          }
+        }
+      }
+
+      const avaliable: string[] = [];
+      const invalid: string[] = [];
+      const unavaliable: string[] = [];
+
+      for (let i = 0; i < series.length; i++) {
+        const { workId } = series[i];
+        // illust.length is not equal to series.length
+        const thumbnail = illust.find((thumbnail) => thumbnail.id === workId);
+
+        if (!thumbnail || thumbnail.isMasked) {
+          unavaliable.push(workId);
+          continue;
+        }
+
+        const isValid = await checkValidity(thumbnail);
+        isValid ? avaliable.push(workId) : invalid.push(workId);
+      }
+
+      yield {
+        total,
+        page: currentPage,
+        avaliable,
+        invalid,
+        unavaliable
+      };
+
+      yieldedId += series.length;
+      currentPage++;
+    } while (yieldedId < total);
   }
 };

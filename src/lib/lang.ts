@@ -149,7 +149,8 @@ const zh = {
       pixiv_bookmark_public: '公开收藏',
       pixiv_bookmark_private: '不公开收藏',
       pixiv_follow_latest_all: '全部',
-      pixiv_follow_latest_r18: 'R-18'
+      pixiv_follow_latest_r18: 'R-18',
+      pixiv_series: '系列'
     }
   },
 
@@ -317,7 +318,8 @@ const en: typeof zh = {
       pixiv_bookmark_public: 'Public',
       pixiv_bookmark_private: 'Private',
       pixiv_follow_latest_all: 'All',
-      pixiv_follow_latest_r18: 'R-18'
+      pixiv_follow_latest_r18: 'R-18',
+      pixiv_series: 'Series'
     }
   },
 

@@ -6,7 +6,8 @@ import type {
   UgoiraMeta,
   ArtworkDetail,
   FollowLatestMode,
-  UserData
+  UserData,
+  SeriesData
 } from './types';
 import { BookmarkRestrict } from './types';
 import { logger } from '@/lib/logger';
@@ -83,6 +84,10 @@ function createService() {
 
     getUserData(userId: string): Promise<UserData> {
       return _requestJson<UserData>('/ajax/user/' + userId);
+    },
+
+    getSeriesData(seriesId: string, page: number): Promise<SeriesData> {
+      return _requestJson<SeriesData>(`/ajax/series/${seriesId}?p=${page}`);
     }
   };
 }
