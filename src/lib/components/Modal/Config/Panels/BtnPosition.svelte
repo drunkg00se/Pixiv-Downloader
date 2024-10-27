@@ -50,6 +50,7 @@
   onMount(() => {
     const sampleBtn = new ThumbnailButton({
       id: '0',
+      shouldObserveDb: false,
       onClick: () => void 0
     });
     sampleBtn.setAttribute('disabled', '');
@@ -61,6 +62,7 @@
     const sampleBookmarkBtn = new ThumbnailButton({
       id: '0',
       type: ThumbnailBtnType.PixivMyBookmark,
+      shouldObserveDb: false,
       onClick: () => void 0
     });
     sampleBookmarkBtn.setAttribute('disabled', '');
