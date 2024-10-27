@@ -40,7 +40,7 @@ export interface ThumbnailBtnProp {
 }
 
 export class ThumbnailButton extends HTMLElement {
-  private btn: HTMLButtonElement;
+  private btn?: HTMLButtonElement;
   private status: ThumbnailBtnStatus = ThumbnailBtnStatus.Init;
   private mediaId: number;
   private page?: number;
@@ -49,20 +49,27 @@ export class ThumbnailButton extends HTMLElement {
   private unsubscriber?: Unsubscriber;
   private connectedFlag = false;
   private shouldObserveDb = true;
+  private progress = 0;
 
   constructor(props: ThumbnailBtnProp) {
     super();
     this.dispatchDownload = this.dispatchDownload.bind(this);
-
-    this.mediaId = this.checkNumberValidity(props.id);
-    this.type = props.type;
     this.onClick = props.onClick;
 
-    props.page !== undefined && (this.page = this.checkNumberValidity(props.page));
-    props.shouldObserveDb !== undefined && (this.shouldObserveDb = props.shouldObserveDb);
+    // modifying `dataset` triggers `attributeChangedCallback`, so we should assign private value before dataset.
+    this.mediaId = this.checkNumberValidity(props.id);
+    this.dataset.id = String(this.mediaId);
 
-    this.render();
-    this.btn = this.shadowRoot!.querySelector('button')!;
+    if (props.type) {
+      this.dataset.type = this.type = props.type;
+    }
+
+    if (props.page !== undefined) {
+      this.page = this.checkNumberValidity(props.page);
+      this.dataset.page = String(this.page);
+    }
+
+    props.shouldObserveDb !== undefined && (this.shouldObserveDb = props.shouldObserveDb);
   }
 
   private checkNumberValidity(num: number | string): number {
@@ -136,11 +143,10 @@ export class ThumbnailButton extends HTMLElement {
   }
 
   private updateDisableStatus(val: string | null) {
-    const btn = this.shadowRoot!.querySelector('button')!;
     if (typeof val === 'string') {
-      btn.setAttribute('disabled', '');
+      this.btn?.setAttribute('disabled', '');
     } else {
-      btn.removeAttribute('disabled');
+      this.btn?.removeAttribute('disabled');
     }
   }
 
@@ -164,6 +170,7 @@ export class ThumbnailButton extends HTMLElement {
   }
 
   private updateIcon(status: string | null) {
+    // update status
     if (status === null) {
       status = ThumbnailBtnStatus.Init;
     } else if (status === ThumbnailBtnStatus.Init) {
@@ -173,27 +180,24 @@ export class ThumbnailButton extends HTMLElement {
       this.dataset.status = this.status;
       return;
     }
-
-    const useEl = this.shadowRoot!.querySelector('use')!;
-
     this.status = status as ThumbnailBtnStatus;
-    useEl.setAttribute('xlink:href', iconTypeMap[status]);
 
+    if (!this.connectedFlag) return;
+
+    // update dom
+    const useEl = this.shadowRoot!.querySelector('use')!;
+    useEl.setAttribute('xlink:href', iconTypeMap[status]);
     useEl.animate([{ opacity: 0.5 }, { opactiy: 1 }], { duration: 200 });
   }
 
   private render() {
-    const shadowRoot = this.attachShadow({ mode: 'open' });
-    shadowRoot.innerHTML = `    <style>${btnStyle}</style>${svgGroup}<button class="pdl-thumbnail">
-      <svg xmlns="http://www.w3.org/2000/svg" class="pdl-icon">
-        <use xlink:href="#pdl-download"></use>
+    const shadowRoot = this.shadowRoot ?? this.attachShadow({ mode: 'open' });
+    shadowRoot.innerHTML = `<style>${btnStyle}</style>${svgGroup}<button class="pdl-thumbnail" ${this.hasAttribute('disabled') ? 'disabled' : ''}>
+      <svg xmlns="http://www.w3.org/2000/svg" class="pdl-icon" ${this.status === ThumbnailBtnStatus.Progress ? `style="stroke-dashoffset: ${this.clacProgressRadial(this.progress)};"` : ''}>
+        <use xlink:href="${iconTypeMap[this.status]}"></use>
       </svg>
-      <span></span>
+      ${this.status === ThumbnailBtnStatus.Progress ? `<span class="show">${this.progress}</span>` : '<span></span>'}
     </button>`;
-
-    this.dataset.id = String(this.mediaId);
-    this.type && (this.dataset.type = this.type);
-    this.page !== undefined && (this.dataset.page = String(this.page));
   }
 
   public dispatchDownload(evt?: MouseEvent) {
@@ -231,47 +235,62 @@ export class ThumbnailButton extends HTMLElement {
   }
 
   connectedCallback() {
+    this.render();
     this.connectedFlag = true;
+    this.btn = this.shadowRoot!.querySelector('button')!;
     this.btn.addEventListener('click', this.dispatchDownload);
     this.shouldObserveDb && (this.unsubscriber = this.observeDb());
   }
 
   disconnectedCallback() {
     this.connectedFlag = false;
-    this.btn.removeEventListener('click', this.dispatchDownload);
+    this.btn?.removeEventListener('click', this.dispatchDownload);
     this.unsubscriber?.();
+  }
+
+  private clacProgressRadial(progress: number) {
+    const radius = 224;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (progress / 100) * circumference;
+    return offset;
   }
 
   public setProgress(progress: number, updateProgressbar = true) {
     if (progress < 0 || progress > 100) throw new RangeError('Value "progress" must between 0-100');
 
-    const shadowRoot = this.shadowRoot!;
-    const span = shadowRoot.querySelector('span')!;
+    this.progress = Math.floor(progress);
 
     if (this.status !== ThumbnailBtnStatus.Progress) {
       this.dataset.status = ThumbnailBtnStatus.Progress;
-      span.classList.toggle('show');
     }
 
-    span.textContent = String(Math.floor(progress));
+    if (!this.connectedFlag) return;
+
+    // update dom
+    const shadowRoot = this.shadowRoot!;
+    const span = shadowRoot.querySelector('span')!;
+    span.classList.add('show');
+    span.textContent = String(this.progress);
 
     if (!updateProgressbar) return;
+
     const svg = shadowRoot.querySelector<SVGElement>('svg.pdl-icon')!;
-
-    // circle半径
-    const radius = 224;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (progress / 100) * circumference;
-
-    svg.style.strokeDashoffset = String(offset);
+    svg.style.strokeDashoffset = String(this.clacProgressRadial(progress));
   }
 
   public removeProgress() {
+    if (this.status === ThumbnailBtnStatus.Progress) this.dataset.status = ThumbnailBtnStatus.Init;
+
+    this.progress = 0;
+
+    if (!this.connectedFlag) return;
+
+    // update dom
     const shadowRoot = this.shadowRoot!;
     const span = shadowRoot.querySelector('span')!;
     const svg = shadowRoot.querySelector<SVGElement>('svg.pdl-icon')!;
 
-    span.classList.toggle('show');
+    span.classList.remove('show');
     span.addEventListener(
       'transitionend',
       () => {
@@ -279,9 +298,7 @@ export class ThumbnailButton extends HTMLElement {
       },
       { once: true }
     );
-
     svg.style.removeProperty('stroke-dashoffset');
-    if (this.status === ThumbnailBtnStatus.Progress) this.dataset.status = ThumbnailBtnStatus.Init;
   }
 
   public setStatus(status: ThumbnailBtnStatus) {
