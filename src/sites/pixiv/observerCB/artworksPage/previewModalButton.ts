@@ -1,9 +1,8 @@
-import { regexp } from '@/lib/regExp';
 import { logger } from '@/lib/logger';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadArtwork } from '../../downloadArtwork';
 
-export function createPreviewModalBtn() {
+export function createPreviewModalBtn(id: string, unlistedId?: string) {
   //artworks插画页预览按钮class
   const illustModalBtn = document.querySelector(
     '.gtm-manga-viewer-preview-modal-open:not(.pdl-listened)'
@@ -21,12 +20,14 @@ export function createPreviewModalBtn() {
   [illustModalBtn, mangaModalBtn, mangaViewerModalBtn].forEach((node) => {
     if (node) {
       node.classList.add('pdl-listened');
-      node.addEventListener('click', handleModalClick);
+      node.addEventListener('click', () => {
+        handleModalClick(id, unlistedId);
+      });
     }
   });
 }
 
-function handleModalClick(): void {
+function handleModalClick(id: string, unlistedId?: string): void {
   //获得modal打开后的dom
   const timer = setInterval(() => {
     logger.info('Start to find modal.');
@@ -35,7 +36,6 @@ function handleModalClick(): void {
     if (getComputedStyle(previewList).display !== 'grid') return;
 
     clearInterval(timer);
-    const [, id] = regexp.artworksPage.exec(location.pathname) ?? [];
 
     (previewList.childNodes as NodeListOf<HTMLLIElement>).forEach((node, idx) => {
       node.style.position = 'relative';
@@ -43,6 +43,7 @@ function handleModalClick(): void {
         new ThumbnailButton({
           id,
           page: idx,
+          extraData: unlistedId ? { unlistedId } : undefined,
           onClick: downloadArtwork
         })
       );

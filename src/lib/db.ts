@@ -10,6 +10,7 @@ interface HistoryItemBase {
   title?: string;
   comment?: string;
   tags?: string[];
+  unlistedId?: string;
 }
 
 type HistoryItem = HistoryItemBase & { page?: Uint8Array };

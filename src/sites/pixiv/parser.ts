@@ -41,7 +41,7 @@ export interface PixivUgoiraMeta extends PixivMetaBase {
 export type PixivMeta = PixivIllustMeta | PixivUgoiraMeta;
 
 interface PixivParser extends SiteParser<PixivMeta> {
-  parse(id: string, ajax?: true): Promise<PixivMeta>;
+  parse(id: string, type?: 'html' | 'api' | 'unlisted'): Promise<PixivMeta>;
   illustMangaGenerator: GenerateIdWithValidation<PixivMeta, string>;
   followLatestGenerator: GenerateIdWithValidation<PixivMeta, [FollowLatestMode]>;
   chunkGenerator: GenerateIdWithValidation<
@@ -69,12 +69,15 @@ interface PixivParser extends SiteParser<PixivMeta> {
 }
 
 export const pixivParser: PixivParser = {
-  async parse(illustId: string, ajax?: true): Promise<PixivMeta> {
+  async parse(illustId: string, type = 'html'): Promise<PixivMeta> {
     let illustData: PreloadIllustData | ArtworkDetail;
     let token: string;
 
-    if (ajax) {
+    if (type === 'api') {
       illustData = await api.getArtworkDetail(illustId);
+      token = '';
+    } else if (type === 'unlisted') {
+      illustData = await api.getUnlistedArtworkDetail(illustId);
       token = '';
     } else {
       const htmlText = await api.getArtworkHtml(illustId);
@@ -93,6 +96,7 @@ export const pixivParser: PixivParser = {
     }
 
     const {
+      id,
       illustType,
       userName,
       userId,
@@ -121,7 +125,7 @@ export const pixivParser: PixivParser = {
     const comment = getElementText(p);
 
     const meta = {
-      id: illustId,
+      id,
       src: urls.original,
       extendName: urls.original.slice(-3),
       artist: userName,

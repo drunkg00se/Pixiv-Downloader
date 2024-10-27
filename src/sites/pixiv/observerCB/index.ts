@@ -8,6 +8,7 @@ import { createPresentationBtn } from './artworksPage/presentationButton';
 import { createPreviewModalBtn } from './artworksPage/previewModalButton';
 import { createMangaViewerBtn } from './artworksPage/mangaViewerButton';
 import { createFrequentTagBtn } from './userPage/frequentTagButton';
+import { createUnlistedToolbar } from './artworksPage/unlistedToolbar';
 
 function pageActions() {
   const pathname = location.pathname;
@@ -18,7 +19,7 @@ function pageActions() {
       createToolbarBtn(id);
       createWorkExpanedViewBtn(id);
       createPresentationBtn(id);
-      createPreviewModalBtn();
+      createPreviewModalBtn(id);
       createMangaViewerBtn(id);
       break;
     }
@@ -29,6 +30,20 @@ function pageActions() {
     }
     case regexp.historyPage.test(pathname): {
       createThumbnailBtn(document.querySelectorAll<HTMLSpanElement>('span[style]._history-item'));
+      break;
+    }
+    case !!(param = regexp.unlisted.exec(pathname)): {
+      const unlistedId = param[0];
+      const canonicalUrl = document.querySelector('link[rel="canonical"]')?.getAttribute('href');
+      if (!canonicalUrl) return;
+      const id = regexp.artworksPage.exec(canonicalUrl)?.[1];
+      if (!id) return;
+
+      createUnlistedToolbar(id, unlistedId);
+      createWorkExpanedViewBtn(id, unlistedId);
+      createPresentationBtn(id, unlistedId);
+      createPreviewModalBtn(id, unlistedId);
+      createMangaViewerBtn(id, unlistedId);
       break;
     }
     default:

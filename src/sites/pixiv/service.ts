@@ -46,6 +46,11 @@ function createService() {
       return _requestJson<ArtworkDetail>('/ajax/illust/' + illustId + params);
     },
 
+    getUnlistedArtworkDetail(unlistedId: string): Promise<ArtworkDetail> {
+      const params = '?lang=' + config.get('tagLang');
+      return _requestJson<ArtworkDetail>('/ajax/illust/unlisted/' + unlistedId + params);
+    },
+
     addBookmark(
       illustId: string,
       token: string,

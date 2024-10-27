@@ -7,7 +7,7 @@ let observer: MutationObserver | null;
 let btn: ThumbnailButton | null;
 
 // 预览大图的下载按钮
-export function createPresentationBtn(id: string) {
+export function createPresentationBtn(id: string, unlistedId?: string) {
   //侧边栏也符合选择符匹配
   const containers = document.querySelector("body > [role='presentation'] > div");
 
@@ -34,6 +34,7 @@ export function createPresentationBtn(id: string) {
     id,
     type: ThumbnailBtnType.PixivPresentation,
     page: Number(pageNum),
+    extraData: unlistedId ? { unlistedId } : undefined,
     onClick: downloadArtwork
   });
 
@@ -51,6 +52,7 @@ export function createPresentationBtn(id: string) {
       id,
       type: ThumbnailBtnType.PixivPresentation,
       page: Number(pageNum),
+      extraData: unlistedId ? { unlistedId } : undefined,
       onClick: downloadArtwork
     });
     containers.appendChild(btn);

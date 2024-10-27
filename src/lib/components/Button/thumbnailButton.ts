@@ -32,10 +32,13 @@ export const enum ThumbnailBtnType {
 
 export interface ThumbnailBtnProp {
   id: string | number;
+  onClick: (btn: ThumbnailButton) => any;
   page?: number;
   type?: ThumbnailBtnType;
   shouldObserveDb?: boolean;
-  onClick: (btn: ThumbnailButton) => any;
+  extraData?: Record<string, string> & {
+    [K in keyof ThumbnailBtnProp]?: never;
+  };
 }
 
 export class ThumbnailButton extends HTMLElement {
@@ -69,6 +72,12 @@ export class ThumbnailButton extends HTMLElement {
     }
 
     props.shouldObserveDb !== undefined && (this.shouldObserveDb = props.shouldObserveDb);
+
+    if (props.extraData) {
+      for (const key in props.extraData) {
+        this.dataset[key] = props.extraData[key];
+      }
+    }
   }
 
   private checkNumberValidity(num: number | string): number {
