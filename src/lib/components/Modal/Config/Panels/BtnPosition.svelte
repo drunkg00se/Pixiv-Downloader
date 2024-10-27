@@ -3,7 +3,11 @@
   import store from '../store';
   import t from '@/lib/lang';
   import { env } from '@/lib/env';
-  import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
+  import {
+    ThumbnailBtnStatus,
+    ThumbnailBtnType,
+    ThumbnailButton
+  } from '@/lib/components/Button/thumbnailButton';
   import { onMount } from 'svelte';
 
   export let bg = 'bg-white/30 dark:bg-black/15';
@@ -66,6 +70,7 @@
       onClick: () => void 0
     });
     sampleBookmarkBtn.setAttribute('disabled', '');
+    sampleBookmarkBtn.setStatus(ThumbnailBtnStatus.Complete);
 
     buttonContainer.appendChild(sampleBookmarkBtn);
   });
