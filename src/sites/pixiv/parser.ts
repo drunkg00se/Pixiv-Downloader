@@ -18,6 +18,7 @@ import { api } from '@/sites/pixiv/service';
 import { regexp } from '@/lib/regExp';
 import { logger } from '@/lib/logger';
 import type { GenerateIdWithValidation } from '@/lib/components/Downloader/useBatchDownload';
+import { TagLanguage } from '@/lib/config';
 
 interface PixivMetaBase extends MediaMeta {
   userId: string;
@@ -40,8 +41,13 @@ export interface PixivUgoiraMeta extends PixivMetaBase {
 
 export type PixivMeta = PixivIllustMeta | PixivUgoiraMeta;
 
+interface PixivParam extends Record<string, string> {
+  type: 'html' | 'api' | 'unlisted';
+  tagLang: TagLanguage;
+}
+
 interface PixivParser extends SiteParser<PixivMeta> {
-  parse(id: string, type?: 'html' | 'api' | 'unlisted'): Promise<PixivMeta>;
+  parse(id: string, param: PixivParam): Promise<PixivMeta>;
   illustMangaGenerator: GenerateIdWithValidation<PixivMeta, string>;
   followLatestGenerator: GenerateIdWithValidation<PixivMeta, [FollowLatestMode]>;
   chunkGenerator: GenerateIdWithValidation<
@@ -69,18 +75,19 @@ interface PixivParser extends SiteParser<PixivMeta> {
 }
 
 export const pixivParser: PixivParser = {
-  async parse(illustId: string, type = 'html'): Promise<PixivMeta> {
+  async parse(illustId: string, param: PixivParam): Promise<PixivMeta> {
     let illustData: PreloadIllustData | ArtworkDetail;
     let token: string;
+    const { tagLang, type } = param;
 
     if (type === 'api') {
-      illustData = await api.getArtworkDetail(illustId);
+      illustData = await api.getArtworkDetail(illustId, tagLang);
       token = '';
     } else if (type === 'unlisted') {
-      illustData = await api.getUnlistedArtworkDetail(illustId);
+      illustData = await api.getUnlistedArtworkDetail(illustId, tagLang);
       token = '';
     } else {
-      const htmlText = await api.getArtworkHtml(illustId);
+      const htmlText = await api.getArtworkHtml(illustId, tagLang);
 
       const preloadDataText = htmlText.match(regexp.preloadData);
       if (!preloadDataText) throw new Error('Fail to parse preload data: ' + illustId);

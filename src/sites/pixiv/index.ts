@@ -259,8 +259,8 @@ export class Pixiv extends SiteInject {
         }
       ],
 
-      parseMetaByArtworkId(id) {
-        return pixivParser.parse(id, 'api');
+      parseMetaByArtworkId: (id) => {
+        return pixivParser.parse(id, { tagLang: this.config.get('tagLang'), type: 'api' });
       },
 
       async downloadByArtworkId(meta, taskId) {

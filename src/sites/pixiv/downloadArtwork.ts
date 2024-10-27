@@ -4,6 +4,7 @@ import { pixivParser, type PixivMeta } from '@/sites/pixiv/parser';
 import { type HistoryData, historyDb } from '@/lib/db';
 import { PixivDownloadConfig } from '@/sites/pixiv/downloadConfigBuilder';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
+import { config } from '@/lib/config';
 
 export async function downloadArtwork(btn: ThumbnailButton) {
   downloader.dirHandleCheck();
@@ -13,18 +14,19 @@ export async function downloadArtwork(btn: ThumbnailButton) {
     page?: string;
     unlistedId?: string;
   };
+  const tagLang = config.get('tagLang');
 
   let pixivMeta: PixivMeta;
 
   if (!unlistedId) {
-    pixivMeta = await pixivParser.parse(id);
+    pixivMeta = await pixivParser.parse(id, { tagLang, type: 'html' });
     const { bookmarkData, token, tags } = pixivMeta;
 
     if (!bookmarkData) {
       addBookmark(btn, id, token, tags);
     }
   } else {
-    pixivMeta = await pixivParser.parse(unlistedId, 'unlisted');
+    pixivMeta = await pixivParser.parse(unlistedId, { tagLang, type: 'unlisted' });
   }
 
   const downloadConfigs = new PixivDownloadConfig(pixivMeta).getDownloadConfig(btn);

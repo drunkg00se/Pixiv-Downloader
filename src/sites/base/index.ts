@@ -7,7 +7,7 @@ import { useHistoryBackup } from '@/lib/components/Modal/Config/useHistoryBackup
 
 export abstract class SiteInject {
   private modal!: PdlApp;
-  private config: ReturnType<typeof loadConfig>;
+  protected config: ReturnType<typeof loadConfig>;
 
   constructor() {
     this.config = loadConfig(this.getCustomConfig() || undefined);

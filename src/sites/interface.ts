@@ -9,5 +9,5 @@ export interface MediaMeta {
 }
 
 export interface SiteParser<SiteMeta extends MediaMeta> {
-  parse(id: string): SiteMeta | Promise<SiteMeta>;
+  parse(id: string, param?: Record<string, string>): SiteMeta | Promise<SiteMeta>;
 }

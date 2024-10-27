@@ -11,7 +11,7 @@ import type {
 } from './types';
 import { BookmarkRestrict } from './types';
 import { logger } from '@/lib/logger';
-import { config } from '@/lib/config';
+import { type TagLanguage } from '@/lib/config';
 import { RequestError, JsonDataError } from '@/lib/error';
 
 function createService() {
@@ -30,25 +30,18 @@ function createService() {
       return await _requestJson<T>(url);
     },
 
-    async getArtworkHtml(illustId: string): Promise<string> {
-      logger.info('Fetch illust:', illustId);
-      const params = '?lang=' + config.get('tagLang');
-
-      const res = await fetch('https://www.pixiv.net/artworks/' + illustId + params);
+    async getArtworkHtml(illustId: string, lang: TagLanguage): Promise<string> {
+      const res = await fetch(`/artworks/${illustId}?lang=${lang}`);
       if (!res.ok) throw new RequestError(res.url, res.status);
       return await res.text();
     },
 
-    getArtworkDetail(illustId: string): Promise<ArtworkDetail> {
-      logger.info('Fetch illust:', illustId);
-      const params = '?lang=' + config.get('tagLang');
-
-      return _requestJson<ArtworkDetail>('/ajax/illust/' + illustId + params);
+    getArtworkDetail(illustId: string, lang: TagLanguage): Promise<ArtworkDetail> {
+      return _requestJson<ArtworkDetail>(`/ajax/illust/${illustId}?lang=${lang}`);
     },
 
-    getUnlistedArtworkDetail(unlistedId: string): Promise<ArtworkDetail> {
-      const params = '?lang=' + config.get('tagLang');
-      return _requestJson<ArtworkDetail>('/ajax/illust/unlisted/' + unlistedId + params);
+    getUnlistedArtworkDetail(unlistedId: string, lang: TagLanguage): Promise<ArtworkDetail> {
+      return _requestJson<ArtworkDetail>(`/ajax/illust/unlisted/${unlistedId}?lang=${lang}`);
     },
 
     addBookmark(
