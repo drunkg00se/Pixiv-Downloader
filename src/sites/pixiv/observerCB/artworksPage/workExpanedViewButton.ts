@@ -8,18 +8,11 @@ export function createWorkExpanedViewBtn(id: string, unlistedId?: string): void 
   );
   if (works.length < 2) return;
 
-  const containers = Array.from(works).map(
-    (node) => node.parentElement!.parentElement as HTMLElement
-  );
+  works.forEach((work, idx) => {
+    const container = work.parentElement?.parentElement;
+    if (!container || container.querySelector('pdl-artwork-button')) return;
 
-  //避免重复增加按钮
-  const elementToAppend = Array.from(containers).filter(
-    (el) => !el.querySelector('pdl-artwork-button')
-  );
-  if (!elementToAppend.length) return;
-
-  elementToAppend.forEach((node, idx) => {
-    node.appendChild(
+    container.appendChild(
       new ArtworkButton({
         id,
         page: idx,
