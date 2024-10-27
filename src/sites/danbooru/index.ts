@@ -1,6 +1,6 @@
 import { downloadArtwork } from './downloadArtwork';
 import { SiteInject } from '../base';
-import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
+import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadPoolArtwork } from './downloadPoolArtwork';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
@@ -56,7 +56,6 @@ export class Danbooru extends SiteInject {
 
       const btn = new ThumbnailButton({
         id: poolId,
-        type: ThumbnailBtnType.DanbooruPool,
         shouldObserveDb: false, // Danbooru pool的id不作记录
         onClick: downloadPoolArtwork
       });
