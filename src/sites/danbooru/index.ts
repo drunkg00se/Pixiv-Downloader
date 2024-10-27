@@ -11,8 +11,21 @@ export class Danbooru extends SiteInject {
   }
 
   protected inject(): void {
-    super.inject();
-    this.pageAction();
+    const path = location.pathname;
+    if (/^\/posts\/\d+/.test(path)) {
+      const imageContainer = document.querySelector(
+        'section.image-container:not(.blacklisted-active)'
+      );
+      if (!imageContainer) return;
+
+      const id = imageContainer.getAttribute('data-id')!;
+      this.createArtworkBtn(id);
+      this.createThumbnailBtn();
+    } else if (/^\/pools\/gallery/.test(path)) {
+      this.createPoolThumbnailBtn();
+    } else {
+      this.createThumbnailBtn();
+    }
   }
 
   protected createThumbnailBtn() {
@@ -62,24 +75,6 @@ export class Danbooru extends SiteInject {
 
       el.appendChild(btn);
     });
-  }
-
-  protected pageAction() {
-    const path = location.pathname;
-    if (/^\/posts\/\d+/.test(path)) {
-      const imageContainer = document.querySelector(
-        'section.image-container:not(.blacklisted-active)'
-      );
-      if (!imageContainer) return;
-
-      const id = imageContainer.getAttribute('data-id')!;
-      this.createArtworkBtn(id);
-      this.createThumbnailBtn();
-    } else if (/^\/pools\/gallery/.test(path)) {
-      this.createPoolThumbnailBtn();
-    } else {
-      this.createThumbnailBtn();
-    }
   }
 
   protected observeColorScheme() {

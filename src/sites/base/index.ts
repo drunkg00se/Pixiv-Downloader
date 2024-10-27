@@ -6,11 +6,25 @@ import { PdlApp } from '@/lib/components/App';
 import { useHistoryBackup } from '@/lib/components/Modal/Config/useHistoryBackup';
 
 export abstract class SiteInject {
-  private modal!: PdlApp;
+  protected app: PdlApp;
   protected config: ReturnType<typeof loadConfig>;
 
   constructor() {
     this.config = loadConfig(this.getCustomConfig() || undefined);
+    this.app = this.injectApp();
+    this.observeColorScheme();
+    this.injectStyle();
+    GM_registerMenuCommand(
+      t('button.setting'),
+      () => {
+        if (this.app.shadowRoot?.querySelector('.modal')) {
+          return;
+        }
+        this.app.showSetting();
+      },
+      's'
+    );
+
     this.inject();
     this.runScheduledTask();
   }
@@ -19,39 +33,21 @@ export abstract class SiteInject {
     throw new Error('`hostname` should be overwritten by a subclass.');
   }
 
-  protected inject() {
-    this.injectApp();
-    this.injectStyle();
-
-    GM_registerMenuCommand(
-      t('button.setting'),
-      () => {
-        if (this.modal.shadowRoot?.querySelector('.modal')) {
-          return;
-        }
-        this.modal.showSetting();
-      },
-      's'
-    );
-  }
-
-  protected injectApp() {
+  private injectApp() {
     const updated = this.config.get('showMsg');
     updated && this.config.set('showMsg', false);
 
-    const modal = new PdlApp({
+    const app = new PdlApp({
       updated,
       downloaderConfig: this.getBatchDownloadConfig(),
       filenameTemplate: this.getFilenameTemplate()
     });
 
-    this.modal = modal;
-    this.observeColorScheme();
-
-    document.body.append(modal);
+    document.body.append(app);
+    return app;
   }
 
-  protected injectStyle() {
+  private injectStyle() {
     (
       [
         'pdl-btn-self-bookmark-left',
@@ -72,11 +68,11 @@ export abstract class SiteInject {
   }
 
   protected setAppDarkMode() {
-    this.modal.setAttribute('dark', '');
+    this.app.setAttribute('dark', '');
   }
 
   protected setAppLightMode() {
-    this.modal.removeAttribute('dark');
+    this.app.removeAttribute('dark');
   }
 
   protected observeColorScheme() {
@@ -88,6 +84,8 @@ export abstract class SiteInject {
       e.matches ? this.setAppDarkMode() : this.setAppLightMode();
     });
   }
+
+  protected abstract inject(): void;
 
   protected abstract getBatchDownloadConfig():
     | undefined

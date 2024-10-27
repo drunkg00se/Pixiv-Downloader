@@ -10,8 +10,20 @@ export class Yande extends SiteInject {
   }
 
   protected inject() {
-    super.inject();
-    this.pageAction();
+    const pathname = location.pathname;
+    const galleryMatch = pathname.match(/(?<=\/post\/show\/)\d+/);
+
+    if (galleryMatch) {
+      this.createArtworkBtn(galleryMatch[0]);
+    } else if (pathname === '/post/browse') {
+      this.createScrollerBtn();
+      this.createImageBrowseBtn();
+    } else {
+      const btnContainers = document.querySelectorAll<HTMLAnchorElement>(
+        'a.thumb, div.post div.col1 a'
+      );
+      this.createThumbnailBtn(Array.from(btnContainers));
+    }
   }
 
   protected createThumbnailBtn(containers: HTMLAnchorElement[]) {
@@ -129,23 +141,6 @@ export class Yande extends SiteInject {
     createBtn();
 
     new MutationObserver(createBtn).observe(postId, { childList: true });
-  }
-
-  protected pageAction() {
-    const pathname = location.pathname;
-    const galleryMatch = pathname.match(/(?<=\/post\/show\/)\d+/);
-
-    if (galleryMatch) {
-      this.createArtworkBtn(galleryMatch[0]);
-    } else if (pathname === '/post/browse') {
-      this.createScrollerBtn();
-      this.createImageBrowseBtn();
-    } else {
-      const btnContainers = document.querySelectorAll<HTMLAnchorElement>(
-        'a.thumb, div.post div.col1 a'
-      );
-      this.createThumbnailBtn(Array.from(btnContainers));
-    }
   }
 
   protected getCustomConfig() {

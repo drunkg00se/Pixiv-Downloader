@@ -10,8 +10,24 @@ export class Rule34 extends SiteInject {
   }
 
   protected inject() {
-    super.inject();
-    this.pageAction();
+    const query = location.search;
+    if (!query) return;
+
+    const searchParams = new URLSearchParams(query);
+    const page = searchParams.get('page');
+    const s = searchParams.get('s');
+
+    if (page === 'post' && s === 'view') {
+      // 画廊页
+
+      // 检查artwork是否被删除
+      if (!document.querySelector('#image, #gelcomVideoPlayer')) return;
+
+      const id = searchParams.get('id')!;
+      this.createArtworkBtn(id);
+    } else {
+      this.createThumbnailBtn();
+    }
   }
 
   protected createThumbnailBtn() {
@@ -59,27 +75,6 @@ export class Rule34 extends SiteInject {
         onClick: downloadArtwork
       })
     );
-  }
-
-  protected pageAction() {
-    const query = location.search;
-    if (!query) return;
-
-    const searchParams = new URLSearchParams(query);
-    const page = searchParams.get('page');
-    const s = searchParams.get('s');
-
-    if (page === 'post' && s === 'view') {
-      // 画廊页
-
-      // 检查artwork是否被删除
-      if (!document.querySelector('#image, #gelcomVideoPlayer')) return;
-
-      const id = searchParams.get('id')!;
-      this.createArtworkBtn(id);
-    } else {
-      this.createThumbnailBtn();
-    }
   }
 
   protected getCustomConfig() {

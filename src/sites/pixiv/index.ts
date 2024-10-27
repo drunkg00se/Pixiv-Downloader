@@ -20,9 +20,7 @@ export class Pixiv extends SiteInject {
     return 'www.pixiv.net';
   }
 
-  public inject(): void {
-    super.inject();
-
+  public inject() {
     new MutationObserver(observerCallback).observe(document.body, {
       childList: true,
       subtree: true
