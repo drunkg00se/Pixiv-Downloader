@@ -34,7 +34,7 @@ export class Yande extends SiteInject {
       if (!idMathch) return;
       const id = idMathch[0];
 
-      const oldBtn = el.querySelector<ThumbnailButton>('pdl-button');
+      const oldBtn = el.querySelector<ThumbnailButton>(ThumbnailButton.tagNameLowerCase);
       if (oldBtn) {
         if (oldBtn.dataset.id === id) return;
 
@@ -48,9 +48,7 @@ export class Yande extends SiteInject {
           if (!el.classList.contains('thumb')) {
             const image = el.querySelector('img')!;
 
-            if (image.src.includes('blacklisted-preview.png')) {
-              return;
-            }
+            if (image.src.includes('blacklisted-preview.png')) return;
 
             // blacklist image's src is modified by js
             // so check the src agian when image loaded
@@ -123,8 +121,12 @@ export class Yande extends SiteInject {
     if (!postId) return;
 
     function createBtn() {
-      const oldBtn = document.querySelector('pdl-button[type]');
-      if (oldBtn) oldBtn.remove();
+      // remove old button if exists.
+      document
+        .querySelector(
+          `${ThumbnailButton.tagNameLowerCase}[data-type="${ThumbnailBtnType.YandeBrowse}"]`
+        )
+        ?.remove();
 
       const id = postId!.textContent;
       if (!id) return;

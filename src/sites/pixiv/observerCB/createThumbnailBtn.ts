@@ -15,12 +15,12 @@ export function createThumbnailBtn(
     let illustId: string;
     let type: ThumbnailBtnType | undefined;
 
-    //  childElementCount检查是否为图片标题节点
+    // childElementCount检查是否为图片标题节点
     if (
       (e.childElementCount !== 0 ||
         e.className.includes('_history-item') ||
         e.className.includes('_history-related-item')) &&
-      !e.querySelector('pdl-button') &&
+      !e.querySelector(ThumbnailButton.tagNameLowerCase) &&
       (illustId = getIllustId(e))
     ) {
       if (isSelfBookmark) {

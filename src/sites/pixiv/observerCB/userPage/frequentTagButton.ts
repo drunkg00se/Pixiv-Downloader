@@ -5,10 +5,9 @@ export function createFrequentTagBtn() {
   if (!tagsEles.length) return;
 
   tagsEles.forEach((ele) => {
-    if (ele.nextElementSibling?.tagName === 'PDL-ARTWORK-TAG') return;
+    if (ele.nextElementSibling?.tagName.toLowerCase() === ArtworkTagButton.tagNameLowerCase) return;
 
     const artworkTagBtn = new ArtworkTagButton(ele);
-
     ele.parentElement!.appendChild(artworkTagBtn);
   });
 }

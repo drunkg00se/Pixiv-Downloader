@@ -2,7 +2,7 @@ import { UnlistedArtworkToolbar } from '@/lib/components/Pixiv/unlistedToolbar';
 import { downloadArtwork } from '../../downloadArtwork';
 
 export function createUnlistedToolbar(id: string, unlistedId: string) {
-  const toolbar = document.querySelector('pdl-unlisted-artwork-toolbar');
+  const toolbar = document.querySelector(UnlistedArtworkToolbar.tagNameLowerCase);
   if (toolbar) return;
 
   const container = document.querySelector('div[style^="transform: translateY"]');

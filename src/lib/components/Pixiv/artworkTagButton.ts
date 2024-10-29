@@ -29,6 +29,10 @@ export class ArtworkTagButton extends HTMLElement {
     });
   }
 
+  static get tagNameLowerCase() {
+    return 'pdl-artwork-tag';
+  }
+
   // 为了美观
   private resetTagStyle() {
     this.tagElement.style.borderTopRightRadius = '0px';
@@ -137,4 +141,4 @@ export class ArtworkTagButton extends HTMLElement {
   }
 }
 
-customElements.define('pdl-artwork-tag', ArtworkTagButton);
+customElements.define(ArtworkTagButton.tagNameLowerCase, ArtworkTagButton);

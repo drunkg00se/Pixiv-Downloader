@@ -15,6 +15,10 @@ export class UnlistedArtworkToolbar extends HTMLElement {
     this.props = props;
   }
 
+  static get tagNameLowerCase() {
+    return 'pdl-unlisted-artwork-toolbar';
+  }
+
   private render() {
     if (this.shadowRoot) return;
 
@@ -35,4 +39,4 @@ export class UnlistedArtworkToolbar extends HTMLElement {
   }
 }
 
-customElements.define('pdl-unlisted-artwork-toolbar', UnlistedArtworkToolbar);
+customElements.define(UnlistedArtworkToolbar.tagNameLowerCase, UnlistedArtworkToolbar);

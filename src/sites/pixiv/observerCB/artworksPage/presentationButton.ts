@@ -20,7 +20,7 @@ export function createPresentationBtn(id: string, unlistedId?: string) {
     }
     return;
   }
-  if (containers.querySelector('pdl-button')) return;
+  if (containers.querySelector(ThumbnailButton.tagNameLowerCase)) return;
 
   // 避免匹配到侧边栏pixiv图标: a > img
   const img = containers.querySelector<HTMLImageElement>('div > img');

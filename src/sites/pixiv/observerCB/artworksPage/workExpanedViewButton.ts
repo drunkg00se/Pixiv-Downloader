@@ -10,7 +10,7 @@ export function createWorkExpanedViewBtn(id: string, unlistedId?: string): void 
 
   works.forEach((work, idx) => {
     const container = work.parentElement?.parentElement;
-    if (!container || container.querySelector('pdl-artwork-button')) return;
+    if (!container || container.querySelector(ArtworkButton.tagNameLowerCase)) return;
 
     container.appendChild(
       new ArtworkButton({

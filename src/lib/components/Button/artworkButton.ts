@@ -12,6 +12,10 @@ export class ArtworkButton extends HTMLElement {
     this.render();
   }
 
+  static get tagNameLowerCase() {
+    return 'pdl-artwork-button';
+  }
+
   private render() {
     const shadowRoot = this.attachShadow({ mode: 'open' });
     const btnProps = { ...this.props };
@@ -29,4 +33,4 @@ export class ArtworkButton extends HTMLElement {
   }
 }
 
-customElements.define('pdl-artwork-button', ArtworkButton);
+customElements.define(ArtworkButton.tagNameLowerCase, ArtworkButton);

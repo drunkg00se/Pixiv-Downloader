@@ -21,6 +21,10 @@ export class TagListButton extends HTMLElement {
     this.btn = this.shadowRoot!.querySelector('button')!;
   }
 
+  static get tagNameLowerCase() {
+    return 'pdl-tag-list-button';
+  }
+
   private async render() {
     const shadowRoot = this.attachShadow({ mode: 'open' });
     addStyleToShadow(shadowRoot);
@@ -108,4 +112,4 @@ export class TagListButton extends HTMLElement {
   }
 }
 
-customElements.define('pdl-tag-list-button', TagListButton);
+customElements.define(TagListButton.tagNameLowerCase, TagListButton);

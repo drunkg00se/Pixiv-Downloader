@@ -80,6 +80,10 @@ export class ThumbnailButton extends HTMLElement {
     }
   }
 
+  static get tagNameLowerCase() {
+    return 'pdl-button';
+  }
+
   private checkNumberValidity(num: number | string): number {
     if (typeof num === 'string') {
       if (num !== '') {
@@ -330,4 +334,4 @@ export class ThumbnailButton extends HTMLElement {
   }
 }
 
-customElements.define('pdl-button', ThumbnailButton);
+customElements.define(ThumbnailButton.tagNameLowerCase, ThumbnailButton);

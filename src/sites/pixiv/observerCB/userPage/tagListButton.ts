@@ -8,13 +8,12 @@ export function createTagListBtn() {
   // others: div[class="charcoal-token"]
   const modalRoot = listContainer?.closest('div[role="presentation"], div[class="charcoal-token"]');
   const closeBtn = modalRoot?.querySelector('svg')?.parentElement;
-
   const tagElements = listContainer.querySelectorAll<HTMLAnchorElement>(
     'div[style*="position: absolute"] a'
   );
 
   tagElements.forEach((ele) => {
-    if (ele.querySelector('pdl-tag-list-button')) return;
+    if (ele.querySelector(TagListButton.tagNameLowerCase)) return;
 
     const btn = new TagListButton(ele.href, () => {
       // 关闭modal
