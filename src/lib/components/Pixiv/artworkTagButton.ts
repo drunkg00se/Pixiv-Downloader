@@ -117,7 +117,7 @@ export class ArtworkTagButton extends HTMLElement {
 
     this.ob.observe(this.tagElement, {
       attributes: true,
-      attributeFilter: ['status']
+      attributeFilter: ['class']
     });
   }
 
