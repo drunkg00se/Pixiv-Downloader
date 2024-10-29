@@ -7,8 +7,8 @@ import { regexp } from '@/lib/regExp';
 import type { Unsubscriber } from 'svelte/store';
 
 export class TagListButton extends HTMLElement {
-  private btn: HTMLButtonElement;
-  private unsubscriber!: Unsubscriber;
+  private btn?: HTMLButtonElement;
+  private unsubscriber?: Unsubscriber;
 
   constructor(
     private tagUrl: string,
@@ -16,9 +16,6 @@ export class TagListButton extends HTMLElement {
   ) {
     super();
     this.dispatchDownload = this.dispatchDownload.bind(this);
-
-    this.render();
-    this.btn = this.shadowRoot!.querySelector('button')!;
   }
 
   static get tagNameLowerCase() {
@@ -26,6 +23,8 @@ export class TagListButton extends HTMLElement {
   }
 
   private async render() {
+    if (this.shadowRoot) return;
+
     const shadowRoot = this.attachShadow({ mode: 'open' });
     addStyleToShadow(shadowRoot);
 
@@ -78,8 +77,12 @@ export class TagListButton extends HTMLElement {
   }
 
   connectedCallback() {
-    const { downloading } = useBatchDownload();
+    this.render();
+    this.btn ??= this.shadowRoot!.querySelector('button')!;
+    this.btn.addEventListener('click', this.dispatchDownload);
+    this.onClick && this.btn.addEventListener('click', this.onClick);
 
+    const { downloading } = useBatchDownload();
     this.unsubscriber = downloading.subscribe((val) => {
       if (val) {
         this.setAttribute('disabled', '');
@@ -87,15 +90,12 @@ export class TagListButton extends HTMLElement {
         this.removeAttribute('disabled');
       }
     });
-
-    this.btn.addEventListener('click', this.dispatchDownload);
-    this.onClick && this.btn.addEventListener('click', this.onClick);
   }
 
   disconnectedCallback() {
-    this.unsubscriber();
-    this.btn.removeEventListener('click', this.dispatchDownload);
-    this.onClick && this.btn.removeEventListener('click', this.onClick);
+    this.unsubscriber?.();
+    this.btn?.removeEventListener('click', this.dispatchDownload);
+    this.onClick && this.btn?.removeEventListener('click', this.onClick);
   }
 
   static get observedAttributes() {
@@ -103,11 +103,10 @@ export class TagListButton extends HTMLElement {
   }
 
   attributeChangedCallback(name: 'disabled', oldValue: string | null, newValue: string | null) {
-    const btn = this.shadowRoot!.querySelector('button')!;
     if (typeof newValue === 'string') {
-      btn.setAttribute('disabled', '');
+      this.btn?.setAttribute('disabled', '');
     } else {
-      btn.removeAttribute('disabled');
+      this.btn?.removeAttribute('disabled');
     }
   }
 }

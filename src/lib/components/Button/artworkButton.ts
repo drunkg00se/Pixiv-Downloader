@@ -9,7 +9,6 @@ export class ArtworkButton extends HTMLElement {
   constructor(props: ArtworkButtonProps) {
     super();
     this.props = props;
-    this.render();
   }
 
   static get tagNameLowerCase() {
@@ -17,6 +16,8 @@ export class ArtworkButton extends HTMLElement {
   }
 
   private render() {
+    if (this.shadowRoot) return;
+
     const shadowRoot = this.attachShadow({ mode: 'open' });
     const btnProps = { ...this.props };
 
@@ -30,6 +31,10 @@ export class ArtworkButton extends HTMLElement {
 
     const wrapper = shadowRoot.querySelector<HTMLDivElement>('.button-wrapper')!;
     wrapper.appendChild(thumbnailButton);
+  }
+
+  connectedCallback() {
+    this.render();
   }
 }
 

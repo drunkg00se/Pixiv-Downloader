@@ -13,17 +13,13 @@ export interface TagProps {
 }
 
 export class ArtworkTagButton extends HTMLElement {
+  private btn?: HTMLButtonElement;
   private ob: MutationObserver;
-  private unsubscriber!: Unsubscriber;
+  private unsubscriber?: Unsubscriber;
 
   constructor(private tagElement: HTMLAnchorElement) {
     super();
-
     this.dispatchDownload = this.dispatchDownload.bind(this);
-
-    this.render();
-    this.resetTagStyle();
-
     this.ob = new MutationObserver(() => {
       this.changeBtnColor();
     });
@@ -40,14 +36,16 @@ export class ArtworkTagButton extends HTMLElement {
   }
 
   private changeBtnColor() {
-    const { color, backgroundColor } = getComputedStyle(this.tagElement);
-    const btn = this.shadowRoot!.querySelector('button')!;
+    if (!this.btn) return;
 
-    btn.style.color = color;
-    btn.style.backgroundColor = backgroundColor;
+    const { color, backgroundColor } = getComputedStyle(this.tagElement);
+    this.btn.style.color = color;
+    this.btn.style.backgroundColor = backgroundColor;
   }
 
   private async render() {
+    if (this.shadowRoot) return;
+
     const shadowRoot = this.attachShadow({ mode: 'open' });
     addStyleToShadow(shadowRoot);
 
@@ -58,7 +56,7 @@ export class ArtworkTagButton extends HTMLElement {
     </i>
   </button>`;
 
-    this.changeBtnColor();
+    this.resetTagStyle();
   }
 
   public getTagProps(): TagProps {
@@ -103,8 +101,12 @@ export class ArtworkTagButton extends HTMLElement {
   }
 
   connectedCallback() {
-    const { downloading } = useBatchDownload();
+    this.render();
+    this.btn ??= this.shadowRoot!.querySelector('button')!;
+    this.changeBtnColor();
+    this.btn.addEventListener('click', this.dispatchDownload);
 
+    const { downloading } = useBatchDownload();
     this.unsubscriber = downloading.subscribe((val) => {
       if (val) {
         this.setAttribute('disabled', '');
@@ -113,8 +115,6 @@ export class ArtworkTagButton extends HTMLElement {
       }
     });
 
-    this.addEventListener('click', this.dispatchDownload);
-
     this.ob.observe(this.tagElement, {
       attributes: true,
       attributeFilter: ['status']
@@ -122,8 +122,8 @@ export class ArtworkTagButton extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.unsubscriber();
-    this.removeEventListener('click', this.dispatchDownload);
+    this.unsubscriber?.();
+    this.btn?.removeEventListener('click', this.dispatchDownload);
     this.ob.disconnect();
   }
 
@@ -132,11 +132,10 @@ export class ArtworkTagButton extends HTMLElement {
   }
 
   attributeChangedCallback(name: 'disabled', oldValue: string | null, newValue: string | null) {
-    const btn = this.shadowRoot!.querySelector('button')!;
     if (typeof newValue === 'string') {
-      btn.setAttribute('disabled', '');
+      this.btn?.setAttribute('disabled', '');
     } else {
-      btn.removeAttribute('disabled');
+      this.btn?.removeAttribute('disabled');
     }
   }
 }
