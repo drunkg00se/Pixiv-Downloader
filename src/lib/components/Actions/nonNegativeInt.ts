@@ -12,7 +12,7 @@ export const nonNegativeInt: Action<HTMLInputElement, Params> = (node, params: P
   if (!(node instanceof HTMLInputElement) || node.type !== 'number')
     throw new Error('Node should be an HTMLInputElement with a `type` of "number".');
 
-  const updateStore = (newVal?: number) => {
+  const resetStore = (newVal?: number) => {
     if ('key' in params) {
       const { key, store } = params;
 
@@ -26,11 +26,15 @@ export const nonNegativeInt: Action<HTMLInputElement, Params> = (node, params: P
     } else {
       params.update((currentVal) => {
         if (typeof newVal === 'number') {
+          if (currentVal === newVal) {
+            node.value = '' + newVal;
+          }
+
           return newVal;
         } else {
           // return same val does not trigger update, so we need to update node.value manually;
-          const nodeVal = node.value === '' ? null : +node.value;
-          nodeVal !== currentVal &&
+          const nodeValToNumber = node.value === '' ? null : +node.value;
+          nodeValToNumber !== currentVal &&
             (node.value = typeof currentVal === 'number' ? '' + currentVal : '');
           return currentVal;
         }
@@ -50,12 +54,12 @@ export const nonNegativeInt: Action<HTMLInputElement, Params> = (node, params: P
         const numVal = +value;
 
         if (numVal < minVal) {
-          updateStore(minVal);
+          resetStore(minVal);
         } else if (maxVal && numVal > maxVal) {
-          updateStore(maxVal);
+          resetStore(maxVal);
         }
       } else {
-        updateStore();
+        resetStore();
       }
     }
   });
@@ -67,7 +71,7 @@ export const nonNegativeInt: Action<HTMLInputElement, Params> = (node, params: P
     const minVal = min === '' ? 0 : +min;
 
     if (value === '') {
-      updateStore(minVal);
+      resetStore(minVal);
     }
   });
 
