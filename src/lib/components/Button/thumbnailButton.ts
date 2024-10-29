@@ -52,6 +52,7 @@ export class ThumbnailButton extends HTMLElement {
   private connectedFlag = false;
   private shouldObserveDb = true;
   private progress = 0;
+  private dirty = false;
 
   constructor(props: ThumbnailBtnProp) {
     super();
@@ -155,10 +156,15 @@ export class ThumbnailButton extends HTMLElement {
   }
 
   private updateDisableStatus(val: string | null) {
+    if (!this.connectedFlag) {
+      this.dirty = true;
+      return;
+    }
+
     if (typeof val === 'string') {
-      this.btn?.setAttribute('disabled', '');
+      this.btn!.setAttribute('disabled', '');
     } else {
-      this.btn?.removeAttribute('disabled');
+      this.btn!.removeAttribute('disabled');
     }
   }
 
@@ -194,7 +200,10 @@ export class ThumbnailButton extends HTMLElement {
     }
     this.status = status as ThumbnailBtnStatus;
 
-    if (!this.connectedFlag) return;
+    if (!this.connectedFlag) {
+      this.dirty = true;
+      return;
+    }
 
     // update dom
     const useEl = this.shadowRoot!.querySelector('use')!;
@@ -203,12 +212,17 @@ export class ThumbnailButton extends HTMLElement {
   }
 
   private render() {
-    const shadowRoot = this.shadowRoot ?? this.attachShadow({ mode: 'open' });
+    let shadowRoot: ShadowRoot | null;
+    if ((shadowRoot = this.shadowRoot) && !this.dirty) return;
+
+    const statusIsProgress = this.status === ThumbnailBtnStatus.Progress;
+
+    shadowRoot ??= this.attachShadow({ mode: 'open' });
     shadowRoot.innerHTML = `<style>${btnStyle}</style>${svgGroup}<button class="pdl-thumbnail" ${this.hasAttribute('disabled') ? 'disabled' : ''}>
-      <svg xmlns="http://www.w3.org/2000/svg" class="pdl-icon" ${this.status === ThumbnailBtnStatus.Progress ? `style="stroke-dashoffset: ${this.clacProgressRadial(this.progress)};"` : ''}>
+      <svg xmlns="http://www.w3.org/2000/svg" class="pdl-icon" ${statusIsProgress ? `style="stroke-dashoffset: ${this.clacProgressRadial(this.progress)};"` : ''}>
         <use xlink:href="${iconTypeMap[this.status]}"></use>
       </svg>
-      ${this.status === ThumbnailBtnStatus.Progress ? `<span class="show">${this.progress}</span>` : '<span></span>'}
+      ${statusIsProgress ? `<span class="show">${this.progress}</span>` : '<span></span>'}
     </button>`;
   }
 
@@ -248,6 +262,7 @@ export class ThumbnailButton extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.dirty && (this.dirty = false);
     this.connectedFlag = true;
     this.btn = this.shadowRoot!.querySelector('button')!;
     this.btn.addEventListener('click', this.dispatchDownload);
@@ -276,7 +291,10 @@ export class ThumbnailButton extends HTMLElement {
       this.dataset.status = ThumbnailBtnStatus.Progress;
     }
 
-    if (!this.connectedFlag) return;
+    if (!this.connectedFlag) {
+      this.dirty = true;
+      return;
+    }
 
     // update dom
     const shadowRoot = this.shadowRoot!;
@@ -295,7 +313,10 @@ export class ThumbnailButton extends HTMLElement {
 
     this.progress = 0;
 
-    if (!this.connectedFlag) return;
+    if (!this.connectedFlag) {
+      this.dirty = true;
+      return;
+    }
 
     // update dom
     const shadowRoot = this.shadowRoot!;
