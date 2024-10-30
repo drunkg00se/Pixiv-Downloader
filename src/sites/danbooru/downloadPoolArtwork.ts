@@ -18,7 +18,7 @@ export async function downloadPoolArtwork(btn: ThumbnailButton) {
   const idGen = danbooruParser.genIdByPool(poolId, filter);
 
   for await (const id of idGen) {
-    const mediaMeta = await danbooruParser.parse(id);
+    const mediaMeta = await danbooruParser.parse(id, { type: 'api' });
     const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig();
 
     const p = downloader

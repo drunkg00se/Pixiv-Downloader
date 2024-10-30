@@ -1,12 +1,15 @@
-import { RequestError } from '@/lib/error';
+import { JsonDataError, RequestError } from '@/lib/error';
 import type { MediaMeta, SiteParser } from '../interface';
 import { getElementText, sleep } from '@/lib/util';
+import { danbooruApi } from './api';
 
 export type DanbooruMeta = MediaMeta & { comment: string; character: string };
 
 interface DanbooruParser extends SiteParser<DanbooruMeta> {
   getDoc(url: string): Promise<Document>;
-  parse(id: string): Promise<DanbooruMeta>;
+  parse(id: string, param: { type: 'html' | 'api' }): Promise<DanbooruMeta>;
+  parseIdByHtml(id: string): Promise<DanbooruMeta>;
+  parseIdByApi(id: string): Promise<DanbooruMeta>;
   getPoolPostCount(poolId: string): Promise<number>;
   genIdByPool(
     poolId: string,
@@ -22,7 +25,16 @@ export const danbooruParser: DanbooruParser = {
     return new DOMParser().parseFromString(html, 'text/html');
   },
 
-  async parse(id: string): Promise<DanbooruMeta> {
+  async parse(id, params) {
+    const { type } = params;
+    if (type === 'html') {
+      return this.parseIdByHtml(id);
+    } else {
+      return this.parseIdByApi(id);
+    }
+  },
+
+  async parseIdByHtml(id: string): Promise<DanbooruMeta> {
     const doc = await this.getDoc('/posts/' + id);
     const src = doc.querySelector<HTMLAnchorElement>('a[download]')?.href;
     if (!src) throw new Error('Can not get media src');
@@ -89,6 +101,67 @@ export const danbooruParser: DanbooruParser = {
       comment,
       tags,
       createDate: postDate
+    };
+  },
+
+  async parseIdByApi(id: string): Promise<DanbooruMeta> {
+    const [postDataResult, commentDataResult] = await Promise.allSettled([
+      danbooruApi.getPost(id),
+      danbooruApi.getArtistCommentary(id)
+    ]);
+
+    if (postDataResult.status === 'rejected') throw postDataResult.reason;
+
+    // post may not have a comment.
+    if (
+      commentDataResult.status === 'rejected' &&
+      !(commentDataResult.reason instanceof JsonDataError)
+    )
+      throw commentDataResult.reason;
+
+    const {
+      created_at,
+      file_ext,
+      file_url,
+      md5,
+      tag_string_artist,
+      tag_string_character,
+      tag_string_copyright,
+      tag_string_general,
+      tag_string_meta,
+      source
+    } = postDataResult.value;
+
+    const { original_title = '', original_description = '' } =
+      'value' in commentDataResult ? commentDataResult.value : {};
+
+    const addTypeToTag = (type: string, tag: string) =>
+      tag.split(' ').map((tag) => type + ':' + tag);
+
+    const tags: string[] = [
+      ...addTypeToTag('artist', tag_string_artist),
+      ...addTypeToTag('character', tag_string_character),
+      ...addTypeToTag('copyright', tag_string_copyright),
+      ...addTypeToTag('general', tag_string_general),
+      ...addTypeToTag('meta', tag_string_meta)
+    ];
+    source && tags.push(`source:${source}`);
+
+    const comment =
+      original_title && original_description
+        ? original_title + '\n' + original_description
+        : original_title || original_description;
+
+    return {
+      id,
+      src: file_url,
+      extendName: file_ext,
+      artist: tag_string_artist.replaceAll(' ', ',') || 'UnknownArtist',
+      character: tag_string_character.replaceAll(' ', ',') || 'UnknownCharacter',
+      title: md5,
+      comment,
+      tags,
+      createDate: created_at
     };
   },
 
