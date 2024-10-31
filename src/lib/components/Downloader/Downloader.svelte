@@ -244,21 +244,23 @@
 
           <svelte:fragment slot="panel">
             {#if tabSet === 0}
-              <div class="flex justify-end items-center my-4">
-                <div class="btn-group w-full">
-                  {#each downloaderConfig.filterOption.filters as { id, name }}
-                    <label
-                      class="btn !py-2 rounded-none !transform-none cursor-pointer variant-soft-surface has-[:checked]:!variant-filled-primary text-sm w-full"
-                    >
-                      <!-- NOTE: Don't use `hidden` as it prevents `required` from operating -->
-                      <div class="w-0 h-0 overflow-hidden hidden">
-                        <input type="checkbox" bind:group={$selectedFilters} value={id} />
-                      </div>
-                      <div class="!m-0">{name}</div>
-                    </label>
-                  {/each}
+              {#if downloaderConfig.filterOption.filters.length}
+                <div class="flex justify-end items-center my-4">
+                  <div class="btn-group w-full">
+                    {#each downloaderConfig.filterOption.filters as { id, name }}
+                      <label
+                        class="btn !py-2 rounded-none !transform-none cursor-pointer variant-soft-surface has-[:checked]:!variant-filled-primary text-sm w-full"
+                      >
+                        <!-- NOTE: Don't use `hidden` as it prevents `required` from operating -->
+                        <div class="w-0 h-0 overflow-hidden hidden">
+                          <input type="checkbox" bind:group={$selectedFilters} value={id} />
+                        </div>
+                        <div class="!m-0">{name}</div>
+                      </label>
+                    {/each}
+                  </div>
                 </div>
-              </div>
+              {/if}
 
               <div class="flex justify-between items-center my-4 gap-4">
                 <div class="flex-grow w-full">
