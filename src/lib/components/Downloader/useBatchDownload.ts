@@ -19,7 +19,7 @@ export type GenerateIdWithValidation<T, K extends string | string[] = []> = (
 ) => Generator<YieldArtworkId, void, undefined> | AsyncGenerator<YieldArtworkId, void, undefined>;
 
 export type GenerateIdWithoutValidation<K extends string | string[] = []> = (
-  pageRange: [start: number | null, end: number | null] | null,
+  pageRange: [start: number, end: number] | null,
   ...restArgs: K extends string ? K[] : K
 ) => Generator<YieldArtworkId, void, undefined> | AsyncGenerator<YieldArtworkId, void, undefined>;
 
@@ -65,6 +65,7 @@ export interface BatchDownloadConfig<
       | GenPageIdItem<T, any, FilterWhenGenerateIngPage>[];
   }[];
   parseMetaByArtworkId(id: string): T | Promise<T>;
+  // TODO: no need to return id
   downloadByArtworkId(meta: T, taskId: string): Promise<string>; //return Id for msg
   onDownloadAbort(taskIds: string[]): void;
 }
@@ -713,6 +714,7 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
           const isValid = await checkValidity(artworkMeta);
           if (!isValid) {
             addExcluded(id);
+            await Promise.race([sleep(1000), waitUntilDownloadComplete]);
             continue;
           }
         }
