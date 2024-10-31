@@ -235,9 +235,11 @@
           <Tab bind:group={tabSet} name="category" value={0}
             >{t('downloader.category.tab_name')}</Tab
           >
-          <Tab bind:group={tabSet} name="tag_filter" value={1}
-            >{t('downloader.tag_filter.tab_name')}</Tab
-          >
+          {#if !!downloaderConfig.filterOption.enableTagFilter}
+            <Tab bind:group={tabSet} name="tag_filter" value={1}
+              >{t('downloader.tag_filter.tab_name')}</Tab
+            >
+          {/if}
           <Tab bind:group={tabSet} name="tag_filter" value={2}
             >{t('downloader.others.tab_name')}</Tab
           >
