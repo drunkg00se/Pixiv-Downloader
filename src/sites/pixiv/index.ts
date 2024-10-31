@@ -267,7 +267,6 @@ export class Pixiv extends SiteInject {
         const downloadConfigs = new PixivDownloadConfig(meta).getDownloadConfig();
         downloadConfigs.forEach((config) => {
           config.taskId = taskId;
-          config.source.id = taskId;
         });
 
         await downloader.download(downloadConfigs);
