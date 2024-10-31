@@ -2,6 +2,7 @@ import { JsonDataError, RequestError } from '@/lib/error';
 import type { MediaMeta, SiteParser } from '../interface';
 import { getElementText, sleep } from '@/lib/util';
 import { danbooruApi } from './api';
+import type { GenerateIdWithoutValidation } from '@/lib/components/Downloader/useBatchDownload';
 
 export type DanbooruMeta = MediaMeta & { comment: string; character: string };
 
@@ -15,6 +16,7 @@ interface DanbooruParser extends SiteParser<DanbooruMeta> {
     poolId: string,
     filter?: (id: string) => boolean | Promise<boolean>
   ): AsyncGenerator<string, void, void>;
+  poolAndGroupGenerator: GenerateIdWithoutValidation<[id: string, type: 'pool' | 'favoriteGroup']>;
 }
 
 export const danbooruParser: DanbooruParser = {
@@ -209,5 +211,45 @@ export const danbooruParser: DanbooruParser = {
         }
       }
     } while (nextUrl);
+  },
+
+  async *poolAndGroupGenerator(pageRange, poolOrGroupId, type) {
+    const dataPromise =
+      type === 'pool'
+        ? danbooruApi.getPool(poolOrGroupId)
+        : danbooruApi.getFavoriteGroups(poolOrGroupId);
+
+    const [data, profile] = await Promise.all([dataPromise, danbooruApi.getProfile()]);
+
+    const { post_ids } = data;
+    const { per_page } = profile;
+    const [pageStart = null, pageEnd = null] = pageRange ?? [];
+    const idsPerPage: string[][] = [];
+    const postCount = post_ids.length;
+
+    for (let i = 0; i < postCount; i += per_page) {
+      const ids = post_ids.slice(i, i + per_page).map((id) => String(id));
+      idsPerPage.push(ids);
+    }
+
+    const poolPage = idsPerPage.length;
+    const start = pageStart ?? 1;
+    const end = pageEnd ? (pageEnd > poolPage ? poolPage : pageEnd) : poolPage;
+    const total =
+      end === poolPage
+        ? (end - start) * per_page + idsPerPage[poolPage - 1].length
+        : (end - start + 1) * per_page;
+
+    if (start > poolPage) throw new RangeError(`Page ${start} exceeds the limit.`);
+
+    for (let page = start - 1; page < end; page++) {
+      yield {
+        total,
+        page,
+        avaliable: idsPerPage[page],
+        invalid: [],
+        unavaliable: []
+      };
+    }
   }
 };

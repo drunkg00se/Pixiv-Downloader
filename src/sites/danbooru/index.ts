@@ -4,6 +4,11 @@ import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadPoolArtwork } from './downloadPoolArtwork';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
+import { danbooruParser, type DanbooruMeta } from './parser';
+import t from '@/lib/lang';
+import { historyDb } from '@/lib/db';
+import { DanbooruDownloadConfig } from './downloadConfigBuilder';
+import { downloader } from '@/lib/downloader';
 
 export class Danbooru extends SiteInject {
   static get hostname(): string {
@@ -110,8 +115,113 @@ export class Danbooru extends SiteInject {
     return ['{artist}', '{character}', '{id}', '{date}'];
   }
 
-  protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any, true | undefined> {
-    // TODO
-    return undefined;
+  protected getBatchDownloadConfig(): BatchDownloadConfig<DanbooruMeta> {
+    const customTagFilter = (userTags: string[], metaTags: string[]) => {
+      const pureTags = metaTags.map((typedTag) => /(?<=[a-z]+:).+/.exec(typedTag)?.[0] ?? '');
+      return userTags.some((tag) => pureTags.includes(tag));
+    };
+
+    return {
+      avatar: '/packs/static/danbooru-logo-128x128-ea111b6658173e847734.png',
+
+      filterOption: {
+        filters: [
+          {
+            id: 'exclude_downloaded',
+            type: 'exclude',
+            name: t('downloader.category.filter.exclude_downloaded'),
+            checked: false,
+            fn(meta) {
+              return !!meta.id && historyDb.has(meta.id);
+            }
+          },
+          {
+            id: 'allow_image',
+            type: 'include',
+            name: 'Image',
+            checked: true,
+            fn(meta) {
+              return (
+                !!meta.extendName && /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(meta.extendName)
+              );
+            }
+          },
+          {
+            id: 'allow_video',
+            type: 'include',
+            name: 'Video',
+            checked: true,
+            fn(meta) {
+              return (
+                !!meta.extendName &&
+                /mp4|avi|mov|mkv|flv|wmv|webm|mpeg|mpg|m4v/i.test(meta.extendName)
+              );
+            }
+          }
+        ],
+
+        enableTagFilter: {
+          blacklist: customTagFilter,
+          whitelist: customTagFilter
+        }
+      },
+
+      pageMatch: [
+        {
+          name: 'pool',
+          match: /(?<=\/pools\/)[0-9]+/,
+          genPageId: {
+            id: 'pool',
+            name: 'Pool',
+            fn: (pageRange) => {
+              const poolId = /(?<=\/pools\/)[0-9]+/.exec(location.pathname)?.[0];
+              if (!poolId) throw new Error('Invalid pool id');
+              return danbooruParser.poolAndGroupGenerator(pageRange, poolId, 'pool');
+            }
+          }
+        },
+        {
+          name: 'favorite_groups',
+          match: /(?<=\/favorite_groups\/)[0-9]+/,
+          genPageId: {
+            id: 'favorite_groups',
+            name: 'FavoriteGroups',
+            fn: (pageRange) => {
+              const groupId = /(?<=\/favorite_groups\/)[0-9]+/.exec(location.pathname)?.[0];
+              if (!groupId) throw new Error('Invalid pool id');
+              return danbooruParser.poolAndGroupGenerator(pageRange, groupId, 'favoriteGroup');
+            }
+          }
+        }
+      ],
+
+      parseMetaByArtworkId(id) {
+        return danbooruParser.parseIdByApi(id);
+      },
+
+      async downloadByArtworkId(meta, taskId) {
+        downloader.dirHandleCheck();
+
+        const downloadConfigs = new DanbooruDownloadConfig(meta).getDownloadConfig();
+        downloadConfigs.taskId = taskId;
+
+        await downloader.download(downloadConfigs);
+
+        const { id, tags, artist, title, comment } = meta;
+        historyDb.add({
+          pid: Number(id),
+          user: artist,
+          title,
+          comment,
+          tags
+        });
+
+        return id;
+      },
+
+      onDownloadAbort(taskIds) {
+        downloader.abort(taskIds);
+      }
+    };
   }
 }

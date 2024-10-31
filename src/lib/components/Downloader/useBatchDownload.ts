@@ -41,6 +41,11 @@ export type GenPageIdItem<
   fn: GenPageId<T, K, FilterWhenGenerateIngPage>;
 };
 
+interface CustomTagFilter {
+  blacklist(blacklistedTags: string[], tags: string[]): boolean;
+  whitelist(whitelistedTags: string[], tags: string[]): boolean;
+}
+
 export interface BatchDownloadConfig<
   T,
   FilterWhenGenerateIngPage extends true | undefined = undefined
@@ -53,7 +58,11 @@ export interface BatchDownloadConfig<
       checked: boolean;
       fn(artworkMeta: Partial<T>): boolean | Promise<boolean>;
     }[];
-    enableTagFilter?: T extends { tags: string[] } ? true : never;
+    /**
+     * true: use default filter
+     * CustomTagFilter: use custom filter
+     */
+    enableTagFilter?: T extends { tags: string[] } ? true | CustomTagFilter : never;
     filterWhenGenerateIngPage?: FilterWhenGenerateIngPage;
   };
   avatar?: string | ((url: string) => string | Promise<string>);
@@ -486,15 +495,24 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
     log.set(item);
   }
 
-  function filterTag(partialMeta: any): boolean {
+  function filterTag(
+    partialMeta: any,
+    blacklistFn?: CustomTagFilter['blacklist'],
+    whitelistFn?: CustomTagFilter['whitelist']
+  ): boolean {
     if (!('tags' in partialMeta) || !Array.isArray(partialMeta.tags)) return true;
 
+    const defaultTagFilter = (userTags: string[], metaTags: string[]) =>
+      userTags.some((tag) => metaTags.includes(tag));
+    blacklistFn ??= defaultTagFilter;
+    whitelistFn ??= defaultTagFilter;
+
     if ($whitelistTag.length) {
-      return $whitelistTag.some((tag) => partialMeta.tags.includes(tag));
+      return whitelistFn($whitelistTag, partialMeta.tags);
     }
 
     if ($blacklistTag.length) {
-      return !$blacklistTag.some((tag) => partialMeta.tags.includes(tag));
+      return !blacklistFn($blacklistTag, partialMeta.tags);
     }
 
     return true;
@@ -503,7 +521,12 @@ export function defineBatchDownload(downloaderConfig: BatchDownloadConfig<any, t
   async function checkValidity(partialMeta: any): Promise<boolean> {
     try {
       const { enableTagFilter } = downloaderConfig.filterOption;
-      if (enableTagFilter && !filterTag(partialMeta)) return false;
+      if (enableTagFilter === true) {
+        if (!filterTag(partialMeta)) return false;
+      } else if (enableTagFilter) {
+        const { blacklist, whitelist } = enableTagFilter;
+        if (!filterTag(partialMeta, blacklist, whitelist)) return false;
+      }
 
       // return false if no includefilter seleted.
       if (!includeFilters.length) return false;

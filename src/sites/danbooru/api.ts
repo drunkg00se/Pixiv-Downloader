@@ -75,7 +75,7 @@ function createDanbooruApi() {
     },
 
     async getFavoriteGroups(id: string) {
-      return await requestJson<DanbooruFavoriteGroup>(`favorite_groups/${id}.json`);
+      return await requestJson<DanbooruFavoriteGroup>(`/favorite_groups/${id}.json`);
     },
 
     async getProfile() {
