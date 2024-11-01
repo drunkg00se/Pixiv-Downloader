@@ -87,9 +87,7 @@ export abstract class SiteInject {
 
   protected abstract inject(): void;
 
-  protected abstract getBatchDownloadConfig():
-    | undefined
-    | BatchDownloadConfig<any, true | undefined>;
+  protected abstract getBatchDownloadConfig(): undefined | BatchDownloadConfig<any>;
 
   protected abstract getCustomConfig(): Partial<ConfigData> | void;
 

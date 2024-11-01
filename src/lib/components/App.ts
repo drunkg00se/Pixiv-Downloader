@@ -11,7 +11,7 @@ export type PdlApp = HTMLElement & {
 interface PdlAppProps {
   filenameTemplate: string[];
   updated: boolean;
-  downloaderConfig?: BatchDownloadConfig<any, true | undefined>;
+  downloaderConfig?: BatchDownloadConfig<any>;
 }
 
 interface PdlAppConstructor {

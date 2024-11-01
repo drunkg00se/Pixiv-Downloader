@@ -63,7 +63,7 @@ function createDanbooruApi() {
       const { tags = [], limit = 0, page = 0 } = param ?? {};
       const searchParam = new URLSearchParams();
 
-      tags?.length && searchParam.append('tags', tags.join('+'));
+      tags?.length && searchParam.append('tags', tags.join(' '));
       limit && searchParam.append('limit', String(limit));
       page && searchParam.append('page', String(page));
 

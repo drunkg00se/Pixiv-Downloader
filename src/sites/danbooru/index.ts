@@ -173,6 +173,7 @@ export class Danbooru extends SiteInject {
           genPageId: {
             id: 'pool',
             name: 'Pool',
+            filterWhenGenerateIngPage: false,
             fn: (pageRange) => {
               const poolId = /(?<=\/pools\/)[0-9]+/.exec(location.pathname)?.[0];
               if (!poolId) throw new Error('Invalid pool id');
@@ -186,10 +187,28 @@ export class Danbooru extends SiteInject {
           genPageId: {
             id: 'favorite_groups',
             name: 'FavoriteGroups',
+            filterWhenGenerateIngPage: false,
             fn: (pageRange) => {
               const groupId = /(?<=\/favorite_groups\/)[0-9]+/.exec(location.pathname)?.[0];
               if (!groupId) throw new Error('Invalid pool id');
               return danbooruParser.poolAndGroupGenerator(pageRange, groupId, 'favoriteGroup');
+            }
+          }
+        },
+        {
+          name: 'post_list',
+          match: /\/posts(?!\/[0-9]+)/,
+          genPageId: {
+            id: 'post_list',
+            name: 'Post',
+            filterWhenGenerateIngPage: true,
+            fn: (pageRange, checkValidity) => {
+              const searchParam = new URLSearchParams(new URL(location.href).search);
+              const tags = searchParam.get('tags')?.split(' ');
+              const limit = searchParam.get('limit');
+              const limitParam = limit ? Number(limit) : undefined;
+
+              return danbooruParser.postListGenerator(pageRange, checkValidity, tags, limitParam);
             }
           }
         }

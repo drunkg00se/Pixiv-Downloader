@@ -14,7 +14,7 @@
   export let dark = false;
   export let updated = false;
   export let filenameTemplate: string[] = [];
-  export let downloaderConfig: BatchDownloadConfig<any, true | undefined> | undefined;
+  export let downloaderConfig: BatchDownloadConfig<unknown> | undefined;
   setContext('filenameTemplate', filenameTemplate);
 
   initializeStores();

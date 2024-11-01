@@ -2,7 +2,11 @@ import { JsonDataError, RequestError } from '@/lib/error';
 import type { MediaMeta, SiteParser } from '../interface';
 import { getElementText, sleep } from '@/lib/util';
 import { danbooruApi } from './api';
-import type { GenerateIdWithoutValidation } from '@/lib/components/Downloader/useBatchDownload';
+import type {
+  GenerateIdWithoutValidation,
+  GenerateIdWithValidation
+} from '@/lib/components/Downloader/useBatchDownload';
+import type { DanbooruPost } from './types';
 
 export type DanbooruMeta = MediaMeta & { comment: string; character: string };
 
@@ -17,6 +21,7 @@ interface DanbooruParser extends SiteParser<DanbooruMeta> {
     filter?: (id: string) => boolean | Promise<boolean>
   ): AsyncGenerator<string, void, void>;
   poolAndGroupGenerator: GenerateIdWithoutValidation<[id: string, type: 'pool' | 'favoriteGroup']>;
+  postListGenerator: GenerateIdWithValidation<DanbooruMeta, [tags?: string[], limit?: number]>;
 }
 
 export const danbooruParser: DanbooruParser = {
@@ -251,5 +256,69 @@ export const danbooruParser: DanbooruParser = {
         unavaliable: []
       };
     }
+  },
+
+  async *postListGenerator(pageRange, checkValidity, tags, limit) {
+    const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
+
+    let page = pageStart;
+    let postListData: DanbooruPost[] | null = await danbooruApi.getPostList({
+      page,
+      tags,
+      limit
+    });
+    let total = postListData.length;
+    let fetchError: Error | null = null;
+
+    if (total === 0) throw new Error(`There is no post in page ${page}.`);
+
+    do {
+      let nextPageData: DanbooruPost[] | null = null;
+
+      // fetch next page's post data.
+      if (page !== pageEnd) {
+        try {
+          nextPageData = await danbooruApi.getPostList({ page: page + 1, tags, limit });
+          // return empty array if there is no post.
+          if (nextPageData.length) {
+            total += nextPageData.length;
+          } else {
+            nextPageData = null;
+          }
+        } catch (error) {
+          fetchError = error as Error;
+          nextPageData = null;
+        }
+      }
+
+      const avaliable: string[] = [];
+      const invalid: string[] = [];
+      const unavaliable: string[] = [];
+
+      for (let i = 0; i < postListData.length; i++) {
+        const { id, file_ext, tag_string } = postListData[i];
+        const idStr = String(id);
+        const validityCheckMeta: Partial<DanbooruMeta> = {
+          id: idStr,
+          extendName: file_ext,
+          tags: tag_string.split(' ')
+        };
+        const isValid = await checkValidity(validityCheckMeta);
+        isValid ? avaliable.push(idStr) : invalid.push(idStr);
+      }
+
+      yield {
+        total,
+        page,
+        avaliable,
+        invalid,
+        unavaliable
+      };
+
+      page++;
+      postListData = nextPageData;
+    } while (postListData);
+
+    if (fetchError) throw fetchError;
   }
 };

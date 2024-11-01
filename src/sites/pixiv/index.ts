@@ -2,10 +2,7 @@ import { SiteInject } from '../base';
 import { observerCallback } from './observerCB';
 import { historyDb, type HistoryData } from '@/lib/db';
 import { pixivParser, type PixivMeta } from './parser';
-import type {
-  BatchDownloadConfig,
-  GenerateIdWithValidation
-} from '@/lib/components/Downloader/useBatchDownload';
+import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 import { IllustType, type BookmarksRest, type Category } from './types';
 import { downloader } from '@/lib/downloader';
 import { PixivDownloadConfig } from './downloadConfigBuilder';
@@ -55,7 +52,7 @@ export class Pixiv extends SiteInject {
     onThemeChange();
   }
 
-  protected getBatchDownloadConfig(): BatchDownloadConfig<PixivMeta, true> {
+  protected getBatchDownloadConfig(): BatchDownloadConfig<PixivMeta> {
     return {
       async avatar(url: string) {
         let userId: string;
@@ -119,8 +116,7 @@ export class Pixiv extends SiteInject {
             }
           }
         ],
-        enableTagFilter: true,
-        filterWhenGenerateIngPage: true
+        enableTagFilter: true
       },
 
       pageMatch: [
@@ -138,16 +134,18 @@ export class Pixiv extends SiteInject {
             {
               id: 'self_bookmark_public',
               name: t('downloader.download_type.pixiv_bookmark_public'),
-              fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
-                return pixivParser.bookmarkGenerator(...args, getSelfId());
+              filterWhenGenerateIngPage: true,
+              fn: (pageRange, checkValidity) => {
+                return pixivParser.bookmarkGenerator(pageRange, checkValidity, getSelfId());
               }
             },
 
             {
               id: 'self_bookmark_private',
               name: t('downloader.download_type.pixiv_bookmark_private'),
-              fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
-                return pixivParser.bookmarkGenerator(...args, getSelfId(), 'hide');
+              filterWhenGenerateIngPage: true,
+              fn: (pageRange, checkValidity) => {
+                return pixivParser.bookmarkGenerator(pageRange, checkValidity, getSelfId(), 'hide');
               }
             }
           ]
@@ -160,22 +158,24 @@ export class Pixiv extends SiteInject {
             {
               id: 'works',
               name: t('downloader.download_type.pixiv_works'),
-              fn: (...args: Parameters<typeof pixivParser.illustMangaGenerator>) => {
+              filterWhenGenerateIngPage: true,
+              fn: (pageRange, checkValidity) => {
                 const userIdMatch = regexp.userPage.exec(location.href)!;
                 const userId = userIdMatch[1] || userIdMatch[2];
 
-                return pixivParser.illustMangaGenerator(...args, userId);
+                return pixivParser.illustMangaGenerator(pageRange, checkValidity, userId);
               }
             },
 
             {
               id: 'bookmark',
               name: t('downloader.download_type.pixiv_bookmark'),
-              fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
+              filterWhenGenerateIngPage: true,
+              fn: (pageRange, checkValidity) => {
                 const userIdMatch = regexp.userPage.exec(location.href)!;
                 const userId = userIdMatch[1] || userIdMatch[2];
 
-                return pixivParser.bookmarkGenerator(...args, userId);
+                return pixivParser.bookmarkGenerator(pageRange, checkValidity, userId);
               }
             }
           ]
@@ -188,16 +188,18 @@ export class Pixiv extends SiteInject {
             {
               id: 'follow_latest_all',
               name: t('downloader.download_type.pixiv_follow_latest_all'),
-              fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
-                return pixivParser.followLatestGenerator(...args, 'all');
+              filterWhenGenerateIngPage: true,
+              fn: (pageRange, checkValidity) => {
+                return pixivParser.followLatestGenerator(pageRange, checkValidity, 'all');
               }
             },
 
             {
               id: 'follow_latest_r18',
               name: t('downloader.download_type.pixiv_follow_latest_r18'),
-              fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
-                return pixivParser.followLatestGenerator(...args, 'r18');
+              filterWhenGenerateIngPage: true,
+              fn: (pageRange, checkValidity) => {
+                return pixivParser.followLatestGenerator(pageRange, checkValidity, 'r18');
               }
             }
           ]
@@ -210,9 +212,10 @@ export class Pixiv extends SiteInject {
             {
               id: 'series',
               name: t('downloader.download_type.pixiv_series'),
-              fn: (...args: Parameters<GenerateIdWithValidation<PixivMeta>>) => {
+              filterWhenGenerateIngPage: true,
+              fn: (pageRange, checkValidity) => {
                 const matchSeries = regexp.series.exec(location.pathname)!;
-                return pixivParser.seriesGenerator(...args, matchSeries[2]);
+                return pixivParser.seriesGenerator(pageRange, checkValidity, matchSeries[2]);
               }
             }
           ]
@@ -221,39 +224,38 @@ export class Pixiv extends SiteInject {
         {
           name: 'download_specific_tag',
           match: () => false, // use for user tag download
-          genPageId: [
-            {
-              id: 'tagged_artwork',
-              name: 'tagged_artwork',
-              fn: (
-                pageRange: [start: number, end: number] | null,
-                checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
-                userId: string,
-                category: Category,
-                tag: string,
-                bookmarkRest: BookmarksRest = 'show'
-              ) => {
-                if (category === 'bookmarks') {
-                  return pixivParser.taggedArtworkGenerator(
-                    pageRange,
-                    checkValidity,
-                    userId,
-                    category,
-                    tag,
-                    bookmarkRest
-                  );
-                } else {
-                  return pixivParser.taggedArtworkGenerator(
-                    pageRange,
-                    checkValidity,
-                    userId,
-                    category,
-                    tag
-                  );
-                }
+          genPageId: {
+            id: 'tagged_artwork',
+            name: 'tagged_artwork',
+            filterWhenGenerateIngPage: true,
+            fn: (
+              pageRange: [start: number, end: number] | null,
+              checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,
+              userId: string,
+              category: Category,
+              tag: string,
+              bookmarkRest: BookmarksRest = 'show'
+            ) => {
+              if (category === 'bookmarks') {
+                return pixivParser.taggedArtworkGenerator(
+                  pageRange,
+                  checkValidity,
+                  userId,
+                  category,
+                  tag,
+                  bookmarkRest
+                );
+              } else {
+                return pixivParser.taggedArtworkGenerator(
+                  pageRange,
+                  checkValidity,
+                  userId,
+                  category,
+                  tag
+                );
               }
             }
-          ]
+          }
         }
       ],
 

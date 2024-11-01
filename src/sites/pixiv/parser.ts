@@ -49,7 +49,7 @@ interface PixivParam extends Record<string, string> {
 interface PixivParser extends SiteParser<PixivMeta> {
   parse(id: string, param: PixivParam): Promise<PixivMeta>;
   illustMangaGenerator: GenerateIdWithValidation<PixivMeta, string>;
-  followLatestGenerator: GenerateIdWithValidation<PixivMeta, [FollowLatestMode]>;
+  followLatestGenerator: GenerateIdWithValidation<PixivMeta, FollowLatestMode>;
   chunkGenerator: GenerateIdWithValidation<
     PixivMeta,
     | [userId: string, category: 'bookmarks', tag: string, bookmarkRest: BookmarksRest]
@@ -71,7 +71,7 @@ interface PixivParser extends SiteParser<PixivMeta> {
       ]
     | [userId: string, category: Exclude<Category, 'bookmarks'>, tag: string]
   >;
-  seriesGenerator: GenerateIdWithValidation<PixivMeta, [seriesId: string]>;
+  seriesGenerator: GenerateIdWithValidation<PixivMeta, string>;
 }
 
 export const pixivParser: PixivParser = {

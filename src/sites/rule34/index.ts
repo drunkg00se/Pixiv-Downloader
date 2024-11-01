@@ -88,7 +88,7 @@ export class Rule34 extends SiteInject {
     return ['{artist}', '{character}', '{id}', '{date}'];
   }
 
-  protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any, true | undefined> {
+  protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any> {
     // TODO
     return undefined;
   }

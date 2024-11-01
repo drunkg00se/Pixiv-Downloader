@@ -160,9 +160,9 @@
     }
   }
 
-  export let downloaderConfig: BatchDownloadConfig<any, true | undefined>;
+  export let downloaderConfig: BatchDownloadConfig<unknown>;
 
-  let pageConfig: BatchDownloadConfig<any, true | undefined>['pageMatch'][number] | null;
+  let pageConfig: BatchDownloadConfig<unknown>['pageMatch'][number] | null;
 
   const {
     selectedFilters,
