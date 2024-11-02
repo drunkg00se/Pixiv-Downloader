@@ -1,7 +1,6 @@
 import { downloadArtwork } from './downloadArtwork';
 import { SiteInject } from '../base';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-import { downloadPoolArtwork } from './downloadPoolArtwork';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 import { danbooruParser, type DanbooruMeta } from './parser';
@@ -9,6 +8,7 @@ import t from '@/lib/lang';
 import { historyDb } from '@/lib/db';
 import { DanbooruDownloadConfig } from './downloadConfigBuilder';
 import { downloader } from '@/lib/downloader';
+import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton';
 
 export class Danbooru extends SiteInject {
   static get hostname(): string {
@@ -72,11 +72,7 @@ export class Danbooru extends SiteInject {
       const poolId = /(?<=\/pools\/)\d+/.exec(el.href)?.[0];
       if (!poolId) return;
 
-      const btn = new ThumbnailButton({
-        id: poolId,
-        shouldObserveDb: false, // Danbooru pool的id不作记录
-        onClick: downloadPoolArtwork
-      });
+      const btn = new DanbooruPoolButton({ id: poolId });
 
       el.appendChild(btn);
     });
@@ -209,6 +205,19 @@ export class Danbooru extends SiteInject {
               const limitParam = limit ? Number(limit) : undefined;
 
               return danbooruParser.postListGenerator(pageRange, checkValidity, tags, limitParam);
+            }
+          }
+        },
+        {
+          name: 'pool_button',
+          match: /(?<=\/pools\/)[0-9]+/,
+          genPageId: {
+            id: 'pool_button',
+            name: 'Pool',
+            filterWhenGenerateIngPage: false,
+            fn: (pageRange, poolId: string) => {
+              if (!poolId) throw new Error('Invalid pool id');
+              return danbooruParser.poolAndGroupGenerator(pageRange, poolId, 'pool');
             }
           }
         }

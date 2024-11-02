@@ -1,5 +1,5 @@
 import App from './App.svelte';
-import type { BatchDownloadConfig } from './Downloader/useBatchDownload';
+import { defineBatchDownload, type BatchDownloadConfig } from './Downloader/useBatchDownload';
 // @ts-expect-error no-declaration
 import { create_custom_element } from 'svelte/internal';
 
@@ -36,6 +36,7 @@ export const PdlApp: PdlAppConstructor = create_custom_element(
         this.filenameTemplate = props.filenameTemplate;
         this.updated = props.updated ?? false;
         this.downloaderConfig = props.downloaderConfig;
+        props.downloaderConfig && defineBatchDownload(props.downloaderConfig);
       }
     };
   }

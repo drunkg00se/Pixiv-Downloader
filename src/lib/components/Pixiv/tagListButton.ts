@@ -5,6 +5,7 @@ import type { TagProps } from './artworkTagButton';
 import { useBatchDownload } from '../Downloader/useBatchDownload';
 import { regexp } from '@/lib/regExp';
 import type { Unsubscriber } from 'svelte/store';
+import { logger } from '@/lib/logger';
 
 export class TagListButton extends HTMLElement {
   private btn?: HTMLButtonElement;
@@ -73,7 +74,7 @@ export class TagListButton extends HTMLElement {
     const { userId, category, tag, rest } = this.getTagProps();
     const { batchDownload } = useBatchDownload();
 
-    batchDownload('tagged_artwork', userId, category, tag, rest);
+    batchDownload('tagged_artwork', userId, category, tag, rest).catch(logger.error);
   }
 
   connectedCallback() {

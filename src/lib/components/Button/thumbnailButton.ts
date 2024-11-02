@@ -48,7 +48,7 @@ export class ThumbnailButton extends HTMLElement {
   private page?: number;
   private type?: ThumbnailBtnType;
   private onClick: ThumbnailBtnProp['onClick'];
-  private unsubscriber?: Unsubscriber;
+  protected unsubscriber?: Unsubscriber;
   private connectedFlag = false;
   private shouldObserveDb = true;
   private progress = 0;

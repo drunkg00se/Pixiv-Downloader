@@ -11,11 +11,7 @@
     SlideToggle
   } from '@skeletonlabs/skeleton';
   import optionStore from './store';
-  import {
-    defineBatchDownload,
-    useBatchDownload,
-    type BatchDownloadConfig
-  } from './useBatchDownload';
+  import { useBatchDownload, type BatchDownloadConfig } from './useBatchDownload';
   import { logger } from '@/lib/logger';
   import { nonNegativeInt } from '../Actions/nonNegativeInt';
   import t from '@/lib/lang';
@@ -41,7 +37,7 @@
     if (!downloaderConfig.avatar) return;
 
     // don't update avatar during download.
-    if ($downloading) {
+    if ($downloading && avatarUpdated !== undefined) {
       updateAvatarAfterDownload = url;
       return;
     }
@@ -153,10 +149,14 @@
 
   async function startDownload(id?: string) {
     const { genPageId } = pageConfig!;
-    if (Array.isArray(genPageId)) {
-      id && (await batchDownload(id));
-    } else {
-      !id && (await batchDownload(genPageId.id));
+    try {
+      if (Array.isArray(genPageId)) {
+        id && (await batchDownload(id));
+      } else {
+        !id && (await batchDownload(genPageId.id));
+      }
+    } catch (error) {
+      logger.error(error);
     }
   }
 
@@ -190,7 +190,6 @@
 
   initFilterStore();
 
-  defineBatchDownload(downloaderConfig);
   const { artworkCount, successd, failed, excluded, downloading, log, batchDownload, abort } =
     useBatchDownload();
 
@@ -199,6 +198,8 @@
 
   downloading.subscribe((val) => {
     if (val) {
+      // show avatar if triggers batch download in page that doesn't show batch downloader
+      if (!avatarUpdated) updateAvatarSrc(location.href);
       // alert before unload while downloading
       window.addEventListener('beforeunload', beforeUnloadHandler);
     } else {

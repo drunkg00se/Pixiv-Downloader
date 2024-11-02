@@ -1,6 +1,6 @@
 import { JsonDataError, RequestError } from '@/lib/error';
 import type { MediaMeta, SiteParser } from '../interface';
-import { getElementText, sleep } from '@/lib/util';
+import { getElementText } from '@/lib/util';
 import { danbooruApi } from './api';
 import type {
   GenerateIdWithoutValidation,
@@ -15,11 +15,6 @@ interface DanbooruParser extends SiteParser<DanbooruMeta> {
   parse(id: string, param: { type: 'html' | 'api' }): Promise<DanbooruMeta>;
   parseIdByHtml(id: string): Promise<DanbooruMeta>;
   parseIdByApi(id: string): Promise<DanbooruMeta>;
-  getPoolPostCount(poolId: string): Promise<number>;
-  genIdByPool(
-    poolId: string,
-    filter?: (id: string) => boolean | Promise<boolean>
-  ): AsyncGenerator<string, void, void>;
   poolAndGroupGenerator: GenerateIdWithoutValidation<[id: string, type: 'pool' | 'favoriteGroup']>;
   postListGenerator: GenerateIdWithValidation<DanbooruMeta, [tags?: string[], limit?: number]>;
 }
@@ -170,52 +165,6 @@ export const danbooruParser: DanbooruParser = {
       tags,
       createDate: created_at
     };
-  },
-
-  async getPoolPostCount(poolId: string) {
-    const doc = await this.getDoc(`/pools/${poolId}`);
-    const nextEl = doc.querySelector('a.paginator-next');
-    if (nextEl) {
-      const lastPageEl = nextEl.previousElementSibling as HTMLAnchorElement;
-      const poolPageCount = Number(lastPageEl.textContent);
-
-      const lastPageDoc = await this.getDoc(lastPageEl.href);
-      const postPerPage = Number(lastPageDoc.body.getAttribute('data-current-user-per-page'));
-      const lastPagePostCount = lastPageDoc.querySelectorAll<HTMLElement>(
-        '.posts-container article'
-      ).length;
-      return (poolPageCount - 1) * postPerPage + lastPagePostCount;
-    } else {
-      // pool只有一页
-      const imageContainers = doc.querySelectorAll<HTMLElement>('.posts-container article');
-      return imageContainers.length;
-    }
-  },
-
-  async *genIdByPool(poolId: string, filter) {
-    let page = 0;
-    let nextUrl;
-
-    do {
-      ++page > 1 && (await sleep(1000));
-
-      const doc = await this.getDoc(`/pools/${poolId}?page=${page}`);
-      const nextEl = doc.querySelector('a.paginator-next');
-      nextUrl = nextEl?.getAttribute('href') ?? '';
-
-      const imageContainers = doc.querySelectorAll<HTMLElement>('.posts-container article');
-      const ids = Array.from(imageContainers).map((el) => el.getAttribute('data-id')!);
-
-      for (let i = 0; i < ids.length; i++) {
-        const id = ids[i];
-
-        const isValid = (await filter?.(id)) ?? true;
-        if (isValid) {
-          yield id;
-          i !== id.length - 1 && (await sleep(1000));
-        }
-      }
-    } while (nextUrl);
   },
 
   async *poolAndGroupGenerator(pageRange, poolOrGroupId, type) {

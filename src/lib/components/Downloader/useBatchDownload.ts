@@ -559,6 +559,7 @@ export function defineBatchDownload<T>(downloaderConfig: BatchDownloadConfig<T>)
 
     controller = new AbortController();
     const signal = controller.signal;
+    let downloadError: unknown;
 
     signal.addEventListener(
       'abort',
@@ -600,7 +601,7 @@ export function defineBatchDownload<T>(downloaderConfig: BatchDownloadConfig<T>)
 
       writeLog('Info', 'Download complete.');
     } catch (error) {
-      logger.error(error);
+      downloadError = error;
 
       generator?.return();
 
@@ -616,6 +617,8 @@ export function defineBatchDownload<T>(downloaderConfig: BatchDownloadConfig<T>)
 
     setDownloading(false);
     processNextDownload();
+
+    if (downloadError) throw downloadError;
   }
 
   function getGenPageIdItem(fnId: string) {

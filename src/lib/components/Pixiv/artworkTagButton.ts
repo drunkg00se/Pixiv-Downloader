@@ -4,6 +4,7 @@ import type { Category, BookmarksRest } from '@/sites/pixiv/types';
 import { useBatchDownload } from '../Downloader/useBatchDownload';
 import { regexp } from '@/lib/regExp';
 import type { Unsubscriber } from 'svelte/store';
+import { logger } from '@/lib/logger';
 
 export interface TagProps {
   userId: string;
@@ -97,7 +98,7 @@ export class ArtworkTagButton extends HTMLElement {
     const { userId, category, tag, rest } = this.getTagProps();
     const { batchDownload } = useBatchDownload();
 
-    batchDownload('tagged_artwork', userId, category, tag, rest);
+    batchDownload('tagged_artwork', userId, category, tag, rest).catch(logger.error);
   }
 
   connectedCallback() {
