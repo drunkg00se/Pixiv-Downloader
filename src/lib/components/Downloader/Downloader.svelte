@@ -153,7 +153,7 @@
       if (Array.isArray(genPageId)) {
         id && (await batchDownload(id));
       } else {
-        !id && (await batchDownload(genPageId.id));
+        !id && !!genPageId && (await batchDownload(genPageId.id));
       }
     } catch (error) {
       logger.error(error);
@@ -397,7 +397,7 @@
                 </button>
               {/each}
             </div>
-          {:else if pageConfig && !Array.isArray(pageConfig.genPageId)}
+          {:else if pageConfig && pageConfig.genPageId && !Array.isArray(pageConfig.genPageId)}
             <button
               class="btn variant-filled-primary self-start"
               on:click={() => {

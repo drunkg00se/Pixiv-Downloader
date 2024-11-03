@@ -68,7 +68,7 @@ export interface BatchDownloadConfig<T> {
   pageMatch: {
     name?: string;
     match: string | ((url: string) => boolean) | RegExp;
-    genPageId: GenPageIdItem<T> | GenPageIdItem<T>[];
+    genPageId: GenPageIdItem<T> | GenPageIdItem<T>[] | null;
   }[];
 
   parseMetaByArtworkId(id: string): Promise<T>;
@@ -630,10 +630,8 @@ export function defineBatchDownload<T>(downloaderConfig: BatchDownloadConfig<T>)
         if (item) {
           return item;
         }
-      } else {
-        if (genPageId.id === fnId) {
-          return genPageId;
-        }
+      } else if (genPageId && genPageId.id === fnId) {
+        return genPageId;
       }
     }
   }

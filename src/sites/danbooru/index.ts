@@ -222,6 +222,11 @@ export class Danbooru extends SiteInject {
               return danbooruParser.poolAndGroupGenerator(pageRange, poolId, 'pool');
             }
           }
+        },
+        {
+          name: 'pool_gallery',
+          match: /\/pools\/gallery/,
+          genPageId: null
         }
       ],
 
