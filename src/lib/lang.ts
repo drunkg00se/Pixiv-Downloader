@@ -119,6 +119,8 @@ const zh = {
       tab_name: '类别',
       filter: {
         exclude_downloaded: '排除已下载',
+        image: '图片',
+        video: '视频',
         download_all_pages: '下载所有页',
         download_selected_pages: '自定义页数',
         pixiv_illust: '插画',
@@ -288,6 +290,8 @@ const en: typeof zh = {
       tab_name: 'Category',
       filter: {
         exclude_downloaded: 'Exclude Downloaded',
+        image: 'Image',
+        video: 'Video',
         download_all_pages: 'All Pages',
         download_selected_pages: 'Custom Pages',
         pixiv_illust: 'Illustration',

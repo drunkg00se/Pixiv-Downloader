@@ -160,7 +160,7 @@ export class Danbooru extends SiteInject {
           {
             id: 'allow_image',
             type: 'include',
-            name: 'Image',
+            name: t('downloader.category.filter.image'),
             checked: true,
             fn(meta) {
               return (
@@ -171,7 +171,7 @@ export class Danbooru extends SiteInject {
           {
             id: 'allow_video',
             type: 'include',
-            name: 'Video',
+            name: t('downloader.category.filter.video'),
             checked: true,
             fn(meta) {
               return (
