@@ -63,6 +63,7 @@
       </li>
     {/if}
   </ul>
+
   {#if env.isPixiv()}
     <section>
       <p class={sectionTitle}>实验性功能</p>
@@ -75,6 +76,18 @@
             </p>
           </div>
           <SlideToggle name="mix-effect" bind:checked={$store.mixEffect} size="sm"></SlideToggle>
+        </li>
+      </ul>
+    </section>
+  {/if}
+
+  {#if env.isRule34()}
+    <section>
+      <p class={sectionTitle}>cf_clearance</p>
+      <ul class={ulClasses}>
+        <li class="flex-col !items-start gap-2">
+          <input bind:value={$store.token} type="text" class="input" name="cf_clearance" />
+          <p class={descritionText}>如果无法正常下载，可尝试填入cf_clearance cookie</p>
         </li>
       </ul>
     </section>

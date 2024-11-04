@@ -43,13 +43,13 @@ export const env = {
 
   isFileSystemAccessAvaliable() {
     return (
-      typeof (unsafeWindow as any).showDirectoryPicker === 'function' &&
-      typeof (unsafeWindow as any).showSaveFilePicker === 'function'
+      typeof unsafeWindow.showDirectoryPicker === 'function' &&
+      typeof unsafeWindow.showSaveFilePicker === 'function'
     );
   },
 
   videoFrameSupported() {
-    return typeof (unsafeWindow as any).VideoFrame === 'function';
+    return typeof unsafeWindow.VideoFrame === 'function';
   },
 
   isPixiv() {
@@ -58,5 +58,9 @@ export const env = {
 
   isYande() {
     return location.hostname === 'yande.re';
+  },
+
+  isRule34() {
+    return location.hostname === 'rule34.xxx';
   }
 };

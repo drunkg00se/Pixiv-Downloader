@@ -54,6 +54,8 @@ export interface ConfigData {
   pngColor: number;
   historyBackupInterval: number;
   lastHistoryBackup: number;
+  /** rule34 cf_clearance */
+  token: string;
   'pdl-btn-self-bookmark-left': number;
   'pdl-btn-self-bookmark-top': number;
   'pdl-btn-left': number;
@@ -97,6 +99,7 @@ export function loadConfig(customConfig: Partial<ConfigData> = {}): Config {
     pngColor: 256,
     historyBackupInterval: HistoryBackupInterval.NEVER,
     lastHistoryBackup: 0,
+    token: '',
     'pdl-btn-self-bookmark-left': 100,
     'pdl-btn-self-bookmark-top': 76,
     'pdl-btn-left': 0,
