@@ -92,6 +92,14 @@ function createDanbooruApi() {
       if (!res.ok) throw new RequestError(res.url, res.status);
 
       return await res.text();
+    },
+
+    async getDoc(url: string): Promise<Document> {
+      logger.info('Fetch url:', url);
+      const res = await fetch(url);
+      if (!res.ok) throw new RequestError(res.url, res.status);
+      const html = await res.text();
+      return new DOMParser().parseFromString(html, 'text/html');
     }
   };
 }

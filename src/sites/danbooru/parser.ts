@@ -1,4 +1,4 @@
-import { JsonDataError, RequestError } from '@/lib/error';
+import { JsonDataError } from '@/lib/error';
 import type { MediaMeta, SiteParser } from '../interface';
 import { getElementText } from '@/lib/util';
 import { danbooruApi } from './api';
@@ -11,7 +11,6 @@ import type { DanbooruPost } from './types';
 export type DanbooruMeta = MediaMeta & { comment: string; character: string };
 
 interface DanbooruParser extends SiteParser<DanbooruMeta> {
-  getDoc(url: string): Promise<Document>;
   parse(id: string, param: { type: 'html' | 'api' }): Promise<DanbooruMeta>;
   parseIdByHtml(id: string): Promise<DanbooruMeta>;
   parseIdByApi(id: string): Promise<DanbooruMeta>;
@@ -20,13 +19,6 @@ interface DanbooruParser extends SiteParser<DanbooruMeta> {
 }
 
 export const danbooruParser: DanbooruParser = {
-  async getDoc(url: string): Promise<Document> {
-    const res = await fetch(url);
-    if (!res.ok) throw new RequestError(res.url, res.status);
-    const html = await res.text();
-    return new DOMParser().parseFromString(html, 'text/html');
-  },
-
   async parse(id, params) {
     const { type } = params;
     if (type === 'html') {
@@ -37,7 +29,7 @@ export const danbooruParser: DanbooruParser = {
   },
 
   async parseIdByHtml(id: string): Promise<DanbooruMeta> {
-    const doc = await this.getDoc('/posts/' + id);
+    const doc = await danbooruApi.getDoc('/posts/' + id);
     const src = doc.querySelector<HTMLAnchorElement>('a[download]')?.href;
     if (!src) throw new Error('Can not get media src');
 
