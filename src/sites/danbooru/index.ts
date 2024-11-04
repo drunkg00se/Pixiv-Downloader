@@ -1,4 +1,3 @@
-import { downloadArtwork } from './downloadArtwork';
 import { SiteInject } from '../base';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
@@ -9,6 +8,7 @@ import { historyDb } from '@/lib/db';
 import { DanbooruDownloadConfig } from './downloadConfigBuilder';
 import { downloader } from '@/lib/downloader';
 import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton';
+import { addBookmark } from './addBookmark';
 
 export class Danbooru extends SiteInject {
   static get hostname(): string {
@@ -16,6 +16,8 @@ export class Danbooru extends SiteInject {
   }
 
   protected inject(): void {
+    this.downloadArtwork = this.downloadArtwork.bind(this);
+
     const path = location.pathname;
     if (/^\/posts\/\d+/.test(path)) {
       const imageContainer = document.querySelector(
@@ -45,7 +47,7 @@ export class Danbooru extends SiteInject {
 
       const btn = new ThumbnailButton({
         id,
-        onClick: downloadArtwork
+        onClick: this.downloadArtwork
       });
 
       el.appendChild(btn);
@@ -59,7 +61,7 @@ export class Danbooru extends SiteInject {
     btnContainer?.appendChild(
       new ArtworkButton({
         id,
-        onClick: downloadArtwork
+        onClick: this.downloadArtwork
       })
     );
   }
@@ -111,6 +113,28 @@ export class Danbooru extends SiteInject {
 
   protected getFilenameTemplate(): string[] {
     return ['{artist}', '{character}', '{id}', '{date}'];
+  }
+
+  protected async downloadArtwork(btn: ThumbnailButton) {
+    downloader.dirHandleCheck();
+
+    const id = btn.dataset.id!;
+    const mediaMeta = await danbooruParser.parse(id, { type: 'api' });
+
+    const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
+
+    this.config.get('addBookmark') && addBookmark(id);
+
+    await downloader.download(downloadConfigs);
+
+    const { tags, artist, title, comment } = mediaMeta;
+    historyDb.add({
+      pid: Number(id),
+      user: artist,
+      title,
+      comment,
+      tags
+    });
   }
 
   protected getBatchDownloadConfig(): BatchDownloadConfig<DanbooruMeta> {
