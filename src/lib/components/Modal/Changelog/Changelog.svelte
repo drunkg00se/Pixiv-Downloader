@@ -19,11 +19,19 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
   <article class="modal-body mt-4">
     <ul class="list-disc list-inside leading-loose">
-      <li>New: Add support for all the fallen booru.</li>
-      <li>优化：现在支持多标签页排队进行批量下载。</li>
-      <li>优化：下载按钮现在会响应式更新完成状态。</li>
-      <li>优化：导入，清除历史记录不再刷新页面。</li>
-      <li>修复：Pixiv浏览记录页不显示下载按钮的问题。</li>
+      <li>
+        新增：现在可以批量下载pixiv<a
+          href="https://www.pixiv.net/user/3617446/series/136196"
+          target="_blank"
+          class="anchor">漫画系列</a
+        >。
+      </li>
+      <li>新增：现在可以批量下载Danbooru: posts, pools, favorite groups。</li>
+      <li>
+        新增：现在可以在【设置】【其它】中填入cf_clearance cookie（rule34无法正常下载图片时）。
+      </li>
+      <li>修复：Pixiv多图预览按钮被遮挡的问题。</li>
+      <li>修复：切换主题时Pixiv收藏标签按钮颜色不改变的问题。</li>
     </ul>
   </article>
   <footer class="modal-footer mt-4">
