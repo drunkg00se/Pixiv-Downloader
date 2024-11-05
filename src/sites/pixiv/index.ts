@@ -20,6 +20,7 @@ import { createUnlistedToolbar } from './observerCB/artworksPage/unlistedToolbar
 import { createTagListBtn } from './observerCB/userPage/tagListButton';
 import { createFrequentTagBtn } from './observerCB/userPage/frequentTagButton';
 import type { TagProps } from '@/lib/components/Pixiv/artworkTagButton';
+import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -289,7 +290,7 @@ export class Pixiv extends SiteInject {
       (record.addedNodes as NodeListOf<HTMLElement>).forEach((node) => {
         if (
           node.nodeType === Node.ELEMENT_NODE &&
-          node.tagName !== 'PDL-BUTTON' &&
+          node.tagName.toLowerCase() !== ThumbnailButton.tagNameLowerCase &&
           node.tagName !== 'IMG'
         ) {
           addedNodes.push(node);
