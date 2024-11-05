@@ -1,17 +1,25 @@
+import type { MediaMeta } from '@/sites/interface';
 import App from './App.svelte';
-import { defineBatchDownload, type BatchDownloadConfig } from './Downloader/useBatchDownload';
+import {
+  defineBatchDownload,
+  type BatchDownloadConfig,
+  type BatchDownloadDefinition,
+  type PageMatchItem
+} from './Downloader/useBatchDownload';
 // @ts-expect-error no-declaration
 import { create_custom_element } from 'svelte/internal';
 
 export type PdlApp = HTMLElement & {
   showChangelog(): void;
   showSetting(): void;
+  initBatchDownloader<T extends MediaMeta, P extends PageMatchItem<T>>(
+    downloaderConfig: BatchDownloadConfig<T, P>
+  ): BatchDownloadDefinition<T, P>;
 };
 
 interface PdlAppProps {
   filenameTemplate: string[];
   updated: boolean;
-  downloaderConfig?: BatchDownloadConfig<any>;
 }
 
 interface PdlAppConstructor {
@@ -24,7 +32,8 @@ export const PdlApp: PdlAppConstructor = create_custom_element(
     dark: { type: 'Boolean' },
     updated: { type: 'Boolean' },
     filenameTemplate: {},
-    downloaderConfig: {}
+    downloaderConfig: {},
+    useBatchDownload: {}
   },
   [],
   ['showChangelog', 'showSetting'],
@@ -35,8 +44,14 @@ export const PdlApp: PdlAppConstructor = create_custom_element(
         super();
         this.filenameTemplate = props.filenameTemplate;
         this.updated = props.updated ?? false;
-        this.downloaderConfig = props.downloaderConfig;
-        props.downloaderConfig && defineBatchDownload(props.downloaderConfig);
+      }
+
+      initBatchDownloader<T extends MediaMeta, P extends PageMatchItem<T>>(
+        config: BatchDownloadConfig<T, P>
+      ) {
+        this.downloaderConfig = config;
+        const useBatchDownload = (this.useBatchDownload = defineBatchDownload(config));
+        return useBatchDownload;
       }
     };
   }

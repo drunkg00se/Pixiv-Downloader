@@ -1,9 +1,8 @@
 import downloadSvg from '@/assets/download.svg?src';
 import { addStyleToShadow } from '@/lib/util';
 import type { Category, BookmarksRest } from '@/sites/pixiv/types';
-import { useBatchDownload } from '../Downloader/useBatchDownload';
 import { regexp } from '@/lib/regExp';
-import type { Unsubscriber } from 'svelte/store';
+import type { Unsubscriber, Readable } from 'svelte/store';
 import { logger } from '@/lib/logger';
 
 export interface TagProps {
@@ -18,7 +17,11 @@ export class ArtworkTagButton extends HTMLElement {
   private ob: MutationObserver;
   private unsubscriber?: Unsubscriber;
 
-  constructor(private tagElement: HTMLAnchorElement) {
+  constructor(
+    private tagElement: HTMLAnchorElement,
+    private downloading: Readable<boolean>,
+    private handleDownload: (props: TagProps) => Promise<void>
+  ) {
     super();
     this.dispatchDownload = this.dispatchDownload.bind(this);
     this.ob = new MutationObserver(() => {
@@ -95,10 +98,7 @@ export class ArtworkTagButton extends HTMLElement {
   }
 
   public dispatchDownload() {
-    const { userId, category, tag, rest } = this.getTagProps();
-    const { batchDownload } = useBatchDownload();
-
-    batchDownload('tagged_artwork', userId, category, tag, rest).catch(logger.error);
+    this.handleDownload(this.getTagProps()).catch(logger.error);
   }
 
   connectedCallback() {
@@ -107,8 +107,7 @@ export class ArtworkTagButton extends HTMLElement {
     this.changeBtnColor();
     this.btn.addEventListener('click', this.dispatchDownload);
 
-    const { downloading } = useBatchDownload();
-    this.unsubscriber = downloading.subscribe((val) => {
+    this.unsubscriber = this.downloading.subscribe((val) => {
       if (val) {
         this.setAttribute('disabled', '');
       } else {

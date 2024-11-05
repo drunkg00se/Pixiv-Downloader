@@ -1,49 +1,34 @@
 import t from '@/lib/lang';
 import { GM_registerMenuCommand } from '$';
 import { type ConfigData, loadConfig } from '@/lib/config';
-import { type BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 import { PdlApp } from '@/lib/components/App';
 import { useHistoryBackup } from '@/lib/components/Modal/Config/useHistoryBackup';
+import type { BatchDownloadDefinition } from '@/lib/components/Downloader/useBatchDownload';
+import type { MediaMeta } from '../interface';
 
 export abstract class SiteInject {
   protected app: PdlApp;
   protected config: ReturnType<typeof loadConfig>;
+  protected useBatchDownload?: BatchDownloadDefinition<MediaMeta>;
 
   constructor() {
     this.config = loadConfig(this.getCustomConfig() || undefined);
-    this.app = this.injectApp();
-    this.observeColorScheme();
-    this.injectStyle();
-    GM_registerMenuCommand(
-      t('button.setting'),
-      () => {
-        if (this.app.shadowRoot?.querySelector('.modal')) {
-          return;
-        }
-        this.app.showSetting();
-      },
-      's'
-    );
-
-    this.inject();
-    this.runScheduledTask();
+    this.app = this.createApp();
   }
 
   static get hostname(): string {
     throw new Error('`hostname` should be overwritten by a subclass.');
   }
 
-  private injectApp() {
+  private createApp() {
     const updated = this.config.get('showMsg');
     updated && this.config.set('showMsg', false);
 
     const app = new PdlApp({
       updated,
-      downloaderConfig: this.getBatchDownloadConfig(),
       filenameTemplate: this.getFilenameTemplate()
     });
 
-    document.body.append(app);
     return app;
   }
 
@@ -85,9 +70,23 @@ export abstract class SiteInject {
     });
   }
 
-  protected abstract inject(): void;
+  public inject(): void {
+    this.observeColorScheme();
+    this.injectStyle();
+    GM_registerMenuCommand(
+      t('button.setting'),
+      () => {
+        if (this.app.shadowRoot?.querySelector('.modal')) {
+          return;
+        }
+        this.app.showSetting();
+      },
+      's'
+    );
 
-  protected abstract getBatchDownloadConfig(): undefined | BatchDownloadConfig<any>;
+    document.body.append(this.app);
+    this.runScheduledTask();
+  }
 
   protected abstract getCustomConfig(): Partial<ConfigData> | void;
 

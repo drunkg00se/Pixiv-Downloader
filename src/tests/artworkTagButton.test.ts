@@ -2,6 +2,12 @@ import { expect, test, beforeAll, vi } from 'vitest';
 import { ArtworkTagButton } from '@/lib/components/Pixiv/artworkTagButton';
 
 let el: ArtworkTagButton;
+const downloading = {
+  subscribe() {
+    return () => {};
+  }
+};
+const handleDownload = () => Promise.resolve();
 
 beforeAll(async () => {
   vi.stubGlobal('unsafeWindow', window);
@@ -28,7 +34,11 @@ beforeAll(async () => {
 });
 
 test('should be in the dom', () => {
-  el = new ArtworkTagButton(document.body.querySelector('a[status="normal"]')!);
+  el = new ArtworkTagButton(
+    document.body.querySelector('a[status="normal"]')!,
+    downloading,
+    handleDownload
+  );
   document.body.appendChild(el);
   expect(el).toBeInTheDocument();
 });
@@ -47,14 +57,22 @@ test('should extract tag props correctly', () => {
   [
     [el, '1039353', 'illusts', 'オリジナル', 'show'],
     [
-      new ArtworkTagButton(document.body.querySelector('a[status="active"]')!),
+      new ArtworkTagButton(
+        document.body.querySelector('a[status="active"]')!,
+        downloading,
+        handleDownload
+      ),
       '1039353',
       'illusts',
       'オリジナル',
       'show'
     ],
     [
-      new ArtworkTagButton(document.body.querySelector('a[status="inactive"]')!),
+      new ArtworkTagButton(
+        document.body.querySelector('a[status="inactive"]')!,
+        downloading,
+        handleDownload
+      ),
       '1234567',
       'bookmarks',
       '未分類',

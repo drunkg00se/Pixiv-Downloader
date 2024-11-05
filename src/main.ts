@@ -16,4 +16,4 @@ function getSiteInjector() {
 }
 
 const siteInject = getSiteInjector();
-siteInject && new siteInject();
+siteInject && new siteInject().inject();

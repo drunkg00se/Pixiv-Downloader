@@ -3,6 +3,14 @@ import optionStore from './store';
 import { logger } from '@/lib/logger';
 import { CancelError, RequestError } from '@/lib/error';
 import { sleep } from '@/lib/util';
+import type { MediaMeta } from '@/sites/interface';
+
+interface CustomTagFilter {
+  blacklist(blacklistedTags: string[], tags: string[]): boolean;
+  whitelist(whitelistedTags: string[], tags: string[]): boolean;
+}
+
+type FilterFn<T> = (artworkMeta: Partial<T>) => boolean | Promise<boolean>;
 
 interface YieldArtworkId {
   total: number;
@@ -24,8 +32,8 @@ export type GenerateIdWithoutValidation<K = undefined> = (
 ) => Generator<YieldArtworkId, void, undefined> | AsyncGenerator<YieldArtworkId, void, undefined>;
 
 interface GenPageIdBase {
-  id: string;
   name: string;
+  match: string | ((url: string) => boolean) | RegExp;
 }
 
 interface GenPageIdWithValidation<T> extends GenPageIdBase {
@@ -38,16 +46,63 @@ interface GenPageIdWithoutValidation extends GenPageIdBase {
   fn: GenerateIdWithoutValidation<any[]>;
 }
 
-type GenPageIdItem<T> = GenPageIdWithValidation<T> | GenPageIdWithoutValidation;
+export type PageMatchItem<T> = Record<
+  string,
+  GenPageIdWithValidation<T> | GenPageIdWithoutValidation | GenPageIdBase
+>;
 
-interface CustomTagFilter {
-  blacklist(blacklistedTags: string[], tags: string[]): boolean;
-  whitelist(whitelistedTags: string[], tags: string[]): boolean;
+type OmitNotGeneratorKey<T, P extends PageMatchItem<T>> = {
+  [K in keyof P]: P[K] extends GenPageIdWithoutValidation
+    ? K
+    : P[K] extends GenPageIdWithValidation<T>
+      ? K
+      : never;
+}[keyof P];
+
+type DropFirstArg<F> = F extends (x: any, ...args: infer P) => any ? P : never;
+
+type DropFirstAndSecondArg<F> = F extends (x: any, y: any, ...args: infer P) => any ? P : never;
+
+interface BatchDownload<T extends MediaMeta, P extends PageMatchItem<T> = PageMatchItem<T>> {
+  artworkCount: Readable<number>;
+  successd: Readable<string[]>;
+  failed: Readable<FailedItem[]>;
+  excluded: Readable<string[]>;
+  downloading: Readable<boolean>;
+  log: Readable<LogItem>;
+  batchDownload<K extends OmitNotGeneratorKey<T, P>>(
+    fnId: K,
+    ...restArgs: P[K] extends GenPageIdWithoutValidation
+      ? DropFirstArg<P[K]['fn']>
+      : P[K] extends GenPageIdWithValidation<T>
+        ? DropFirstAndSecondArg<P[K]['fn']>
+        : never[]
+  ): Promise<void>;
+  abort(): void;
+  overwrite(
+    partialConfig: Partial<
+      Pick<
+        BatchDownloadConfig<T, P>,
+        'avatar' | 'downloadByArtworkId' | 'onDownloadAbort' | 'parseMetaByArtworkId'
+      >
+    >
+  ): BatchDownloadDefinition<T, P>;
 }
 
-type FilterFn<T> = (artworkMeta: Partial<T>) => boolean | Promise<boolean>;
+export interface BatchDownloadDefinition<
+  T extends MediaMeta,
+  P extends PageMatchItem<T> = PageMatchItem<T>
+> {
+  (): BatchDownload<T, P>;
+}
 
-export interface BatchDownloadConfig<T> {
+export interface BatchDownloadConfig<
+  T extends MediaMeta,
+  P extends PageMatchItem<T> = PageMatchItem<T>
+> {
+  /** use for type inference */
+  metaType: T;
+
   filterOption: {
     filters: {
       id: string;
@@ -56,6 +111,7 @@ export interface BatchDownloadConfig<T> {
       checked: boolean;
       fn: FilterFn<T>;
     }[];
+
     /**
      * true: use default filter
      * CustomTagFilter: use custom filter
@@ -65,11 +121,7 @@ export interface BatchDownloadConfig<T> {
 
   avatar?: string | ((url: string) => string | Promise<string>);
 
-  pageMatch: {
-    name?: string;
-    match: string | ((url: string) => boolean) | RegExp;
-    genPageId: GenPageIdItem<T> | GenPageIdItem<T>[] | null;
-  }[];
+  pageMatch: P;
 
   parseMetaByArtworkId(id: string): Promise<T>;
   // TODO: no need to return id
@@ -272,22 +324,12 @@ function useChannel() {
   };
 }
 
-export let useBatchDownload: () => {
-  artworkCount: Readable<number>;
-  successd: Readable<string[]>;
-  failed: Readable<FailedItem[]>;
-  excluded: Readable<string[]>;
-  downloading: Readable<boolean>;
-  log: Readable<LogItem>;
-  batchDownload(fnId: string, ...restArgs: string[]): Promise<void>;
-  abort: () => void;
-} = () => {
-  throw new Error('You need to call `defineBatchDownload` before using `useBatchDownload`.');
-};
-
 const ERROR_MASKED = 'Masked.';
 
-export function defineBatchDownload<T>(downloaderConfig: BatchDownloadConfig<T>) {
+export function defineBatchDownload<
+  T extends MediaMeta,
+  P extends PageMatchItem<T> = PageMatchItem<T>
+>(downloaderConfig: BatchDownloadConfig<T, P>): BatchDownloadDefinition<T, P> {
   const artworkCount = writable<number>(0);
   const successd = writable<string[]>([]);
   const failed = writable<FailedItem[]>([]);
@@ -549,8 +591,14 @@ export function defineBatchDownload<T>(downloaderConfig: BatchDownloadConfig<T>)
     return false;
   }
 
-  // TODO: restArgs type
-  async function batchDownload(fnId: string, ...restArgs: string[]) {
+  async function batchDownload<K extends OmitNotGeneratorKey<T, P>>(
+    fnId: K,
+    ...restArgs: P[K] extends GenPageIdWithoutValidation
+      ? DropFirstArg<P[K]['fn']>
+      : P[K] extends GenPageIdWithValidation<T>
+        ? DropFirstAndSecondArg<P[K]['fn']>
+        : [never]
+  ) {
     setDownloading(true);
     writeLog('Info', 'Start download...');
 
@@ -574,7 +622,8 @@ export function defineBatchDownload<T>(downloaderConfig: BatchDownloadConfig<T>)
     let generator!: ReturnType<typeof getGenerator>;
     try {
       const pageIdItem = getGenPageIdItem(fnId);
-      if (!pageIdItem) throw new Error('Invalid generator id: ' + fnId);
+      if (!pageIdItem || !('fn' in pageIdItem))
+        throw new Error('Invalid generator id: ' + (fnId as string));
 
       generator = getGenerator(pageIdItem, ...restArgs);
 
@@ -621,22 +670,20 @@ export function defineBatchDownload<T>(downloaderConfig: BatchDownloadConfig<T>)
     if (downloadError) throw downloadError;
   }
 
-  function getGenPageIdItem(fnId: string) {
-    for (let i = 0; i < downloaderConfig.pageMatch.length; i++) {
-      const genPageId = downloaderConfig.pageMatch[i].genPageId;
+  function getGenPageIdItem(fnId: keyof P) {
+    const { pageMatch } = downloaderConfig;
 
-      if (Array.isArray(genPageId)) {
-        const item = genPageId.find((item) => item.id === fnId);
-        if (item) {
-          return item;
-        }
-      } else if (genPageId && genPageId.id === fnId) {
-        return genPageId;
+    for (const key in pageMatch) {
+      if (key === fnId) {
+        return pageMatch[key];
       }
     }
   }
 
-  function getGenerator(item: GenPageIdItem<unknown>, ...restArgs: string[]) {
+  function getGenerator(
+    item: GenPageIdWithValidation<T> | GenPageIdWithoutValidation,
+    ...restArgs: unknown[]
+  ) {
     let generator: ReturnType<(typeof item)['fn']>;
 
     if (!$downloadAllPages && $pageEnd < $pageStart)
@@ -775,11 +822,33 @@ export function defineBatchDownload<T>(downloaderConfig: BatchDownloadConfig<T>)
     return id + '_' + Math.random().toString(36).slice(2);
   }
 
-  useBatchDownload = () => {
+  function overwrite(
+    partialConfig: Partial<
+      Pick<
+        BatchDownloadConfig<T, P>,
+        'avatar' | 'downloadByArtworkId' | 'onDownloadAbort' | 'parseMetaByArtworkId'
+      >
+    >
+  ): BatchDownloadDefinition<T, P> {
+    // reassign value because downloader.svelte share the same downloaderConfig.
+    for (const key in partialConfig) {
+      const val = partialConfig[key as keyof typeof partialConfig];
+      if (val !== undefined) {
+        downloaderConfig[key as keyof typeof partialConfig] = val as any;
+      }
+    }
+
+    return definition;
+  }
+
+  function definition() {
     return {
       ...readonlyStore,
       batchDownload,
-      abort
+      abort,
+      overwrite
     };
-  };
+  }
+
+  return definition;
 }

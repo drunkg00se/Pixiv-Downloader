@@ -1,6 +1,5 @@
-import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 import { Danbooru } from '../danbooru';
-import { danbooruParser, type DanbooruMeta } from '../danbooru/parser';
+import { danbooruParser } from '../danbooru/parser';
 import { danbooruApi } from '../danbooru/api';
 import { RequestError } from '@/lib/error';
 import { downloader } from '@/lib/downloader';
@@ -11,6 +10,18 @@ import { historyDb } from '@/lib/db';
 
 export class ATFbooru extends Danbooru {
   private commentaryAccessible: Promise<boolean> = this.isCommentaryAccessible();
+
+  constructor() {
+    super();
+    this.useBatchDownload = this.useBatchDownload().overwrite({
+      avatar: '/favicon.svg',
+      parseMetaByArtworkId: async (id: string) => {
+        return await danbooruParser.parse(id, {
+          type: (await this.commentaryAccessible) ? 'api' : 'html'
+        });
+      }
+    });
+  }
 
   static get hostname(): string {
     return 'booru.allthefallen.moe';
@@ -56,19 +67,5 @@ export class ATFbooru extends Danbooru {
       comment,
       tags
     });
-  }
-
-  protected getBatchDownloadConfig(): BatchDownloadConfig<DanbooruMeta> {
-    const config = super.getBatchDownloadConfig();
-
-    return {
-      ...config,
-      avatar: '/favicon.svg',
-      parseMetaByArtworkId: async (id: string) => {
-        return await danbooruParser.parse(id, {
-          type: (await this.commentaryAccessible) ? 'api' : 'html'
-        });
-      }
-    };
   }
 }

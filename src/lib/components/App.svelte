@@ -9,12 +9,15 @@
   import { initConfigStore } from './Modal/Config/store';
   import t from '../lang';
   import { addStyleToShadow } from '../util';
-  import type { BatchDownloadConfig } from './Downloader/useBatchDownload';
+  import type { BatchDownloadConfig, BatchDownloadDefinition } from './Downloader/useBatchDownload';
+  import type { MediaMeta } from '@/sites/interface';
 
   export let dark = false;
   export let updated = false;
   export let filenameTemplate: string[] = [];
-  export let downloaderConfig: BatchDownloadConfig<unknown> | undefined;
+  export let downloaderConfig: BatchDownloadConfig<MediaMeta> | undefined;
+  export let useBatchDownload: BatchDownloadDefinition<MediaMeta> | undefined;
+
   setContext('filenameTemplate', filenameTemplate);
 
   initializeStores();
@@ -102,8 +105,8 @@
 >
   <Modal {components} class="!p-0" />
 
-  {#if downloaderConfig}
-    <Downloader {downloaderConfig} />
+  {#if downloaderConfig && useBatchDownload}
+    <Downloader {downloaderConfig} {useBatchDownload} />
   {/if}
 
   {#if $store.showPopupButton}

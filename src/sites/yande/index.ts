@@ -2,14 +2,15 @@ import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadArtwork } from './downloadArtwork';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
-import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 
 export class Yande extends SiteInject {
   static get hostname(): string {
     return 'yande.re';
   }
 
-  protected inject() {
+  public inject() {
+    super.inject();
+
     const pathname = location.pathname;
     const galleryMatch = pathname.match(/(?<=\/post\/show\/)\d+/);
 
@@ -154,10 +155,5 @@ export class Yande extends SiteInject {
 
   protected getFilenameTemplate(): string[] {
     return ['{artist}', '{character}', '{id}', '{date}'];
-  }
-
-  protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any> {
-    // TODO
-    return undefined;
   }
 }

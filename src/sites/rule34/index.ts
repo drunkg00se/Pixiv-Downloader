@@ -2,14 +2,15 @@ import { downloadArtwork } from './downloadArtwork';
 import { SiteInject } from '../base';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
-import type { BatchDownloadConfig } from '@/lib/components/Downloader/useBatchDownload';
 
 export class Rule34 extends SiteInject {
   static get hostname(): string {
     return 'rule34.xxx';
   }
 
-  protected inject() {
+  public inject() {
+    super.inject();
+
     const query = location.search;
     if (!query) return;
 
@@ -86,10 +87,5 @@ export class Rule34 extends SiteInject {
 
   protected getFilenameTemplate(): string[] {
     return ['{artist}', '{character}', '{id}', '{date}'];
-  }
-
-  protected getBatchDownloadConfig(): undefined | BatchDownloadConfig<any> {
-    // TODO
-    return undefined;
   }
 }

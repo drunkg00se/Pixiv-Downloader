@@ -2,9 +2,8 @@ import downloadSvg from '@/assets/download.svg?src';
 import { addStyleToShadow } from '@/lib/util';
 import type { Category } from '@/sites/pixiv/types';
 import type { TagProps } from './artworkTagButton';
-import { useBatchDownload } from '../Downloader/useBatchDownload';
 import { regexp } from '@/lib/regExp';
-import type { Unsubscriber } from 'svelte/store';
+import type { Unsubscriber, Readable } from 'svelte/store';
 import { logger } from '@/lib/logger';
 
 export class TagListButton extends HTMLElement {
@@ -13,7 +12,8 @@ export class TagListButton extends HTMLElement {
 
   constructor(
     private tagUrl: string,
-    private onClick?: (evt: MouseEvent) => void
+    private downloading: Readable<boolean>,
+    private handleDownload: (props: TagProps) => Promise<void>
   ) {
     super();
     this.dispatchDownload = this.dispatchDownload.bind(this);
@@ -71,20 +71,15 @@ export class TagListButton extends HTMLElement {
     // prevent from navigating to specific tag page
     evt?.preventDefault();
 
-    const { userId, category, tag, rest } = this.getTagProps();
-    const { batchDownload } = useBatchDownload();
-
-    batchDownload('tagged_artwork', userId, category, tag, rest).catch(logger.error);
+    this.handleDownload(this.getTagProps()).catch(logger.error);
   }
 
   connectedCallback() {
     this.render();
     this.btn ??= this.shadowRoot!.querySelector('button')!;
     this.btn.addEventListener('click', this.dispatchDownload);
-    this.onClick && this.btn.addEventListener('click', this.onClick);
 
-    const { downloading } = useBatchDownload();
-    this.unsubscriber = downloading.subscribe((val) => {
+    this.unsubscriber = this.downloading.subscribe((val) => {
       if (val) {
         this.setAttribute('disabled', '');
       } else {
@@ -96,7 +91,6 @@ export class TagListButton extends HTMLElement {
   disconnectedCallback() {
     this.unsubscriber?.();
     this.btn?.removeEventListener('click', this.dispatchDownload);
-    this.onClick && this.btn?.removeEventListener('click', this.onClick);
   }
 
   static get observedAttributes() {

@@ -11,7 +11,11 @@
     SlideToggle
   } from '@skeletonlabs/skeleton';
   import optionStore from './store';
-  import { useBatchDownload, type BatchDownloadConfig } from './useBatchDownload';
+  import {
+    type BatchDownloadConfig,
+    type BatchDownloadDefinition,
+    type PageMatchItem
+  } from './useBatchDownload';
   import { logger } from '@/lib/logger';
   import { nonNegativeInt } from '../Actions/nonNegativeInt';
   import t from '@/lib/lang';
@@ -21,6 +25,7 @@
   import playSvg from '@/assets/play-circle-outline.svg?src';
   import stopOutLineSvg from '@/assets/stop-circle-outline.svg?src';
   import downloadMultipleSvg from '@/assets/download-multiple.svg?src';
+  import type { MediaMeta } from '@/sites/interface';
 
   type FunctionKeys<T> = {
     [K in keyof T]: T[K] extends Function ? K : never;
@@ -76,34 +81,29 @@
 
     if (!downloaderConfig) return;
 
-    const pageConfigs = downloaderConfig.pageMatch;
+    const { pageMatch } = downloaderConfig;
+    const generatorMatches: [string, PageMatchItem<MediaMeta>['string']][] = [];
 
-    for (let i = 0; i < pageConfigs.length; i++) {
-      const matchPattern = pageConfigs[i].match;
+    for (const key in pageMatch) {
+      const item = pageMatch[key];
+      const { match: matchPattern } = item;
 
       if (typeof matchPattern === 'string') {
-        if (url.match(matchPattern)) {
-          pageConfig = pageConfigs[i];
-          updateAvatarSrc(url);
-          return;
-        }
+        url.match(matchPattern) && generatorMatches.push([key, item]);
       } else if (typeof matchPattern === 'function') {
-        if (matchPattern(url)) {
-          pageConfig = pageConfigs[i];
-          updateAvatarSrc(url);
-          return;
-        }
+        matchPattern(url) && generatorMatches.push([key, item]);
       } else {
-        if (matchPattern.test(url)) {
-          pageConfig = pageConfigs[i];
-          updateAvatarSrc(url);
-          return;
-        }
+        matchPattern.test(url) && generatorMatches.push([key, item]);
       }
     }
 
-    pageConfig = null;
-    updateAvatarAfterDownload = '';
+    if (generatorMatches.length) {
+      pageConfig = generatorMatches;
+      updateAvatarSrc(url);
+    } else {
+      pageConfig = null;
+      updateAvatarAfterDownload = '';
+    }
   }
 
   function watchUrlChange() {
@@ -147,22 +147,18 @@
     evt.returnValue = true;
   }
 
-  async function startDownload(id?: string) {
-    const { genPageId } = pageConfig!;
+  async function startDownload(id: string) {
     try {
-      if (Array.isArray(genPageId)) {
-        id && (await batchDownload(id));
-      } else {
-        !id && !!genPageId && (await batchDownload(genPageId.id));
-      }
+      await (batchDownload as any)(id);
     } catch (error) {
       logger.error(error);
     }
   }
 
-  export let downloaderConfig: BatchDownloadConfig<unknown>;
+  export let downloaderConfig: BatchDownloadConfig<MediaMeta>;
+  export let useBatchDownload: BatchDownloadDefinition<MediaMeta>;
 
-  let pageConfig: BatchDownloadConfig<unknown>['pageMatch'][number] | null;
+  let pageConfig: [string, PageMatchItem<MediaMeta>['string']][] | null;
 
   const {
     selectedFilters,
@@ -381,33 +377,35 @@
             </p>
           </div>
 
-          {#if pageConfig && Array.isArray(pageConfig.genPageId)}
+          {#if pageConfig && pageConfig.length > 1}
             <div class=" flex-none btn-group self-start">
-              {#each pageConfig.genPageId as { name, id }}
-                <button
-                  class="btn rounded-none !transform-none !variant-filled-primary"
-                  on:click={() => {
-                    startDownload(id);
-                  }}
-                >
-                  <i class="w-5">
-                    {@html downloadSvg}
-                  </i>
-                  <span>{name}</span>
-                </button>
+              {#each pageConfig as [id, item]}
+                {#if 'fn' in item}
+                  <button
+                    class="btn rounded-none !transform-none !variant-filled-primary"
+                    on:click={() => {
+                      startDownload(id);
+                    }}
+                  >
+                    <i class="w-5">
+                      {@html downloadSvg}
+                    </i>
+                    <span>{item.name}</span>
+                  </button>
+                {/if}
               {/each}
             </div>
-          {:else if pageConfig && pageConfig.genPageId && !Array.isArray(pageConfig.genPageId)}
+          {:else if pageConfig && 'fn' in pageConfig[0][1]}
             <button
               class="btn variant-filled-primary self-start"
               on:click={() => {
-                startDownload();
+                startDownload(pageConfig?.[0][0] ?? '');
               }}
             >
               <i class="w-5">
                 {@html downloadSvg}
               </i>
-              <span>{pageConfig.genPageId.name}</span>
+              <span>{pageConfig[0][1].name}</span>
             </button>
           {/if}
         </div>

@@ -1,22 +1,20 @@
+import type { Readable } from 'svelte/store';
 import { ThumbnailButton, type ThumbnailBtnProp } from '../Button/thumbnailButton';
-import { useBatchDownload } from '../Downloader/useBatchDownload';
 
-type DanbooruPoolButtonProp = Omit<
-  ThumbnailBtnProp,
-  'onClick' | 'page' | 'type' | 'shouldObserveDb'
->;
+type DanbooruPoolButtonProp = Omit<ThumbnailBtnProp, 'page' | 'type' | 'shouldObserveDb'> & {
+  downloading: Readable<boolean>;
+};
 
 export class DanbooruPoolButton extends ThumbnailButton {
+  private downloading: Readable<boolean>;
+
   constructor(props: DanbooruPoolButtonProp) {
     super({
       ...props,
-      shouldObserveDb: false,
-      onClick: (btn) => {
-        const poolId = btn.dataset.id!;
-        const { batchDownload } = useBatchDownload();
-        return batchDownload('pool_button', poolId);
-      }
+      shouldObserveDb: false
     });
+
+    this.downloading = props.downloading;
   }
 
   static get tagNameLowerCase() {
@@ -25,8 +23,7 @@ export class DanbooruPoolButton extends ThumbnailButton {
 
   connectedCallback() {
     super.connectedCallback();
-    const { downloading } = useBatchDownload();
-    this.unsubscriber = downloading.subscribe((val) => {
+    this.unsubscriber = this.downloading.subscribe((val) => {
       if (val) {
         this.setAttribute('disabled', '');
       } else {

@@ -1,6 +1,11 @@
 import { TagListButton } from '@/lib/components/Pixiv/tagListButton';
+import type { TagProps } from '@/lib/components/Pixiv/artworkTagButton';
+import type { Readable } from 'svelte/store';
 
-export function createTagListBtn() {
+export function createTagListBtn(
+  downloading: Readable<boolean>,
+  handleDownload: (props: TagProps) => Promise<void>
+) {
   const listContainer = document.querySelector('div[style*="position: relative"]');
   if (!listContainer) return;
 
@@ -15,9 +20,11 @@ export function createTagListBtn() {
   tagElements.forEach((ele) => {
     if (ele.querySelector(TagListButton.tagNameLowerCase)) return;
 
-    const btn = new TagListButton(ele.href, () => {
+    const btn = new TagListButton(ele.href, downloading, (props) => {
       // 关闭modal
       closeBtn?.click();
+
+      return handleDownload(props);
     });
 
     ele.appendChild(btn);

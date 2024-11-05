@@ -2,6 +2,12 @@ import { expect, test, beforeAll, vi } from 'vitest';
 import { TagListButton } from '@/lib/components/Pixiv/tagListButton';
 
 let el: TagListButton;
+const downloading = {
+  subscribe() {
+    return () => {};
+  }
+};
+const handleDownload = () => Promise.resolve();
 
 beforeAll(async () => {
   vi.stubGlobal('unsafeWindow', window);
@@ -23,7 +29,9 @@ beforeAll(async () => {
 
 test('tag button in dom', () => {
   el = new TagListButton(
-    'https://www.pixiv.net/en/users/1039353/illustrations/%E3%82%AA%E3%83%AA%E3%82%B8%E3%83%8A%E3%83%AB'
+    'https://www.pixiv.net/en/users/1039353/illustrations/%E3%82%AA%E3%83%AA%E3%82%B8%E3%83%8A%E3%83%AB',
+    downloading,
+    handleDownload
   );
 
   document.body.appendChild(el);
