@@ -98,7 +98,7 @@ test('color changes', async () => {
 
   tagEl.style.color = ACTIVE_COLOR;
   tagEl.style.backgroundColor = ACTIVE_BG_COLOR;
-  tagEl.setAttribute('status', 'active');
+  tagEl.className = 'sc-d98f2c-0 sc-1ij5ui8-1 RICfj sc-1xl36rp-0 lMQiD';
 
   await Promise.resolve();
 
@@ -107,7 +107,7 @@ test('color changes', async () => {
 
   tagEl.style.color = INACTIVE_COLOR;
   tagEl.style.backgroundColor = INACITVE_BG_COLOR;
-  tagEl.setAttribute('status', 'inactive');
+  tagEl.className = 'sc-d98f2c-0 sc-1ij5ui8-1 RICfj sc-1xl36rp-0 jAcrfo';
 
   await Promise.resolve();
 
