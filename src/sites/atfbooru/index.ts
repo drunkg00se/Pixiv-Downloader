@@ -9,7 +9,7 @@ import { addBookmark } from '../danbooru/addBookmark';
 import { historyDb } from '@/lib/db';
 
 export class ATFbooru extends Danbooru {
-  private commentaryAccessible: Promise<boolean> = this.isCommentaryAccessible();
+  private commentaryAccessible?: Promise<boolean>;
 
   constructor() {
     super();
@@ -17,7 +17,9 @@ export class ATFbooru extends Danbooru {
       avatar: '/favicon.svg',
       parseMetaByArtworkId: async (id: string) => {
         return await danbooruParser.parse(id, {
-          type: (await this.commentaryAccessible) ? 'api' : 'html'
+          type: (await (this.commentaryAccessible ??= this.isCommentaryAccessible()))
+            ? 'api'
+            : 'html'
         });
       }
     });
@@ -50,7 +52,7 @@ export class ATFbooru extends Danbooru {
 
     const id = btn.dataset.id!;
     const mediaMeta = await danbooruParser.parse(id, {
-      type: (await this.commentaryAccessible) ? 'api' : 'html'
+      type: (await (this.commentaryAccessible ??= this.isCommentaryAccessible())) ? 'api' : 'html'
     });
 
     const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
