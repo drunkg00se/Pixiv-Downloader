@@ -131,8 +131,6 @@ export class Danbooru extends SiteInject {
         comment,
         tags
       });
-
-      return id;
     },
 
     onDownloadAbort(taskIds) {

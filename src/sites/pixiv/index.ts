@@ -231,8 +231,6 @@ export class Pixiv extends SiteInject {
         tags
       };
       historyDb.add(historyData);
-
-      return id;
     },
 
     onDownloadAbort(taskIds) {

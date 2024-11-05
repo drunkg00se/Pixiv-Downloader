@@ -124,8 +124,7 @@ export interface BatchDownloadConfig<
   pageMatch: P;
 
   parseMetaByArtworkId(id: string): Promise<T>;
-  // TODO: no need to return id
-  downloadByArtworkId(meta: T, taskId: string): Promise<string>; //return Id for msg
+  downloadByArtworkId(meta: T, taskId: string): Promise<void>;
   onDownloadAbort(taskIds: string[]): void;
 }
 
