@@ -5,10 +5,7 @@ import { CancelError, RequestError } from '@/lib/error';
 import { sleep } from '@/lib/util';
 import type { MediaMeta } from '@/sites/interface';
 
-interface CustomTagFilter {
-  blacklist(blacklistedTags: string[], tags: string[]): boolean;
-  whitelist(whitelistedTags: string[], tags: string[]): boolean;
-}
+type CustomTagFilter = (blacklistedTags: string[], tags: string[]) => boolean;
 
 type FilterFn<T> = (artworkMeta: Partial<T>) => boolean | Promise<boolean>;
 
@@ -534,24 +531,20 @@ export function defineBatchDownload<
     log.set(item);
   }
 
-  function filterTag(
-    partialMeta: Partial<T>,
-    blacklistFn?: CustomTagFilter['blacklist'],
-    whitelistFn?: CustomTagFilter['whitelist']
-  ): boolean {
+  function filterTag(partialMeta: Partial<T>, customTagFilter?: CustomTagFilter): boolean {
     if (!('tags' in partialMeta) || !Array.isArray(partialMeta.tags)) return true;
 
     const defaultTagFilter = (userTags: string[], metaTags: string[]) =>
       userTags.some((tag) => metaTags.includes(tag));
-    blacklistFn ??= defaultTagFilter;
-    whitelistFn ??= defaultTagFilter;
+
+    customTagFilter ??= defaultTagFilter;
 
     if ($whitelistTag.length) {
-      return whitelistFn($whitelistTag, partialMeta.tags);
+      return customTagFilter($whitelistTag, partialMeta.tags);
     }
 
     if ($blacklistTag.length) {
-      return !blacklistFn($blacklistTag, partialMeta.tags);
+      return !customTagFilter($blacklistTag, partialMeta.tags);
     }
 
     return true;
@@ -563,8 +556,7 @@ export function defineBatchDownload<
       if (enableTagFilter === true) {
         if (!filterTag(partialMeta)) return false;
       } else if (enableTagFilter) {
-        const { blacklist, whitelist } = enableTagFilter;
-        if (!filterTag(partialMeta, blacklist, whitelist)) return false;
+        if (!filterTag(partialMeta, enableTagFilter)) return false;
       }
 
       // return false if no includefilter seleted.

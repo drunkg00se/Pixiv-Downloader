@@ -9,11 +9,6 @@ import { downloader } from '@/lib/downloader';
 import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton';
 import { addBookmark } from './addBookmark';
 
-const customTagFilter = (userTags: string[], metaTags: string[]) => {
-  const pureTags = metaTags.map((typedTag) => /(?<=[a-z]+:).+/.exec(typedTag)?.[0] ?? '');
-  return userTags.some((tag) => pureTags.includes(tag));
-};
-
 export class Danbooru extends SiteInject {
   protected useBatchDownload = this.app.initBatchDownloader({
     metaType: {} as DanbooruMeta,
@@ -56,9 +51,9 @@ export class Danbooru extends SiteInject {
         }
       ],
 
-      enableTagFilter: {
-        blacklist: customTagFilter,
-        whitelist: customTagFilter
+      enableTagFilter: (userTags: string[], metaTags: string[]) => {
+        const pureTags = metaTags.map((typedTag) => /(?<=[a-z]+:).+/.exec(typedTag)?.[0] ?? '');
+        return userTags.some((tag) => pureTags.includes(tag));
       }
     },
 
