@@ -343,15 +343,6 @@ export function defineBatchDownload<
   let downloadCompleted: () => void;
   let downloadAbort: (reason?: unknown) => void;
 
-  const readonlyStore = {
-    artworkCount: readonly(artworkCount),
-    successd: readonly(successd),
-    failed: readonly(failed),
-    excluded: readonly(excluded),
-    downloading: readonly(downloading),
-    log: readonly(log)
-  };
-
   let $pageStart!: number;
   let $pageEnd!: number;
   let $downloadAllPages: boolean;
@@ -829,17 +820,24 @@ export function defineBatchDownload<
       }
     }
 
-    return definition;
+    return batchDownloadDefinition;
   }
 
-  function definition() {
-    return {
-      ...readonlyStore,
-      batchDownload,
-      abort,
-      overwrite
-    };
+  function batchDownloadDefinition() {
+    return batchDownloadStore;
   }
 
-  return definition;
+  const batchDownloadStore = {
+    artworkCount: readonly(artworkCount),
+    successd: readonly(successd),
+    failed: readonly(failed),
+    excluded: readonly(excluded),
+    downloading: readonly(downloading),
+    log: readonly(log),
+    batchDownload,
+    abort,
+    overwrite
+  };
+
+  return batchDownloadDefinition;
 }
