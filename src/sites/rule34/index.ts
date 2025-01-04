@@ -38,19 +38,20 @@ export class Rule34 extends SiteInject {
     if (!btnContainers.length) return;
 
     btnContainers.forEach((el) => {
-      el.style.display = 'inline-block';
-      el.style.position = 'relative';
+      el.setAttribute(
+        'style',
+        'position: relative; align-self: center; width: auto; height: auto;'
+      );
 
       const imgEl = el.querySelector<HTMLImageElement>('img')!;
-      imgEl.style.boxSizing = 'border-box';
 
-      let aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
-      aspectRatio > 1 && (el.style.height = 'inherit');
-
-      imgEl.onload = () => {
-        aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
+      const setContainerHeight = () => {
+        const aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
         aspectRatio > 1 && (el.style.height = 'inherit');
       };
+      setContainerHeight();
+
+      imgEl.onload = setContainerHeight;
 
       const idMathch = /(?<=&id=)\d+/.exec(el.href);
       if (!idMathch) return;
