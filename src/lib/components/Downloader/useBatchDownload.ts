@@ -17,6 +17,14 @@ interface YieldArtworkId {
   unavaliable: string[];
 }
 
+interface YieldArtworkMeta<M> {
+  total: number;
+  page: number;
+  avaliable: M[];
+  invalid: M[];
+  unavaliable: M[];
+}
+
 export type GenerateIdWithValidation<T, K = undefined> = (
   pageRange: [start: number, end: number] | null,
   checkValidity: (meta: Partial<T>) => Promise<boolean>,
@@ -27,6 +35,14 @@ export type GenerateIdWithoutValidation<K = undefined> = (
   pageRange: [start: number, end: number] | null,
   ...restArgs: K extends unknown[] ? K : [K]
 ) => Generator<YieldArtworkId, void, undefined> | AsyncGenerator<YieldArtworkId, void, undefined>;
+
+export type GenerateMeta<T, K = undefined> = (
+  pageRange: [start: number, end: number] | null,
+  checkValidity: (meta: Partial<T>) => Promise<boolean>,
+  ...restArgs: K extends unknown[] ? K : [K]
+) =>
+  | Generator<YieldArtworkMeta<T>, void, undefined>
+  | AsyncGenerator<YieldArtworkMeta<T>, void, undefined>;
 
 interface GenPageIdBase {
   name: string;
@@ -43,9 +59,13 @@ interface GenPageIdWithoutValidation extends GenPageIdBase {
   fn: GenerateIdWithoutValidation<any[]>;
 }
 
+interface GenPageMeta<T> extends GenPageIdBase {
+  fn: GenerateMeta<T, any[]>;
+}
+
 export type PageMatchItem<T> = Record<
   string,
-  GenPageIdWithValidation<T> | GenPageIdWithoutValidation | GenPageIdBase
+  GenPageIdWithValidation<T> | GenPageIdWithoutValidation | GenPageMeta<T> | GenPageIdBase
 >;
 
 type OmitNotGeneratorKey<T, P extends PageMatchItem<T>> = {
@@ -53,12 +73,22 @@ type OmitNotGeneratorKey<T, P extends PageMatchItem<T>> = {
     ? K
     : P[K] extends GenPageIdWithValidation<T>
       ? K
-      : never;
+      : P[K] extends GenPageMeta<T>
+        ? K
+        : never;
 }[keyof P];
 
 type DropFirstArg<F> = F extends (x: any, ...args: infer P) => any ? P : never;
 
 type DropFirstAndSecondArg<F> = F extends (x: any, y: any, ...args: infer P) => any ? P : never;
+
+type GetGeneratorParameters<O, T> = O extends GenPageIdWithoutValidation
+  ? DropFirstArg<O['fn']>
+  : O extends GenPageIdWithValidation<T>
+    ? DropFirstAndSecondArg<O['fn']>
+    : O extends GenPageMeta<T>
+      ? DropFirstAndSecondArg<O['fn']>
+      : never;
 
 interface BatchDownload<T extends MediaMeta, P extends PageMatchItem<T> = PageMatchItem<T>> {
   artworkCount: Readable<number>;
@@ -69,11 +99,7 @@ interface BatchDownload<T extends MediaMeta, P extends PageMatchItem<T> = PageMa
   log: Readable<LogItem>;
   batchDownload<K extends OmitNotGeneratorKey<T, P>>(
     fnId: K,
-    ...restArgs: P[K] extends GenPageIdWithoutValidation
-      ? DropFirstArg<P[K]['fn']>
-      : P[K] extends GenPageIdWithValidation<T>
-        ? DropFirstAndSecondArg<P[K]['fn']>
-        : never[]
+    ...restArgs: GetGeneratorParameters<P[K], T>
   ): Promise<void>;
   abort(): void;
   overwrite(
@@ -336,8 +362,10 @@ export function defineBatchDownload<
   const { requestDownload, cancelDownloadRequest, processNextDownload } = useChannel();
 
   const tasks: string[] = [];
-  const failedTasks: string[] = [];
-  const unavaliableTasks: string[] = [];
+  const failedIdTasks: string[] = [];
+  const unavaliableIdTasks: string[] = [];
+  const failedMetaTasks: T[] = [];
+  const unavaliableMetaTasks: T[] = [];
 
   let controller: AbortController | null;
   let downloadCompleted: () => void;
@@ -410,14 +438,20 @@ export function defineBatchDownload<
     isDone && downloadCompleted?.();
   });
 
+  function isStringArray(arr: string[] | T[]): arr is string[] {
+    return typeof arr[0] === 'string';
+  }
+
   function reset() {
     artworkCount.set(0);
     successd.set([]);
     failed.set([]);
     excluded.set([]);
     tasks.length = 0;
-    failedTasks.length = 0;
-    unavaliableTasks.length = 0;
+    failedIdTasks.length = 0;
+    unavaliableIdTasks.length = 0;
+    failedMetaTasks.length = 0;
+    unavaliableMetaTasks.length = 0;
     controller = null;
     downloadCompleted = () => {};
     downloadAbort = () => {};
@@ -473,12 +507,18 @@ export function defineBatchDownload<
     });
   }
 
-  function addExcluded(id: string | string[]) {
+  function addExcluded(idOrMeta: string | string[] | T | T[]) {
     excluded.update((val) => {
-      if (Array.isArray(id)) {
-        val.push(...id);
-        writeLog('Info', `${id.length} was excluded...`);
+      if (Array.isArray(idOrMeta)) {
+        isStringArray(idOrMeta)
+          ? val.push(...idOrMeta)
+          : val.push(...idOrMeta.map((meta) => meta.id));
+        writeLog(
+          'Info',
+          `${idOrMeta.length + ' task' + (idOrMeta.length > 1 ? 's were' : ' was')} excluded...`
+        );
       } else {
+        const id = typeof idOrMeta === 'string' ? idOrMeta : idOrMeta.id;
         val.push(id);
         writeLog('Info', `${id} was excluded...`);
       }
@@ -575,11 +615,7 @@ export function defineBatchDownload<
 
   async function batchDownload<K extends OmitNotGeneratorKey<T, P>>(
     fnId: K,
-    ...restArgs: P[K] extends GenPageIdWithoutValidation
-      ? DropFirstArg<P[K]['fn']>
-      : P[K] extends GenPageIdWithValidation<T>
-        ? DropFirstAndSecondArg<P[K]['fn']>
-        : [never]
+    ...restArgs: GetGeneratorParameters<P[K], T>
   ) {
     setDownloading(true);
     writeLog('Info', 'Download start...');
@@ -607,28 +643,44 @@ export function defineBatchDownload<
       if (!pageIdItem || !('fn' in pageIdItem))
         throw new Error('Invalid generator id: ' + (fnId as string));
 
+      const filterWhenGenerateIngPage =
+        'filterWhenGenerateIngPage' in pageIdItem ? pageIdItem.filterWhenGenerateIngPage : true;
       generator = getGenerator(pageIdItem, ...restArgs);
 
       writeLog('Info', 'Waiting for other downloads to finish...');
       await requestDownload();
 
+<<<<<<< HEAD
       writeLog('Info', 'Starting...');
       await dispatchDownload(generator, pageIdItem.filterWhenGenerateIngPage, signal);
+=======
+      await dispatchDownload(generator, filterWhenGenerateIngPage, signal);
+>>>>>>> 6611b3f (feat: allow passing a meta generator to batchdownloader)
 
       // retry failed downloads
-      if ($retryFailed && failedTasks.length) {
-        writeLog('Info', 'Retry...');
+      if ($retryFailed && (failedIdTasks.length || failedMetaTasks.length)) {
+        if (failedIdTasks.length) {
+          generator = getIdRetryGenerator(
+            get(artworkCount),
+            failedIdTasks.slice(),
+            unavaliableIdTasks.slice()
+          );
+          failedIdTasks.length = 0;
+          unavaliableIdTasks.length = 0;
+        } else if (failedMetaTasks.length) {
+          generator = getMetaRetryGenerator(
+            get(artworkCount),
+            failedMetaTasks.slice(),
+            unavaliableMetaTasks.slice()
+          );
+          failedMetaTasks.length = 0;
+          unavaliableMetaTasks.length = 0;
+        }
 
-        generator = retryGenerator(
-          get(artworkCount),
-          failedTasks.slice(),
-          unavaliableTasks.slice()
-        );
-        failedTasks.length = 0;
-        unavaliableTasks.length = 0;
         failed.set([]);
 
-        await dispatchDownload(generator, pageIdItem.filterWhenGenerateIngPage, signal);
+        writeLog('Info', 'Retry...');
+        await dispatchDownload(generator, filterWhenGenerateIngPage, signal);
       }
 
       writeLog('Info', 'Download complete.');
@@ -664,7 +716,7 @@ export function defineBatchDownload<
   }
 
   function getGenerator(
-    item: GenPageIdWithValidation<T> | GenPageIdWithoutValidation,
+    item: GenPageIdWithValidation<T> | GenPageIdWithoutValidation | GenPageMeta<T>,
     ...restArgs: unknown[]
   ) {
     let generator: ReturnType<(typeof item)['fn']>;
@@ -676,16 +728,34 @@ export function defineBatchDownload<
       ? null
       : [$pageStart, $pageEnd];
 
-    if (item.filterWhenGenerateIngPage) {
-      generator = item.fn(pageRange, checkValidity, ...restArgs);
-    } else {
+    if ('filterWhenGenerateIngPage' in item && !item.filterWhenGenerateIngPage) {
       generator = item.fn(pageRange, ...restArgs);
+    } else {
+      generator = item.fn(pageRange, checkValidity, ...restArgs);
     }
 
     return generator;
   }
 
-  function* retryGenerator(total: number, failedArtworks: string[], unavaliableTasks: string[]) {
+  function* getIdRetryGenerator(
+    total: number,
+    failedArtworks: string[],
+    unavaliableTasks: string[]
+  ): Generator<YieldArtworkId, void, undefined> {
+    yield {
+      total,
+      page: 0,
+      avaliable: failedArtworks,
+      invalid: [],
+      unavaliable: unavaliableTasks
+    };
+  }
+
+  function* getMetaRetryGenerator(
+    total: number,
+    failedArtworks: T[],
+    unavaliableTasks: T[]
+  ): Generator<YieldArtworkMeta<T>, void, undefined> {
     yield {
       total,
       page: 0,
@@ -710,20 +780,34 @@ export function defineBatchDownload<
     const THRESHOLD = 5;
     const { parseMetaByArtworkId, downloadByArtworkId } = downloaderConfig;
     const dlPromise: Promise<void>[] = [];
-    let result: IteratorResult<YieldArtworkId, void> | void;
+    let result:
+      | IteratorResult<YieldArtworkId, void>
+      | IteratorResult<YieldArtworkMeta<T>, void>
+      | void;
     let status429: boolean = false;
 
-    const failedHanlderFactory = (id: string) => {
+    const failedHanlderFactory = (idOrMeta: string | T) => {
       return (reason: unknown) => {
         if (signal.aborted) return;
 
-        addFailed({ id, reason });
+        let isFailedTask = false;
 
-        reason && logger.error(reason);
-        reason !== ERROR_MASKED && failedTasks.push(id);
+        if (reason) {
+          isFailedTask = reason !== ERROR_MASKED;
 
-        if (reason instanceof RequestError && reason.status === 429) {
-          status429 = true;
+          if (reason instanceof RequestError && reason.status === 429) {
+            status429 = true;
+          }
+
+          logger.error(reason);
+        }
+
+        if (typeof idOrMeta === 'string') {
+          addFailed({ id: idOrMeta, reason });
+          isFailedTask && failedIdTasks.push(idOrMeta);
+        } else {
+          addFailed({ id: idOrMeta.id, reason });
+          isFailedTask && failedMetaTasks.push(idOrMeta);
         }
       };
     };
@@ -742,47 +826,64 @@ export function defineBatchDownload<
       setArtworkCount(total);
       invalid.length && addExcluded(invalid);
       if (unavaliable.length) {
-        addFailed(unavaliable.map((id) => ({ id, reason: ERROR_MASKED })));
-        unavaliableTasks.push(...unavaliable);
+        if (isStringArray(unavaliable)) {
+          addFailed(unavaliable.map((id) => ({ id, reason: ERROR_MASKED })));
+          unavaliableIdTasks.push(...unavaliable);
+        } else {
+          addFailed(unavaliable.map((meta) => ({ id: meta.id, reason: ERROR_MASKED })));
+          unavaliableMetaTasks.push(...unavaliable);
+        }
       }
 
       // Avoid frequent network requests by the generator.
       if (!avaliable.length) await Promise.race([sleep(1500), waitUntilDownloadComplete]);
 
-      for (const id of avaliable) {
+      for (const idOrMeta of avaliable) {
+        let artworkMeta: T | void;
+        let metaId: string;
+        let taskId: string;
+
         if (status429) {
           writeLog('Error', new Error('Http status: 429, wait for 30 seconds.'));
           await Promise.race([sleep(30000), waitUntilDownloadComplete]);
           status429 = false;
         }
 
-        const artworkMeta = await parseMetaByArtworkId(id).catch(failedHanlderFactory(id));
+        if (typeof idOrMeta === 'string') {
+          metaId = idOrMeta;
+          artworkMeta = await parseMetaByArtworkId(metaId).catch(failedHanlderFactory(metaId));
 
-        signal.throwIfAborted();
-        if (!artworkMeta) continue;
+          signal.throwIfAborted();
+          if (!artworkMeta) continue;
 
-        if (!filterWhenGenerateIngPage) {
-          const isValid = await checkValidity(artworkMeta);
-          if (!isValid) {
-            addExcluded(id);
-            await Promise.race([sleep(1000), waitUntilDownloadComplete]);
-            continue;
+          if (!filterWhenGenerateIngPage) {
+            const isValid = await checkValidity(artworkMeta);
+            if (!isValid) {
+              addExcluded(metaId);
+              await Promise.race([sleep(1000), waitUntilDownloadComplete]);
+              continue;
+            }
           }
+
+          taskId = generateTaskID(metaId);
+        } else {
+          artworkMeta = idOrMeta;
+          metaId = artworkMeta.id;
+          taskId = generateTaskID(metaId);
         }
 
-        writeLog('Add', id);
+        writeLog('Add', metaId);
+        tasks.push(taskId);
 
-        const taskId = generateTaskID(id);
         const processDownload = downloadByArtworkId(artworkMeta, taskId)
           .then(function handleSucccess() {
-            !signal.aborted && addSuccessd(id);
-          }, failedHanlderFactory(id))
+            !signal.aborted && addSuccessd(metaId);
+          }, failedHanlderFactory(idOrMeta))
           .finally(function removeTask() {
-            const idx = tasks.findIndex((storeId) => storeId === id);
+            const idx = tasks.findIndex((storeId) => storeId === taskId);
             idx !== -1 && tasks.splice(idx, 1);
           });
 
-        tasks.push(taskId);
         dlPromise.push(processDownload);
 
         if (dlPromise.length >= THRESHOLD) {
