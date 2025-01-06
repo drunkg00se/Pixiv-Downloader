@@ -131,7 +131,7 @@ export class Rule34 extends SiteInject {
 
   protected createThumbnailBtn() {
     const btnContainers = document.querySelectorAll<HTMLAnchorElement>(
-      '.thumb:not(.blacklisted-image) > a:first-child'
+      '.thumb > a:first-child:not(:has(.blacklist-img))'
     );
     if (!btnContainers.length) return;
 
