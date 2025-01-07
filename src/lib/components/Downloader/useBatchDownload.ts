@@ -582,7 +582,7 @@ export function defineBatchDownload<
         : [never]
   ) {
     setDownloading(true);
-    writeLog('Info', 'Start download...');
+    writeLog('Info', 'Download start...');
 
     // reset store before download start, so we can still access store data after download finished.
     reset();
@@ -612,6 +612,7 @@ export function defineBatchDownload<
       writeLog('Info', 'Waiting for other downloads to finish...');
       await requestDownload();
 
+      writeLog('Info', 'Starting...');
       await dispatchDownload(generator, pageIdItem.filterWhenGenerateIngPage, signal);
 
       // retry failed downloads
