@@ -2,11 +2,125 @@ import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadArtwork } from './downloadArtwork';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
+import { yandeParser, type YandeMeta } from './parser';
+import { YandeDownloadConfig } from './downloadConfigBuilder';
+import { downloader } from '@/lib/downloader';
+import { historyDb } from '@/lib/db';
+import t from '@/lib/lang';
 
 export class Yande extends SiteInject {
-  static get hostname(): string {
-    return 'yande.re';
-  }
+  protected useBatchDownload = this.app.initBatchDownloader({
+    metaType: {} as YandeMeta,
+
+    avatar: '/favicon.ico',
+
+    filterOption: {
+      filters: [
+        {
+          id: 'exclude_downloaded',
+          type: 'exclude',
+          name: t('downloader.category.filter.exclude_downloaded'),
+          checked: false,
+          fn(meta) {
+            return !!meta.id && historyDb.has(meta.id);
+          }
+        },
+        {
+          id: 'allow_image',
+          type: 'include',
+          name: t('downloader.category.filter.image'),
+          checked: true,
+          fn() {
+            return true;
+          }
+        }
+      ],
+
+      enableTagFilter: true
+    },
+
+    pageMatch: {
+      posts: {
+        name: t('downloader.download_type.yande_posts'),
+        match: () => location.pathname === '/post',
+        filterWhenGenerateIngPage: true,
+        fn: (pageRange, checkValidity, tags?: string | string[]) => {
+          tags ??= new URLSearchParams(location.search).get('tags') ?? '';
+          return yandeParser.postGenerator(pageRange, checkValidity, tags);
+        }
+      },
+
+      popular_1d: {
+        name: t('downloader.download_type.yande_popular_1d'),
+        match: () => location.pathname === '/post/popular_recent',
+        filterWhenGenerateIngPage: true,
+        fn: (pageRange, checkValidity) => {
+          return yandeParser.popularGenerator(pageRange, checkValidity, '1d');
+        }
+      },
+
+      popular_1w: {
+        name: t('downloader.download_type.yande_popular_1w'),
+        match: () => location.pathname === '/post/popular_recent',
+        filterWhenGenerateIngPage: true,
+        fn: (pageRange, checkValidity) => {
+          return yandeParser.popularGenerator(pageRange, checkValidity, '1w');
+        }
+      },
+
+      popular_1m: {
+        name: t('downloader.download_type.yande_popular_1m'),
+        match: () => location.pathname === '/post/popular_recent',
+        filterWhenGenerateIngPage: true,
+        fn: (pageRange, checkValidity) => {
+          return yandeParser.popularGenerator(pageRange, checkValidity, '1m');
+        }
+      },
+
+      popular_1y: {
+        name: t('downloader.download_type.yande_popular_1y'),
+        match: () => location.pathname === '/post/popular_recent',
+        filterWhenGenerateIngPage: true,
+        fn: (pageRange, checkValidity) => {
+          return yandeParser.popularGenerator(pageRange, checkValidity, '1y');
+        }
+      },
+
+      pool: {
+        name: t('downloader.download_type.yande_pool'),
+        match: /\/pool\/show\//,
+        filterWhenGenerateIngPage: true,
+        fn: (pageRange, checkValidity, poolId?: string) => {
+          poolId ??= /(?<=show\/)[0-9]+/.exec(location.pathname)![0];
+          return yandeParser.poolGenerator(pageRange, checkValidity, poolId);
+        }
+      }
+    },
+
+    parseMetaByArtworkId(id) {
+      return yandeParser.parse(id);
+    },
+
+    async downloadByArtworkId(meta, taskId) {
+      downloader.dirHandleCheck();
+      const { id, tags, artist, title } = meta;
+      const downloadConfigs = new YandeDownloadConfig(meta).getDownloadConfig();
+      downloadConfigs.taskId = taskId;
+
+      await downloader.download(downloadConfigs);
+
+      historyDb.add({
+        pid: Number(id),
+        user: artist,
+        title,
+        tags
+      });
+    },
+
+    onDownloadAbort(taskIds) {
+      downloader.abort(taskIds);
+    }
+  });
 
   public inject() {
     super.inject();
@@ -155,5 +269,9 @@ export class Yande extends SiteInject {
 
   protected getFilenameTemplate(): string[] {
     return ['{artist}', '{character}', '{id}', '{date}'];
+  }
+
+  static get hostname(): string {
+    return 'yande.re';
   }
 }

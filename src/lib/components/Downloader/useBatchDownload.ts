@@ -17,7 +17,7 @@ interface YieldArtworkId {
   unavaliable: string[];
 }
 
-interface YieldArtworkMeta<M> {
+export interface YieldArtworkMeta<M> {
   total: number;
   page: number;
   avaliable: M[];
@@ -60,6 +60,7 @@ interface GenPageIdWithoutValidation extends GenPageIdBase {
 }
 
 interface GenPageMeta<T> extends GenPageIdBase {
+  filterWhenGenerateIngPage: true;
   fn: GenerateMeta<T, any[]>;
 }
 

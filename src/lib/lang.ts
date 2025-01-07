@@ -152,7 +152,13 @@ const zh = {
       pixiv_bookmark_private: '不公开收藏',
       pixiv_follow_latest_all: '全部',
       pixiv_follow_latest_r18: 'R-18',
-      pixiv_series: '系列'
+      pixiv_series: '系列',
+      yande_posts: '投稿',
+      yande_pool: '图集',
+      yande_popular_1d: '日',
+      yande_popular_1w: '周',
+      yande_popular_1m: '月',
+      yande_popular_1y: '年'
     }
   },
 
@@ -323,7 +329,13 @@ const en: typeof zh = {
       pixiv_bookmark_private: 'Private',
       pixiv_follow_latest_all: 'All',
       pixiv_follow_latest_r18: 'R-18',
-      pixiv_series: 'Series'
+      pixiv_series: 'Series',
+      yande_posts: 'Posts',
+      yande_pool: 'Pool',
+      yande_popular_1d: '1d',
+      yande_popular_1w: '1w',
+      yande_popular_1m: '1m',
+      yande_popular_1y: '1y'
     }
   },
 
