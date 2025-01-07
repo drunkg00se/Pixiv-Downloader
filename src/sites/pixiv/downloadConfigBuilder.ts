@@ -298,7 +298,7 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
   }
 
   public getDownloadConfig(btn?: ThumbnailButton): DownloadConfig<PixivSource>[] {
-    const { illustType, src, id, pageCount, extendName } = this.meta;
+    const { illustType, src, pageCount, extendName } = this.meta;
     const pageAttr = btn?.dataset.page;
     const downloadPage = pageAttr ? Number(pageAttr) : undefined;
 
@@ -307,7 +307,7 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
 
     if (downloadPage !== undefined) this.downloadAll = false;
 
-    const taskId = id + '_' + Math.random().toString(36).slice(2);
+    const taskId = this.generateTaskId();
     const headers = this.headers;
     const supportSubPath = this.supportSubpath();
     const downloadConfigs: DownloadConfig<PixivSource>[] = [];

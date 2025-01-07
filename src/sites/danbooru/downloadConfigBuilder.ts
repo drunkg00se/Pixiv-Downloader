@@ -24,7 +24,7 @@ export class DanbooruDownloadConfig extends DownloadConfigBuilder<DanbooruMeta> 
     // the request headers set by firefox "sec-fetch-site: cross-site, sec-fetch-mode: no-cors"
     // will cause the request to be rejected by Cloudflare.
     return {
-      taskId: Math.random().toString(36).slice(2),
+      taskId: this.generateTaskId(),
       src: this.meta.src,
       path: this.buildFilePath(),
       source: this.meta,

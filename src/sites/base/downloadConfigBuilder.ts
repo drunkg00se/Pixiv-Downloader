@@ -65,5 +65,9 @@ export abstract class DownloadConfigBuilder<T extends MediaMeta> {
       .replaceAll('{id}', id);
   }
 
+  protected generateTaskId() {
+    return this.meta.id + '_' + Math.random().toString(36).slice(2);
+  }
+
   abstract getDownloadConfig(btn?: ThumbnailButton): DownloadConfig<T> | DownloadConfig<T>[];
 }

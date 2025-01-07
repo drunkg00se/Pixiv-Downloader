@@ -28,7 +28,7 @@ export class Rule34DownloadConfig extends DownloadConfigBuilder<Rule34Meta> {
   public getDownloadConfig(btn?: ThumbnailButton): DownloadConfig<Rule34Meta> {
     return {
       headers: this.headers,
-      taskId: Math.random().toString(36).slice(2),
+      taskId: this.generateTaskId(),
       src: this.meta.src,
       path: this.buildFilePath(),
       source: this.meta,
