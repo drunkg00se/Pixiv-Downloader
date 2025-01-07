@@ -644,19 +644,14 @@ export function defineBatchDownload<
       if (!pageIdItem || !('fn' in pageIdItem))
         throw new Error('Invalid generator id: ' + (fnId as string));
 
-      const filterWhenGenerateIngPage =
-        'filterWhenGenerateIngPage' in pageIdItem ? pageIdItem.filterWhenGenerateIngPage : true;
+      const { filterWhenGenerateIngPage } = pageIdItem;
       generator = getGenerator(pageIdItem, ...restArgs);
 
       writeLog('Info', 'Waiting for other downloads to finish...');
       await requestDownload();
 
-<<<<<<< HEAD
       writeLog('Info', 'Starting...');
-      await dispatchDownload(generator, pageIdItem.filterWhenGenerateIngPage, signal);
-=======
       await dispatchDownload(generator, filterWhenGenerateIngPage, signal);
->>>>>>> 6611b3f (feat: allow passing a meta generator to batchdownloader)
 
       // retry failed downloads
       if ($retryFailed && (failedIdTasks.length || failedMetaTasks.length)) {

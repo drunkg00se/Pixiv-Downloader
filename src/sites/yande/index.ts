@@ -123,6 +123,7 @@ export class Yande extends SiteInject {
   });
 
   public inject() {
+    this.resetArrayFrom();
     super.inject();
 
     const pathname = location.pathname;
@@ -139,6 +140,15 @@ export class Yande extends SiteInject {
       );
       this.createThumbnailBtn(Array.from(btnContainers));
     }
+  }
+
+  // yande.re uses a pollyfill for `Array.from`, which doesn't support `Set` as an argument,
+  // and breaks svelte's `get_binding_group_value` function.
+  protected resetArrayFrom() {
+    const iframe = document.createElement('iframe');
+    document.body.append(iframe);
+    Array.from = (iframe.contentWindow as any).Array.from;
+    iframe.remove();
   }
 
   protected createThumbnailBtn(containers: HTMLAnchorElement[]) {
