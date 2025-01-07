@@ -5,6 +5,11 @@ import { Yande } from './sites/yande';
 import { ATFbooru } from './sites/atfbooru';
 import './lib/components/app.tailwind.css';
 
+// Remove CSS injected into dom in the dev server
+if (import.meta.env.DEV) {
+  document.head.querySelector('style[data-vite-dev-id]')?.remove();
+}
+
 function getSiteInjector() {
   const sitesAdapter = [Pixiv, Danbooru, Rule34, Yande, ATFbooru];
 
