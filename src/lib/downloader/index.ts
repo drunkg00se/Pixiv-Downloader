@@ -82,10 +82,7 @@ function createDownloader(): Downloader {
         const { taskId, config, isAborted } = downloadMeta;
         if (isAborted) return;
 
-        downloadMeta.retry++;
-        logger.warn('Download timeout', downloadMeta.retry, ':', config.src);
-
-        if (downloadMeta.retry > MAX_RETRY) {
+        if (++downloadMeta.retry > MAX_RETRY) {
           const err = new Error(`Download timout. ${taskId} | ${config.src}`);
 
           config.onError?.(err, config);
@@ -93,6 +90,7 @@ function createDownloader(): Downloader {
 
           cleanAndStartNext(downloadMeta);
         } else {
+          logger.error(`Download timeout: ${downloadMeta.retry}. ${taskId}`);
           logger.info('Retry download:', downloadMeta.retry, config.src);
           cleanAndStartNext(downloadMeta, downloadMeta);
         }
