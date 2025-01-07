@@ -19,6 +19,9 @@ export class DanbooruDownloadConfig extends DownloadConfigBuilder<DanbooruMeta> 
   }
 
   public getDownloadConfig(btn?: ThumbnailButton): DownloadConfig<DanbooruMeta> {
+    if (!this.meta.src)
+      throw new Error(`You need a gold account to see this image. ID: ${this.meta.id}`);
+
     // Firefox ver128.0
     // when `downloadMode` is set to `browser` and use `GM_download()` to donwload image from danbooru,
     // the request headers set by firefox "sec-fetch-site: cross-site, sec-fetch-mode: no-cors"
