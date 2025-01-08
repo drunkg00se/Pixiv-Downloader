@@ -122,13 +122,20 @@ function createDownloader(): Downloader {
       },
 
       onload: async (e) => {
-        logger.info('Xhr complete:', config.src);
-
         cleanAndStartNext(downloadMeta);
 
         if (downloadMeta.isAborted)
           return logger.warn('Download was canceled.', taskId, config.path);
 
+        const { status, statusText, finalUrl } = e;
+        if (status < 200 || status > 299) {
+          const err = new RequestError(statusText + ' ' + finalUrl, status);
+          config.onError?.(err, config);
+          downloadMeta.reject(err);
+          return;
+        }
+
+        logger.info('Xhr complete:', config.src);
         config.onXhrLoaded?.(config);
 
         try {
