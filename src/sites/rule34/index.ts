@@ -87,7 +87,7 @@ export class Rule34 extends SiteInject {
     async downloadByArtworkId(meta, taskId) {
       downloader.dirHandleCheck();
 
-      const { id, tags, artist, title } = meta;
+      const { id, tags, artist, title, source, rating } = meta;
       const downloadConfigs = new Rule34DownloadConfig(meta).getDownloadConfig();
       downloadConfigs.taskId = taskId;
 
@@ -97,7 +97,9 @@ export class Rule34 extends SiteInject {
         pid: Number(id),
         user: artist,
         title,
-        tags
+        tags,
+        source,
+        rating
       });
     },
 

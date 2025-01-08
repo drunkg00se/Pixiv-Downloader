@@ -120,7 +120,7 @@ export class Yande extends SiteInject {
 
     async downloadByArtworkId(meta, taskId) {
       downloader.dirHandleCheck();
-      const { id, tags, artist, title } = meta;
+      const { id, tags, artist, title, rating, source } = meta;
       const downloadConfigs = new YandeDownloadConfig(meta).getDownloadConfig();
       downloadConfigs.taskId = taskId;
 
@@ -130,7 +130,9 @@ export class Yande extends SiteInject {
         pid: Number(id),
         user: artist,
         title,
-        tags
+        tags,
+        rating,
+        source
       });
     },
 

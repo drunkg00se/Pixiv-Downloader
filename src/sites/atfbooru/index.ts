@@ -61,13 +61,15 @@ export class ATFbooru extends Danbooru {
 
     await downloader.download(downloadConfigs);
 
-    const { tags, artist, title, comment } = mediaMeta;
+    const { tags, artist, title, comment, source, rating } = mediaMeta;
     historyDb.add({
       pid: Number(id),
       user: artist,
       title,
       comment,
-      tags
+      tags,
+      source,
+      rating
     });
   }
 }

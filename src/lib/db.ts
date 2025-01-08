@@ -10,12 +10,17 @@ interface HistoryItemBase {
   title?: string;
   comment?: string;
   tags?: string[];
+  /* pixiv unlisted artwork id */
   unlistedId?: string;
+  /* booru site's image rating */
+  rating?: string;
+  source?: string;
 }
 
 type HistoryItem = HistoryItemBase & { page?: Uint8Array };
 
 export type HistoryData = HistoryItemBase & { page?: number };
+
 export type HistoryImportObject = HistoryItemBase & { page?: Record<string, number> };
 
 interface EffectImageItem {

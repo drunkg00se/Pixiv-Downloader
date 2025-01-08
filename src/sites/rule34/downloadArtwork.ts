@@ -1,5 +1,5 @@
 import { downloader } from '@/lib/downloader/';
-import { type HistoryData, historyDb } from '@/lib/db';
+import { historyDb } from '@/lib/db';
 import { rule34Parser } from './parser';
 import { Rule34DownloadConfig } from './downloadConfigBuilder';
 import { addBookmark } from './addBookmark';
@@ -11,7 +11,7 @@ export async function downloadArtwork(btn: ThumbnailButton) {
 
   const id = btn.dataset.id!;
   const mediaMeta = await rule34Parser.parse(id);
-  const { tags, artist, title } = mediaMeta;
+  const { tags, artist, title, source, rating } = mediaMeta;
 
   const downloadConfigs = new Rule34DownloadConfig(mediaMeta).getDownloadConfig(btn);
 
@@ -19,11 +19,12 @@ export async function downloadArtwork(btn: ThumbnailButton) {
 
   await downloader.download(downloadConfigs);
 
-  const historyData: HistoryData = {
+  historyDb.add({
     pid: Number(id),
     user: artist,
     title,
-    tags
-  };
-  historyDb.add(historyData);
+    tags,
+    source,
+    rating
+  });
 }

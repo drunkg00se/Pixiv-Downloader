@@ -118,13 +118,15 @@ export class Danbooru extends SiteInject {
 
       await downloader.download(downloadConfigs);
 
-      const { id, tags, artist, title, comment } = meta;
+      const { id, tags, artist, title, comment, source, rating } = meta;
       historyDb.add({
         pid: Number(id),
         user: artist,
         title,
         comment,
-        tags
+        tags,
+        source,
+        rating
       });
     },
 
@@ -257,13 +259,15 @@ export class Danbooru extends SiteInject {
 
     await downloader.download(downloadConfigs);
 
-    const { tags, artist, title, comment } = mediaMeta;
+    const { tags, artist, title, comment, source, rating } = mediaMeta;
     historyDb.add({
       pid: Number(id),
       user: artist,
       title,
       comment,
-      tags
+      tags,
+      source,
+      rating
     });
   }
 }

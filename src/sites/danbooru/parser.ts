@@ -8,7 +8,15 @@ import type {
 } from '@/lib/components/Downloader/useBatchDownload';
 import type { DanbooruPost } from './types';
 
-export type DanbooruMeta = MediaMeta & { comment: string; character: string };
+// general | sensitive | questionable | explicit
+type Rating = 'g' | 's' | 'q' | 'e' | '';
+
+export type DanbooruMeta = MediaMeta & {
+  comment: string;
+  character: string;
+  rating: Rating;
+  source: string;
+};
 
 interface DanbooruParser extends SiteParser<DanbooruMeta> {
   parse(id: string, param: { type: 'html' | 'api' }): Promise<DanbooruMeta>;
@@ -76,9 +84,11 @@ export const danbooruParser: DanbooruParser = {
     }
 
     const postDate = doc.querySelector('time')?.getAttribute('datetime') ?? '';
-
-    const source = doc.querySelector<HTMLAnchorElement>('li#post-info-source > a')?.href;
-    if (source) tags.push('source:' + source);
+    const source = doc.querySelector<HTMLAnchorElement>('li#post-info-source > a')?.href ?? '';
+    const rating = /Rating: (General|Sensitive|Questionable|Explicit)/
+      .exec(doc.documentElement.innerHTML)![1]
+      .charAt(0)
+      .toLowerCase() as Rating;
 
     // Comment
     let comment: string = '';
@@ -94,7 +104,9 @@ export const danbooruParser: DanbooruParser = {
       title,
       comment,
       tags,
-      createDate: postDate
+      createDate: postDate,
+      source,
+      rating
     };
   },
 
@@ -123,7 +135,8 @@ export const danbooruParser: DanbooruParser = {
       tag_string_copyright,
       tag_string_general,
       tag_string_meta,
-      source
+      source,
+      rating
     } = postDataResult.value;
 
     const { original_title = '', original_description = '' } =
@@ -139,7 +152,6 @@ export const danbooruParser: DanbooruParser = {
       ...addTypeToTag('general', tag_string_general),
       ...addTypeToTag('meta', tag_string_meta)
     ];
-    source && tags.push(`source:${source}`);
 
     const comment =
       original_title && original_description
@@ -155,7 +167,9 @@ export const danbooruParser: DanbooruParser = {
       title: md5,
       comment,
       tags,
-      createDate: created_at
+      createDate: created_at,
+      rating: rating ?? '',
+      source
     };
   },
 

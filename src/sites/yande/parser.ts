@@ -31,7 +31,7 @@ type YandeWebPostListData = Pick<YandeWebPostData, 'posts' | 'tags'>;
 
 type YandeGeneratorPostData = YandePostData & { tagType: Record<string, string> };
 
-export type YandeMeta = MediaMeta & { character: string };
+export type YandeMeta = MediaMeta & { character: string; rating: 'q' | 'e' | 's'; source: string };
 
 type PopularPeriod = '1d' | '1w' | '1m' | '1y';
 
@@ -159,6 +159,7 @@ export const yandeParser: YandeParser = {
   },
 
   _buildMeta(data, tagType): YandeMeta {
+    const { id, file_url, file_ext, md5, created_at, source, rating } = data;
     const artists: string[] = [];
     const characters: string[] = [];
 
@@ -175,14 +176,16 @@ export const yandeParser: YandeParser = {
     });
 
     return {
-      id: String(data.id),
-      src: data.file_url,
-      extendName: data.file_ext,
+      id: String(id),
+      src: file_url,
+      extendName: file_ext,
       artist: artists.join(',') || 'UnknownArtist',
       character: characters.join(',') || 'UnknownCharacter',
-      title: data.md5,
+      title: md5,
       tags,
-      createDate: new Date(data.created_at * 1000).toISOString()
+      createDate: new Date(created_at * 1000).toISOString(),
+      rating,
+      source
     };
   },
 

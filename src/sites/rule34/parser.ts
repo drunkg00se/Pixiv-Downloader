@@ -4,7 +4,13 @@ import type { GenerateIdWithValidation } from '@/lib/components/Downloader/useBa
 import { rule34Api } from './api';
 import { logger } from '@/lib/logger';
 
-export type Rule34Meta = MediaMeta & { character: string };
+type Rating = 'safe' | 'questionable' | 'explicit';
+
+export type Rule34Meta = MediaMeta & {
+  character: string;
+  rating: Rating;
+  source: string;
+};
 
 interface Rule34WebPostData {
   id: string;
@@ -49,6 +55,7 @@ export const rule34Parser: Rule34Parser = {
     const artists: string[] = [];
     const characters: string[] = [];
     const tags: string[] = [];
+    let source = '';
 
     const tagEls = doc.querySelectorAll<HTMLLIElement>('li[class*="tag-type"]');
     tagEls.forEach((tagEl) => {
@@ -76,14 +83,18 @@ export const rule34Parser: Rule34Parser = {
       | undefined
       | null;
 
-    if (sourceEl && sourceEl.textContent?.toLowerCase().includes('source')) {
+    if (sourceEl && /^source:/i.test(sourceEl.textContent ?? '')) {
       const sourceLink = sourceEl.querySelector('a');
       if (sourceLink) {
-        tags.push('source:' + sourceLink.href);
+        source = sourceLink.href;
       } else {
-        tags.push('source:' + sourceEl.textContent.replace('Source: ', ''));
+        source = sourceEl.textContent?.replace(/^source: ?/i, '') ?? '';
       }
     }
+
+    const rating = /Rating: ?(Explicit|Questionable|Safe)/
+      .exec(doc.documentElement.innerHTML)![1]
+      .toLowerCase() as Rating;
 
     return {
       id,
@@ -93,7 +104,9 @@ export const rule34Parser: Rule34Parser = {
       character: characters.join(',') || 'UnknownCharacter',
       title,
       tags,
-      createDate: postDate
+      createDate: postDate,
+      source,
+      rating
     };
   },
 
