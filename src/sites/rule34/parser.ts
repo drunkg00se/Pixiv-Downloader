@@ -63,7 +63,9 @@ export const rule34Parser: Rule34Parser = {
       if (!tagTypeMatch) throw new Error('Unknown tag: ' + tagEl.className);
 
       const tagType = tagTypeMatch[0];
-      const tag = tagEl.querySelector<HTMLAnchorElement>('a[href*="page=post"]')?.textContent || '';
+      const tag = (
+        tagEl.querySelector<HTMLAnchorElement>('a[href*="page=post"]')?.textContent || ''
+      ).replaceAll(' ', '_');
 
       if (tagType === 'artist') {
         artists.push(tag);
