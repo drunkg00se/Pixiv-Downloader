@@ -2,13 +2,15 @@ import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { downloadArtwork } from './downloadArtwork';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
-import { yandeParser, type YandeMeta } from './parser';
+import { yandeParser, type YandeBlacklistItem, type YandeMeta } from './parser';
 import { YandeDownloadConfig } from './downloadConfigBuilder';
 import { downloader } from '@/lib/downloader';
 import { historyDb } from '@/lib/db';
 import t from '@/lib/lang';
 
 export class Yande extends SiteInject {
+  protected blacklist: YandeBlacklistItem[] | null = null;
+
   protected useBatchDownload = this.app.initBatchDownloader({
     metaType: {} as YandeMeta,
 
@@ -23,6 +25,21 @@ export class Yande extends SiteInject {
           checked: false,
           fn(meta) {
             return !!meta.id && historyDb.has(meta.id);
+          }
+        },
+        {
+          id: 'exclude_blacklist',
+          type: 'exclude',
+          name: t('downloader.category.filter.exclude_blacklist'),
+          checked: true,
+          fn: async (meta) => {
+            if (!meta.tags) return false;
+
+            if (!this.blacklist) {
+              this.blacklist = await yandeParser.parseBlacklist();
+            }
+
+            return yandeParser.isBlacklisted(meta.tags, this.blacklist);
           }
         },
         {

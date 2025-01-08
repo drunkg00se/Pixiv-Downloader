@@ -119,6 +119,7 @@ const zh = {
       tab_name: '类别',
       filter: {
         exclude_downloaded: '排除已下载',
+        exclude_blacklist: '排除黑名单',
         image: '图片',
         video: '视频',
         download_all_pages: '下载所有页',
@@ -296,6 +297,7 @@ const en: typeof zh = {
       tab_name: 'Category',
       filter: {
         exclude_downloaded: 'Exclude Downloaded',
+        exclude_blacklist: 'Exclude Blacklist',
         image: 'Image',
         video: 'Video',
         download_all_pages: 'All Pages',

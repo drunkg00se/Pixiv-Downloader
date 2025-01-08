@@ -20,6 +20,13 @@ interface YandeWebPostData {
   votes: object;
 }
 
+export interface YandeBlacklistItem {
+  tags: string[];
+  original_tag_string: string;
+  require: string[];
+  exclude: string[];
+}
+
 type YandeWebPostListData = Pick<YandeWebPostData, 'posts' | 'tags'>;
 
 type YandeGeneratorPostData = YandePostData & { tagType: Record<string, string> };
@@ -29,6 +36,9 @@ export type YandeMeta = MediaMeta & { character: string };
 type PopularPeriod = '1d' | '1w' | '1m' | '1y';
 
 interface YandeParser extends SiteParser<YandeMeta> {
+  _isValidCallbackFactory(
+    checkValidity: (meta: Partial<YandeMeta>) => Promise<boolean>
+  ): (postData: YandeGeneratorPostData) => Promise<boolean>;
   _buildMeta<T extends YandePostData>(postData: T, tagType: Record<string, string>): YandeMeta;
   _parsePostListData(docText: string): YandePostData[];
   _parseTagListData(docText: string): Record<string, string>;
@@ -39,11 +49,13 @@ interface YandeParser extends SiteParser<YandeMeta> {
     isValid: (data: T) => Promise<boolean>,
     buildMeta: (data: T) => M
   ): AsyncGenerator<YieldArtworkMeta<M>, void, undefined>;
+  isBlacklisted(matchTags: string[], blacklist: YandeBlacklistItem[]): boolean;
   parse(id: string): Promise<YandeMeta>;
   parseArtwork(artworkId: string): Promise<YandeWebPostData>;
   parsePostList(tags: string | string[], page: number): Promise<YandeWebPostListData>;
   parsePopular(period: PopularPeriod): Promise<YandeWebPostListData>;
   parsePool(poolId: string): Promise<YandeWebPostData>;
+  parseBlacklist(): Promise<YandeBlacklistItem[]>;
   postGenerator: GenerateMeta<YandeMeta, [tags: string | string[]]>;
   popularGenerator: GenerateMeta<YandeMeta, [period: PopularPeriod]>;
   poolGenerator: GenerateMeta<YandeMeta, [poolId: string]>;
@@ -56,8 +68,8 @@ export const yandeParser: YandeParser = {
   },
 
   _parsePostListData(docText: string): YandePostData[] {
-    const matchData = [...docText.matchAll(/(?<=Post\.register\().+(?=\))/g)];
-    return matchData.flat().map((dataStr) => JSON.parse(dataStr));
+    const matchData = docText.match(/(?<=Post\.register\().+(?=\))/g)!;
+    return matchData.map((dataStr) => JSON.parse(dataStr));
   },
 
   _parseTagListData(docText: string): Record<string, string> {
@@ -98,6 +110,54 @@ export const yandeParser: YandeParser = {
     return JSON.parse(dataStr);
   },
 
+  /**
+   * init_blacklisted
+   * https://github.com/moebooru/moebooru/blob/master/app/javascript/src/legacy/post.coffee#L429
+   */
+  async parseBlacklist() {
+    // blacklist can be updated via ajax so we shouldn't get blacklist from current document.
+    const doc = await yandeApi.getDoc('/static/more');
+    const el = doc.querySelector('script#user-blacklisted-tags');
+    if (!el) throw new Error('Can not get blacklist.');
+
+    const blacklistArr = JSON.parse(el.textContent ?? '[]') as string[];
+
+    return blacklistArr.map((blacklist) => {
+      const matchRatingTag = blacklist.replace(/(rating:[qes])\w+/, '$1');
+      const tags = matchRatingTag.split(' ');
+      const require: string[] = [];
+      const exclude: string[] = [];
+
+      tags.forEach((tag) => {
+        if (tag.charAt(0) === '-') {
+          exclude.push(tag.slice(1));
+        } else {
+          require.push(tag);
+        }
+      });
+
+      return {
+        tags,
+        original_tag_string: blacklist,
+        require,
+        exclude
+      };
+    });
+  },
+
+  /**
+   * is_blacklisted
+   * https://github.com/moebooru/moebooru/blob/master/app/javascript/src/legacy/post.coffee#L315
+   */
+  isBlacklisted(matchTags, blacklist) {
+    return blacklist.some((blacklistItem) => {
+      const { require, exclude } = blacklistItem;
+      const hasTag = (tag: string) => matchTags.includes(tag);
+
+      return require.every(hasTag) && !exclude.some(hasTag);
+    });
+  },
+
   _buildMeta(data, tagType): YandeMeta {
     const artists: string[] = [];
     const characters: string[] = [];
@@ -123,6 +183,19 @@ export const yandeParser: YandeParser = {
       title: data.md5,
       tags,
       createDate: new Date(data.created_at * 1000).toISOString()
+    };
+  },
+
+  /**
+   * register
+   * https://github.com/moebooru/moebooru/blob/master/app/javascript/src/legacy/post.coffee#L286
+   */
+  _isValidCallbackFactory(checkValidity) {
+    return async (data) => {
+      const tags = data.tags.split(' ');
+      tags.push('rating:' + data.rating.charAt(0));
+      tags.push('status:' + data.status);
+      return await checkValidity({ id: String(data.id), tags });
     };
   },
 
@@ -194,15 +267,17 @@ export const yandeParser: YandeParser = {
       return posts.map((post) => ({ ...post, tagType: tags }));
     };
 
-    const isValid = (data: YandeGeneratorPostData): Promise<boolean> => {
-      return checkValidity({ id: String(data.id), tags: data.tags.split(' ') });
-    };
-
     const buildMeta = (data: YandeGeneratorPostData): YandeMeta => {
       return this._buildMeta(data, data.tagType);
     };
 
-    yield* this._paginationGenerator(pageRange, POSTS_PER_PAGE, getPostData, isValid, buildMeta);
+    yield* this._paginationGenerator(
+      pageRange,
+      POSTS_PER_PAGE,
+      getPostData,
+      this._isValidCallbackFactory(checkValidity),
+      buildMeta
+    );
   },
 
   async *popularGenerator(_, checkValidity, period) {
@@ -211,15 +286,17 @@ export const yandeParser: YandeParser = {
       return posts.map((post) => ({ ...post, tagType: tags }));
     };
 
-    const isValid = (data: YandeGeneratorPostData): Promise<boolean> => {
-      return checkValidity({ id: String(data.id), tags: data.tags.split(' ') });
-    };
-
     const buildMeta = (data: YandeGeneratorPostData): YandeMeta => {
       return this._buildMeta(data, data.tagType);
     };
 
-    yield* this._paginationGenerator([1, 1], Infinity, getPopularData, isValid, buildMeta);
+    yield* this._paginationGenerator(
+      [1, 1],
+      Infinity,
+      getPopularData,
+      this._isValidCallbackFactory(checkValidity),
+      buildMeta
+    );
   },
 
   async *poolGenerator(_, checkValidity, poolId) {
@@ -228,14 +305,16 @@ export const yandeParser: YandeParser = {
       return posts.map((post) => ({ ...post, tagType: tags }));
     };
 
-    const isValid = (data: YandeGeneratorPostData): Promise<boolean> => {
-      return checkValidity({ id: String(data.id), tags: data.tags.split(' ') });
-    };
-
     const buildMeta = (data: YandeGeneratorPostData): YandeMeta => {
       return this._buildMeta(data, data.tagType);
     };
 
-    yield* this._paginationGenerator([1, 1], Infinity, getPoolData, isValid, buildMeta);
+    yield* this._paginationGenerator(
+      [1, 1],
+      Infinity,
+      getPoolData,
+      this._isValidCallbackFactory(checkValidity),
+      buildMeta
+    );
   }
 };
