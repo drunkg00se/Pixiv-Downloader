@@ -68,6 +68,7 @@ export class Danbooru extends SiteInject {
           return danbooruParser.poolAndGroupGenerator(pageRange, poolId, 'pool');
         }
       },
+
       favorite_groups: {
         name: 'FavoriteGroups',
         match: /(?<=\/favorite_groups\/)[0-9]+/,
@@ -78,9 +79,10 @@ export class Danbooru extends SiteInject {
           return danbooruParser.poolAndGroupGenerator(pageRange, groupId, 'favoriteGroup');
         }
       },
+
       post_list: {
         name: 'Post',
-        match: /\/posts(?!\/[0-9]+)/,
+        match: () => location.pathname === '/' || location.pathname === '/posts',
         filterWhenGenerateIngPage: true,
         fn: (pageRange, checkValidity) => {
           const searchParam = new URLSearchParams(new URL(location.href).search);
@@ -91,6 +93,7 @@ export class Danbooru extends SiteInject {
           return danbooruParser.postListGenerator(pageRange, checkValidity, tags, limitParam);
         }
       },
+
       pool_gallery_button: {
         name: 'pool_gallery_button',
         match: () => false,
@@ -100,6 +103,7 @@ export class Danbooru extends SiteInject {
           return danbooruParser.poolAndGroupGenerator(pageRange, poolId, 'pool');
         }
       },
+
       show_downloader_in_pool_gallery: {
         name: 'pool_gallery',
         match: /\/pools\/gallery/
