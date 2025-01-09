@@ -268,7 +268,7 @@ export const danbooruParser: DanbooruParser = {
 
     return {
       id,
-      src: file_url,
+      src: file_url ?? '',
       extendName: file_ext,
       artist: tag_string_artist.replaceAll(' ', ',') || 'UnknownArtist',
       character: tag_string_character.replaceAll(' ', ',') || 'UnknownCharacter',
@@ -364,12 +364,17 @@ export const danbooruParser: DanbooruParser = {
       const unavaliable: string[] = [];
 
       for (let i = 0; i < postListData.length; i++) {
-        const { id, file_ext, tag_string, is_deleted } = postListData[i];
+        const { id, file_ext, tag_string, is_deleted, file_url } = postListData[i];
         const idStr = String(id);
 
         if (is_deleted && !showDeletedPosts) {
           invalid.push(idStr);
           continue;
+        }
+
+        // user don't have permission
+        if (!file_url) {
+          unavaliable.push(idStr);
         }
 
         const validityCheckMeta: Partial<DanbooruMeta> = {

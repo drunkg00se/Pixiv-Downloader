@@ -96,7 +96,7 @@ export interface DanbooruPost {
   parent_id: number | null;
   source: string;
   md5: string;
-  file_url: string;
+  file_url: string | undefined;
   large_file_url: string;
   preview_file_url: string;
   file_ext: string;
