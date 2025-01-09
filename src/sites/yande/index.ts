@@ -34,11 +34,7 @@ export class Yande extends SiteInject {
           checked: true,
           fn: async (meta) => {
             if (!meta.tags) return false;
-
-            if (!this.blacklist) {
-              this.blacklist = await yandeParser.parseBlacklist();
-            }
-
+            this.blacklist ??= await yandeParser.parseBlacklist();
             return yandeParser.isBlacklisted(meta.tags, this.blacklist);
           }
         },
@@ -138,6 +134,10 @@ export class Yande extends SiteInject {
 
     onDownloadAbort(taskIds) {
       downloader.abort(taskIds);
+    },
+
+    afterDownload: () => {
+      this.blacklist && (this.blacklist = null);
     }
   });
 

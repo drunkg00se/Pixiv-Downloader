@@ -8,8 +8,11 @@ import { DanbooruDownloadConfig } from './downloadConfigBuilder';
 import { downloader } from '@/lib/downloader';
 import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton';
 import { addBookmark } from './addBookmark';
+import type { DanbooruUserProfile } from './types';
+import { danbooruApi } from './api';
 
 export class Danbooru extends SiteInject {
+  protected profile: DanbooruUserProfile | null = null;
   protected blacklist: DanbooruBlacklistItem[] | null = null;
 
   protected useBatchDownload = this.app.initBatchDownloader({
@@ -82,7 +85,12 @@ export class Danbooru extends SiteInject {
         fn: (pageRange) => {
           const poolId = /(?<=\/pools\/)[0-9]+/.exec(location.pathname)?.[0];
           if (!poolId) throw new Error('Invalid pool id');
-          return danbooruParser.poolAndGroupGenerator(pageRange, poolId, 'pool');
+          return danbooruParser.poolAndGroupGenerator(
+            pageRange,
+            poolId,
+            'pool',
+            this.profile?.per_page
+          );
         }
       },
 
@@ -93,7 +101,12 @@ export class Danbooru extends SiteInject {
         fn: (pageRange) => {
           const groupId = /(?<=\/favorite_groups\/)[0-9]+/.exec(location.pathname)?.[0];
           if (!groupId) throw new Error('Invalid pool id');
-          return danbooruParser.poolAndGroupGenerator(pageRange, groupId, 'favoriteGroup');
+          return danbooruParser.poolAndGroupGenerator(
+            pageRange,
+            groupId,
+            'favoriteGroup',
+            this.profile?.per_page
+          );
         }
       },
 
@@ -107,7 +120,13 @@ export class Danbooru extends SiteInject {
           const limit = searchParam.get('limit');
           const limitParam = limit ? Number(limit) : undefined;
 
-          return danbooruParser.postListGenerator(pageRange, checkValidity, tags, limitParam);
+          return danbooruParser.postListGenerator(
+            pageRange,
+            checkValidity,
+            tags,
+            limitParam,
+            this.profile?.show_deleted_posts
+          );
         }
       },
 
@@ -117,7 +136,12 @@ export class Danbooru extends SiteInject {
         filterWhenGenerateIngPage: false,
         fn: (pageRange, poolId: string) => {
           if (!poolId) throw new Error('Invalid pool id');
-          return danbooruParser.poolAndGroupGenerator(pageRange, poolId, 'pool');
+          return danbooruParser.poolAndGroupGenerator(
+            pageRange,
+            poolId,
+            'pool',
+            this.profile?.per_page
+          );
         }
       },
 
@@ -151,8 +175,21 @@ export class Danbooru extends SiteInject {
       });
     },
 
+    beforeDownload: async () => {
+      this.profile = await danbooruApi.getProfile();
+      this.blacklist = await danbooruParser.parseBlacklist(
+        'profile',
+        this.profile.blacklisted_tags ?? ''
+      );
+    },
+
     onDownloadAbort(taskIds) {
       downloader.abort(taskIds);
+    },
+
+    afterDownload: () => {
+      this.profile = null;
+      this.blacklist = null;
     }
   });
 

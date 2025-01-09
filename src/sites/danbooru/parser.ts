@@ -34,9 +34,14 @@ interface DanbooruParser extends SiteParser<DanbooruMeta> {
   parse(id: string, param: { type: 'html' | 'api' }): Promise<DanbooruMeta>;
   parseIdByHtml(id: string): Promise<DanbooruMeta>;
   parseIdByApi(id: string): Promise<DanbooruMeta>;
-  parseBlacklist(type: 'html' | 'api'): Promise<DanbooruBlacklistItem[]>;
+  parseBlacklist: {
+    (type: 'html' | 'api'): Promise<DanbooruBlacklistItem[]>;
+    (type: 'profile', blacklistedTags: string): Promise<DanbooruBlacklistItem[]>;
+  };
   isBlacklisted(matchTags: string[], blacklist: DanbooruBlacklistItem[]): boolean;
-  poolAndGroupGenerator: GenerateIdWithoutValidation<[id: string, type: 'pool' | 'favoriteGroup']>;
+  poolAndGroupGenerator: GenerateIdWithoutValidation<
+    [id: string, type: 'pool' | 'favoriteGroup', postsPerPage?: number]
+  >;
   postListGenerator: GenerateIdWithValidation<
     DanbooruMeta,
     [tags?: string[], limit?: number, showDeletedPosts?: boolean]
@@ -108,7 +113,7 @@ export const danbooruParser: DanbooruParser = {
     return matchTags;
   },
 
-  async parseBlacklist(type) {
+  async parseBlacklist(type, blacklistTags?) {
     let tagStr: string;
     let separator: RegExp;
 
@@ -116,8 +121,11 @@ export const danbooruParser: DanbooruParser = {
       tagStr =
         document.querySelector<HTMLMetaElement>('meta[name="blacklisted-tags"]')?.content ?? '';
       separator = /,/;
-    } else {
+    } else if (type === 'api') {
       tagStr = (await danbooruApi.getProfile()).blacklisted_tags ?? '';
+      separator = /\n+/;
+    } else {
+      tagStr = typeof blacklistTags === 'string' ? blacklistTags : '';
       separator = /\n+/;
     }
 
@@ -292,22 +300,20 @@ export const danbooruParser: DanbooruParser = {
     };
   },
 
-  async *poolAndGroupGenerator(pageRange, poolOrGroupId, type) {
-    const dataPromise =
+  async *poolAndGroupGenerator(pageRange, poolOrGroupId, type, postsPerPage) {
+    const data =
       type === 'pool'
-        ? danbooruApi.getPool(poolOrGroupId)
-        : danbooruApi.getFavoriteGroups(poolOrGroupId);
-
-    const [data, profile] = await Promise.all([dataPromise, danbooruApi.getProfile()]);
+        ? await danbooruApi.getPool(poolOrGroupId)
+        : await danbooruApi.getFavoriteGroups(poolOrGroupId);
+    postsPerPage ??= (await danbooruApi.getProfile()).per_page;
 
     const { post_ids } = data;
-    const { per_page } = profile;
     const [pageStart = null, pageEnd = null] = pageRange ?? [];
     const idsPerPage: string[][] = [];
     const postCount = post_ids.length;
 
-    for (let i = 0; i < postCount; i += per_page) {
-      const ids = post_ids.slice(i, i + per_page).map((id) => String(id));
+    for (let i = 0; i < postCount; i += postsPerPage) {
+      const ids = post_ids.slice(i, i + postsPerPage).map((id) => String(id));
       idsPerPage.push(ids);
     }
 
@@ -316,8 +322,8 @@ export const danbooruParser: DanbooruParser = {
     const end = pageEnd ? (pageEnd > poolPage ? poolPage : pageEnd) : poolPage;
     const total =
       end === poolPage
-        ? (end - start) * per_page + idsPerPage[poolPage - 1].length
-        : (end - start + 1) * per_page;
+        ? (end - start) * postsPerPage + idsPerPage[poolPage - 1].length
+        : (end - start + 1) * postsPerPage;
 
     if (start > poolPage) throw new RangeError(`Page ${start} exceeds the limit.`);
 
@@ -333,9 +339,13 @@ export const danbooruParser: DanbooruParser = {
   },
 
   async *postListGenerator(pageRange, checkValidity, tags, limit, showDeletedPosts) {
-    showDeletedPosts ??=
-      (!!tags && !!tags.includes('status:deleted')) ||
-      (await danbooruApi.getProfile()).show_deleted_posts;
+    if (!showDeletedPosts) {
+      if (!!tags && !!tags.includes('status:deleted')) {
+        showDeletedPosts = true;
+      }
+
+      showDeletedPosts ??= (await danbooruApi.getProfile()).show_deleted_posts;
+    }
 
     const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
 
