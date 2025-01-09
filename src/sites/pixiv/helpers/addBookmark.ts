@@ -1,6 +1,5 @@
 import { logger } from '@/lib/logger';
 import { pixivApi } from '../api';
-import { config } from '@/lib/config';
 import { BookmarkRestrict } from '../types';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 
@@ -10,43 +9,46 @@ const enum BookmarkType {
   rank = 'rank'
 }
 
-export function addBookmark(btn: ThumbnailButton, illustId: string, token: string, tags: string[]) {
-  if (!config.get('addBookmark')) return;
+interface AddBookmarkOptionalParam {
+  btn?: ThumbnailButton;
+  tags?: string[];
+  restrict?: BookmarkRestrict;
+}
 
-  pixivApi
-    .addBookmark(
-      illustId,
-      token,
-      config.get('addBookmarkWithTags') ? tags : [],
-      config.get('privateR18') && tags.includes('R-18')
-        ? BookmarkRestrict.private
-        : BookmarkRestrict.public
-    )
-    .then(() => {
-      const bookmarkBtnRef = findBookmarkBtn(btn);
-      if (!bookmarkBtnRef) return;
-      switch (bookmarkBtnRef.kind) {
-        case BookmarkType.main: {
-          const pathBorder = bookmarkBtnRef.button.querySelector<SVGPathElement>('svg g path');
-          pathBorder && (pathBorder.style.color = 'rgb(255, 64, 96)');
-          break;
-        }
-        case BookmarkType.sub: {
-          const pathBorder = bookmarkBtnRef.button.querySelector<SVGPathElement>('path');
-          pathBorder && (pathBorder.style.color = 'rgb(255, 64, 96)');
-          break;
-        }
-        case BookmarkType.rank: {
-          bookmarkBtnRef.button.style.backgroundColor = 'rgb(255, 64, 96)';
-          break;
-        }
-        default:
-          break;
+export async function addBookmark(
+  illustId: string,
+  token: string,
+  optionalParams: AddBookmarkOptionalParam
+) {
+  const { btn, tags, restrict } = optionalParams ?? {};
+
+  try {
+    await pixivApi.addBookmark(illustId, token, tags, restrict);
+
+    if (!btn) return;
+    const bookmarkBtnRef = findBookmarkBtn(btn);
+    if (!bookmarkBtnRef) return;
+    switch (bookmarkBtnRef.kind) {
+      case BookmarkType.main: {
+        const pathBorder = bookmarkBtnRef.button.querySelector<SVGPathElement>('svg g path');
+        pathBorder && (pathBorder.style.color = 'rgb(255, 64, 96)');
+        break;
       }
-    })
-    .catch((reason: Error) => {
-      logger.error(reason.message);
-    });
+      case BookmarkType.sub: {
+        const pathBorder = bookmarkBtnRef.button.querySelector<SVGPathElement>('path');
+        pathBorder && (pathBorder.style.color = 'rgb(255, 64, 96)');
+        break;
+      }
+      case BookmarkType.rank: {
+        bookmarkBtnRef.button.style.backgroundColor = 'rgb(255, 64, 96)';
+        break;
+      }
+      default:
+        break;
+    }
+  } catch (error) {
+    logger.error(error);
+  }
 }
 interface MainBookMark {
   kind: BookmarkType.main;

@@ -7,7 +7,8 @@ import type {
   ArtworkDetail,
   FollowLatestMode,
   UserData,
-  SeriesData
+  SeriesData,
+  LikeIllust
 } from './types';
 import { BookmarkRestrict } from './types';
 import { type TagLanguage } from '@/lib/config';
@@ -53,6 +54,20 @@ class PixivApi extends ApiBase {
         restrict,
         comment: '',
         tags
+      })
+    });
+  }
+
+  likeIllust(illustId: string, token: string) {
+    return this.getJSON<LikeIllust>('/ajax/illusts/like', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json; charset=utf-8',
+        'x-csrf-token': token
+      },
+      body: JSON.stringify({
+        illust_id: illustId
       })
     });
   }

@@ -42,6 +42,7 @@ export interface ConfigData {
   addBookmark: boolean;
   addBookmarkWithTags: boolean;
   privateR18: boolean;
+  likeIllust: boolean;
   useFileSystemAccess: boolean;
   fileSystemFilenameConflictAction: FilenameConfigAction;
   showPopupButton: boolean;
@@ -87,6 +88,7 @@ export function loadConfig(customConfig: Partial<ConfigData> = {}): Config {
     addBookmark: false,
     addBookmarkWithTags: false,
     privateR18: false,
+    likeIllust: false,
     useFileSystemAccess: false,
     fileSystemFilenameConflictAction: FilenameConfigAction.UNIQUIFY,
     showPopupButton: true,

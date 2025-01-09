@@ -35,11 +35,25 @@
         <p class="flex-auto">{t('setting.others.options.bundle_manga')}</p>
         <SlideToggle name="bundle-manga" bind:checked={$store.bundleManga} size="sm"></SlideToggle>
       </li>
+      <li>
+        <div class="flex-auto">
+          <p>{t('setting.others.options.like_illust_when_downloading')}</p>
+          <p class={descritionText}>
+            {t('setting.others.options.option_does_not_apply_to_batch_download')}
+          </p>
+        </div>
+        <SlideToggle name="bundle-manga" bind:checked={$store.likeIllust} size="sm"></SlideToggle>
+      </li>
     {/if}
     {#if !env.isYande()}
       <li class="flex-col !items-stretch">
         <div class="flex items-center">
-          <p class="flex-auto">{t('setting.others.options.add_bookmark_when_download')}</p>
+          <div class="flex-auto">
+            <p>{t('setting.others.options.add_bookmark_when_downloading')}</p>
+            <p class={descritionText}>
+              {t('setting.others.options.option_does_not_apply_to_batch_download')}
+            </p>
+          </div>
           <SlideToggle name="fsa-enable" bind:checked={$store.addBookmark} size="sm"></SlideToggle>
         </div>
         {#if $store.addBookmark && env.isPixiv()}

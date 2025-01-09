@@ -94,9 +94,11 @@ const zh = {
         show_setting_button: '显示设置按钮',
         bundle_multipage_illust: '将多页插图打包为zip压缩包',
         bundle_manga: '将漫画作品打包为zip压缩包',
-        add_bookmark_when_download: '下载单个作品时收藏作品',
+        like_illust_when_downloading: '下载作品时点赞',
+        add_bookmark_when_downloading: '下载作品时收藏',
         add_bookmark_with_tags: '收藏时添加作品标签',
-        add_bookmark_private_r18: '将R-18作品收藏到不公开类别'
+        add_bookmark_private_r18: '将R-18作品收藏到不公开类别',
+        option_does_not_apply_to_batch_download: '批量下载不适用'
       }
     },
     feedback: {
@@ -271,9 +273,11 @@ const en: typeof zh = {
         show_setting_button: 'Show Setting Button',
         bundle_multipage_illust: 'Bundle multipage illustrations into a zip file',
         bundle_manga: 'Bundle manga into a zip file',
-        add_bookmark_when_download: 'Bookmark artwork when downloading',
+        like_illust_when_downloading: 'Like the artwork when downloading',
+        add_bookmark_when_downloading: 'Bookmark artwork when downloading',
         add_bookmark_with_tags: 'Add tags when bookmarking',
-        add_bookmark_private_r18: 'Bookmark R-18 artwork as private'
+        add_bookmark_private_r18: 'Bookmark R-18 artwork as private',
+        option_does_not_apply_to_batch_download: 'This option does not apply to batch download'
       }
     },
     feedback: {

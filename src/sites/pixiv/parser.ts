@@ -27,6 +27,7 @@ interface PixivMetaBase extends MediaMeta {
   comment: string;
   token: string;
   bookmarkData: ArtworkDetail['bookmarkData'];
+  likeData: boolean;
 }
 
 export interface PixivIllustMeta extends PixivMetaBase {
@@ -112,7 +113,8 @@ export const pixivParser: PixivParser = {
       pageCount,
       createDate,
       urls,
-      bookmarkData
+      bookmarkData,
+      likeData
     } = illustData;
 
     const tagsArr: string[] = [];
@@ -143,6 +145,7 @@ export const pixivParser: PixivParser = {
       comment,
       bookmarkData,
       createDate,
+      likeData,
       token
     };
 

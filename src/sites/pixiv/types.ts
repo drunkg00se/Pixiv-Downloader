@@ -185,7 +185,7 @@ export interface AllProfile {
 
 export interface AddBookmark {
   last_bookmark_id: string;
-  stacc_status_id: string;
+  stacc_status_id: string | null;
 }
 
 export interface LikeIllust {

@@ -5,6 +5,8 @@ import { type HistoryData, historyDb } from '@/lib/db';
 import { PixivDownloadConfig } from '@/sites/pixiv/downloadConfigBuilder';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { config } from '@/lib/config';
+import { BookmarkRestrict } from './types';
+import { likeIllust } from './helpers/likeIllust';
 
 export async function downloadArtwork(btn: ThumbnailButton) {
   downloader.dirHandleCheck();
@@ -19,11 +21,27 @@ export async function downloadArtwork(btn: ThumbnailButton) {
   let pixivMeta: PixivMeta;
 
   if (!unlistedId) {
-    pixivMeta = await pixivParser.parse(id, { tagLang, type: 'html' });
-    const { bookmarkData, token, tags } = pixivMeta;
+    const shouldAddBookmark = config.get('addBookmark');
+    const shouldLikeIllust = config.get('likeIllust');
 
-    if (!bookmarkData) {
-      addBookmark(btn, id, token, tags);
+    if (shouldAddBookmark || shouldLikeIllust) {
+      pixivMeta = await pixivParser.parse(id, { tagLang, type: 'html' });
+      const { bookmarkData, token, tags, likeData } = pixivMeta;
+
+      if (!bookmarkData && shouldAddBookmark) {
+        const addedTags = config.get('addBookmarkWithTags') ? tags : undefined;
+        const restrict =
+          config.get('privateR18') && tags.includes('R-18')
+            ? BookmarkRestrict.private
+            : BookmarkRestrict.public;
+        addBookmark(id, token, { btn, tags: addedTags, restrict });
+      }
+
+      if (!likeData && shouldLikeIllust) {
+        likeIllust(id, token);
+      }
+    } else {
+      pixivMeta = await pixivParser.parse(id, { tagLang, type: 'api' });
     }
   } else {
     pixivMeta = await pixivParser.parse(unlistedId, { tagLang, type: 'unlisted' });
