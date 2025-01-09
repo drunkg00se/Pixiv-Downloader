@@ -33,12 +33,12 @@ export class Danbooru extends SiteInject {
           type: 'exclude',
           name: t('downloader.category.filter.exclude_blacklist'),
           checked: true,
-          fn: (meta) => {
+          fn: async (meta) => {
             return (
               !!meta.matchTags &&
               danbooruParser.isBlacklisted(
                 meta.matchTags,
-                (this.blacklist ??= danbooruParser.parseBlacklist())
+                (this.blacklist ??= await danbooruParser.parseBlacklist('api'))
               )
             );
           }

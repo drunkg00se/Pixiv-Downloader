@@ -34,7 +34,7 @@ interface DanbooruParser extends SiteParser<DanbooruMeta> {
   parse(id: string, param: { type: 'html' | 'api' }): Promise<DanbooruMeta>;
   parseIdByHtml(id: string): Promise<DanbooruMeta>;
   parseIdByApi(id: string): Promise<DanbooruMeta>;
-  parseBlacklist(): DanbooruBlacklistItem[];
+  parseBlacklist(type: 'html' | 'api'): Promise<DanbooruBlacklistItem[]>;
   isBlacklisted(matchTags: string[], blacklist: DanbooruBlacklistItem[]): boolean;
   poolAndGroupGenerator: GenerateIdWithoutValidation<[id: string, type: 'pool' | 'favoriteGroup']>;
   postListGenerator: GenerateIdWithValidation<
@@ -108,15 +108,25 @@ export const danbooruParser: DanbooruParser = {
     return matchTags;
   },
 
-  parseBlacklist() {
-    const tagStr =
-      document.querySelector<HTMLMetaElement>('meta[name="blacklisted-tags"]')?.content ?? '';
+  async parseBlacklist(type) {
+    let tagStr: string;
+    let separator: RegExp;
+
+    if (type === 'html') {
+      tagStr =
+        document.querySelector<HTMLMetaElement>('meta[name="blacklisted-tags"]')?.content ?? '';
+      separator = /,/;
+    } else {
+      tagStr = (await danbooruApi.getProfile()).blacklisted_tags ?? '';
+      separator = /\n+/;
+    }
+
     if (!tagStr) return [];
 
     const tags = tagStr
       .replace(/(rating:\w)\w+/gi, '$1')
       .toLowerCase()
-      .split(/,/)
+      .split(separator)
       .filter((tag) => tag.trim() !== '');
 
     return tags.map(this._parseBlacklistItem);
