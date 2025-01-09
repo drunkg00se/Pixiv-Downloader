@@ -5,7 +5,6 @@ import type {
   PreloadData,
   GlobalData,
   FollowLatest,
-  PreloadIllustData,
   Category,
   BookmarksRest,
   FollowLatestMode,
@@ -27,7 +26,7 @@ interface PixivMetaBase extends MediaMeta {
   pageCount: number;
   comment: string;
   token: string;
-  bookmarkData: PreloadIllustData['bookmarkData'];
+  bookmarkData: ArtworkDetail['bookmarkData'];
 }
 
 export interface PixivIllustMeta extends PixivMetaBase {
@@ -76,7 +75,7 @@ interface PixivParser extends SiteParser<PixivMeta> {
 
 export const pixivParser: PixivParser = {
   async parse(illustId: string, param: PixivParam): Promise<PixivMeta> {
-    let illustData: PreloadIllustData | ArtworkDetail;
+    let illustData: ArtworkDetail;
     let token: string;
     const { tagLang, type } = param;
 

@@ -34,54 +34,78 @@ export interface UserData {
   commission: null;
 }
 
-export interface PreloadTagsItemData {
+export interface TagItem {
+  /**标签名字 */
   tag: string;
+  /**这个标签是否被锁定（被锁定的就不能修改） */
   locked: boolean;
+  /**当前用户（浏览者）是否可以删除这个标签*/
   deletable: boolean;
+  /**作者的用户 id */
   userId: string;
-  translation?: { en: string };
-  userName: string;
-}
+  /**罗马音，现在这个字段或许已经被移除了 */
+  romaji?: string;
+  /**这个标签的翻译 */
+  translation?: {
+    /**翻译后的文字。
+         *
+         * 注意翻译后的文字并不总是英文。
+         *
+         根据用户设置的 pixiv 页面语言的不同（如中文、日文、韩语、英文等），en 会返回对应语言的翻译。
 
-interface PreloadTagsData {
-  authorId: string;
-  isLocked: boolean;
-  tags: PreloadTagsItemData[];
-  writable: boolean;
-}
+         所以用户语言不同时，en 可能不同。
 
-export interface PreloadIllustData {
-  illustId: string;
-  illustTitle: string;
-  illustComment: string;
-  id: string;
-  title: string;
-  illustType: IllustType;
-  tags: PreloadTagsData;
-  pageCount: number;
-  bookmarkCount: number;
-  likeCount: number;
-  isBookmarkable: boolean;
-  bookmarkData: null | { id: string; private: boolean };
-  width: number;
-  height: number;
-  userId: string;
-  userName: string;
-  urls: {
-    mini: string;
-    thumb: string;
-    small: string;
-    regular: string;
-    original: string;
+         也可能同一个标签在某些语言时会有 translation 字段，另一些语言时没有 translation 字段。
+         */
+    en: string;
   };
-  //ISO 8601 格式的字符串
-  createDate: string;
+  /**作者的用户名 */
+  userName: string;
+}
+
+interface TagsData {
+  /**作者的用户 id */
+  authorId: string;
+  /**作者是否设置了“不允许其他用户编辑标签” */
+  isLocked: boolean;
+  /**作品的标签列表 */
+  tags: TagItem[];
+  /**当前用户（浏览者）是否可以编辑这个作品的标签。未登录时总是不能编辑 */
+  writable: boolean;
 }
 
 export interface PreloadData {
   timestamp: string;
-  illust: Record<string, PreloadIllustData>;
-  // user: any;
+  illust: {
+    [illustId: string]: ArtworkDetail;
+  };
+  user: {
+    [userId: string]: {
+      userId: string;
+      name: string;
+      /** user avatar */
+      image: string;
+      /** user avatar */
+      imageBig: string;
+      premium: boolean;
+      isFollowed: boolean;
+      isMypixiv: boolean;
+      isBlocking: boolean;
+      background: {
+        repeat: null;
+        color: null;
+        url: string;
+        isPrivate: boolean;
+      };
+      sketchLiveId: null;
+      partial: 0;
+      sketchLives: [];
+      commission: {
+        acceptRequest: boolean;
+        isSubscribedReopenNotification: boolean;
+      };
+    };
+  };
 }
 
 /**
@@ -122,8 +146,8 @@ export interface UserPageWorksItem {
   bookmarkData: null | { id: string; private: boolean };
   alt: string;
   titleCaptionTranslation: {
-    // workTitle: null | any;
-    // workCaption: null | any;
+    workTitle: null;
+    workCaption: null;
   };
   createDate: string;
   updateDate: string;
@@ -135,14 +159,14 @@ export interface UserPageWorksItem {
 export interface UserPageData {
   works: UserPageWorksItem[];
   total: number;
-  // zoneConfig: any;
-  // extraData: any;
+  zoneConfig: ZoneDataCommon;
+  extraData: ExtraDataCommon;
 }
 
 export interface UserPageIllustsData {
   works: Record<string, UserPageWorksItem>;
-  // zoneConfig: any;
-  // extraData: any;
+  zoneConfig: ZoneDataCommon;
+  extraData: ExtraDataCommon;
 }
 
 export interface AllProfile {
@@ -150,18 +174,22 @@ export interface AllProfile {
   manga: Record<string, null> | never[];
   novels: Record<string, null> | never[];
   mangaSeries: Record<string, null> | never[];
-  // pickup: any[];
+  pickup: any[];
   bookmarkCount: {
     public: Record<string, number>;
     private: Record<string, number>;
   };
   externalSiteWorksStatus: Record<string, boolean>;
-  // request: any;
+  request: any;
 }
 
 export interface AddBookmark {
   last_bookmark_id: string;
   stacc_status_id: string;
+}
+
+export interface LikeIllust {
+  is_liked: boolean;
 }
 
 export interface GlobalData {
@@ -232,11 +260,11 @@ export interface FollowLatest {
   };
   illustSeries: any[];
   requests: any[];
-  zoneConfig: Record<'header' | 'footer' | 'logo', { url: string }>;
+  zoneConfig: ZoneDataCommon;
 }
 
 export interface ArtworkData {
-  illustData: PreloadIllustData;
+  illustData: ArtworkDetail;
   globalData: GlobalData;
   ugoiraMeta?: UgoiraMeta;
 }
@@ -246,6 +274,9 @@ export interface AjaxArtworkData {
   ugoiraMeta?: UgoiraMeta;
 }
 
+/**
+ * https://github.com/xuejianxianzun/PixivBatchDownloader
+ */
 export interface ArtworkDetail {
   /**是否为 AI 创作。0 未知 1 否 2 是 */
   aiType: 0 | 1 | 2;
@@ -308,44 +339,7 @@ export interface ArtworkDetail {
     original: string;
   };
   /**作品的标签数据 */
-  tags: {
-    /**作者的用户 id */
-    authorId: string;
-    /**作者是否设置了“不允许其他用户编辑标签” */
-    isLocked: boolean;
-    /**作品的标签列表 */
-    // tags: {
-    //   /**标签名字 */
-    //   tag: string;
-    //   /**这个标签是否被锁定（被锁定的就不能修改） */
-    //   locked: boolean;
-    //   /**当前用户（浏览者）是否可以删除这个标签*/
-    //   deletable: boolean;
-    //   /**作者的用户 id */
-    //   userId: string;
-    //   /**罗马音，现在这个字段或许已经被移除了 */
-    //   romaji?: string;
-    //   /**这个标签的翻译 */
-    //   translation?: {
-    //     /**翻译后的文字。
-    //        *
-    //        * 注意翻译后的文字并不总是英文。
-    //        *
-    //        根据用户设置的 pixiv 页面语言的不同（如中文、日文、韩语、英文等），en 会返回对应语言的翻译。
-
-    //        所以用户语言不同时，en 可能不同。
-
-    //        也可能同一个标签在某些语言时会有 translation 字段，另一些语言时没有 translation 字段。
-    //        */
-    //     en: string;
-    //   };
-    //   /**作者的用户名 */
-    //   userName: string;
-    // }[];
-    tags: PreloadTagsItemData[];
-    /**当前用户（浏览者）是否可以编辑这个作品的标签。未登录时总是不能编辑 */
-    writable: boolean;
-  };
+  tags: TagsData;
   /**作品的描述文字。当进入作品页面后会作为页面标题 */
   alt: string;
   /**不清楚 */
@@ -382,6 +376,17 @@ export interface ArtworkDetail {
         id: string;
         private: boolean;
       };
+      alt: string;
+      titleCaptionTranslation: {
+        workTitle: null;
+        workCaption: null;
+      };
+      createDate: string;
+      updateDate: string;
+      isUnlisted: boolean;
+      isMasked: boolean;
+      aiType: 0 | 1 | 2;
+      profileImageUrl: string;
     };
   };
   /**你是否给这个作品点赞过 */
@@ -490,33 +495,8 @@ export interface ArtworkDetail {
     private: boolean;
   };
   contestData: null;
-  zoneConfig: {
-    responsive: {
-      url: string;
-    };
-    rectangle: {
-      url: string;
-    };
-    '500x500': {
-      url: string;
-    };
-    header: {
-      url: string;
-    };
-    footer: {
-      url: string;
-    };
-    expandedFooter: {
-      url: string;
-    };
-    logo: {
-      url: string;
-    };
-    relatedworks: {
-      url: string;
-    };
-  };
-  extraData: extraDataCommon;
+  zoneConfig: ZoneDataCommon;
+  extraData: ExtraDataCommon;
   titleCaptionTranslation: {
     workTitle: null | string;
     workCaption: null | string;
@@ -546,9 +526,15 @@ export interface ArtworkDetail {
    * 1 关闭
    */
   commentOff: 0 | 1;
+  /** TODO */
+  reuploadDate: null;
+  /** TODO */
+  locationMask: boolean;
+  /** TODO */
+  commissionLinkHidden: boolean;
 }
 
-interface extraDataCommon {
+interface ExtraDataCommon {
   meta: {
     /**页面标题 */
     title: string;
@@ -593,6 +579,19 @@ interface extraDataCommon {
     };
   };
 }
+
+type ZoneDataKey =
+  | 'responsive'
+  | 'rectangle'
+  | '500x500'
+  | 'header'
+  | 'footer'
+  | 'expandedFooter'
+  | 'logo'
+  | 'ad_logo'
+  | 'relatedworks';
+
+type ZoneDataCommon = Record<ZoneDataKey, { url: string }>;
 
 interface SeriesIllustThumbnail extends UserPageWorksItem {
   seriesId: string;
@@ -664,6 +663,6 @@ export interface SeriesData {
     isWatched: boolean;
     isNotifying: boolean;
   };
-  extraData: extraDataCommon;
-  zoneConfig: Record<string, { url: string }>;
+  extraData: ExtraDataCommon;
+  zoneConfig: ZoneDataCommon;
 }
