@@ -37,7 +37,10 @@ interface DanbooruParser extends SiteParser<DanbooruMeta> {
   parseBlacklist(): DanbooruBlacklistItem[];
   isBlacklisted(matchTags: string[], blacklist: DanbooruBlacklistItem[]): boolean;
   poolAndGroupGenerator: GenerateIdWithoutValidation<[id: string, type: 'pool' | 'favoriteGroup']>;
-  postListGenerator: GenerateIdWithValidation<DanbooruMeta, [tags?: string[], limit?: number]>;
+  postListGenerator: GenerateIdWithValidation<
+    DanbooruMeta,
+    [tags?: string[], limit?: number, showDeletedPosts?: boolean]
+  >;
 }
 
 export const danbooruParser: DanbooruParser = {
@@ -319,7 +322,11 @@ export const danbooruParser: DanbooruParser = {
     }
   },
 
-  async *postListGenerator(pageRange, checkValidity, tags, limit) {
+  async *postListGenerator(pageRange, checkValidity, tags, limit, showDeletedPosts) {
+    showDeletedPosts ??=
+      (!!tags && !!tags.includes('status:deleted')) ||
+      (await danbooruApi.getProfile()).show_deleted_posts;
+
     const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
 
     let page = pageStart;
@@ -357,8 +364,14 @@ export const danbooruParser: DanbooruParser = {
       const unavaliable: string[] = [];
 
       for (let i = 0; i < postListData.length; i++) {
-        const { id, file_ext, tag_string } = postListData[i];
+        const { id, file_ext, tag_string, is_deleted } = postListData[i];
         const idStr = String(id);
+
+        if (is_deleted && !showDeletedPosts) {
+          invalid.push(idStr);
+          continue;
+        }
+
         const validityCheckMeta: Partial<DanbooruMeta> = {
           id: idStr,
           extendName: file_ext,
