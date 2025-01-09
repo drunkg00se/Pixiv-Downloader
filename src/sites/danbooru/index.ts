@@ -1,7 +1,7 @@
 import { SiteInject } from '../base';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
-import { danbooruParser, type DanbooruMeta } from './parser';
+import { danbooruParser, type DanbooruBlacklistItem, type DanbooruMeta } from './parser';
 import t from '@/lib/lang';
 import { historyDb } from '@/lib/db';
 import { DanbooruDownloadConfig } from './downloadConfigBuilder';
@@ -10,6 +10,8 @@ import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton
 import { addBookmark } from './addBookmark';
 
 export class Danbooru extends SiteInject {
+  protected blacklist: DanbooruBlacklistItem[] | null = null;
+
   protected useBatchDownload = this.app.initBatchDownloader({
     metaType: {} as DanbooruMeta,
 
@@ -24,6 +26,21 @@ export class Danbooru extends SiteInject {
           checked: false,
           fn(meta) {
             return !!meta.id && historyDb.has(meta.id);
+          }
+        },
+        {
+          id: 'exclude_blacklist',
+          type: 'exclude',
+          name: t('downloader.category.filter.exclude_blacklist'),
+          checked: true,
+          fn: (meta) => {
+            return (
+              !!meta.matchTags &&
+              danbooruParser.isBlacklisted(
+                meta.matchTags,
+                (this.blacklist ??= danbooruParser.parseBlacklist())
+              )
+            );
           }
         },
         {

@@ -152,3 +152,14 @@ export function aDownload(blob: Blob, filename: string) {
   el.click();
   URL.revokeObjectURL(el.href);
 }
+
+export function intersect(a: unknown[], b: unknown[]): unknown[] {
+  const set = new Set(a);
+  const result: unknown[] = [];
+
+  b.forEach((item) => {
+    set.has(item) && result.push(item);
+  });
+
+  return result;
+}

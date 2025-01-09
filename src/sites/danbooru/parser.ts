@@ -1,6 +1,6 @@
 import { JsonDataError } from '@/lib/error';
 import type { MediaMeta, SiteParser } from '../interface';
-import { getElementText } from '@/lib/util';
+import { getElementText, intersect } from '@/lib/util';
 import { danbooruApi } from './api';
 import type {
   GenerateIdWithoutValidation,
@@ -16,12 +16,26 @@ export type DanbooruMeta = MediaMeta & {
   character: string;
   rating: Rating;
   source: string;
+  matchTags: string[];
 };
 
+export interface DanbooruBlacklistItem {
+  tags: string;
+  require: string[];
+  exclude: string[];
+  optional: string[];
+  min_score: number | null;
+}
+
 interface DanbooruParser extends SiteParser<DanbooruMeta> {
+  _getMatchTags(data: DanbooruPost): string[];
+  _getMatchTagsByEl(el: HTMLElement): string[];
+  _parseBlacklistItem(tag: string): DanbooruBlacklistItem;
   parse(id: string, param: { type: 'html' | 'api' }): Promise<DanbooruMeta>;
   parseIdByHtml(id: string): Promise<DanbooruMeta>;
   parseIdByApi(id: string): Promise<DanbooruMeta>;
+  parseBlacklist(): DanbooruBlacklistItem[];
+  isBlacklisted(matchTags: string[], blacklist: DanbooruBlacklistItem[]): boolean;
   poolAndGroupGenerator: GenerateIdWithoutValidation<[id: string, type: 'pool' | 'favoriteGroup']>;
   postListGenerator: GenerateIdWithValidation<DanbooruMeta, [tags?: string[], limit?: number]>;
 }
@@ -34,6 +48,95 @@ export const danbooruParser: DanbooruParser = {
     } else {
       return this.parseIdByApi(id);
     }
+  },
+
+  /**
+   * https://github.com/danbooru/danbooru/blob/master/app/javascript/src/javascripts/blacklists.js
+   */
+  _parseBlacklistItem(tags: string) {
+    const tagsArr = tags.split(' ');
+    const require: string[] = [];
+    const exclude: string[] = [];
+    const optional: string[] = [];
+    let min_score: null | number = null;
+
+    tagsArr.forEach((tag) => {
+      if (tag.charAt(0) === '-') {
+        exclude.push(tag.slice(1));
+      } else if (tag.charAt(0) === '~') {
+        optional.push(tag.slice(1));
+      } else if (tag.match(/^score:<.+/)) {
+        const score = tag.match(/^score:<(.+)/)![1];
+        min_score = Number.parseInt(score);
+      } else {
+        require.push(tag);
+      }
+    });
+
+    return { tags, require, exclude, optional, min_score };
+  },
+
+  _getMatchTags(data: DanbooruPost): string[] {
+    const { tag_string, rating, uploader_id, is_deleted, is_flagged, is_pending } = data;
+    const matchTags: string[] = tag_string.match(/\S+/g) ?? [];
+
+    matchTags.push('rating:' + rating);
+    matchTags.push('uploaderid:' + uploader_id);
+    is_deleted && matchTags.push('status:deleted');
+    is_flagged && matchTags.push('status:flagged');
+    is_pending && matchTags.push('status:pending');
+
+    return matchTags;
+  },
+
+  _getMatchTagsByEl(el: HTMLElement): string[] {
+    const splitWordsRe = /\S+/g;
+    const { tags = '', pools, rating, uploaderId, flags } = el.dataset;
+
+    const matchTags: string[] = tags.match(splitWordsRe) ?? [];
+    pools && matchTags.push(...(pools.match(splitWordsRe) ?? []));
+    rating && matchTags.push('rating:' + rating);
+    uploaderId && matchTags.push('uploaderid:' + uploaderId);
+
+    if (flags) {
+      const status = flags.match(splitWordsRe);
+      status && status.forEach((val) => matchTags.push('status:' + val));
+    }
+    return matchTags;
+  },
+
+  parseBlacklist() {
+    const tagStr =
+      document.querySelector<HTMLMetaElement>('meta[name="blacklisted-tags"]')?.content ?? '';
+    if (!tagStr) return [];
+
+    const tags = tagStr
+      .replace(/(rating:\w)\w+/gi, '$1')
+      .toLowerCase()
+      .split(/,/)
+      .filter((tag) => tag.trim() !== '');
+
+    return tags.map(this._parseBlacklistItem);
+  },
+
+  isBlacklisted(matchTags, blacklist) {
+    const scoreRe = /score:(-?[0-9]+)/;
+    const scoreMatch = (matchTags.find((tag) => scoreRe.test(tag)) ?? '').match(scoreRe);
+    const score = scoreMatch ? +scoreMatch[1] : scoreMatch;
+
+    return blacklist.some((blacklistItem) => {
+      const { require, exclude, optional, min_score } = blacklistItem;
+      const hasTag = (tag: string) => matchTags.includes(tag);
+
+      const scoreTest = min_score === null || score === null || score < min_score;
+
+      return (
+        require.every(hasTag) &&
+        scoreTest &&
+        (!optional.length || intersect(matchTags, optional).length) &&
+        !exclude.some(hasTag)
+      );
+    });
   },
 
   async parseIdByHtml(id: string): Promise<DanbooruMeta> {
@@ -84,16 +187,17 @@ export const danbooruParser: DanbooruParser = {
     }
 
     const postDate = doc.querySelector('time')?.getAttribute('datetime') ?? '';
-    const source = doc.querySelector<HTMLAnchorElement>('li#post-info-source > a')?.href ?? '';
-    const rating = /Rating: (General|Sensitive|Questionable|Explicit)/
-      .exec(doc.documentElement.innerHTML)![1]
-      .charAt(0)
-      .toLowerCase() as Rating;
 
     // Comment
     let comment: string = '';
     const commentEl = doc.querySelector<HTMLElement>('#original-artist-commentary');
     commentEl && (comment = getElementText(commentEl));
+
+    const imageContainer = doc.querySelector<HTMLElement>('section.image-container')!;
+    const { source = '', rating = '' } = imageContainer.dataset as {
+      source: string;
+      rating: Rating;
+    };
 
     return {
       id,
@@ -106,7 +210,8 @@ export const danbooruParser: DanbooruParser = {
       tags,
       createDate: postDate,
       source,
-      rating
+      rating,
+      matchTags: this._getMatchTagsByEl(imageContainer)
     };
   },
 
@@ -169,7 +274,8 @@ export const danbooruParser: DanbooruParser = {
       tags,
       createDate: created_at,
       rating: rating ?? '',
-      source
+      source,
+      matchTags: this._getMatchTags(postDataResult.value)
     };
   },
 
@@ -256,7 +362,8 @@ export const danbooruParser: DanbooruParser = {
         const validityCheckMeta: Partial<DanbooruMeta> = {
           id: idStr,
           extendName: file_ext,
-          tags: tag_string.split(' ')
+          tags: tag_string.split(' '),
+          matchTags: this._getMatchTags(postListData[i])
         };
         const isValid = await checkValidity(validityCheckMeta);
         isValid ? avaliable.push(idStr) : invalid.push(idStr);
