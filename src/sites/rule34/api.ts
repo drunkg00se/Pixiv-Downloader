@@ -1,5 +1,4 @@
-import { RequestError } from '@/lib/error';
-import { logger } from '@/lib/logger';
+import { ApiBase } from '../base/api';
 
 interface Rule34PostData {
   preview_url: string;
@@ -43,15 +42,7 @@ interface PostsListParams {
   id: string;
 }
 
-export const rule34Api = {
-  async getDoc(url: string): Promise<Document> {
-    logger.info('Fetch url:', url);
-    const res = await fetch(url);
-    if (!res.ok) throw new RequestError(res.url, res.status);
-    const html = await res.text();
-    return new DOMParser().parseFromString(html, 'text/html');
-  },
-
+class Rule34Api extends ApiBase {
   async getPosts(params: Partial<PostsListParams>): Promise<Rule34PostData[]> {
     let url = 'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1';
     Object.entries(params).forEach(([key, val]) => {
@@ -76,4 +67,6 @@ export const rule34Api = {
       }
     }
   }
-};
+}
+
+export const rule34Api = new Rule34Api();

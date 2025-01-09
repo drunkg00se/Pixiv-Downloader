@@ -79,7 +79,7 @@ export const yandeParser: YandeParser = {
 
   async parsePostList(tags: string | string[], page: number): Promise<YandeWebPostListData> {
     Array.isArray(tags) && tags.join('+');
-    const htmlText = await yandeApi.getHtmlText(`/post?page=${page}&tags=${tags}`);
+    const htmlText = await yandeApi.getHtml(`/post?page=${page}&tags=${tags}`);
 
     return {
       posts: this._parsePostListData(htmlText),
@@ -88,7 +88,7 @@ export const yandeParser: YandeParser = {
   },
 
   async parsePopular(period: PopularPeriod): Promise<YandeWebPostListData> {
-    const htmlText = await yandeApi.getHtmlText(`/post/popular_recent?period=${period}`);
+    const htmlText = await yandeApi.getHtml(`/post/popular_recent?period=${period}`);
 
     return {
       posts: this._parsePostListData(htmlText),
@@ -97,14 +97,14 @@ export const yandeParser: YandeParser = {
   },
 
   async parseArtwork(id: string): Promise<YandeWebPostData> {
-    const htmlText = await yandeApi.getHtmlText(`/post/show/${id}`);
+    const htmlText = await yandeApi.getHtml(`/post/show/${id}`);
     const [dataStr] = /(?<=Post\.register_resp\().+(?=\);)/.exec(htmlText)!;
 
     return JSON.parse(dataStr);
   },
 
   async parsePool(poolId: string): Promise<YandeWebPostData> {
-    const htmlText = await yandeApi.getHtmlText(`/pool/show/${poolId}`);
+    const htmlText = await yandeApi.getHtml(`/pool/show/${poolId}`);
     const [dataStr] = /(?<=Post\.register_resp\().+(?=\);)/.exec(htmlText)!;
 
     return JSON.parse(dataStr);

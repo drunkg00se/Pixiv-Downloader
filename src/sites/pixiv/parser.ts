@@ -14,7 +14,7 @@ import type {
 import type { MediaMeta, SiteParser } from '../interface';
 import { getElementText } from '@/lib/util';
 import { IllustType } from './types';
-import { api } from '@/sites/pixiv/service';
+import { pixivApi } from '@/sites/pixiv/api';
 import { regexp } from '@/lib/regExp';
 import { logger } from '@/lib/logger';
 import type { GenerateIdWithValidation } from '@/lib/components/Downloader/useBatchDownload';
@@ -81,13 +81,13 @@ export const pixivParser: PixivParser = {
     const { tagLang, type } = param;
 
     if (type === 'api') {
-      illustData = await api.getArtworkDetail(illustId, tagLang);
+      illustData = await pixivApi.getArtworkDetail(illustId, tagLang);
       token = '';
     } else if (type === 'unlisted') {
-      illustData = await api.getUnlistedArtworkDetail(illustId, tagLang);
+      illustData = await pixivApi.getUnlistedArtworkDetail(illustId, tagLang);
       token = '';
     } else {
-      const htmlText = await api.getArtworkHtml(illustId, tagLang);
+      const htmlText = await pixivApi.getArtworkHtml(illustId, tagLang);
 
       const preloadDataText = htmlText.match(regexp.preloadData);
       if (!preloadDataText) throw new Error('Fail to parse preload data: ' + illustId);
@@ -151,7 +151,7 @@ export const pixivParser: PixivParser = {
       return {
         ...meta,
         illustType,
-        ugoiraMeta: await api.getUgoiraMeta(illustId)
+        ugoiraMeta: await pixivApi.getUgoiraMeta(illustId)
       };
     } else {
       return {
@@ -167,7 +167,7 @@ export const pixivParser: PixivParser = {
     userId: string
   ) {
     const ARTWORKS_PER_PAGE = 48;
-    const profile = await api.getUserAllProfile(userId);
+    const profile = await pixivApi.getUserAllProfile(userId);
     let ids: string[] = [];
 
     typeof profile.illusts === 'object' && ids.push(...Object.keys(profile.illusts));
@@ -199,7 +199,7 @@ export const pixivParser: PixivParser = {
         chunk.map((id) => 'ids[]=' + id).join('&') +
         `&work_category=illustManga&is_first_page=0&lang=ja`;
 
-      const data = await api.getJson<UserPageIllustsData>(baseUrl + queryStr);
+      const data = await pixivApi.getJSON<UserPageIllustsData>(baseUrl + queryStr);
       const workDatas = Object.values(data.works).sort((a, b) => Number(b.id) - Number(a.id));
 
       const avaliable: string[] = [];
@@ -259,7 +259,7 @@ export const pixivParser: PixivParser = {
         requestUrl = `/ajax/user/${userId}/${category}/tag?tag=${tag}&offset=${offset}&limit=${ARTWORKS_PER_PAGE}&lang=ja`;
       }
 
-      const userPageData = await api.getJson<UserPageData>(requestUrl);
+      const userPageData = await pixivApi.getJSON<UserPageData>(requestUrl);
       const { works, total: totalArtwork } = userPageData;
       if (totalArtwork === 0)
         throw new Error(`User ${userId} has no ${category} tagged with ${tag}.`);
@@ -391,7 +391,7 @@ export const pixivParser: PixivParser = {
       };
     }
 
-    const data = await api.getFollowLatestWorks(page, mode);
+    const data = await pixivApi.getFollowLatestWorks(page, mode);
     const ids = data.page.ids;
     total = ids.length;
     earliestId = findEarliestId(ids);
@@ -404,7 +404,7 @@ export const pixivParser: PixivParser = {
 
     if (total === ARTWORKS_PER_PAGE) {
       // 可能作品数目刚好是60，所以需要检查第二页是否重复
-      const secondPageData = await api.getFollowLatestWorks(++page, mode);
+      const secondPageData = await pixivApi.getFollowLatestWorks(++page, mode);
       const secondIds = secondPageData.page.ids;
       const secondPageEarliestId = findEarliestId(secondIds);
 
@@ -427,7 +427,7 @@ export const pixivParser: PixivParser = {
     }
 
     while (++page <= endPage) {
-      const data = await api.getFollowLatestWorks(page, mode);
+      const data = await pixivApi.getFollowLatestWorks(page, mode);
       const ids = data.page.ids;
       const pageEarliestId = findEarliestId(ids);
 
@@ -456,7 +456,7 @@ export const pixivParser: PixivParser = {
     let currentPage = startPage;
 
     do {
-      const seriesData = await api.getSeriesData(seriesId, currentPage);
+      const seriesData = await pixivApi.getSeriesData(seriesId, currentPage);
       const { series } = seriesData.page;
       if (!series.length) throw new Error(`Invalid page: ${currentPage}`);
 

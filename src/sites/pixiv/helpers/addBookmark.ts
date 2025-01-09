@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { api } from '../service';
+import { pixivApi } from '../api';
 import { config } from '@/lib/config';
 import { BookmarkRestrict } from '../types';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
@@ -13,7 +13,7 @@ const enum BookmarkType {
 export function addBookmark(btn: ThumbnailButton, illustId: string, token: string, tags: string[]) {
   if (!config.get('addBookmark')) return;
 
-  api
+  pixivApi
     .addBookmark(
       illustId,
       token,

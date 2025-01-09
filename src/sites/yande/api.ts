@@ -1,5 +1,5 @@
-import { JsonDataError, RequestError } from '@/lib/error';
-import { logger } from '@/lib/logger';
+import { JsonDataError } from '@/lib/error';
+import { ApiBase } from '../base/api';
 
 // https://yande.re/help/api
 // Status Code	              Meaning
@@ -89,31 +89,19 @@ interface PostParams {
   tags: string | string[];
 }
 
-export const yandeApi = {
-  async getHtmlText(url: string): Promise<string> {
-    logger.info('Fetch url:', url);
-    const res = await fetch(url);
-    if (!res.ok) throw new RequestError(res.url, res.status);
-    return await res.text();
-  },
+class YandeApi extends ApiBase {
+  private isBadResponse(obj: object): obj is BadResponse {
+    return 'success' in obj && !obj.success;
+  }
 
-  async getDoc(url: string): Promise<Document> {
-    const html = await this.getHtmlText(url);
-    return new DOMParser().parseFromString(html, 'text/html');
-  },
-
-  async _requestJson<T>(url: string, init?: RequestInit): Promise<T> {
-    logger.info('Fetch url:', url);
-    const res = await fetch(url, init);
-    if (!res.ok) throw new RequestError(res.url, res.status);
-
-    const data = await res.json();
-    if ('success' in data && !data.success) {
-      throw new JsonDataError((data as BadResponse).reason);
+  async getJSON<T extends object>(url: string, init?: RequestInit): Promise<T> {
+    const json: T = await super.getJSON(url, init);
+    if (this.isBadResponse(json)) {
+      throw new JsonDataError(json.reason);
     }
 
-    return data as T;
-  },
+    return json;
+  }
 
   async getPosts(params: Partial<PostParams>): Promise<YandePostData[]> {
     let url = '/post.json?';
@@ -127,11 +115,13 @@ export const yandeApi = {
       url += `&${key}=${val}`;
     });
 
-    return this._requestJson<YandePostData[]>(url);
-  },
+    return this.getJSON<YandePostData[]>(url);
+  }
 
   // pool only have one page
   async getPool(poolId: string, page: number = 1) {
-    return this._requestJson<YandePoolData>(`/pool/show.json?id=${poolId}&page=${page}`);
+    return this.getJSON<YandePoolData>(`/pool/show.json?id=${poolId}&page=${page}`);
   }
-};
+}
+
+export const yandeApi = new YandeApi();

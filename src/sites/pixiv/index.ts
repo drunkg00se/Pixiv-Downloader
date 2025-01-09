@@ -6,7 +6,7 @@ import { downloader } from '@/lib/downloader';
 import { PixivDownloadConfig } from './downloadConfigBuilder';
 import { getSelfId } from './helpers/getSelfId';
 import { regexp } from '@/lib/regExp';
-import { api } from './service';
+import { pixivApi } from './api';
 import t from '@/lib/lang';
 import { logger } from '@/lib/logger';
 import { createThumbnailBtn } from './observerCB/createThumbnailBtn';
@@ -42,7 +42,7 @@ export class Pixiv extends SiteInject {
       if (!userId) return '';
 
       try {
-        const userData = await api.getUserData(userId);
+        const userData = await pixivApi.getUserData(userId);
         return userData.imageBig;
       } catch (error) {
         logger.error(error);
