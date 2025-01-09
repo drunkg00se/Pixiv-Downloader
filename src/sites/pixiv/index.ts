@@ -92,7 +92,7 @@ export class Pixiv extends SiteInject {
       enableTagFilter: true
     },
 
-    pageMatch: {
+    pageOption: {
       self_bookmark_public: {
         name: t('downloader.download_type.pixiv_bookmark_public'),
         match(url) {
@@ -102,7 +102,7 @@ export class Pixiv extends SiteInject {
           const userId = userIdMatch[1] || userIdMatch[2];
           return userId === getSelfId();
         },
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           return pixivParser.bookmarkGenerator(pageRange, checkValidity, getSelfId());
         }
@@ -117,7 +117,7 @@ export class Pixiv extends SiteInject {
           const userId = userIdMatch[1] || userIdMatch[2];
           return userId === getSelfId();
         },
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           return pixivParser.bookmarkGenerator(pageRange, checkValidity, getSelfId(), 'hide');
         }
@@ -126,7 +126,7 @@ export class Pixiv extends SiteInject {
       user_page_works: {
         name: t('downloader.download_type.pixiv_works'),
         match: regexp.userPage,
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           const userIdMatch = regexp.userPage.exec(location.href)!;
           const userId = userIdMatch[1] || userIdMatch[2];
@@ -138,7 +138,7 @@ export class Pixiv extends SiteInject {
       user_page_bookmark: {
         name: t('downloader.download_type.pixiv_bookmark'),
         match: regexp.userPage,
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           const userIdMatch = regexp.userPage.exec(location.href)!;
           const userId = userIdMatch[1] || userIdMatch[2];
@@ -150,7 +150,7 @@ export class Pixiv extends SiteInject {
       follow_latest_all: {
         name: t('downloader.download_type.pixiv_follow_latest_all'),
         match: regexp.followLatest,
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           return pixivParser.followLatestGenerator(pageRange, checkValidity, 'all');
         }
@@ -159,7 +159,7 @@ export class Pixiv extends SiteInject {
       follow_latest_r18: {
         name: t('downloader.download_type.pixiv_follow_latest_r18'),
         match: regexp.followLatest,
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           return pixivParser.followLatestGenerator(pageRange, checkValidity, 'r18');
         }
@@ -168,7 +168,7 @@ export class Pixiv extends SiteInject {
       series: {
         name: t('downloader.download_type.pixiv_series'),
         match: regexp.series,
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           const matchSeries = regexp.series.exec(location.pathname)!;
           return pixivParser.seriesGenerator(pageRange, checkValidity, matchSeries[2]);
@@ -178,7 +178,7 @@ export class Pixiv extends SiteInject {
       tagged_artwork: {
         name: 'tagged_artwork',
         match: () => false, // use for user tag download
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (
           pageRange: [start: number, end: number] | null,
           checkValidity: (meta: Partial<PixivMeta>) => Promise<boolean>,

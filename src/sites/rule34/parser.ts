@@ -1,6 +1,6 @@
 import { RequestError } from '@/lib/error';
 import type { MediaMeta, SiteParser } from '../interface';
-import type { GenerateIdWithValidation } from '@/lib/components/Downloader/useBatchDownload';
+import type { ValidatedIdGenerator } from '@/lib/components/Downloader/useBatchDownload';
 import { rule34Api } from './api';
 import { logger } from '@/lib/logger';
 
@@ -22,7 +22,7 @@ interface Rule34WebPostData {
 
 interface Rule34Parser extends SiteParser<Rule34Meta> {
   _parsePostData(doc: Document): Rule34WebPostData[];
-  _paginationGenerator: GenerateIdWithValidation<
+  _paginationGenerator: ValidatedIdGenerator<
     Rule34Meta,
     [thumbsPerPage: number, (page: number) => Promise<Rule34WebPostData[]>]
   >;
@@ -30,9 +30,9 @@ interface Rule34Parser extends SiteParser<Rule34Meta> {
   parseFavorite(userId: string, pid: number): Promise<Rule34WebPostData[]>;
   parsePool(poolId: string): Promise<Rule34WebPostData[]>;
   parsePost(pid: number, tags: string | string[]): Promise<Rule34WebPostData[]>;
-  favoriteGenerator: GenerateIdWithValidation<Rule34Meta, [userId: string]>;
-  poolGenerator: GenerateIdWithValidation<Rule34Meta, [poolId: string]>;
-  postGenerator: GenerateIdWithValidation<Rule34Meta, [tags: string | string[]]>;
+  favoriteGenerator: ValidatedIdGenerator<Rule34Meta, [userId: string]>;
+  poolGenerator: ValidatedIdGenerator<Rule34Meta, [poolId: string]>;
+  postGenerator: ValidatedIdGenerator<Rule34Meta, [tags: string | string[]]>;
 }
 
 export const rule34Parser: Rule34Parser = {

@@ -17,7 +17,7 @@ import { IllustType } from './types';
 import { pixivApi } from '@/sites/pixiv/api';
 import { regexp } from '@/lib/regExp';
 import { logger } from '@/lib/logger';
-import type { GenerateIdWithValidation } from '@/lib/components/Downloader/useBatchDownload';
+import type { ValidatedIdGenerator } from '@/lib/components/Downloader/useBatchDownload';
 import { TagLanguage } from '@/lib/config';
 
 interface PixivMetaBase extends MediaMeta {
@@ -48,20 +48,20 @@ interface PixivParam extends Record<string, string> {
 
 interface PixivParser extends SiteParser<PixivMeta> {
   parse(id: string, param: PixivParam): Promise<PixivMeta>;
-  illustMangaGenerator: GenerateIdWithValidation<PixivMeta, string>;
-  followLatestGenerator: GenerateIdWithValidation<PixivMeta, FollowLatestMode>;
-  chunkGenerator: GenerateIdWithValidation<
+  illustMangaGenerator: ValidatedIdGenerator<PixivMeta, string>;
+  followLatestGenerator: ValidatedIdGenerator<PixivMeta, FollowLatestMode>;
+  chunkGenerator: ValidatedIdGenerator<
     PixivMeta,
     | [userId: string, category: 'bookmarks', tag: string, bookmarkRest: BookmarksRest]
     | [userId: string, category: 'illusts' | 'manga', tag: string]
   >;
-  bookmarkGenerator: GenerateIdWithValidation<
+  bookmarkGenerator: ValidatedIdGenerator<
     PixivMeta,
     | [userId: string]
     | [userId: string, bookmarkRest: BookmarksRest]
     | [userId: string, bookmarkRest: BookmarksRest, tag: string]
   >;
-  taggedArtworkGenerator: GenerateIdWithValidation<
+  taggedArtworkGenerator: ValidatedIdGenerator<
     PixivMeta,
     | [
         userId: string,
@@ -71,7 +71,7 @@ interface PixivParser extends SiteParser<PixivMeta> {
       ]
     | [userId: string, category: Exclude<Category, 'bookmarks'>, tag: string]
   >;
-  seriesGenerator: GenerateIdWithValidation<PixivMeta, string>;
+  seriesGenerator: ValidatedIdGenerator<PixivMeta, string>;
 }
 
 export const pixivParser: PixivParser = {

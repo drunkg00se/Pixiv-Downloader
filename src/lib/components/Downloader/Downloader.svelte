@@ -14,7 +14,7 @@
   import {
     type BatchDownloadConfig,
     type BatchDownloadDefinition,
-    type PageMatchItem
+    type PageOption
   } from './useBatchDownload';
   import { logger } from '@/lib/logger';
   import { nonNegativeInt } from '../Actions/nonNegativeInt';
@@ -81,27 +81,27 @@
 
     if (!downloaderConfig) return;
 
-    const { pageMatch } = downloaderConfig;
-    const generatorMatches: [string, PageMatchItem<MediaMeta>['string']][] = [];
+    const { pageOption } = downloaderConfig;
+    const generatorOptionEntries: [string, PageOption<MediaMeta>['string']][] = [];
 
-    for (const key in pageMatch) {
-      const item = pageMatch[key];
+    for (const key in pageOption) {
+      const item = pageOption[key];
       const { match: matchPattern } = item;
 
       if (typeof matchPattern === 'string') {
-        url.match(matchPattern) && generatorMatches.push([key, item]);
+        url.match(matchPattern) && generatorOptionEntries.push([key, item]);
       } else if (typeof matchPattern === 'function') {
-        matchPattern(url) && generatorMatches.push([key, item]);
+        matchPattern(url) && generatorOptionEntries.push([key, item]);
       } else {
-        matchPattern.test(url) && generatorMatches.push([key, item]);
+        matchPattern.test(url) && generatorOptionEntries.push([key, item]);
       }
     }
 
-    if (generatorMatches.length) {
-      pageConfig = generatorMatches;
+    if (generatorOptionEntries.length) {
+      batchDownloadEntries = generatorOptionEntries;
       updateAvatarSrc(url);
     } else {
-      pageConfig = null;
+      batchDownloadEntries = null;
       updateAvatarAfterDownload = '';
     }
   }
@@ -158,7 +158,7 @@
   export let downloaderConfig: BatchDownloadConfig<MediaMeta>;
   export let useBatchDownload: BatchDownloadDefinition<MediaMeta>;
 
-  let pageConfig: [string, PageMatchItem<MediaMeta>['string']][] | null;
+  let batchDownloadEntries: [string, PageOption<MediaMeta>['string']][] | null;
 
   const {
     selectedFilters,
@@ -202,11 +202,13 @@
       window.removeEventListener('beforeunload', beforeUnloadHandler);
 
       // update avatar if downloader still visible after download complete.
-      updateAvatarAfterDownload && pageConfig && updateAvatarSrc(updateAvatarAfterDownload);
+      updateAvatarAfterDownload &&
+        batchDownloadEntries &&
+        updateAvatarSrc(updateAvatarAfterDownload);
     }
   });
 
-  $: ifDownloaderCanShow = $downloading || !!pageConfig;
+  $: ifDownloaderCanShow = $downloading || !!batchDownloadEntries;
   $: {
     // prevent from showing menu again when avatar shows
     if (!ifDownloaderCanShow) showDownloadMenu = false;
@@ -377,9 +379,9 @@
             </p>
           </div>
 
-          {#if pageConfig && pageConfig.length > 1}
+          {#if batchDownloadEntries && batchDownloadEntries.length > 1}
             <div class=" flex-none btn-group self-start">
-              {#each pageConfig as [id, item]}
+              {#each batchDownloadEntries as [id, item]}
                 {#if 'fn' in item}
                   <button
                     class="btn rounded-none !transform-none !variant-filled-primary"
@@ -395,17 +397,17 @@
                 {/if}
               {/each}
             </div>
-          {:else if pageConfig && 'fn' in pageConfig[0][1]}
+          {:else if batchDownloadEntries && 'fn' in batchDownloadEntries[0][1]}
             <button
               class="btn variant-filled-primary self-start"
               on:click={() => {
-                startDownload(pageConfig?.[0][0] ?? '');
+                startDownload(batchDownloadEntries?.[0][0] ?? '');
               }}
             >
               <i class="w-5">
                 {@html downloadSvg}
               </i>
-              <span>{pageConfig[0][1].name}</span>
+              <span>{batchDownloadEntries[0][1].name}</span>
             </button>
           {/if}
         </div>

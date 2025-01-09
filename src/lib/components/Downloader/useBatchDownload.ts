@@ -5,10 +5,6 @@ import { CancelError, RequestError } from '@/lib/error';
 import { sleep } from '@/lib/util';
 import type { MediaMeta } from '@/sites/interface';
 
-type CustomTagFilter = (blacklistedTags: string[], tags: string[]) => boolean;
-
-type FilterFn<T> = (artworkMeta: Partial<T>) => boolean | Promise<boolean>;
-
 interface YieldArtworkId {
   total: number;
   page: number;
@@ -25,18 +21,22 @@ export interface YieldArtworkMeta<M> {
   unavaliable: M[];
 }
 
-export type GenerateIdWithValidation<T, K = undefined> = (
+type CustomTagFilter = (blacklistedTags: string[], tags: string[]) => boolean;
+
+type FilterFn<T> = (artworkMeta: Partial<T>) => boolean | Promise<boolean>;
+
+export type ValidatedIdGenerator<T, K = undefined> = (
   pageRange: [start: number, end: number] | null,
   checkValidity: (meta: Partial<T>) => Promise<boolean>,
   ...restArgs: K extends unknown[] ? K : [K]
 ) => Generator<YieldArtworkId, void, undefined> | AsyncGenerator<YieldArtworkId, void, undefined>;
 
-export type GenerateIdWithoutValidation<K = undefined> = (
+export type IdGenerator<K = undefined> = (
   pageRange: [start: number, end: number] | null,
   ...restArgs: K extends unknown[] ? K : [K]
 ) => Generator<YieldArtworkId, void, undefined> | AsyncGenerator<YieldArtworkId, void, undefined>;
 
-export type GenerateMeta<T, K = undefined> = (
+export type ValidatedMetaGenerator<T, K = undefined> = (
   pageRange: [start: number, end: number] | null,
   checkValidity: (meta: Partial<T>) => Promise<boolean>,
   ...restArgs: K extends unknown[] ? K : [K]
@@ -44,39 +44,42 @@ export type GenerateMeta<T, K = undefined> = (
   | Generator<YieldArtworkMeta<T>, void, undefined>
   | AsyncGenerator<YieldArtworkMeta<T>, void, undefined>;
 
-interface GenPageIdBase {
+interface GeneratorOptionBase {
   name: string;
   match: string | ((url: string) => boolean) | RegExp;
   beforeDownload?(): void | Promise<void>;
   afterDownload?(): void;
 }
 
-interface GenPageIdWithValidation<T> extends GenPageIdBase {
-  filterWhenGenerateIngPage: true;
-  fn: GenerateIdWithValidation<T, any[]>;
+interface ValidatedIdGeneratorOption<T> extends GeneratorOptionBase {
+  filterInGenerator: true;
+  fn: ValidatedIdGenerator<T, any[]>;
 }
 
-interface GenPageIdWithoutValidation extends GenPageIdBase {
-  filterWhenGenerateIngPage: false;
-  fn: GenerateIdWithoutValidation<any[]>;
+interface IdGeneratorOption extends GeneratorOptionBase {
+  filterInGenerator: false;
+  fn: IdGenerator<any[]>;
 }
 
-interface GenPageMeta<T> extends GenPageIdBase {
-  filterWhenGenerateIngPage: true;
-  fn: GenerateMeta<T, any[]>;
+interface ValidatedMetaGeneratorOption<T> extends GeneratorOptionBase {
+  filterInGenerator: true;
+  fn: ValidatedMetaGenerator<T, any[]>;
 }
 
-export type PageMatchItem<T> = Record<
+export type PageOption<T> = Record<
   string,
-  GenPageIdWithValidation<T> | GenPageIdWithoutValidation | GenPageMeta<T> | GenPageIdBase
+  | ValidatedIdGeneratorOption<T>
+  | IdGeneratorOption
+  | ValidatedMetaGeneratorOption<T>
+  | GeneratorOptionBase
 >;
 
-type OmitNotGeneratorKey<T, P extends PageMatchItem<T>> = {
-  [K in keyof P]: P[K] extends GenPageIdWithoutValidation
+type OmitNotGeneratorKey<T, P extends PageOption<T>> = {
+  [K in keyof P]: P[K] extends IdGeneratorOption
     ? K
-    : P[K] extends GenPageIdWithValidation<T>
+    : P[K] extends ValidatedIdGeneratorOption<T>
       ? K
-      : P[K] extends GenPageMeta<T>
+      : P[K] extends ValidatedMetaGeneratorOption<T>
         ? K
         : never;
 }[keyof P];
@@ -85,15 +88,15 @@ type DropFirstArg<F> = F extends (x: any, ...args: infer P) => any ? P : never;
 
 type DropFirstAndSecondArg<F> = F extends (x: any, y: any, ...args: infer P) => any ? P : never;
 
-type GetGeneratorParameters<O, T> = O extends GenPageIdWithoutValidation
+type GetGeneratorParameters<O, T> = O extends IdGeneratorOption
   ? DropFirstArg<O['fn']>
-  : O extends GenPageIdWithValidation<T>
+  : O extends ValidatedIdGeneratorOption<T>
     ? DropFirstAndSecondArg<O['fn']>
-    : O extends GenPageMeta<T>
+    : O extends ValidatedMetaGeneratorOption<T>
       ? DropFirstAndSecondArg<O['fn']>
       : never;
 
-interface BatchDownload<T extends MediaMeta, P extends PageMatchItem<T> = PageMatchItem<T>> {
+interface BatchDownload<T extends MediaMeta, P extends PageOption<T> = PageOption<T>> {
   artworkCount: Readable<number>;
   successd: Readable<string[]>;
   failed: Readable<FailedItem[]>;
@@ -117,15 +120,12 @@ interface BatchDownload<T extends MediaMeta, P extends PageMatchItem<T> = PageMa
 
 export interface BatchDownloadDefinition<
   T extends MediaMeta,
-  P extends PageMatchItem<T> = PageMatchItem<T>
+  P extends PageOption<T> = PageOption<T>
 > {
   (): BatchDownload<T, P>;
 }
 
-export interface BatchDownloadConfig<
-  T extends MediaMeta,
-  P extends PageMatchItem<T> = PageMatchItem<T>
-> {
+export interface BatchDownloadConfig<T extends MediaMeta, P extends PageOption<T> = PageOption<T>> {
   /** use for type inference */
   metaType: T;
 
@@ -150,7 +150,7 @@ export interface BatchDownloadConfig<
 
   avatar?: string | ((url: string) => string | Promise<string>);
 
-  pageMatch: P;
+  pageOption: P;
 
   parseMetaByArtworkId(id: string): Promise<T>;
   downloadByArtworkId(meta: T, taskId: string): Promise<void>;
@@ -354,10 +354,9 @@ function useChannel() {
 
 const ERROR_MASKED = 'Masked.';
 
-export function defineBatchDownload<
-  T extends MediaMeta,
-  P extends PageMatchItem<T> = PageMatchItem<T>
->(downloaderConfig: BatchDownloadConfig<T, P>): BatchDownloadDefinition<T, P> {
+export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T> = PageOption<T>>(
+  downloaderConfig: BatchDownloadConfig<T, P>
+): BatchDownloadDefinition<T, P> {
   const artworkCount = writable<number>(0);
   const successd = writable<string[]>([]);
   const failed = writable<FailedItem[]>([]);
@@ -652,7 +651,7 @@ export function defineBatchDownload<
         throw new Error('Invalid generator id: ' + (fnId as string));
 
       const {
-        filterWhenGenerateIngPage,
+        filterInGenerator,
         beforeDownload: generaotrBeforeDownload,
         afterDownload
       } = pageIdItem;
@@ -667,7 +666,7 @@ export function defineBatchDownload<
       await requestDownload();
 
       writeLog('Info', 'Starting...');
-      await dispatchDownload(generator, filterWhenGenerateIngPage, signal);
+      await dispatchDownload(generator, filterInGenerator, signal);
 
       // retry failed downloads
       if ($retryFailed && (failedIdTasks.length || failedMetaTasks.length)) {
@@ -692,7 +691,7 @@ export function defineBatchDownload<
         failed.set([]);
 
         writeLog('Info', 'Retry...');
-        await dispatchDownload(generator, filterWhenGenerateIngPage, signal);
+        await dispatchDownload(generator, filterInGenerator, signal);
       }
 
       writeLog('Info', 'Download complete.');
@@ -721,17 +720,17 @@ export function defineBatchDownload<
   }
 
   function getGenPageIdItem(fnId: keyof P) {
-    const { pageMatch } = downloaderConfig;
+    const { pageOption } = downloaderConfig;
 
-    for (const key in pageMatch) {
+    for (const key in pageOption) {
       if (key === fnId) {
-        return pageMatch[key];
+        return pageOption[key];
       }
     }
   }
 
   function getGenerator(
-    item: GenPageIdWithValidation<T> | GenPageIdWithoutValidation | GenPageMeta<T>,
+    item: ValidatedIdGeneratorOption<T> | IdGeneratorOption | ValidatedMetaGeneratorOption<T>,
     ...restArgs: unknown[]
   ) {
     let generator: ReturnType<(typeof item)['fn']>;
@@ -743,7 +742,7 @@ export function defineBatchDownload<
       ? null
       : [$pageStart, $pageEnd];
 
-    if ('filterWhenGenerateIngPage' in item && !item.filterWhenGenerateIngPage) {
+    if ('filterInGenerator' in item && !item.filterInGenerator) {
       generator = item.fn(pageRange, ...restArgs);
     } else {
       generator = item.fn(pageRange, checkValidity, ...restArgs);
@@ -782,7 +781,7 @@ export function defineBatchDownload<
 
   async function dispatchDownload(
     generator: ReturnType<typeof getGenerator>,
-    filterWhenGenerateIngPage: boolean,
+    filterInGenerator: boolean,
     signal: AbortSignal
   ) {
     signal.throwIfAborted();
@@ -871,7 +870,7 @@ export function defineBatchDownload<
           signal.throwIfAborted();
           if (!artworkMeta) continue;
 
-          if (!filterWhenGenerateIngPage) {
+          if (!filterInGenerator) {
             const isValid = await checkValidity(artworkMeta);
             if (!isValid) {
               addExcluded(metaId);

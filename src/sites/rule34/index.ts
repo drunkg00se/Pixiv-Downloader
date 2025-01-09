@@ -48,11 +48,11 @@ export class Rule34 extends SiteInject {
       enableTagFilter: true
     },
 
-    pageMatch: {
+    pageOption: {
       favorites: {
         name: 'Favorites',
         match: /(?=.*page=favorites)(?=.*s=view)(?=.*id=[0-9]+)/,
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity, userId?: string) => {
           userId ??= /(?<=id=)[0-9]+/.exec(location.search)![0];
           return rule34Parser.favoriteGenerator(pageRange, checkValidity, userId);
@@ -62,7 +62,7 @@ export class Rule34 extends SiteInject {
       pools: {
         name: 'Pools',
         match: /(?=.*page=pool)(?=.*s=show)(?=.*id=[0-9]+)/,
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity, poolId?: string) => {
           poolId ??= /(?<=id=)[0-9]+/.exec(location.search)![0];
           return rule34Parser.poolGenerator(pageRange, checkValidity, poolId);
@@ -72,7 +72,7 @@ export class Rule34 extends SiteInject {
       posts: {
         name: 'Posts',
         match: /(?=.*page=post)(?=.*s=list)/,
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity, tags?: string | string[]) => {
           tags ??= new URLSearchParams(location.search).get('tags') ?? 'all';
           return rule34Parser.postGenerator(pageRange, checkValidity, tags);

@@ -77,11 +77,11 @@ export class Danbooru extends SiteInject {
       }
     },
 
-    pageMatch: {
+    pageOption: {
       pool: {
         name: 'Pool',
         match: /(?<=\/pools\/)[0-9]+/,
-        filterWhenGenerateIngPage: false,
+        filterInGenerator: false,
         fn: (pageRange) => {
           const poolId = /(?<=\/pools\/)[0-9]+/.exec(location.pathname)?.[0];
           if (!poolId) throw new Error('Invalid pool id');
@@ -97,7 +97,7 @@ export class Danbooru extends SiteInject {
       favorite_groups: {
         name: 'FavoriteGroups',
         match: /(?<=\/favorite_groups\/)[0-9]+/,
-        filterWhenGenerateIngPage: false,
+        filterInGenerator: false,
         fn: (pageRange) => {
           const groupId = /(?<=\/favorite_groups\/)[0-9]+/.exec(location.pathname)?.[0];
           if (!groupId) throw new Error('Invalid pool id');
@@ -113,7 +113,7 @@ export class Danbooru extends SiteInject {
       post_list: {
         name: 'Post',
         match: () => location.pathname === '/' || location.pathname === '/posts',
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           const searchParam = new URLSearchParams(new URL(location.href).search);
           const tags = searchParam.get('tags')?.split(' ');
@@ -133,7 +133,7 @@ export class Danbooru extends SiteInject {
       pool_gallery_button: {
         name: 'pool_gallery_button',
         match: () => false,
-        filterWhenGenerateIngPage: false,
+        filterInGenerator: false,
         fn: (pageRange, poolId: string) => {
           if (!poolId) throw new Error('Invalid pool id');
           return danbooruParser.poolAndGroupGenerator(

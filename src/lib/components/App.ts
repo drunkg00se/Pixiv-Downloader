@@ -4,7 +4,7 @@ import {
   defineBatchDownload,
   type BatchDownloadConfig,
   type BatchDownloadDefinition,
-  type PageMatchItem
+  type PageOption
 } from './Downloader/useBatchDownload';
 // @ts-expect-error no-declaration
 import { create_custom_element } from 'svelte/internal';
@@ -12,7 +12,7 @@ import { create_custom_element } from 'svelte/internal';
 export type PdlApp = HTMLElement & {
   showChangelog(): void;
   showSetting(): void;
-  initBatchDownloader<T extends MediaMeta, P extends PageMatchItem<T>>(
+  initBatchDownloader<T extends MediaMeta, P extends PageOption<T>>(
     downloaderConfig: BatchDownloadConfig<T, P>
   ): BatchDownloadDefinition<T, P>;
 };
@@ -46,7 +46,7 @@ export const PdlApp: PdlAppConstructor = create_custom_element(
         this.updated = props.updated ?? false;
       }
 
-      initBatchDownloader<T extends MediaMeta, P extends PageMatchItem<T>>(
+      initBatchDownloader<T extends MediaMeta, P extends PageOption<T>>(
         config: BatchDownloadConfig<T, P>
       ) {
         this.downloaderConfig = config;

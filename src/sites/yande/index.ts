@@ -52,11 +52,11 @@ export class Yande extends SiteInject {
       enableTagFilter: true
     },
 
-    pageMatch: {
+    pageOption: {
       posts: {
         name: t('downloader.download_type.yande_posts'),
         match: () => location.pathname === '/post',
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity, tags?: string | string[]) => {
           tags ??= new URLSearchParams(location.search).get('tags') ?? '';
           return yandeParser.postGenerator(pageRange, checkValidity, tags);
@@ -66,7 +66,7 @@ export class Yande extends SiteInject {
       popular_1d: {
         name: t('downloader.download_type.yande_popular_1d'),
         match: () => location.pathname === '/post/popular_recent',
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           return yandeParser.popularGenerator(pageRange, checkValidity, '1d');
         }
@@ -75,7 +75,7 @@ export class Yande extends SiteInject {
       popular_1w: {
         name: t('downloader.download_type.yande_popular_1w'),
         match: () => location.pathname === '/post/popular_recent',
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           return yandeParser.popularGenerator(pageRange, checkValidity, '1w');
         }
@@ -84,7 +84,7 @@ export class Yande extends SiteInject {
       popular_1m: {
         name: t('downloader.download_type.yande_popular_1m'),
         match: () => location.pathname === '/post/popular_recent',
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           return yandeParser.popularGenerator(pageRange, checkValidity, '1m');
         }
@@ -93,7 +93,7 @@ export class Yande extends SiteInject {
       popular_1y: {
         name: t('downloader.download_type.yande_popular_1y'),
         match: () => location.pathname === '/post/popular_recent',
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           return yandeParser.popularGenerator(pageRange, checkValidity, '1y');
         }
@@ -102,7 +102,7 @@ export class Yande extends SiteInject {
       pool: {
         name: t('downloader.download_type.yande_pool'),
         match: /\/pool\/show\//,
-        filterWhenGenerateIngPage: true,
+        filterInGenerator: true,
         fn: (pageRange, checkValidity, poolId?: string) => {
           poolId ??= /(?<=show\/)[0-9]+/.exec(location.pathname)![0];
           return yandeParser.poolGenerator(pageRange, checkValidity, poolId);

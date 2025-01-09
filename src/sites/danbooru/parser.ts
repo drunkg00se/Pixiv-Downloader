@@ -3,8 +3,8 @@ import type { MediaMeta, SiteParser } from '../interface';
 import { getElementText, intersect } from '@/lib/util';
 import { danbooruApi } from './api';
 import type {
-  GenerateIdWithoutValidation,
-  GenerateIdWithValidation
+  IdGenerator,
+  ValidatedIdGenerator
 } from '@/lib/components/Downloader/useBatchDownload';
 import type { DanbooruPost } from './types';
 
@@ -39,10 +39,10 @@ interface DanbooruParser extends SiteParser<DanbooruMeta> {
     (type: 'profile', blacklistedTags: string): Promise<DanbooruBlacklistItem[]>;
   };
   isBlacklisted(matchTags: string[], blacklist: DanbooruBlacklistItem[]): boolean;
-  poolAndGroupGenerator: GenerateIdWithoutValidation<
+  poolAndGroupGenerator: IdGenerator<
     [id: string, type: 'pool' | 'favoriteGroup', postsPerPage?: number]
   >;
-  postListGenerator: GenerateIdWithValidation<
+  postListGenerator: ValidatedIdGenerator<
     DanbooruMeta,
     [tags?: string[], limit?: number, showDeletedPosts?: boolean]
   >;

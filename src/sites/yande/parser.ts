@@ -1,6 +1,9 @@
 import type { MediaMeta, SiteParser } from '../interface';
 import { yandeApi, type YandePoolData, type YandePostData } from './api';
-import type { GenerateMeta, YieldArtworkMeta } from '@/lib/components/Downloader/useBatchDownload';
+import type {
+  ValidatedMetaGenerator,
+  YieldArtworkMeta
+} from '@/lib/components/Downloader/useBatchDownload';
 
 interface YandeWebPostData {
   posts: YandePostData[];
@@ -56,9 +59,9 @@ interface YandeParser extends SiteParser<YandeMeta> {
   parsePopular(period: PopularPeriod): Promise<YandeWebPostListData>;
   parsePool(poolId: string): Promise<YandeWebPostData>;
   parseBlacklist(): Promise<YandeBlacklistItem[]>;
-  postGenerator: GenerateMeta<YandeMeta, [tags: string | string[]]>;
-  popularGenerator: GenerateMeta<YandeMeta, [period: PopularPeriod]>;
-  poolGenerator: GenerateMeta<YandeMeta, [poolId: string]>;
+  postGenerator: ValidatedMetaGenerator<YandeMeta, [tags: string | string[]]>;
+  popularGenerator: ValidatedMetaGenerator<YandeMeta, [period: PopularPeriod]>;
+  poolGenerator: ValidatedMetaGenerator<YandeMeta, [poolId: string]>;
 }
 
 export const yandeParser: YandeParser = {
