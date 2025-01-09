@@ -47,6 +47,8 @@ export type GenerateMeta<T, K = undefined> = (
 interface GenPageIdBase {
   name: string;
   match: string | ((url: string) => boolean) | RegExp;
+  beforeDownload?(): void | Promise<void>;
+  afterDownload?(): void;
 }
 
 interface GenPageIdWithValidation<T> extends GenPageIdBase {
@@ -126,6 +128,9 @@ export interface BatchDownloadConfig<
 > {
   /** use for type inference */
   metaType: T;
+
+  beforeDownload?(): void | Promise<void>;
+  afterDownload?(): void;
 
   filterOption: {
     filters: {
@@ -624,10 +629,13 @@ export function defineBatchDownload<
     // reset store before download start, so we can still access store data after download finished.
     reset();
 
+    let downloadError: unknown;
+    const { beforeDownload, afterDownload } = downloaderConfig;
+    let generaotrAfterDownload: (() => void) | undefined = undefined;
+    let generator!: ReturnType<typeof getGenerator>;
+
     controller = new AbortController();
     const signal = controller.signal;
-    let downloadError: unknown;
-
     signal.addEventListener(
       'abort',
       () => {
@@ -638,13 +646,21 @@ export function defineBatchDownload<
       { once: true }
     );
 
-    let generator!: ReturnType<typeof getGenerator>;
     try {
       const pageIdItem = getGenPageIdItem(fnId);
       if (!pageIdItem || !('fn' in pageIdItem))
         throw new Error('Invalid generator id: ' + (fnId as string));
 
-      const { filterWhenGenerateIngPage } = pageIdItem;
+      const {
+        filterWhenGenerateIngPage,
+        beforeDownload: generaotrBeforeDownload,
+        afterDownload
+      } = pageIdItem;
+      generaotrAfterDownload = afterDownload;
+
+      typeof beforeDownload === 'function' && (await beforeDownload());
+      typeof generaotrBeforeDownload === 'function' && (await generaotrBeforeDownload());
+
       generator = getGenerator(pageIdItem, ...restArgs);
 
       writeLog('Info', 'Waiting for other downloads to finish...');
@@ -694,6 +710,9 @@ export function defineBatchDownload<
         writeLog('Error', error);
       }
     }
+
+    typeof generaotrAfterDownload === 'function' && generaotrAfterDownload();
+    typeof afterDownload === 'function' && afterDownload();
 
     setDownloading(false);
     processNextDownload();
