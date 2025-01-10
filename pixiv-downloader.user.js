@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.4.0
+// @version            1.5.0
 // @author             ruaruarua
 // @description        Pixiv | Danbooru | Rule34 | Yande. 一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。
 // @description:zh-TW  Pixiv | Danbooru | Rule34 | Yande. 一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。
@@ -196,6 +196,14 @@
     el.download = filename;
     el.click();
     URL.revokeObjectURL(el.href);
+  }
+  function intersect(a, b) {
+    const set = new Set(a);
+    const result = [];
+    b.forEach((item) => {
+      set.has(item) && result.push(item);
+    });
+    return result;
   }
   class RequestError extends Error {
     constructor(url2, status) {
@@ -546,7 +554,7 @@
   function loadConfig(customConfig = {}) {
     if (config) throw new Error("`config` has already been defined.");
     const defaultConfig = Object.freeze({
-      version: "1.4.0",
+      version: "1.5.0",
       ugoiraFormat: "zip",
       folderPattern: "",
       filenamePattern: "{id}",
@@ -558,6 +566,7 @@
       addBookmark: false,
       addBookmarkWithTags: false,
       privateR18: false,
+      likeIllust: false,
       useFileSystemAccess: false,
       fileSystemFilenameConflictAction: "uniquify",
       showPopupButton: true,
@@ -716,14 +725,13 @@
           var _a;
           const { taskId: taskId2, config: config22, isAborted } = downloadMeta;
           if (isAborted) return;
-          downloadMeta.retry++;
-          logger.warn("Download timeout", downloadMeta.retry, ":", config22.src);
-          if (downloadMeta.retry > MAX_RETRY) {
+          if (++downloadMeta.retry > MAX_RETRY) {
             const err = new Error(`Download timout. ${taskId2} | ${config22.src}`);
             (_a = config22.onError) == null ? void 0 : _a.call(config22, err, config22);
             downloadMeta.reject(err);
             cleanAndStartNext(downloadMeta);
           } else {
+            logger.error(`Download timeout: ${downloadMeta.retry}. ${taskId2}`);
             logger.info("Retry download:", downloadMeta.retry, config22.src);
             cleanAndStartNext(downloadMeta, downloadMeta);
           }
@@ -751,29 +759,36 @@
           }
         },
         onload: async (e) => {
-          var _a, _b, _c, _d;
-          logger.info("Xhr complete:", config2.src);
+          var _a, _b, _c, _d, _e;
           cleanAndStartNext(downloadMeta);
           if (downloadMeta.isAborted)
             return logger.warn("Download was canceled.", taskId, config2.path);
-          (_a = config2.onXhrLoaded) == null ? void 0 : _a.call(config2, config2);
+          const { status, statusText, finalUrl } = e;
+          if (status < 200 || status > 299) {
+            const err = new RequestError(statusText + " " + finalUrl, status);
+            (_a = config2.onError) == null ? void 0 : _a.call(config2, err, config2);
+            downloadMeta.reject(err);
+            return;
+          }
+          logger.info("Xhr complete:", config2.src);
+          (_b = config2.onXhrLoaded) == null ? void 0 : _b.call(config2, config2);
           try {
             let modRes;
             if (typeof config2.beforeFileSave === "function") {
               modRes = await config2.beforeFileSave(e.response, config2);
               if (modRes && !downloadMeta.isAborted) {
                 await saveFile2(modRes, downloadMeta);
-                (_b = config2.onFileSaved) == null ? void 0 : _b.call(config2, config2);
+                (_c = config2.onFileSaved) == null ? void 0 : _c.call(config2, config2);
                 logger.info("Download complete:", config2.path);
               }
             } else {
               await saveFile2(e.response, downloadMeta);
-              (_c = config2.onFileSaved) == null ? void 0 : _c.call(config2, config2);
+              (_d = config2.onFileSaved) == null ? void 0 : _d.call(config2, config2);
               logger.info("Download complete:", config2.path);
             }
             downloadMeta.resolve(downloadMeta.taskId);
           } catch (error) {
-            (_d = config2.onError) == null ? void 0 : _d.call(config2, error, config2);
+            (_e = config2.onError) == null ? void 0 : _e.call(config2, error, config2);
             downloadMeta.reject(error);
           }
         }
@@ -1121,6 +1136,48 @@
     }
   }
   const historyDb = new ReadableHistoryDb();
+  class ApiBase {
+    async getHtml(url2) {
+      logger.info("Fetch url:", url2);
+      const res = await fetch(url2);
+      if (!res.ok) throw new RequestError(res.url, res.status);
+      return await res.text();
+    }
+    async getDoc(url2) {
+      const html = await this.getHtml(url2);
+      return new DOMParser().parseFromString(html, "text/html");
+    }
+    async getJSON(url2, init2) {
+      logger.info("Fetch url:", url2);
+      const res = await fetch(url2, init2);
+      if (!res.ok) throw new RequestError(res.url, res.status);
+      return await res.json();
+    }
+  }
+  class Rule34Api extends ApiBase {
+    async getPosts(params) {
+      let url2 = "https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1";
+      Object.entries(params).forEach(([key, val]) => {
+        if (typeof val === "number") {
+          val = String(val);
+        } else if (Array.isArray(val)) {
+          val = val.join("+");
+        }
+        url2 += `&${key}=${val}`;
+      });
+      const res = await fetch(url2);
+      try {
+        return await res.json();
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          return [];
+        } else {
+          throw error;
+        }
+      }
+    }
+  }
+  const rule34Api = new Rule34Api();
   const rule34Parser = {
     async parse(id) {
       var _a, _b, _c, _d, _e, _f;
@@ -1136,13 +1193,14 @@
       const artists = [];
       const characters = [];
       const tags = [];
+      let source = "";
       const tagEls = doc.querySelectorAll('li[class*="tag-type"]');
       tagEls.forEach((tagEl) => {
         var _a2;
         const tagTypeMatch = new RegExp("(?<=tag-type-)\\w+").exec(tagEl.className);
         if (!tagTypeMatch) throw new Error("Unknown tag: " + tagEl.className);
         const tagType = tagTypeMatch[0];
-        const tag = ((_a2 = tagEl.querySelector('a[href*="page=post"]')) == null ? void 0 : _a2.textContent) || "";
+        const tag = (((_a2 = tagEl.querySelector('a[href*="page=post"]')) == null ? void 0 : _a2.textContent) || "").replaceAll(" ", "_");
         if (tagType === "artist") {
           artists.push(tag);
         } else if (tagType === "character") {
@@ -1154,14 +1212,15 @@
       const postDateStr = (_c = (_b = uploaderEl == null ? void 0 : uploaderEl.parentElement) == null ? void 0 : _b.firstChild) == null ? void 0 : _c.nodeValue;
       const postDate = postDateStr ? postDateStr.split(": ")[1] : "";
       const sourceEl = (_e = (_d = uploaderEl == null ? void 0 : uploaderEl.parentElement) == null ? void 0 : _d.nextElementSibling) == null ? void 0 : _e.nextElementSibling;
-      if (sourceEl && ((_f = sourceEl.textContent) == null ? void 0 : _f.toLowerCase().includes("source"))) {
+      if (sourceEl && /^source:/i.test(sourceEl.textContent ?? "")) {
         const sourceLink = sourceEl.querySelector("a");
         if (sourceLink) {
-          tags.push("source:" + sourceLink.href);
+          source = sourceLink.href;
         } else {
-          tags.push("source:" + sourceEl.textContent.replace("Source: ", ""));
+          source = ((_f = sourceEl.textContent) == null ? void 0 : _f.replace(/^source: ?/i, "")) ?? "";
         }
       }
+      const rating = /Rating: ?(Explicit|Questionable|Safe)/.exec(doc.documentElement.innerHTML)[1].toLowerCase();
       return {
         id,
         src,
@@ -1170,8 +1229,138 @@
         character: characters.join(",") || "UnknownCharacter",
         title,
         tags,
-        createDate: postDate
+        createDate: postDate,
+        source,
+        rating
       };
+    },
+    async parseFavorite(userId, pid = 0) {
+      const doc = await rule34Api.getDoc(`/index.php?page=favorites&s=view&id=${userId}&pid=${pid}`);
+      const favDataScripts = doc.querySelectorAll(".image-list > span + script");
+      const favData = Array.from(favDataScripts).map((el) => {
+        const content = el.textContent;
+        const [id] = new RegExp("(?<=posts\\[)[0-9]+?(?=\\])").exec(content);
+        const [tags] = new RegExp(`(?<=tags: ["']).*?(?=["']\\.)`).exec(content);
+        const [rating] = new RegExp(`(?<=rating: ["']).*?(?=["'],)`).exec(content);
+        const [score] = new RegExp(`(?<=score: ["'])[0-9]+(?=["'],)`).exec(content);
+        const [user] = new RegExp(`(?<=user: ["']).*?(?=["']\\s+})`).exec(content);
+        return {
+          id,
+          tags: tags.split(" "),
+          rating,
+          score: +score,
+          user
+        };
+      });
+      return favData;
+    },
+    _parsePostData(doc) {
+      const imageItems = Array.from(doc.querySelectorAll(".image-list > span.thumb"));
+      const postData = imageItems.map((el) => {
+        const image = el.querySelector("img");
+        const fullTags = image.title.trim().replaceAll(/ +/g, " ").split(" ");
+        const id = el.id.slice(1);
+        const tags = [];
+        let rating = "";
+        let score = 0;
+        let user = "";
+        for (let i = 0; i < fullTags.length; i++) {
+          const tag = fullTags[i];
+          if (tag.startsWith("rating:")) {
+            rating = tag.slice(7);
+          } else if (tag.startsWith("score:")) {
+            score = +tag.slice(6);
+          } else if (tag.startsWith("user:")) {
+            user = tag.slice(5);
+          } else {
+            tags.push(tag);
+          }
+        }
+        return {
+          id,
+          tags,
+          rating,
+          score: +score,
+          user
+        };
+      });
+      logger.info(`Parse posts in ${doc.URL}:`, postData);
+      return postData;
+    },
+    async parsePool(poolId) {
+      const doc = await rule34Api.getDoc(`/index.php?page=pool&s=show&id=${poolId}`);
+      return this._parsePostData(doc);
+    },
+    // Does not include blacklisted tags, making it more suitable for batch downloads that need to handle page ranges.
+    async parsePost(pid = 0, tags = "all") {
+      if (Array.isArray(tags)) tags = tags.join("+");
+      const doc = await rule34Api.getDoc(`/index.php?page=post&s=list&tags=${tags}&pid=${pid}`);
+      return this._parsePostData(doc);
+    },
+    async *_paginationGenerator(pageRange, checkValidity, thumbsPerPage, getPostDataCallback) {
+      const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
+      let page = pageStart;
+      let postData = await getPostDataCallback(page);
+      let total = postData.length;
+      let fetchError = null;
+      if (total === 0) throw new Error(`There is no post in page ${page}.`);
+      do {
+        let nextPageData = null;
+        if (page !== pageEnd && postData.length >= thumbsPerPage) {
+          try {
+            nextPageData = await getPostDataCallback(page + 1);
+            if (nextPageData.length) {
+              total += nextPageData.length;
+            } else {
+              nextPageData = null;
+            }
+          } catch (error) {
+            fetchError = error;
+            nextPageData = null;
+          }
+        }
+        const avaliable = [];
+        const invalid = [];
+        const unavaliable = [];
+        for (let i = 0; i < postData.length; i++) {
+          const { id, tags } = postData[i];
+          const validityCheckMeta = {
+            id,
+            tags
+          };
+          const isValid = await checkValidity(validityCheckMeta);
+          isValid ? avaliable.push(id) : invalid.push(id);
+        }
+        yield {
+          total,
+          page,
+          avaliable,
+          invalid,
+          unavaliable
+        };
+        page++;
+        postData = nextPageData;
+      } while (postData);
+      if (fetchError) throw fetchError;
+    },
+    async *favoriteGenerator(pageRange, checkValidity, userId) {
+      const THUMBS_PER_PAGE = 50;
+      const getFavoriteByPage = (page) => {
+        const pid = (page - 1) * THUMBS_PER_PAGE;
+        return this.parseFavorite(userId, pid);
+      };
+      yield* this._paginationGenerator(pageRange, checkValidity, THUMBS_PER_PAGE, getFavoriteByPage);
+    },
+    async *poolGenerator(_, checkValidity, poolId) {
+      yield* this._paginationGenerator([1, 1], checkValidity, Infinity, () => this.parsePool(poolId));
+    },
+    async *postGenerator(pageRange, checkValidity, tags) {
+      const THUMBS_PER_PAGE = 42;
+      const getPostsByPage = (page) => {
+        const pid = (page - 1) * THUMBS_PER_PAGE;
+        return this.parsePost(pid, tags);
+      };
+      yield* this._paginationGenerator(pageRange, checkValidity, THUMBS_PER_PAGE, getPostsByPage);
     }
   };
   const btnStyle = ".pdl-thumbnail{position:absolute;display:flex;justify-content:center;align-items:center;margin:0;padding:0;height:32px;width:32px;top:calc((100% - 32px) * var(--pdl-btn-top) / 100);left:calc((100% - 32px) * var(--pdl-btn-left) / 100);border:none;border-radius:4px;overflow:hidden;white-space:nowrap;-webkit-user-select:none;-moz-user-select:none;user-select:none;font-family:system-ui;font-size:13px;font-weight:700;color:#262626;background-color:#ffffff80;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:1;cursor:pointer}.pdl-thumbnail:disabled{cursor:not-allowed}.pdl-thumbnail>svg{position:absolute;width:85%;height:85%;fill:currentColor;stroke:currentColor}.pdl-thumbnail>span{opacity:0;transition:opacity .2s}.pdl-thumbnail>span.show{opacity:1}:host([data-type=gallery]) .pdl-thumbnail{position:sticky;top:40px;left:0}:host([data-type=pixiv-my-bookmark]) .pdl-thumbnail{top:calc((100% - 32px) * var(--pdl-btn-self-bookmark-top) / 100);left:calc((100% - 32px) * var(--pdl-btn-self-bookmark-left) / 100)}:host([data-type=pixiv-history]) .pdl-thumbnail{z-index:auto}:host([data-type=pixiv-presentation]) .pdl-thumbnail{position:fixed;top:50px;right:20px;left:auto}:host([data-type=pixiv-toolbar]) .pdl-thumbnail{position:relative;top:auto;left:auto;color:inherit;background-color:transparent}:host([data-type=pixiv-manga-viewer]) .pdl-thumbnail{top:80%;right:4px;left:auto}:host([data-type=yande-browse]) .pdl-thumbnail{top:320px;right:4px;left:auto}:host([data-status]) .pdl-thumbnail{color:#16a34a}:host([data-status=error]) .pdl-thumbnail{color:#ef4444}";
@@ -1591,8 +1780,11 @@
       };
       return path.replaceAll(/\{date\((.*?)\)\}|\{date\}/g, replaceDate).replaceAll("{artist}", artist).replaceAll("{title}", title).replaceAll("{tags}", tags.join("_")).replaceAll("{id}", id);
     }
+    generateTaskId() {
+      return this.meta.id + "_" + Math.random().toString(36).slice(2);
+    }
   }
-  function artworkProgressFactory$1(btn2) {
+  function artworkProgressFactory$2(btn2) {
     if (!btn2) return;
     return function onArtworkProgress(progress) {
       btn2.setProgress(progress);
@@ -1609,12 +1801,12 @@
     getDownloadConfig(btn2) {
       return {
         headers: this.headers,
-        taskId: Math.random().toString(36).slice(2),
+        taskId: this.generateTaskId(),
         src: this.meta.src,
         path: this.buildFilePath(),
         source: this.meta,
         timeout: this.isImage() ? 6e4 : void 0,
-        onProgress: artworkProgressFactory$1(btn2)
+        onProgress: artworkProgressFactory$2(btn2)
       };
     }
     buildFilePath() {
@@ -1629,17 +1821,18 @@
     downloader.dirHandleCheck();
     const id = btn2.dataset.id;
     const mediaMeta = await rule34Parser.parse(id);
-    const { tags, artist, title } = mediaMeta;
+    const { tags, artist, title, source, rating } = mediaMeta;
     const downloadConfigs = new Rule34DownloadConfig(mediaMeta).getDownloadConfig(btn2);
     config.get("addBookmark") && addBookmark$2(id);
     await downloader.download(downloadConfigs);
-    const historyData = {
+    historyDb.add({
       pid: Number(id),
       user: artist,
       title,
-      tags
-    };
-    historyDb.add(historyData);
+      tags,
+      source,
+      rating
+    });
   }
   const zh = {
     setting: {
@@ -1736,9 +1929,11 @@
           show_setting_button: "显示设置按钮",
           bundle_multipage_illust: "将多页插图打包为zip压缩包",
           bundle_manga: "将漫画作品打包为zip压缩包",
-          add_bookmark_when_download: "下载单个作品时收藏作品",
+          like_illust_when_downloading: "下载作品时点赞",
+          add_bookmark_when_downloading: "下载作品时收藏",
           add_bookmark_with_tags: "收藏时添加作品标签",
-          add_bookmark_private_r18: "将R-18作品收藏到不公开类别"
+          add_bookmark_private_r18: "将R-18作品收藏到不公开类别",
+          option_does_not_apply_to_batch_download: "批量下载不适用"
         }
       },
       feedback: {
@@ -1759,6 +1954,7 @@
         tab_name: "类别",
         filter: {
           exclude_downloaded: "排除已下载",
+          exclude_blacklist: "排除黑名单",
           image: "图片",
           video: "视频",
           download_all_pages: "下载所有页",
@@ -1789,7 +1985,13 @@
         pixiv_bookmark_private: "不公开收藏",
         pixiv_follow_latest_all: "全部",
         pixiv_follow_latest_r18: "R-18",
-        pixiv_series: "系列"
+        pixiv_series: "系列",
+        yande_posts: "投稿",
+        yande_pool: "图集",
+        yande_popular_1d: "日",
+        yande_popular_1w: "周",
+        yande_popular_1m: "月",
+        yande_popular_1y: "年"
       }
     },
     button: {
@@ -1897,9 +2099,11 @@
           show_setting_button: "Show Setting Button",
           bundle_multipage_illust: "Bundle multipage illustrations into a zip file",
           bundle_manga: "Bundle manga into a zip file",
-          add_bookmark_when_download: "Bookmark artwork when downloading",
+          like_illust_when_downloading: "Like the artwork when downloading",
+          add_bookmark_when_downloading: "Bookmark artwork when downloading",
           add_bookmark_with_tags: "Add tags when bookmarking",
-          add_bookmark_private_r18: "Bookmark R-18 artwork as private"
+          add_bookmark_private_r18: "Bookmark R-18 artwork as private",
+          option_does_not_apply_to_batch_download: "This option does not apply to batch download"
         }
       },
       feedback: {
@@ -1920,6 +2124,7 @@
         tab_name: "Category",
         filter: {
           exclude_downloaded: "Exclude Downloaded",
+          exclude_blacklist: "Exclude Blacklist",
           image: "Image",
           video: "Video",
           download_all_pages: "All Pages",
@@ -1950,7 +2155,13 @@
         pixiv_bookmark_private: "Private",
         pixiv_follow_latest_all: "All",
         pixiv_follow_latest_r18: "R-18",
-        pixiv_series: "Series"
+        pixiv_series: "Series",
+        yande_posts: "Posts",
+        yande_pool: "Pool",
+        yande_popular_1d: "1d",
+        yande_popular_1w: "1w",
+        yande_popular_1m: "1m",
+        yande_popular_1y: "1y"
       }
     },
     button: {
@@ -11945,25 +12156,25 @@
     let header;
     let t2;
     let article;
-    let t14;
+    let t16;
     let footer;
     let div0;
     let button;
-    let t15_value = t("changelog.credit") + "";
-    let t15;
-    let t16;
-    let a1;
-    let t17_value = t("changelog.feedback") + "";
+    let t17_value = t("changelog.credit") + "";
     let t17;
     let t18;
+    let a0;
+    let t19_value = t("changelog.feedback") + "";
+    let t19;
+    let t20;
     let div2;
     let div1;
     let img;
     let img_src_value;
-    let t19;
-    let p;
-    let a2;
     let t21;
+    let p1;
+    let a1;
+    let t23;
     let span;
     let div2_class_value;
     let mounted;
@@ -11971,27 +12182,27 @@
     return {
       c() {
         header = element("header");
-        header.textContent = `Pixiv Downloader ${"1.4.0"}`;
+        header.textContent = `Pixiv Downloader ${"1.5.0"}`;
         t2 = space();
         article = element("article");
-        article.innerHTML = `<ul class="list-disc list-inside leading-loose"><li>新增：现在可以批量下载pixiv<a href="https://www.pixiv.net/user/3617446/series/136196" target="_blank" class="anchor">漫画系列</a>。</li> <li>新增：现在可以批量下载Danbooru: posts, pools, favorite groups。</li> <li>新增：现在可以在【设置】【其它】中填入cf_clearance cookie（rule34无法正常下载图片时）。</li> <li>修复：Pixiv多图预览按钮被遮挡的问题。</li> <li>修复：切换主题时Pixiv收藏标签按钮颜色不改变的问题。</li></ul>`;
-        t14 = space();
+        article.innerHTML = `<ul class="list-disc list-inside leading-loose"><p>新的一年希望你爱的人和爱你的人都身体健康^_^</p> <li>新增：支持批量下载Rule34 Posts， Pools， My favorites。</li> <li>新增：支持批量下载Yande 投稿，图集，人气。</li> <li>新增：为Danbooru批量下载添加“排除网站黑名单”筛选器。</li> <li>新增：Danbooru网站“Show deleted posts”设置将适用于批量下载。</li> <li>新增：下载Pixiv作品时为作品点赞（批量下载不适用）。</li> <li>修复了若干问题。</li></ul>`;
+        t16 = space();
         footer = element("footer");
         div0 = element("div");
         button = element("button");
-        t15 = text(t15_value);
-        t16 = space();
-        a1 = element("a");
         t17 = text(t17_value);
         t18 = space();
+        a0 = element("a");
+        t19 = text(t19_value);
+        t20 = space();
         div2 = element("div");
         div1 = element("div");
         img = element("img");
-        t19 = space();
-        p = element("p");
-        a2 = element("a");
-        a2.textContent = `${t("changelog.give_me_a_star")}`;
         t21 = space();
+        p1 = element("p");
+        a1 = element("a");
+        a1.textContent = `${t("changelog.give_me_a_star")}`;
+        t23 = space();
         span = element("span");
         span.textContent = `${t("changelog.buy_me_a_drink")}`;
         attr(header, "class", "modal-header text-2xl font-bold");
@@ -12003,21 +12214,21 @@
           ctx[3]
         );
         attr(
-          a1,
+          a0,
           "class",
           /*anchor*/
           ctx[3]
         );
-        attr(a1, "target", "_blank");
-        attr(a1, "href", "https://github.com/drunkg00se/Pixiv-Downloader/issues");
+        attr(a0, "target", "_blank");
+        attr(a0, "href", "https://github.com/drunkg00se/Pixiv-Downloader/issues");
         attr(div0, "class", "flex justify-between items-center text-sm");
         if (!src_url_equal(img.src, img_src_value = creditCode)) attr(img, "src", img_src_value);
         attr(img, "alt", "credit");
         attr(img, "class", "rounded-full");
-        attr(a2, "href", "https://github.com/drunkg00se/Pixiv-Downloader");
-        attr(a2, "target", "_blank");
-        attr(a2, "class", "anchor");
-        attr(p, "class", "flex flex-col h-full justify-evenly");
+        attr(a1, "href", "https://github.com/drunkg00se/Pixiv-Downloader");
+        attr(a1, "target", "_blank");
+        attr(a1, "class", "anchor");
+        attr(p1, "class", "flex flex-col h-full justify-evenly");
         attr(div1, "class", "flex justify-center items-center min-h-0 gap-14 overflow-hidden");
         attr(div2, "class", div2_class_value = "grid transition-[grid-template-rows] duration-[400ms] " + /*gridRows*/
         ctx[2]);
@@ -12027,23 +12238,23 @@
         insert(target, header, anchor);
         insert(target, t2, anchor);
         insert(target, article, anchor);
-        insert(target, t14, anchor);
+        insert(target, t16, anchor);
         insert(target, footer, anchor);
         append(footer, div0);
         append(div0, button);
-        append(button, t15);
-        append(div0, t16);
-        append(div0, a1);
-        append(a1, t17);
-        append(footer, t18);
+        append(button, t17);
+        append(div0, t18);
+        append(div0, a0);
+        append(a0, t19);
+        append(footer, t20);
         append(footer, div2);
         append(div2, div1);
         append(div1, img);
-        append(div1, t19);
-        append(div1, p);
-        append(p, a2);
-        append(p, t21);
-        append(p, span);
+        append(div1, t21);
+        append(div1, p1);
+        append(p1, a1);
+        append(p1, t23);
+        append(p1, span);
         if (!mounted) {
           dispose = listen(
             button,
@@ -12066,7 +12277,7 @@
           detach(header);
           detach(t2);
           detach(article);
-          detach(t14);
+          detach(t16);
           detach(footer);
         }
         mounted = false;
@@ -16887,6 +17098,17 @@
     let t4;
     let slidetoggle1;
     let updating_checked_1;
+    let t5;
+    let li2;
+    let div;
+    let p2;
+    let t7;
+    let p3;
+    let t8_value = t("setting.others.options.option_does_not_apply_to_batch_download") + "";
+    let t8;
+    let t9;
+    let slidetoggle2;
+    let updating_checked_2;
     let current;
     function slidetoggle0_checked_binding(value) {
       ctx[11](value);
@@ -16914,6 +17136,19 @@
     }
     slidetoggle1 = new SlideToggle({ props: slidetoggle1_props });
     binding_callbacks.push(() => bind(slidetoggle1, "checked", slidetoggle1_checked_binding));
+    function slidetoggle2_checked_binding(value) {
+      ctx[13](value);
+    }
+    let slidetoggle2_props = { name: "bundle-manga", size: "sm" };
+    if (
+      /*$store*/
+      ctx[6].likeIllust !== void 0
+    ) {
+      slidetoggle2_props.checked = /*$store*/
+      ctx[6].likeIllust;
+    }
+    slidetoggle2 = new SlideToggle({ props: slidetoggle2_props });
+    binding_callbacks.push(() => bind(slidetoggle2, "checked", slidetoggle2_checked_binding));
     return {
       c() {
         li0 = element("li");
@@ -16927,8 +17162,25 @@
         p1.textContent = `${t("setting.others.options.bundle_manga")}`;
         t4 = space();
         create_component(slidetoggle1.$$.fragment);
+        t5 = space();
+        li2 = element("li");
+        div = element("div");
+        p2 = element("p");
+        p2.textContent = `${t("setting.others.options.like_illust_when_downloading")}`;
+        t7 = space();
+        p3 = element("p");
+        t8 = text(t8_value);
+        t9 = space();
+        create_component(slidetoggle2.$$.fragment);
         attr(p0, "class", "flex-auto");
         attr(p1, "class", "flex-auto");
+        attr(
+          p3,
+          "class",
+          /*descritionText*/
+          ctx[2]
+        );
+        attr(div, "class", "flex-auto");
       },
       m(target, anchor) {
         insert(target, li0, anchor);
@@ -16940,6 +17192,15 @@
         append(li1, p1);
         append(li1, t4);
         mount_component(slidetoggle1, li1, null);
+        insert(target, t5, anchor);
+        insert(target, li2, anchor);
+        append(li2, div);
+        append(div, p2);
+        append(div, t7);
+        append(div, p3);
+        append(p3, t8);
+        append(li2, t9);
+        mount_component(slidetoggle2, li2, null);
         current = true;
       },
       p(ctx2, dirty) {
@@ -16961,16 +17222,36 @@
           add_flush_callback(() => updating_checked_1 = false);
         }
         slidetoggle1.$set(slidetoggle1_changes);
+        if (!current || dirty & /*descritionText*/
+        4) {
+          attr(
+            p3,
+            "class",
+            /*descritionText*/
+            ctx2[2]
+          );
+        }
+        const slidetoggle2_changes = {};
+        if (!updating_checked_2 && dirty & /*$store*/
+        64) {
+          updating_checked_2 = true;
+          slidetoggle2_changes.checked = /*$store*/
+          ctx2[6].likeIllust;
+          add_flush_callback(() => updating_checked_2 = false);
+        }
+        slidetoggle2.$set(slidetoggle2_changes);
       },
       i(local) {
         if (current) return;
         transition_in(slidetoggle0.$$.fragment, local);
         transition_in(slidetoggle1.$$.fragment, local);
+        transition_in(slidetoggle2.$$.fragment, local);
         current = true;
       },
       o(local) {
         transition_out(slidetoggle0.$$.fragment, local);
         transition_out(slidetoggle1.$$.fragment, local);
+        transition_out(slidetoggle2.$$.fragment, local);
         current = false;
       },
       d(detaching) {
@@ -16978,27 +17259,35 @@
           detach(li0);
           detach(t2);
           detach(li1);
+          detach(t5);
+          detach(li2);
         }
         destroy_component(slidetoggle0);
         destroy_component(slidetoggle1);
+        destroy_component(slidetoggle2);
       }
     };
   }
   function create_if_block_2$1(ctx) {
     let li;
-    let div;
-    let p;
+    let div1;
+    let div0;
+    let p0;
     let t1;
+    let p1;
+    let t2_value = t("setting.others.options.option_does_not_apply_to_batch_download") + "";
+    let t2;
+    let t3;
     let slidetoggle;
     let updating_checked;
-    let t2;
+    let t4;
     let show_if = (
       /*$store*/
       ctx[6].addBookmark && env.isPixiv()
     );
     let current;
     function slidetoggle_checked_binding_1(value) {
-      ctx[13](value);
+      ctx[14](value);
     }
     let slidetoggle_props = { name: "fsa-enable", size: "sm" };
     if (
@@ -17014,28 +17303,51 @@
     return {
       c() {
         li = element("li");
-        div = element("div");
-        p = element("p");
-        p.textContent = `${t("setting.others.options.add_bookmark_when_download")}`;
+        div1 = element("div");
+        div0 = element("div");
+        p0 = element("p");
+        p0.textContent = `${t("setting.others.options.add_bookmark_when_downloading")}`;
         t1 = space();
+        p1 = element("p");
+        t2 = text(t2_value);
+        t3 = space();
         create_component(slidetoggle.$$.fragment);
-        t2 = space();
+        t4 = space();
         if (if_block) if_block.c();
-        attr(p, "class", "flex-auto");
-        attr(div, "class", "flex items-center");
+        attr(
+          p1,
+          "class",
+          /*descritionText*/
+          ctx[2]
+        );
+        attr(div0, "class", "flex-auto");
+        attr(div1, "class", "flex items-center");
         attr(li, "class", "flex-col !items-stretch");
       },
       m(target, anchor) {
         insert(target, li, anchor);
-        append(li, div);
-        append(div, p);
-        append(div, t1);
-        mount_component(slidetoggle, div, null);
-        append(li, t2);
+        append(li, div1);
+        append(div1, div0);
+        append(div0, p0);
+        append(div0, t1);
+        append(div0, p1);
+        append(p1, t2);
+        append(div1, t3);
+        mount_component(slidetoggle, div1, null);
+        append(li, t4);
         if (if_block) if_block.m(li, null);
         current = true;
       },
       p(ctx2, dirty) {
+        if (!current || dirty & /*descritionText*/
+        4) {
+          attr(
+            p1,
+            "class",
+            /*descritionText*/
+            ctx2[2]
+          );
+        }
         const slidetoggle_changes = {};
         if (!updating_checked && dirty & /*$store*/
         64) {
@@ -17107,7 +17419,7 @@
     let ul_class_value;
     let current;
     function slidetoggle0_checked_binding_1(value) {
-      ctx[14](value);
+      ctx[15](value);
     }
     let slidetoggle0_props = { name: "fsa-enable", size: "sm" };
     if (
@@ -17120,7 +17432,7 @@
     slidetoggle0 = new SlideToggle({ props: slidetoggle0_props });
     binding_callbacks.push(() => bind(slidetoggle0, "checked", slidetoggle0_checked_binding_1));
     function slidetoggle1_checked_binding_1(value) {
-      ctx[15](value);
+      ctx[16](value);
     }
     let slidetoggle1_props = { name: "fsa-enable", size: "sm" };
     if (
@@ -17235,7 +17547,7 @@
     let updating_checked;
     let current;
     function slidetoggle_checked_binding_2(value) {
-      ctx[16](value);
+      ctx[17](value);
     }
     let slidetoggle_props = { name: "mix-effect", size: "sm" };
     if (
@@ -17415,7 +17727,7 @@
             input,
             "input",
             /*input_input_handler*/
-            ctx[17]
+            ctx[18]
           );
           mounted = true;
         }
@@ -17639,6 +17951,12 @@
         configStore.set($store);
       }
     }
+    function slidetoggle2_checked_binding(value) {
+      if ($$self.$$.not_equal($store.likeIllust, value)) {
+        $store.likeIllust = value;
+        configStore.set($store);
+      }
+    }
     function slidetoggle_checked_binding_1(value) {
       if ($$self.$$.not_equal($store.addBookmark, value)) {
         $store.addBookmark = value;
@@ -17668,7 +17986,7 @@
       configStore.set($store);
     }
     $$self.$$set = ($$new_props) => {
-      $$invalidate(18, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+      $$invalidate(19, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
       if ("bg" in $$new_props) $$invalidate(7, bg = $$new_props.bg);
       if ("border" in $$new_props) $$invalidate(0, border = $$new_props.border);
       if ("padding" in $$new_props) $$invalidate(8, padding = $$new_props.padding);
@@ -17696,6 +18014,7 @@
       slidetoggle_checked_binding,
       slidetoggle0_checked_binding,
       slidetoggle1_checked_binding,
+      slidetoggle2_checked_binding,
       slidetoggle_checked_binding_1,
       slidetoggle0_checked_binding_1,
       slidetoggle1_checked_binding_1,
@@ -18694,19 +19013,13 @@
     const log = writable();
     const { requestDownload, cancelDownloadRequest, processNextDownload } = useChannel();
     const tasks2 = [];
-    const failedTasks = [];
-    const unavaliableTasks = [];
+    const failedIdTasks = [];
+    const unavaliableIdTasks = [];
+    const failedMetaTasks = [];
+    const unavaliableMetaTasks = [];
     let controller;
     let downloadCompleted;
     let downloadAbort;
-    const readonlyStore = {
-      artworkCount: readonly(artworkCount),
-      successd: readonly(successd),
-      failed: readonly(failed),
-      excluded: readonly(excluded),
-      downloading: readonly(downloading),
-      log: readonly(log)
-    };
     let $pageStart;
     let $pageEnd;
     let $downloadAllPages;
@@ -18761,14 +19074,19 @@
     checkIfDownloadCompleted.subscribe((isDone) => {
       isDone && (downloadCompleted == null ? void 0 : downloadCompleted());
     });
+    function isStringArray(arr) {
+      return typeof arr[0] === "string";
+    }
     function reset() {
       artworkCount.set(0);
       successd.set([]);
       failed.set([]);
       excluded.set([]);
       tasks2.length = 0;
-      failedTasks.length = 0;
-      unavaliableTasks.length = 0;
+      failedIdTasks.length = 0;
+      unavaliableIdTasks.length = 0;
+      failedMetaTasks.length = 0;
+      unavaliableMetaTasks.length = 0;
       controller = null;
       downloadCompleted = () => {
       };
@@ -18817,12 +19135,16 @@
         return val;
       });
     }
-    function addExcluded(id) {
+    function addExcluded(idOrMeta) {
       excluded.update((val) => {
-        if (Array.isArray(id)) {
-          val.push(...id);
-          writeLog("Info", `${id.length} was excluded...`);
+        if (Array.isArray(idOrMeta)) {
+          isStringArray(idOrMeta) ? val.push(...idOrMeta) : val.push(...idOrMeta.map((meta) => meta.id));
+          writeLog(
+            "Info",
+            `${idOrMeta.length + " task" + (idOrMeta.length > 1 ? "s were" : " was")} excluded...`
+          );
         } else {
+          const id = typeof idOrMeta === "string" ? idOrMeta : idOrMeta.id;
           val.push(id);
           writeLog("Info", `${id} was excluded...`);
         }
@@ -18889,11 +19211,14 @@
     }
     async function batchDownload(fnId, ...restArgs) {
       setDownloading(true);
-      writeLog("Info", "Start download...");
+      writeLog("Info", "Download start...");
       reset();
+      let downloadError;
+      const { beforeDownload, afterDownload } = downloaderConfig;
+      let generaotrAfterDownload = void 0;
+      let generator;
       controller = new AbortController();
       const signal = controller.signal;
-      let downloadError;
       signal.addEventListener(
         "abort",
         () => {
@@ -18903,26 +19228,44 @@
         },
         { once: true }
       );
-      let generator;
       try {
         const pageIdItem = getGenPageIdItem(fnId);
         if (!pageIdItem || !("fn" in pageIdItem))
           throw new Error("Invalid generator id: " + fnId);
+        const {
+          filterInGenerator,
+          beforeDownload: generaotrBeforeDownload,
+          afterDownload: afterDownload2
+        } = pageIdItem;
+        generaotrAfterDownload = afterDownload2;
+        typeof beforeDownload === "function" && await beforeDownload();
+        typeof generaotrBeforeDownload === "function" && await generaotrBeforeDownload();
         generator = getGenerator(pageIdItem, ...restArgs);
         writeLog("Info", "Waiting for other downloads to finish...");
         await requestDownload();
-        await dispatchDownload(generator, pageIdItem.filterWhenGenerateIngPage, signal);
-        if ($retryFailed && failedTasks.length) {
-          writeLog("Info", "Retry...");
-          generator = retryGenerator(
-            get_store_value(artworkCount),
-            failedTasks.slice(),
-            unavaliableTasks.slice()
-          );
-          failedTasks.length = 0;
-          unavaliableTasks.length = 0;
+        writeLog("Info", "Starting...");
+        await dispatchDownload(generator, filterInGenerator, signal);
+        if ($retryFailed && (failedIdTasks.length || failedMetaTasks.length)) {
+          if (failedIdTasks.length) {
+            generator = getIdRetryGenerator(
+              get_store_value(artworkCount),
+              failedIdTasks.slice(),
+              unavaliableIdTasks.slice()
+            );
+            failedIdTasks.length = 0;
+            unavaliableIdTasks.length = 0;
+          } else if (failedMetaTasks.length) {
+            generator = getMetaRetryGenerator(
+              get_store_value(artworkCount),
+              failedMetaTasks.slice(),
+              unavaliableMetaTasks.slice()
+            );
+            failedMetaTasks.length = 0;
+            unavaliableMetaTasks.length = 0;
+          }
           failed.set([]);
-          await dispatchDownload(generator, pageIdItem.filterWhenGenerateIngPage, signal);
+          writeLog("Info", "Retry...");
+          await dispatchDownload(generator, filterInGenerator, signal);
         }
         writeLog("Info", "Download complete.");
       } catch (error) {
@@ -18935,15 +19278,17 @@
           writeLog("Error", error);
         }
       }
+      typeof generaotrAfterDownload === "function" && generaotrAfterDownload();
+      typeof afterDownload === "function" && afterDownload();
       setDownloading(false);
       processNextDownload();
       if (downloadError) throw downloadError;
     }
     function getGenPageIdItem(fnId) {
-      const { pageMatch } = downloaderConfig;
-      for (const key in pageMatch) {
+      const { pageOption } = downloaderConfig;
+      for (const key in pageOption) {
         if (key === fnId) {
-          return pageMatch[key];
+          return pageOption[key];
         }
       }
     }
@@ -18952,23 +19297,32 @@
       if (!$downloadAllPages && $pageEnd < $pageStart)
         throw new Error("End page must not be less than the start page.");
       const pageRange = $downloadAllPages ? null : [$pageStart, $pageEnd];
-      if (item.filterWhenGenerateIngPage) {
-        generator = item.fn(pageRange, checkValidity, ...restArgs);
-      } else {
+      if ("filterInGenerator" in item && !item.filterInGenerator) {
         generator = item.fn(pageRange, ...restArgs);
+      } else {
+        generator = item.fn(pageRange, checkValidity, ...restArgs);
       }
       return generator;
     }
-    function* retryGenerator(total, failedArtworks, unavaliableTasks2) {
+    function* getIdRetryGenerator(total, failedArtworks, unavaliableTasks) {
       yield {
         total,
         page: 0,
         avaliable: failedArtworks,
         invalid: [],
-        unavaliable: unavaliableTasks2
+        unavaliable: unavaliableTasks
       };
     }
-    async function dispatchDownload(generator, filterWhenGenerateIngPage, signal) {
+    function* getMetaRetryGenerator(total, failedArtworks, unavaliableTasks) {
+      yield {
+        total,
+        page: 0,
+        avaliable: failedArtworks,
+        invalid: [],
+        unavaliable: unavaliableTasks
+      };
+    }
+    async function dispatchDownload(generator, filterInGenerator, signal) {
       signal.throwIfAborted();
       const waitUntilDownloadComplete = new Promise((resolve, reject) => {
         downloadCompleted = resolve;
@@ -18979,14 +19333,23 @@
       const dlPromise = [];
       let result;
       let status429 = false;
-      const failedHanlderFactory = (id) => {
+      const failedHanlderFactory = (idOrMeta) => {
         return (reason) => {
           if (signal.aborted) return;
-          addFailed({ id, reason });
-          reason && logger.error(reason);
-          reason !== ERROR_MASKED && failedTasks.push(id);
-          if (reason instanceof RequestError && reason.status === 429) {
-            status429 = true;
+          let isFailedTask = false;
+          if (reason) {
+            isFailedTask = reason !== ERROR_MASKED;
+            if (reason instanceof RequestError && reason.status === 429) {
+              status429 = true;
+            }
+            logger.error(reason);
+          }
+          if (typeof idOrMeta === "string") {
+            addFailed({ id: idOrMeta, reason });
+            isFailedTask && failedIdTasks.push(idOrMeta);
+          } else {
+            addFailed({ id: idOrMeta.id, reason });
+            isFailedTask && failedMetaTasks.push(idOrMeta);
           }
         };
       };
@@ -18997,36 +19360,51 @@
         setArtworkCount(total);
         invalid.length && addExcluded(invalid);
         if (unavaliable.length) {
-          addFailed(unavaliable.map((id) => ({ id, reason: ERROR_MASKED })));
-          unavaliableTasks.push(...unavaliable);
+          if (isStringArray(unavaliable)) {
+            addFailed(unavaliable.map((id) => ({ id, reason: ERROR_MASKED })));
+            unavaliableIdTasks.push(...unavaliable);
+          } else {
+            addFailed(unavaliable.map((meta) => ({ id: meta.id, reason: ERROR_MASKED })));
+            unavaliableMetaTasks.push(...unavaliable);
+          }
         }
         if (!avaliable.length) await Promise.race([sleep(1500), waitUntilDownloadComplete]);
-        for (const id of avaliable) {
+        for (const idOrMeta of avaliable) {
+          let artworkMeta;
+          let metaId;
+          let taskId;
           if (status429) {
             writeLog("Error", new Error("Http status: 429, wait for 30 seconds."));
             await Promise.race([sleep(3e4), waitUntilDownloadComplete]);
             status429 = false;
           }
-          const artworkMeta = await parseMetaByArtworkId(id).catch(failedHanlderFactory(id));
-          signal.throwIfAborted();
-          if (!artworkMeta) continue;
-          if (!filterWhenGenerateIngPage) {
-            const isValid = await checkValidity(artworkMeta);
-            if (!isValid) {
-              addExcluded(id);
-              await Promise.race([sleep(1e3), waitUntilDownloadComplete]);
-              continue;
+          if (typeof idOrMeta === "string") {
+            metaId = idOrMeta;
+            artworkMeta = await parseMetaByArtworkId(metaId).catch(failedHanlderFactory(metaId));
+            signal.throwIfAborted();
+            if (!artworkMeta) continue;
+            if (!filterInGenerator) {
+              const isValid = await checkValidity(artworkMeta);
+              if (!isValid) {
+                addExcluded(metaId);
+                await Promise.race([sleep(1e3), waitUntilDownloadComplete]);
+                continue;
+              }
             }
+            taskId = generateTaskID(metaId);
+          } else {
+            artworkMeta = idOrMeta;
+            metaId = artworkMeta.id;
+            taskId = generateTaskID(metaId);
           }
-          writeLog("Add", id);
-          const taskId = generateTaskID(id);
+          writeLog("Add", metaId);
+          tasks2.push(taskId);
           const processDownload = downloadByArtworkId(artworkMeta, taskId).then(function handleSucccess() {
-            !signal.aborted && addSuccessd(id);
-          }, failedHanlderFactory(id)).finally(function removeTask() {
-            const idx = tasks2.findIndex((storeId) => storeId === id);
+            !signal.aborted && addSuccessd(metaId);
+          }, failedHanlderFactory(idOrMeta)).finally(function removeTask() {
+            const idx = tasks2.findIndex((storeId) => storeId === taskId);
             idx !== -1 && tasks2.splice(idx, 1);
           });
-          tasks2.push(taskId);
           dlPromise.push(processDownload);
           if (dlPromise.length >= THRESHOLD) {
             await Promise.race([...dlPromise, waitUntilDownloadComplete]);
@@ -19051,17 +19429,23 @@
           downloaderConfig[key] = val;
         }
       }
-      return definition;
+      return batchDownloadDefinition;
     }
-    function definition() {
-      return {
-        ...readonlyStore,
-        batchDownload,
-        abort,
-        overwrite
-      };
+    function batchDownloadDefinition() {
+      return batchDownloadStore;
     }
-    return definition;
+    const batchDownloadStore = {
+      artworkCount: readonly(artworkCount),
+      successd: readonly(successd),
+      failed: readonly(failed),
+      excluded: readonly(excluded),
+      downloading: readonly(downloading),
+      log: readonly(log),
+      batchDownload,
+      abort,
+      overwrite
+    };
+    return batchDownloadDefinition;
   }
   const downloadSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z"></path></svg>`;
   const stopSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm101.8-262.2L295.6 256l62.2 62.2c4.7 4.7 4.7 12.3 0 17l-22.6 22.6c-4.7 4.7-12.3 4.7-17 0L256 295.6l-62.2 62.2c-4.7 4.7-12.3 4.7-17 0l-22.6-22.6c-4.7-4.7-4.7-12.3 0-17l62.2-62.2-62.2-62.2c-4.7-4.7-4.7-12.3 0-17l22.6-22.6c4.7-4.7 12.3-4.7 17 0l62.2 62.2 62.2-62.2c4.7-4.7 12.3-4.7 17 0l22.6 22.6c4.7 4.7 4.7 12.3 0 17z"></path></svg>
@@ -20459,13 +20843,13 @@
     let dispose;
     function select_block_type_2(ctx2, dirty) {
       if (
-        /*pageConfig*/
-        ctx2[1] && /*pageConfig*/
+        /*batchDownloadEntries*/
+        ctx2[1] && /*batchDownloadEntries*/
         ctx2[1].length > 1
       ) return create_if_block_7;
       if (
-        /*pageConfig*/
-        ctx2[1] && "fn" in /*pageConfig*/
+        /*batchDownloadEntries*/
+        ctx2[1] && "fn" in /*batchDownloadEntries*/
         ctx2[1][0][1]
       ) return create_if_block_9;
     }
@@ -20596,7 +20980,7 @@
     let t0;
     let span;
     let t1_value = (
-      /*pageConfig*/
+      /*batchDownloadEntries*/
       ctx[1][0][1].name + ""
     );
     let t1;
@@ -20630,8 +21014,8 @@
         }
       },
       p(ctx2, dirty) {
-        if (dirty[0] & /*pageConfig*/
-        2 && t1_value !== (t1_value = /*pageConfig*/
+        if (dirty[0] & /*batchDownloadEntries*/
+        2 && t1_value !== (t1_value = /*batchDownloadEntries*/
         ctx2[1][0][1].name + "")) set_data(t1, t1_value);
       },
       d(detaching) {
@@ -20646,7 +21030,7 @@
   function create_if_block_7(ctx) {
     let div;
     let each_value = ensure_array_like(
-      /*pageConfig*/
+      /*batchDownloadEntries*/
       ctx[1]
     );
     let each_blocks = [];
@@ -20670,10 +21054,10 @@
         }
       },
       p(ctx2, dirty) {
-        if (dirty[0] & /*startDownload, pageConfig*/
+        if (dirty[0] & /*startDownload, batchDownloadEntries*/
         16777218) {
           each_value = ensure_array_like(
-            /*pageConfig*/
+            /*batchDownloadEntries*/
             ctx2[1]
           );
           let i;
@@ -20749,7 +21133,7 @@
       },
       p(new_ctx, dirty) {
         ctx = new_ctx;
-        if (dirty[0] & /*pageConfig*/
+        if (dirty[0] & /*batchDownloadEntries*/
         2 && t1_value !== (t1_value = /*item*/
         ctx[81].name + "")) set_data(t1, t1_value);
       },
@@ -21463,24 +21847,24 @@
     function onUrlChange(url2) {
       logger.info("Navigating to ", url2);
       if (!downloaderConfig) return;
-      const { pageMatch } = downloaderConfig;
-      const generatorMatches = [];
-      for (const key in pageMatch) {
-        const item = pageMatch[key];
+      const { pageOption } = downloaderConfig;
+      const generatorOptionEntries = [];
+      for (const key in pageOption) {
+        const item = pageOption[key];
         const { match: matchPattern } = item;
         if (typeof matchPattern === "string") {
-          url2.match(matchPattern) && generatorMatches.push([key, item]);
+          url2.match(matchPattern) && generatorOptionEntries.push([key, item]);
         } else if (typeof matchPattern === "function") {
-          matchPattern(url2) && generatorMatches.push([key, item]);
+          matchPattern(url2) && generatorOptionEntries.push([key, item]);
         } else {
-          matchPattern.test(url2) && generatorMatches.push([key, item]);
+          matchPattern.test(url2) && generatorOptionEntries.push([key, item]);
         }
       }
-      if (generatorMatches.length) {
-        $$invalidate(1, pageConfig = generatorMatches);
+      if (generatorOptionEntries.length) {
+        $$invalidate(1, batchDownloadEntries = generatorOptionEntries);
         updateAvatarSrc(url2);
       } else {
-        $$invalidate(1, pageConfig = null);
+        $$invalidate(1, batchDownloadEntries = null);
         updateAvatarAfterDownload = "";
       }
     }
@@ -21519,7 +21903,7 @@
     }
     let { downloaderConfig } = $$props;
     let { useBatchDownload } = $$props;
-    let pageConfig;
+    let batchDownloadEntries;
     const { selectedFilters, blacklistTag, whitelistTag, downloadAllPages, pageStart, pageEnd, retryFailed } = optionStore;
     component_subscribe($$self, selectedFilters, (value) => $$invalidate(16, $selectedFilters = value));
     component_subscribe($$self, blacklistTag, (value) => $$invalidate(20, $blacklistTag = value));
@@ -21554,7 +21938,7 @@
         window.addEventListener("beforeunload", beforeUnloadHandler);
       } else {
         window.removeEventListener("beforeunload", beforeUnloadHandler);
-        updateAvatarAfterDownload && pageConfig && updateAvatarSrc(updateAvatarAfterDownload);
+        updateAvatarAfterDownload && batchDownloadEntries && updateAvatarSrc(updateAvatarAfterDownload);
       }
     });
     const $$binding_groups = [[]];
@@ -21606,7 +21990,7 @@
       startDownload(id);
     };
     const click_handler_1 = () => {
-      startDownload((pageConfig == null ? void 0 : pageConfig[0][0]) ?? "");
+      startDownload((batchDownloadEntries == null ? void 0 : batchDownloadEntries[0][0]) ?? "");
     };
     function div1_binding($$value) {
       binding_callbacks[$$value ? "unshift" : "push"](() => {
@@ -21660,9 +22044,9 @@
       if ("useBatchDownload" in $$props2) $$invalidate(39, useBatchDownload = $$props2.useBatchDownload);
     };
     $$self.$$.update = () => {
-      if ($$self.$$.dirty[0] & /*$downloading, pageConfig*/
+      if ($$self.$$.dirty[0] & /*$downloading, batchDownloadEntries*/
       34) {
-        $$invalidate(3, ifDownloaderCanShow = $downloading || !!pageConfig);
+        $$invalidate(3, ifDownloaderCanShow = $downloading || !!batchDownloadEntries);
       }
       if ($$self.$$.dirty[0] & /*ifDownloaderCanShow*/
       8) {
@@ -21686,7 +22070,7 @@
     };
     return [
       downloaderConfig,
-      pageConfig,
+      batchDownloadEntries,
       processed,
       ifDownloaderCanShow,
       $artworkCount,
@@ -22255,8 +22639,94 @@
   }
   customElements.define(ArtworkButton.tagNameLowerCase, ArtworkButton);
   class Rule34 extends SiteInject {
-    static get hostname() {
-      return "rule34.xxx";
+    constructor() {
+      super(...arguments);
+      __publicField(this, "useBatchDownload", this.app.initBatchDownloader({
+        metaType: {},
+        avatar: "/images/r34chibi.png",
+        filterOption: {
+          filters: [
+            {
+              id: "exclude_downloaded",
+              type: "exclude",
+              name: t("downloader.category.filter.exclude_downloaded"),
+              checked: false,
+              fn(meta) {
+                return !!meta.id && historyDb.has(meta.id);
+              }
+            },
+            {
+              id: "allow_image",
+              type: "include",
+              name: t("downloader.category.filter.image"),
+              checked: true,
+              fn(meta) {
+                return !!meta.tags && !meta.tags.includes("video");
+              }
+            },
+            {
+              id: "allow_video",
+              type: "include",
+              name: t("downloader.category.filter.video"),
+              checked: true,
+              fn(meta) {
+                return !!meta.tags && meta.tags.includes("video");
+              }
+            }
+          ],
+          enableTagFilter: true
+        },
+        pageOption: {
+          favorites: {
+            name: "Favorites",
+            match: /(?=.*page=favorites)(?=.*s=view)(?=.*id=[0-9]+)/,
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity, userId) => {
+              userId ?? (userId = new RegExp("(?<=id=)[0-9]+").exec(location.search)[0]);
+              return rule34Parser.favoriteGenerator(pageRange, checkValidity, userId);
+            }
+          },
+          pools: {
+            name: "Pools",
+            match: /(?=.*page=pool)(?=.*s=show)(?=.*id=[0-9]+)/,
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity, poolId) => {
+              poolId ?? (poolId = new RegExp("(?<=id=)[0-9]+").exec(location.search)[0]);
+              return rule34Parser.poolGenerator(pageRange, checkValidity, poolId);
+            }
+          },
+          posts: {
+            name: "Posts",
+            match: /(?=.*page=post)(?=.*s=list)/,
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity, tags) => {
+              tags ?? (tags = new URLSearchParams(location.search).get("tags") ?? "all");
+              return rule34Parser.postGenerator(pageRange, checkValidity, tags);
+            }
+          }
+        },
+        parseMetaByArtworkId(id) {
+          return rule34Parser.parse(id);
+        },
+        async downloadByArtworkId(meta, taskId) {
+          downloader.dirHandleCheck();
+          const { id, tags, artist, title, source, rating } = meta;
+          const downloadConfigs = new Rule34DownloadConfig(meta).getDownloadConfig();
+          downloadConfigs.taskId = taskId;
+          await downloader.download(downloadConfigs);
+          historyDb.add({
+            pid: Number(id),
+            user: artist,
+            title,
+            tags,
+            source,
+            rating
+          });
+        },
+        onDownloadAbort(taskIds) {
+          downloader.abort(taskIds);
+        }
+      }));
     }
     inject() {
       super.inject();
@@ -22275,20 +22745,21 @@
     }
     createThumbnailBtn() {
       const btnContainers = document.querySelectorAll(
-        ".thumb:not(.blacklisted-image) > a:first-child"
+        ".thumb > a:first-child:not(:has(.blacklist-img))"
       );
       if (!btnContainers.length) return;
       btnContainers.forEach((el) => {
-        el.style.display = "inline-block";
-        el.style.position = "relative";
+        el.setAttribute(
+          "style",
+          "position: relative; align-self: center; width: auto; height: auto;"
+        );
         const imgEl = el.querySelector("img");
-        imgEl.style.boxSizing = "border-box";
-        let aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
-        aspectRatio > 1 && (el.style.height = "inherit");
-        imgEl.onload = () => {
-          aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
+        const setContainerHeight = () => {
+          const aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
           aspectRatio > 1 && (el.style.height = "inherit");
         };
+        setContainerHeight();
+        imgEl.onload = setContainerHeight;
         const idMathch = new RegExp("(?<=&id=)\\d+").exec(el.href);
         if (!idMathch) return;
         const id = idMathch[0];
@@ -22320,9 +22791,34 @@
     getFilenameTemplate() {
       return ["{artist}", "{character}", "{id}", "{date}"];
     }
+    getBlacklistTags() {
+      const [tagsStr] = new RegExp("(?<=tag_blacklist=).*?(?=;|$)").exec(document.cookie) ?? [];
+      if (!tagsStr) return [];
+      const tags = decodeURIComponent(decodeURIComponent(tagsStr));
+      return tags.split(" ");
+    }
+    static get hostname() {
+      return "rule34.xxx";
+    }
   }
-  function createDanbooruApi() {
-    async function requestJson(url2, init2) {
+  class DanbooruApi extends ApiBase {
+    // Danbooru uses some custom status codes in the 4xx and 5xx range:
+    // 200 OK: Request was successful
+    // 204 No Content: Request was successful (returned by create actions)
+    // 400 Bad Request: The given parameters could not be parsed
+    // 401 Unauthorized: Authentication failed
+    // 403 Forbidden: Access denied (see help:users for permissions information)
+    // 404 Not Found: Not found
+    // 410 Gone: Pagination limit (see help:users for pagination limits)
+    // 420 Invalid Record: Record could not be saved
+    // 422 Locked: The resource is locked and cannot be modified
+    // 423 Already Exists: Resource already exists
+    // 424 Invalid Parameters: The given parameters were invalid
+    // 429 User Throttled: User is throttled, try again later (see help:users for API limits)
+    // 500 Internal Server Error: A database timeout, or some unknown error occurred on the server
+    // 502 Bad Gateway: Server cannot currently handle the request, try again later (returned during heavy load)
+    // 503 Service Unavailable: Server cannot currently handle the request, try again later (returned during downbooru)
+    async getJSON(url2, init2) {
       logger.info("Fetch url:", url2);
       const res = await fetch(url2, init2);
       if (res.status >= 500) throw new RequestError(res.url, res.status);
@@ -22333,50 +22829,41 @@
       }
       return data;
     }
-    return {
-      async getPool(id) {
-        return await requestJson(`/pools/${id}.json`);
-      },
-      async getPost(id) {
-        return await requestJson(`/posts/${id}.json`);
-      },
-      async getPostList(param) {
-        const { tags = [], limit = 0, page = 0 } = param ?? {};
-        const searchParam = new URLSearchParams();
-        (tags == null ? void 0 : tags.length) && searchParam.append("tags", tags.join(" "));
-        limit && searchParam.append("limit", String(limit));
-        page && searchParam.append("page", String(page));
-        return await requestJson(`/posts.json?${searchParam.toString()}`);
-      },
-      async getArtistCommentary(id) {
-        return await requestJson(`/posts/${id}/artist_commentary.json`);
-      },
-      async getFavoriteGroups(id) {
-        return await requestJson(`/favorite_groups/${id}.json`);
-      },
-      async getProfile() {
-        return await requestJson(`/profile.json`);
-      },
-      async addFavorite(id, token) {
-        const res = await fetch(`/favorites?post_id=${id}`, {
-          method: "POST",
-          headers: {
-            "X-Csrf-Token": token
-          }
-        });
-        if (!res.ok) throw new RequestError(res.url, res.status);
-        return await res.text();
-      },
-      async getDoc(url2) {
-        logger.info("Fetch url:", url2);
-        const res = await fetch(url2);
-        if (!res.ok) throw new RequestError(res.url, res.status);
-        const html = await res.text();
-        return new DOMParser().parseFromString(html, "text/html");
-      }
-    };
+    async getPool(id) {
+      return await this.getJSON(`/pools/${id}.json`);
+    }
+    async getPost(id) {
+      return await this.getJSON(`/posts/${id}.json`);
+    }
+    async getPostList(param) {
+      const { tags = [], limit = 0, page = 0 } = param ?? {};
+      const searchParam = new URLSearchParams();
+      (tags == null ? void 0 : tags.length) && searchParam.append("tags", tags.join(" "));
+      limit && searchParam.append("limit", String(limit));
+      page && searchParam.append("page", String(page));
+      return await this.getJSON(`/posts.json?${searchParam.toString()}`);
+    }
+    async getArtistCommentary(id) {
+      return await this.getJSON(`/posts/${id}/artist_commentary.json`);
+    }
+    async getFavoriteGroups(id) {
+      return await this.getJSON(`/favorite_groups/${id}.json`);
+    }
+    async getProfile() {
+      return await this.getJSON(`/profile.json`);
+    }
+    async addFavorite(id, token) {
+      const res = await fetch(`/favorites?post_id=${id}`, {
+        method: "POST",
+        headers: {
+          "X-Csrf-Token": token
+        }
+      });
+      if (!res.ok) throw new RequestError(res.url, res.status);
+      return await res.text();
+    }
   }
-  const danbooruApi = createDanbooruApi();
+  const danbooruApi = new DanbooruApi();
   const danbooruParser = {
     async parse(id, params) {
       const { type } = params;
@@ -22386,8 +22873,83 @@
         return this.parseIdByApi(id);
       }
     },
+    /**
+     * https://github.com/danbooru/danbooru/blob/master/app/javascript/src/javascripts/blacklists.js
+     */
+    _parseBlacklistItem(tags) {
+      const tagsArr = tags.split(" ");
+      const require2 = [];
+      const exclude = [];
+      const optional = [];
+      let min_score = null;
+      tagsArr.forEach((tag) => {
+        if (tag.charAt(0) === "-") {
+          exclude.push(tag.slice(1));
+        } else if (tag.charAt(0) === "~") {
+          optional.push(tag.slice(1));
+        } else if (tag.match(/^score:<.+/)) {
+          const score = tag.match(/^score:<(.+)/)[1];
+          min_score = Number.parseInt(score);
+        } else {
+          require2.push(tag);
+        }
+      });
+      return { tags, require: require2, exclude, optional, min_score };
+    },
+    _getMatchTags(data) {
+      const { tag_string, rating, uploader_id, is_deleted, is_flagged, is_pending } = data;
+      const matchTags = tag_string.match(/\S+/g) ?? [];
+      matchTags.push("rating:" + rating);
+      matchTags.push("uploaderid:" + uploader_id);
+      is_deleted && matchTags.push("status:deleted");
+      is_flagged && matchTags.push("status:flagged");
+      is_pending && matchTags.push("status:pending");
+      return matchTags;
+    },
+    _getMatchTagsByEl(el) {
+      const splitWordsRe = /\S+/g;
+      const { tags = "", pools, rating, uploaderId, flags } = el.dataset;
+      const matchTags = tags.match(splitWordsRe) ?? [];
+      pools && matchTags.push(...pools.match(splitWordsRe) ?? []);
+      rating && matchTags.push("rating:" + rating);
+      uploaderId && matchTags.push("uploaderid:" + uploaderId);
+      if (flags) {
+        const status = flags.match(splitWordsRe);
+        status && status.forEach((val) => matchTags.push("status:" + val));
+      }
+      return matchTags;
+    },
+    async parseBlacklist(type, blacklistTags) {
+      var _a;
+      let tagStr;
+      let separator;
+      if (type === "html") {
+        tagStr = ((_a = document.querySelector('meta[name="blacklisted-tags"]')) == null ? void 0 : _a.content) ?? "";
+        separator = /,/;
+      } else if (type === "api") {
+        tagStr = (await danbooruApi.getProfile()).blacklisted_tags ?? "";
+        separator = /\n+/;
+      } else {
+        tagStr = typeof blacklistTags === "string" ? blacklistTags : "";
+        separator = /\n+/;
+      }
+      if (!tagStr) return [];
+      const tags = tagStr.replace(/(rating:\w)\w+/gi, "$1").toLowerCase().split(separator).filter((tag) => tag.trim() !== "");
+      return tags.map(this._parseBlacklistItem);
+    },
+    isBlacklisted(matchTags, blacklist) {
+      const scoreRe = /score:(-?[0-9]+)/;
+      const scoreMatch = (matchTags.find((tag) => scoreRe.test(tag)) ?? "").match(scoreRe);
+      const score = scoreMatch ? +scoreMatch[1] : scoreMatch;
+      return blacklist.some((blacklistItem) => {
+        const { require: require2, exclude, optional, min_score } = blacklistItem;
+        const hasTag = (tag) => matchTags.includes(tag);
+        const scoreTest = min_score === null || score === null || score < min_score;
+        return require2.every(hasTag) && scoreTest && (!optional.length || intersect(matchTags, optional).length) && !exclude.some(hasTag);
+      });
+    },
     async parseIdByHtml(id) {
-      var _a, _b, _c;
+      var _a, _b;
       const doc = await danbooruApi.getDoc("/posts/" + id);
       const src = (_a = doc.querySelector("a[download]")) == null ? void 0 : _a.href;
       if (!src) throw new Error("Can not get media src");
@@ -22424,11 +22986,11 @@
         });
       }
       const postDate = ((_b = doc.querySelector("time")) == null ? void 0 : _b.getAttribute("datetime")) ?? "";
-      const source = (_c = doc.querySelector("li#post-info-source > a")) == null ? void 0 : _c.href;
-      if (source) tags.push("source:" + source);
       let comment = "";
       const commentEl = doc.querySelector("#original-artist-commentary");
       commentEl && (comment = getElementText(commentEl));
+      const imageContainer = doc.querySelector("section.image-container");
+      const { source = "", rating = "" } = imageContainer.dataset;
       return {
         id,
         src,
@@ -22438,7 +23000,10 @@
         title,
         comment,
         tags,
-        createDate: postDate
+        createDate: postDate,
+        source,
+        rating,
+        matchTags: this._getMatchTagsByEl(imageContainer)
       };
     },
     async parseIdByApi(id) {
@@ -22459,7 +23024,8 @@
         tag_string_copyright,
         tag_string_general,
         tag_string_meta,
-        source
+        source,
+        rating
       } = postDataResult.value;
       const { original_title = "", original_description = "" } = "value" in commentDataResult ? commentDataResult.value : {};
       const addTypeToTag = (type, tag) => tag.split(" ").map((tag2) => type + ":" + tag2);
@@ -22470,36 +23036,37 @@
         ...addTypeToTag("general", tag_string_general),
         ...addTypeToTag("meta", tag_string_meta)
       ];
-      source && tags.push(`source:${source}`);
       const comment = original_title && original_description ? original_title + "\n" + original_description : original_title || original_description;
       return {
         id,
-        src: file_url,
+        src: file_url ?? "",
         extendName: file_ext,
         artist: tag_string_artist.replaceAll(" ", ",") || "UnknownArtist",
         character: tag_string_character.replaceAll(" ", ",") || "UnknownCharacter",
         title: md5,
         comment,
         tags,
-        createDate: created_at
+        createDate: created_at,
+        rating: rating ?? "",
+        source,
+        matchTags: this._getMatchTags(postDataResult.value)
       };
     },
-    async *poolAndGroupGenerator(pageRange, poolOrGroupId, type) {
-      const dataPromise = type === "pool" ? danbooruApi.getPool(poolOrGroupId) : danbooruApi.getFavoriteGroups(poolOrGroupId);
-      const [data, profile] = await Promise.all([dataPromise, danbooruApi.getProfile()]);
+    async *poolAndGroupGenerator(pageRange, poolOrGroupId, type, postsPerPage) {
+      const data = type === "pool" ? await danbooruApi.getPool(poolOrGroupId) : await danbooruApi.getFavoriteGroups(poolOrGroupId);
+      postsPerPage ?? (postsPerPage = (await danbooruApi.getProfile()).per_page);
       const { post_ids } = data;
-      const { per_page } = profile;
       const [pageStart = null, pageEnd = null] = pageRange ?? [];
       const idsPerPage = [];
       const postCount = post_ids.length;
-      for (let i = 0; i < postCount; i += per_page) {
-        const ids = post_ids.slice(i, i + per_page).map((id) => String(id));
+      for (let i = 0; i < postCount; i += postsPerPage) {
+        const ids = post_ids.slice(i, i + postsPerPage).map((id) => String(id));
         idsPerPage.push(ids);
       }
       const poolPage = idsPerPage.length;
       const start = pageStart ?? 1;
       const end = pageEnd ? pageEnd > poolPage ? poolPage : pageEnd : poolPage;
-      const total = end === poolPage ? (end - start) * per_page + idsPerPage[poolPage - 1].length : (end - start + 1) * per_page;
+      const total = end === poolPage ? (end - start) * postsPerPage + idsPerPage[poolPage - 1].length : (end - start + 1) * postsPerPage;
       if (start > poolPage) throw new RangeError(`Page ${start} exceeds the limit.`);
       for (let page = start - 1; page < end; page++) {
         yield {
@@ -22511,7 +23078,13 @@
         };
       }
     },
-    async *postListGenerator(pageRange, checkValidity, tags, limit) {
+    async *postListGenerator(pageRange, checkValidity, tags, limit, showDeletedPosts) {
+      if (!showDeletedPosts) {
+        if (!!tags && !!tags.includes("status:deleted")) {
+          showDeletedPosts = true;
+        }
+        showDeletedPosts ?? (showDeletedPosts = (await danbooruApi.getProfile()).show_deleted_posts);
+      }
       const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
       let page = pageStart;
       let postListData = await danbooruApi.getPostList({
@@ -22541,12 +23114,20 @@
         const invalid = [];
         const unavaliable = [];
         for (let i = 0; i < postListData.length; i++) {
-          const { id, file_ext, tag_string } = postListData[i];
+          const { id, file_ext, tag_string, is_deleted, file_url } = postListData[i];
           const idStr = String(id);
+          if (is_deleted && !showDeletedPosts) {
+            invalid.push(idStr);
+            continue;
+          }
+          if (!file_url) {
+            unavaliable.push(idStr);
+          }
           const validityCheckMeta = {
             id: idStr,
             extendName: file_ext,
-            tags: tag_string.split(" ")
+            tags: tag_string.split(" "),
+            matchTags: this._getMatchTags(postListData[i])
           };
           const isValid = await checkValidity(validityCheckMeta);
           isValid ? avaliable.push(idStr) : invalid.push(idStr);
@@ -22564,7 +23145,7 @@
       if (fetchError) throw fetchError;
     }
   };
-  function artworkProgressFactory(btn2) {
+  function artworkProgressFactory$1(btn2) {
     if (!btn2) return;
     return function onArtworkProgress(progress) {
       btn2.setProgress(progress);
@@ -22576,13 +23157,15 @@
       this.meta = meta;
     }
     getDownloadConfig(btn2) {
+      if (!this.meta.src)
+        throw new Error(`You need a gold account to see this image. ID: ${this.meta.id}`);
       return {
-        taskId: Math.random().toString(36).slice(2),
+        taskId: this.generateTaskId(),
         src: this.meta.src,
         path: this.buildFilePath(),
         source: this.meta,
         timeout: this.isImage() ? 6e4 : void 0,
-        onProgress: artworkProgressFactory(btn2)
+        onProgress: artworkProgressFactory$1(btn2)
       };
     }
     buildFilePath() {
@@ -22633,6 +23216,8 @@
   class Danbooru extends SiteInject {
     constructor() {
       super(...arguments);
+      __publicField(this, "profile", null);
+      __publicField(this, "blacklist", null);
       __publicField(this, "useBatchDownload", this.app.initBatchDownloader({
         metaType: {},
         avatar: "/packs/static/danbooru-logo-128x128-ea111b6658173e847734.png",
@@ -22645,6 +23230,18 @@
               checked: false,
               fn(meta) {
                 return !!meta.id && historyDb.has(meta.id);
+              }
+            },
+            {
+              id: "exclude_blacklist",
+              type: "exclude",
+              name: t("downloader.category.filter.exclude_blacklist"),
+              checked: true,
+              fn: async (meta) => {
+                return !!meta.matchTags && danbooruParser.isBlacklisted(
+                  meta.matchTags,
+                  this.blacklist ?? (this.blacklist = await danbooruParser.parseBlacklist("api"))
+                );
               }
             },
             {
@@ -22674,49 +23271,71 @@
             return userTags.some((tag) => pureTags.includes(tag));
           }
         },
-        pageMatch: {
+        pageOption: {
           pool: {
             name: "Pool",
             match: new RegExp("(?<=\\/pools\\/)[0-9]+"),
-            filterWhenGenerateIngPage: false,
+            filterInGenerator: false,
             fn: (pageRange) => {
-              var _a;
+              var _a, _b;
               const poolId = (_a = new RegExp("(?<=\\/pools\\/)[0-9]+").exec(location.pathname)) == null ? void 0 : _a[0];
               if (!poolId) throw new Error("Invalid pool id");
-              return danbooruParser.poolAndGroupGenerator(pageRange, poolId, "pool");
+              return danbooruParser.poolAndGroupGenerator(
+                pageRange,
+                poolId,
+                "pool",
+                (_b = this.profile) == null ? void 0 : _b.per_page
+              );
             }
           },
           favorite_groups: {
             name: "FavoriteGroups",
             match: new RegExp("(?<=\\/favorite_groups\\/)[0-9]+"),
-            filterWhenGenerateIngPage: false,
+            filterInGenerator: false,
             fn: (pageRange) => {
-              var _a;
+              var _a, _b;
               const groupId = (_a = new RegExp("(?<=\\/favorite_groups\\/)[0-9]+").exec(location.pathname)) == null ? void 0 : _a[0];
               if (!groupId) throw new Error("Invalid pool id");
-              return danbooruParser.poolAndGroupGenerator(pageRange, groupId, "favoriteGroup");
+              return danbooruParser.poolAndGroupGenerator(
+                pageRange,
+                groupId,
+                "favoriteGroup",
+                (_b = this.profile) == null ? void 0 : _b.per_page
+              );
             }
           },
           post_list: {
             name: "Post",
-            match: /\/posts(?!\/[0-9]+)/,
-            filterWhenGenerateIngPage: true,
+            match: () => location.pathname === "/" || location.pathname === "/posts",
+            filterInGenerator: true,
             fn: (pageRange, checkValidity) => {
-              var _a;
+              var _a, _b;
               const searchParam = new URLSearchParams(new URL(location.href).search);
               const tags = (_a = searchParam.get("tags")) == null ? void 0 : _a.split(" ");
               const limit = searchParam.get("limit");
               const limitParam = limit ? Number(limit) : void 0;
-              return danbooruParser.postListGenerator(pageRange, checkValidity, tags, limitParam);
+              return danbooruParser.postListGenerator(
+                pageRange,
+                checkValidity,
+                tags,
+                limitParam,
+                (_b = this.profile) == null ? void 0 : _b.show_deleted_posts
+              );
             }
           },
           pool_gallery_button: {
             name: "pool_gallery_button",
             match: () => false,
-            filterWhenGenerateIngPage: false,
+            filterInGenerator: false,
             fn: (pageRange, poolId) => {
+              var _a;
               if (!poolId) throw new Error("Invalid pool id");
-              return danbooruParser.poolAndGroupGenerator(pageRange, poolId, "pool");
+              return danbooruParser.poolAndGroupGenerator(
+                pageRange,
+                poolId,
+                "pool",
+                (_a = this.profile) == null ? void 0 : _a.per_page
+              );
             }
           },
           show_downloader_in_pool_gallery: {
@@ -22732,17 +23351,30 @@
           const downloadConfigs = new DanbooruDownloadConfig(meta).getDownloadConfig();
           downloadConfigs.taskId = taskId;
           await downloader.download(downloadConfigs);
-          const { id, tags, artist, title, comment } = meta;
+          const { id, tags, artist, title, comment, source, rating } = meta;
           historyDb.add({
             pid: Number(id),
             user: artist,
             title,
             comment,
-            tags
+            tags,
+            source,
+            rating
           });
+        },
+        beforeDownload: async () => {
+          this.profile = await danbooruApi.getProfile();
+          this.blacklist = await danbooruParser.parseBlacklist(
+            "profile",
+            this.profile.blacklisted_tags ?? ""
+          );
         },
         onDownloadAbort(taskIds) {
           downloader.abort(taskIds);
+        },
+        afterDownload: () => {
+          this.profile = null;
+          this.blacklist = null;
         }
       }));
     }
@@ -22843,13 +23475,15 @@
       const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn2);
       this.config.get("addBookmark") && addBookmark$1(id);
       await downloader.download(downloadConfigs);
-      const { tags, artist, title, comment } = mediaMeta;
+      const { tags, artist, title, comment, source, rating } = mediaMeta;
       historyDb.add({
         pid: Number(id),
         user: artist,
         title,
         comment,
-        tags
+        tags,
+        source,
+        rating
       });
     }
   }
@@ -22864,66 +23498,69 @@
     BookmarkRestrict2[BookmarkRestrict2["private"] = 1] = "private";
     return BookmarkRestrict2;
   })(BookmarkRestrict || {});
-  function createService() {
-    async function _requestJson(url2, init2) {
-      logger.info("Fetch url:", url2);
-      const res = await fetch(url2, init2);
-      if (!res.ok) throw new RequestError(res.url, res.status);
-      const data = await res.json();
+  class PixivApi extends ApiBase {
+    async getJSON(url2, init2) {
+      const data = await super.getJSON(url2, init2);
       if (data.error) throw new JsonDataError(data.message);
       return data.body;
     }
-    return {
-      async getJson(url2) {
-        return await _requestJson(url2);
-      },
-      async getArtworkHtml(illustId, lang2) {
-        const res = await fetch(`/artworks/${illustId}?lang=${lang2}`);
-        if (!res.ok) throw new RequestError(res.url, res.status);
-        return await res.text();
-      },
-      getArtworkDetail(illustId, lang2) {
-        return _requestJson(`/ajax/illust/${illustId}?lang=${lang2}`);
-      },
-      getUnlistedArtworkDetail(unlistedId, lang2) {
-        return _requestJson(`/ajax/illust/unlisted/${unlistedId}?lang=${lang2}`);
-      },
-      addBookmark(illustId, token, tags = [], restrict = BookmarkRestrict.public) {
-        return _requestJson("/ajax/illusts/bookmarks/add", {
-          method: "POST",
-          headers: {
-            accept: "application/json",
-            "content-type": "application/json; charset=utf-8",
-            "x-csrf-token": token
-          },
-          body: JSON.stringify({
-            illust_id: illustId,
-            restrict,
-            comment: "",
-            tags
-          })
-        });
-      },
-      getFollowLatestWorks(page, mode = "all") {
-        return _requestJson(
-          `/ajax/follow_latest/illust?p=${page}&mode=${mode}&lang=jp`
-        );
-      },
-      getUserAllProfile(userId) {
-        return _requestJson("/ajax/user/" + userId + "/profile/all");
-      },
-      getUgoiraMeta(illustId) {
-        return _requestJson("/ajax/illust/" + illustId + "/ugoira_meta");
-      },
-      getUserData(userId) {
-        return _requestJson("/ajax/user/" + userId);
-      },
-      getSeriesData(seriesId, page) {
-        return _requestJson(`/ajax/series/${seriesId}?p=${page}`);
-      }
-    };
+    async getArtworkHtml(illustId, lang2) {
+      const res = await fetch(`/artworks/${illustId}?lang=${lang2}`);
+      if (!res.ok) throw new RequestError(res.url, res.status);
+      return await res.text();
+    }
+    getArtworkDetail(illustId, lang2) {
+      return this.getJSON(`/ajax/illust/${illustId}?lang=${lang2}`);
+    }
+    getUnlistedArtworkDetail(unlistedId, lang2) {
+      return this.getJSON(`/ajax/illust/unlisted/${unlistedId}?lang=${lang2}`);
+    }
+    addBookmark(illustId, token, tags = [], restrict = BookmarkRestrict.public) {
+      return this.getJSON("/ajax/illusts/bookmarks/add", {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json; charset=utf-8",
+          "x-csrf-token": token
+        },
+        body: JSON.stringify({
+          illust_id: illustId,
+          restrict,
+          comment: "",
+          tags
+        })
+      });
+    }
+    likeIllust(illustId, token) {
+      return this.getJSON("/ajax/illusts/like", {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json; charset=utf-8",
+          "x-csrf-token": token
+        },
+        body: JSON.stringify({
+          illust_id: illustId
+        })
+      });
+    }
+    getFollowLatestWorks(page, mode = "all") {
+      return this.getJSON(`/ajax/follow_latest/illust?p=${page}&mode=${mode}&lang=jp`);
+    }
+    getUserAllProfile(userId) {
+      return this.getJSON("/ajax/user/" + userId + "/profile/all");
+    }
+    getUgoiraMeta(illustId) {
+      return this.getJSON("/ajax/illust/" + illustId + "/ugoira_meta");
+    }
+    getUserData(userId) {
+      return this.getJSON("/ajax/user/" + userId);
+    }
+    getSeriesData(seriesId, page) {
+      return this.getJSON(`/ajax/series/${seriesId}?p=${page}`);
+    }
   }
-  const api = createService();
+  const pixivApi = new PixivApi();
   const regexp = {
     preloadData: /"meta-preload-data" content='(.*?)'>/,
     globalData: /"meta-global-data" content='(.*?)'>/,
@@ -22946,13 +23583,13 @@
       let token;
       const { tagLang, type } = param;
       if (type === "api") {
-        illustData = await api.getArtworkDetail(illustId, tagLang);
+        illustData = await pixivApi.getArtworkDetail(illustId, tagLang);
         token = "";
       } else if (type === "unlisted") {
-        illustData = await api.getUnlistedArtworkDetail(illustId, tagLang);
+        illustData = await pixivApi.getUnlistedArtworkDetail(illustId, tagLang);
         token = "";
       } else {
-        const htmlText = await api.getArtworkHtml(illustId, tagLang);
+        const htmlText = await pixivApi.getArtworkHtml(illustId, tagLang);
         const preloadDataText = htmlText.match(regexp.preloadData);
         if (!preloadDataText) throw new Error("Fail to parse preload data: " + illustId);
         const globalDataText = htmlText.match(regexp.globalData);
@@ -22973,7 +23610,8 @@
         pageCount,
         createDate,
         urls,
-        bookmarkData
+        bookmarkData,
+        likeData
       } = illustData;
       const tagsArr = [];
       const tagsTranslatedArr = [];
@@ -22999,13 +23637,14 @@
         comment,
         bookmarkData,
         createDate,
+        likeData,
         token
       };
       if (illustType === IllustType.ugoira) {
         return {
           ...meta,
           illustType,
-          ugoiraMeta: await api.getUgoiraMeta(illustId)
+          ugoiraMeta: await pixivApi.getUgoiraMeta(illustId)
         };
       } else {
         return {
@@ -23016,7 +23655,7 @@
     },
     async *illustMangaGenerator(pageRange, checkValidity, userId) {
       const ARTWORKS_PER_PAGE = 48;
-      const profile = await api.getUserAllProfile(userId);
+      const profile = await pixivApi.getUserAllProfile(userId);
       let ids = [];
       typeof profile.illusts === "object" && ids.push(...Object.keys(profile.illusts));
       typeof profile.manga === "object" && ids.push(...Object.keys(profile.manga));
@@ -23035,7 +23674,7 @@
       do {
         const chunk = selectedIds.splice(0, ARTWORKS_PER_PAGE);
         const queryStr = chunk.map((id) => "ids[]=" + id).join("&") + `&work_category=illustManga&is_first_page=0&lang=ja`;
-        const data = await api.getJson(baseUrl + queryStr);
+        const data = await pixivApi.getJSON(baseUrl + queryStr);
         const workDatas = Object.values(data.works).sort((a, b) => Number(b.id) - Number(a.id));
         const avaliable = [];
         const invalid = [];
@@ -23076,7 +23715,7 @@
         } else {
           requestUrl = `/ajax/user/${userId}/${category}/tag?tag=${tag}&offset=${offset}&limit=${ARTWORKS_PER_PAGE}&lang=ja`;
         }
-        const userPageData = await api.getJson(requestUrl);
+        const userPageData = await pixivApi.getJSON(requestUrl);
         const { works, total: totalArtwork } = userPageData;
         if (totalArtwork === 0)
           throw new Error(`User ${userId} has no ${category} tagged with ${tag}.`);
@@ -23160,7 +23799,7 @@
           unavaliable
         };
       }
-      const data = await api.getFollowLatestWorks(page, mode);
+      const data = await pixivApi.getFollowLatestWorks(page, mode);
       const ids = data.page.ids;
       total = ids.length;
       earliestId = findEarliestId(ids);
@@ -23169,7 +23808,7 @@
         return;
       }
       if (total === ARTWORKS_PER_PAGE) {
-        const secondPageData = await api.getFollowLatestWorks(++page, mode);
+        const secondPageData = await pixivApi.getFollowLatestWorks(++page, mode);
         const secondIds = secondPageData.page.ids;
         const secondPageEarliestId = findEarliestId(secondIds);
         if (secondPageEarliestId < earliestId) {
@@ -23185,7 +23824,7 @@
         return;
       }
       while (++page <= endPage) {
-        const data2 = await api.getFollowLatestWorks(page, mode);
+        const data2 = await pixivApi.getFollowLatestWorks(page, mode);
         const ids2 = data2.page.ids;
         const pageEarliestId = findEarliestId(ids2);
         if (pageEarliestId >= earliestId) {
@@ -23206,7 +23845,7 @@
       let total = 0;
       let currentPage = startPage;
       do {
-        const seriesData = await api.getSeriesData(seriesId, currentPage);
+        const seriesData = await pixivApi.getSeriesData(seriesId, currentPage);
         const { series } = seriesData.page;
         if (!series.length) throw new Error(`Invalid page: ${currentPage}`);
         const { illust } = seriesData.thumbnails;
@@ -26524,13 +27163,13 @@ If you want to offset all timestamps of a track such that the first one is zero,
       return pattern.replaceAll(/\{date\((.*?)\)\}|\{date\}/g, replaceDate).replaceAll("{artist}", fArtist).replaceAll("{artistID}", userId).replaceAll("{title}", fTitle).replaceAll("{tags}", fTags).replaceAll("{page}", String(currPage)).replaceAll("{id}", id);
     }
     getDownloadConfig(btn2) {
-      const { illustType, src, id, pageCount, extendName } = this.meta;
+      const { illustType, src, pageCount, extendName } = this.meta;
       const pageAttr = btn2 == null ? void 0 : btn2.dataset.page;
       const downloadPage = pageAttr ? Number(pageAttr) : void 0;
       if (downloadPage && (downloadPage > pageCount - 1 || downloadPage < 0))
         throw new Error("Invalid downloadPage.");
       if (downloadPage !== void 0) this.downloadAll = false;
-      const taskId = id + "_" + Math.random().toString(36).slice(2);
+      const taskId = this.generateTaskId();
       const headers = this.headers;
       const supportSubPath = this.supportSubpath();
       const downloadConfigs = [];
@@ -26704,14 +27343,11 @@ If you want to offset all timestamps of a track such that the first one is zero,
     }
     return "";
   }
-  function addBookmark(btn2, illustId, token, tags) {
-    if (!config.get("addBookmark")) return;
-    api.addBookmark(
-      illustId,
-      token,
-      config.get("addBookmarkWithTags") ? tags : [],
-      config.get("privateR18") && tags.includes("R-18") ? BookmarkRestrict.private : BookmarkRestrict.public
-    ).then(() => {
+  async function addBookmark(illustId, token, optionalParams) {
+    const { btn: btn2, tags, restrict } = optionalParams ?? {};
+    try {
+      await pixivApi.addBookmark(illustId, token, tags, restrict);
+      if (!btn2) return;
       const bookmarkBtnRef = findBookmarkBtn(btn2);
       if (!bookmarkBtnRef) return;
       switch (bookmarkBtnRef.kind) {
@@ -26729,10 +27365,12 @@ If you want to offset all timestamps of a track such that the first one is zero,
           bookmarkBtnRef.button.style.backgroundColor = "rgb(255, 64, 96)";
           break;
         }
+        default:
+          break;
       }
-    }).catch((reason) => {
-      logger.error(reason.message);
-    });
+    } catch (error) {
+      logger.error(error);
+    }
   }
   function findBookmarkBtn(btn2) {
     var _a, _b, _c, _d, _e;
@@ -26764,16 +27402,42 @@ If you want to offset all timestamps of a track such that the first one is zero,
     }
     return bookmarkBtnRef;
   }
+  function isArtworkPage(illustId) {
+    return location.pathname.includes(`/artworks/${illustId}`);
+  }
+  async function likeIllust(illustId, token) {
+    var _a, _b, _c;
+    await pixivApi.likeIllust(illustId, token);
+    if (!isArtworkPage(illustId)) return;
+    const likeBtn = (_c = (_b = (_a = document.querySelector(
+      `${ThumbnailButton.tagNameLowerCase}[data-type="pixiv-toolbar"]`
+    )) == null ? void 0 : _a.parentElement) == null ? void 0 : _b.previousElementSibling) == null ? void 0 : _c.firstElementChild;
+    if (!likeBtn) return;
+    likeBtn.disabled = true;
+    likeBtn.style.color = "#0096fa";
+    likeBtn.style.cursor = "default";
+  }
   async function downloadArtwork$1(btn2) {
     downloader.dirHandleCheck();
     const { id, page, unlistedId } = btn2.dataset;
     const tagLang = config.get("tagLang");
     let pixivMeta;
     if (!unlistedId) {
-      pixivMeta = await pixivParser.parse(id, { tagLang, type: "html" });
-      const { bookmarkData, token, tags: tags2 } = pixivMeta;
-      if (!bookmarkData) {
-        addBookmark(btn2, id, token, tags2);
+      const shouldAddBookmark = config.get("addBookmark");
+      const shouldLikeIllust = config.get("likeIllust");
+      if (shouldAddBookmark || shouldLikeIllust) {
+        pixivMeta = await pixivParser.parse(id, { tagLang, type: "html" });
+        const { bookmarkData, token, tags: tags2, likeData } = pixivMeta;
+        if (!bookmarkData && shouldAddBookmark) {
+          const addedTags = config.get("addBookmarkWithTags") ? tags2 : void 0;
+          const restrict = config.get("privateR18") && tags2.includes("R-18") ? BookmarkRestrict.private : BookmarkRestrict.public;
+          addBookmark(id, token, { btn: btn2, tags: addedTags, restrict });
+        }
+        if (!likeData && shouldLikeIllust) {
+          likeIllust(id, token);
+        }
+      } else {
+        pixivMeta = await pixivParser.parse(id, { tagLang, type: "api" });
       }
     } else {
       pixivMeta = await pixivParser.parse(unlistedId, { tagLang, type: "unlisted" });
@@ -27228,7 +27892,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
           }
           if (!userId) return "";
           try {
-            const userData = await api.getUserData(userId);
+            const userData = await pixivApi.getUserData(userId);
             return userData.imageBig;
           } catch (error) {
             logger.error(error);
@@ -27276,7 +27940,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
           ],
           enableTagFilter: true
         },
-        pageMatch: {
+        pageOption: {
           self_bookmark_public: {
             name: t("downloader.download_type.pixiv_bookmark_public"),
             match(url2) {
@@ -27285,7 +27949,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
               const userId = userIdMatch[1] || userIdMatch[2];
               return userId === getSelfId();
             },
-            filterWhenGenerateIngPage: true,
+            filterInGenerator: true,
             fn: (pageRange, checkValidity) => {
               return pixivParser.bookmarkGenerator(pageRange, checkValidity, getSelfId());
             }
@@ -27298,7 +27962,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
               const userId = userIdMatch[1] || userIdMatch[2];
               return userId === getSelfId();
             },
-            filterWhenGenerateIngPage: true,
+            filterInGenerator: true,
             fn: (pageRange, checkValidity) => {
               return pixivParser.bookmarkGenerator(pageRange, checkValidity, getSelfId(), "hide");
             }
@@ -27306,7 +27970,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
           user_page_works: {
             name: t("downloader.download_type.pixiv_works"),
             match: regexp.userPage,
-            filterWhenGenerateIngPage: true,
+            filterInGenerator: true,
             fn: (pageRange, checkValidity) => {
               const userIdMatch = regexp.userPage.exec(location.href);
               const userId = userIdMatch[1] || userIdMatch[2];
@@ -27316,7 +27980,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
           user_page_bookmark: {
             name: t("downloader.download_type.pixiv_bookmark"),
             match: regexp.userPage,
-            filterWhenGenerateIngPage: true,
+            filterInGenerator: true,
             fn: (pageRange, checkValidity) => {
               const userIdMatch = regexp.userPage.exec(location.href);
               const userId = userIdMatch[1] || userIdMatch[2];
@@ -27326,7 +27990,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
           follow_latest_all: {
             name: t("downloader.download_type.pixiv_follow_latest_all"),
             match: regexp.followLatest,
-            filterWhenGenerateIngPage: true,
+            filterInGenerator: true,
             fn: (pageRange, checkValidity) => {
               return pixivParser.followLatestGenerator(pageRange, checkValidity, "all");
             }
@@ -27334,7 +27998,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
           follow_latest_r18: {
             name: t("downloader.download_type.pixiv_follow_latest_r18"),
             match: regexp.followLatest,
-            filterWhenGenerateIngPage: true,
+            filterInGenerator: true,
             fn: (pageRange, checkValidity) => {
               return pixivParser.followLatestGenerator(pageRange, checkValidity, "r18");
             }
@@ -27342,7 +28006,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
           series: {
             name: t("downloader.download_type.pixiv_series"),
             match: regexp.series,
-            filterWhenGenerateIngPage: true,
+            filterInGenerator: true,
             fn: (pageRange, checkValidity) => {
               const matchSeries = regexp.series.exec(location.pathname);
               return pixivParser.seriesGenerator(pageRange, checkValidity, matchSeries[2]);
@@ -27352,7 +28016,7 @@ If you want to offset all timestamps of a track such that the first one is zero,
             name: "tagged_artwork",
             match: () => false,
             // use for user tag download
-            filterWhenGenerateIngPage: true,
+            filterInGenerator: true,
             fn: (pageRange, checkValidity, userId, category, tag, bookmarkRest = "show") => {
               if (category === "bookmarks") {
                 return pixivParser.taggedArtworkGenerator(
@@ -27503,62 +28167,407 @@ If you want to offset all timestamps of a track such that the first one is zero,
       }
     }
   }
+  class YandeApi extends ApiBase {
+    isBadResponse(obj) {
+      return "success" in obj && !obj.success;
+    }
+    async getJSON(url2, init2) {
+      const json = await super.getJSON(url2, init2);
+      if (this.isBadResponse(json)) {
+        throw new JsonDataError(json.reason);
+      }
+      return json;
+    }
+    async getPosts(params) {
+      let url2 = "/post.json?";
+      Object.entries(params).forEach(([key, val]) => {
+        if (typeof val === "number") {
+          val = String(val);
+        } else if (Array.isArray(val)) {
+          val = val.join("+");
+        }
+        url2 += `&${key}=${val}`;
+      });
+      return this.getJSON(url2);
+    }
+    // pool only have one page
+    async getPool(poolId, page = 1) {
+      return this.getJSON(`/pool/show.json?id=${poolId}&page=${page}`);
+    }
+  }
+  const yandeApi = new YandeApi();
   const yandeParser = {
     async parse(id) {
-      const res = await fetch("/post/show/" + id);
-      if (!res.ok) throw new RequestError(res.url, res.status);
-      const html = await res.text();
-      const matchImageData = html.match(new RegExp("(?<=Post\\.register_resp\\().+(?=\\);)"));
-      if (!matchImageData) throw new Error("Can not parse image data.");
-      const imageData = JSON.parse(matchImageData[0]);
-      const postData = imageData.posts[0];
+      const { posts, tags } = await this.parseArtwork(id);
+      return this._buildMeta(posts[0], tags);
+    },
+    _parsePostListData(docText) {
+      const matchData = docText.match(new RegExp("(?<=Post\\.register\\().+(?=\\))", "g"));
+      return matchData.map((dataStr) => JSON.parse(dataStr));
+    },
+    _parseTagListData(docText) {
+      const [tagStr] = docText.match(new RegExp("(?<=Post\\.register_tags\\().+(?=\\))"));
+      return JSON.parse(tagStr);
+    },
+    async parsePostList(tags, page) {
+      Array.isArray(tags) && tags.join("+");
+      const htmlText = await yandeApi.getHtml(`/post?page=${page}&tags=${tags}`);
+      return {
+        posts: this._parsePostListData(htmlText),
+        tags: this._parseTagListData(htmlText)
+      };
+    },
+    async parsePopular(period) {
+      const htmlText = await yandeApi.getHtml(`/post/popular_recent?period=${period}`);
+      return {
+        posts: this._parsePostListData(htmlText),
+        tags: this._parseTagListData(htmlText)
+      };
+    },
+    async parseArtwork(id) {
+      const htmlText = await yandeApi.getHtml(`/post/show/${id}`);
+      const [dataStr] = new RegExp("(?<=Post\\.register_resp\\().+(?=\\);)").exec(htmlText);
+      return JSON.parse(dataStr);
+    },
+    async parsePool(poolId) {
+      const htmlText = await yandeApi.getHtml(`/pool/show/${poolId}`);
+      const [dataStr] = new RegExp("(?<=Post\\.register_resp\\().+(?=\\);)").exec(htmlText);
+      return JSON.parse(dataStr);
+    },
+    /**
+     * init_blacklisted
+     * https://github.com/moebooru/moebooru/blob/master/app/javascript/src/legacy/post.coffee#L429
+     */
+    async parseBlacklist() {
+      const doc = await yandeApi.getDoc("/static/more");
+      const el = doc.querySelector("script#user-blacklisted-tags");
+      if (!el) throw new Error("Can not get blacklist.");
+      const blacklistArr = JSON.parse(el.textContent ?? "[]");
+      return blacklistArr.map((blacklist) => {
+        const matchRatingTag = blacklist.replace(/(rating:[qes])\w+/, "$1");
+        const tags = matchRatingTag.split(" ");
+        const require2 = [];
+        const exclude = [];
+        tags.forEach((tag) => {
+          if (tag.charAt(0) === "-") {
+            exclude.push(tag.slice(1));
+          } else {
+            require2.push(tag);
+          }
+        });
+        return {
+          tags,
+          original_tag_string: blacklist,
+          require: require2,
+          exclude
+        };
+      });
+    },
+    /**
+     * is_blacklisted
+     * https://github.com/moebooru/moebooru/blob/master/app/javascript/src/legacy/post.coffee#L315
+     */
+    isBlacklisted(matchTags, blacklist) {
+      return blacklist.some((blacklistItem) => {
+        const { require: require2, exclude } = blacklistItem;
+        const hasTag = (tag) => matchTags.includes(tag);
+        return require2.every(hasTag) && !exclude.some(hasTag);
+      });
+    },
+    _buildMeta(data, tagType) {
+      const { id, file_url, file_ext, md5, created_at, source, rating } = data;
       const artists = [];
       const characters = [];
-      const tags = [];
-      for (const tag in imageData.tags) {
-        const tagType = imageData.tags[tag];
-        if (tagType === "artist") {
+      const tags = data.tags.split(" ").map((tag) => {
+        const type = tagType[tag] ?? "unknown";
+        if (type === "artist") {
           artists.push(tag);
-        } else if (tagType === "character") {
+        } else if (type === "character") {
           characters.push(tag);
         }
-        tags.push(tagType + ":" + tag);
-      }
-      postData.source && tags.push("source:" + postData.source);
+        return type + ":" + tag;
+      });
       return {
-        id,
-        src: postData.file_url,
-        extendName: postData.file_ext,
+        id: String(id),
+        src: file_url,
+        extendName: file_ext,
         artist: artists.join(",") || "UnknownArtist",
         character: characters.join(",") || "UnknownCharacter",
-        title: postData.md5,
+        title: md5,
         tags,
-        createDate: new Date(postData.created_at * 1e3).toISOString()
+        createDate: new Date(created_at * 1e3).toISOString(),
+        rating,
+        source
       };
+    },
+    /**
+     * register
+     * https://github.com/moebooru/moebooru/blob/master/app/javascript/src/legacy/post.coffee#L286
+     */
+    _isValidCallbackFactory(checkValidity) {
+      return async (data) => {
+        const tags = data.tags.split(" ");
+        tags.push("rating:" + data.rating.charAt(0));
+        tags.push("status:" + data.status);
+        return await checkValidity({ id: String(data.id), tags });
+      };
+    },
+    async *_paginationGenerator(pageRange, postsPerPage, getPostData, isValid, buildMeta) {
+      const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
+      let page = pageStart;
+      let postDatas = await getPostData(page);
+      let total = postDatas.length;
+      let fetchError = null;
+      if (total === 0) throw new Error(`There is no post in page ${page}.`);
+      do {
+        let nextPageData = null;
+        if (page !== pageEnd && postDatas.length >= postsPerPage) {
+          try {
+            nextPageData = await getPostData(page + 1);
+            if (nextPageData.length) {
+              total += nextPageData.length;
+            } else {
+              nextPageData = null;
+            }
+          } catch (error) {
+            fetchError = error;
+            nextPageData = null;
+          }
+        }
+        const avaliable = [];
+        const invalid = [];
+        const unavaliable = [];
+        for (let i = 0; i < postDatas.length; i++) {
+          const data = postDatas[i];
+          const isValidData = await isValid(data);
+          const meta = buildMeta(data);
+          isValidData ? avaliable.push(meta) : invalid.push(meta);
+        }
+        yield {
+          total,
+          page,
+          avaliable,
+          invalid,
+          unavaliable
+        };
+        page++;
+        postDatas = nextPageData;
+      } while (postDatas);
+      if (fetchError) throw fetchError;
+    },
+    async *postGenerator(pageRange, checkValidity, postTags) {
+      const POSTS_PER_PAGE = 40;
+      const getPostData = async (page) => {
+        const { posts, tags } = await this.parsePostList(postTags, page);
+        return posts.map((post) => ({ ...post, tagType: tags }));
+      };
+      const buildMeta = (data) => {
+        return this._buildMeta(data, data.tagType);
+      };
+      yield* this._paginationGenerator(
+        pageRange,
+        POSTS_PER_PAGE,
+        getPostData,
+        this._isValidCallbackFactory(checkValidity),
+        buildMeta
+      );
+    },
+    async *popularGenerator(_, checkValidity, period) {
+      const getPopularData = async () => {
+        const { posts, tags } = await this.parsePopular(period);
+        return posts.map((post) => ({ ...post, tagType: tags }));
+      };
+      const buildMeta = (data) => {
+        return this._buildMeta(data, data.tagType);
+      };
+      yield* this._paginationGenerator(
+        [1, 1],
+        Infinity,
+        getPopularData,
+        this._isValidCallbackFactory(checkValidity),
+        buildMeta
+      );
+    },
+    async *poolGenerator(_, checkValidity, poolId) {
+      const getPoolData = async () => {
+        const { posts, tags } = await this.parsePool(poolId);
+        return posts.map((post) => ({ ...post, tagType: tags }));
+      };
+      const buildMeta = (data) => {
+        return this._buildMeta(data, data.tagType);
+      };
+      yield* this._paginationGenerator(
+        [1, 1],
+        Infinity,
+        getPoolData,
+        this._isValidCallbackFactory(checkValidity),
+        buildMeta
+      );
     }
   };
-  class YandeDownloadConfig extends Rule34DownloadConfig {
+  function artworkProgressFactory(btn2) {
+    if (!btn2) return;
+    return function onArtworkProgress(progress) {
+      btn2.setProgress(progress);
+    };
+  }
+  class YandeDownloadConfig extends DownloadConfigBuilder {
+    constructor(meta) {
+      super(meta);
+      this.meta = meta;
+    }
+    getDownloadConfig(btn2) {
+      return {
+        taskId: this.generateTaskId(),
+        src: this.meta.src,
+        path: this.buildFilePath(),
+        source: this.meta,
+        timeout: 6e4,
+        onProgress: artworkProgressFactory(btn2)
+      };
+    }
+    buildFilePath() {
+      const path = super.buildFilePath();
+      return path.replaceAll("{character}", this.normalizeString(this.meta.character));
+    }
   }
   async function downloadArtwork(btn2) {
     downloader.dirHandleCheck();
     const id = btn2.dataset.id;
     const mediaMeta = await yandeParser.parse(id);
-    const { tags, artist, title } = mediaMeta;
+    const { tags, artist, title, rating, source } = mediaMeta;
     const downloadConfigs = new YandeDownloadConfig(mediaMeta).getDownloadConfig(btn2);
     await downloader.download(downloadConfigs);
-    const historyData = {
+    historyDb.add({
       pid: Number(id),
       user: artist,
       title,
-      tags
-    };
-    historyDb.add(historyData);
+      tags,
+      rating,
+      source
+    });
   }
   class Yande extends SiteInject {
-    static get hostname() {
-      return "yande.re";
+    constructor() {
+      super(...arguments);
+      __publicField(this, "blacklist", null);
+      __publicField(this, "useBatchDownload", this.app.initBatchDownloader({
+        metaType: {},
+        avatar: "/favicon.ico",
+        filterOption: {
+          filters: [
+            {
+              id: "exclude_downloaded",
+              type: "exclude",
+              name: t("downloader.category.filter.exclude_downloaded"),
+              checked: false,
+              fn(meta) {
+                return !!meta.id && historyDb.has(meta.id);
+              }
+            },
+            {
+              id: "exclude_blacklist",
+              type: "exclude",
+              name: t("downloader.category.filter.exclude_blacklist"),
+              checked: true,
+              fn: async (meta) => {
+                if (!meta.tags) return false;
+                this.blacklist ?? (this.blacklist = await yandeParser.parseBlacklist());
+                return yandeParser.isBlacklisted(meta.tags, this.blacklist);
+              }
+            },
+            {
+              id: "allow_image",
+              type: "include",
+              name: t("downloader.category.filter.image"),
+              checked: true,
+              fn() {
+                return true;
+              }
+            }
+          ],
+          enableTagFilter: true
+        },
+        pageOption: {
+          posts: {
+            name: t("downloader.download_type.yande_posts"),
+            match: () => location.pathname === "/post",
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity, tags) => {
+              tags ?? (tags = new URLSearchParams(location.search).get("tags") ?? "");
+              return yandeParser.postGenerator(pageRange, checkValidity, tags);
+            }
+          },
+          popular_1d: {
+            name: t("downloader.download_type.yande_popular_1d"),
+            match: () => location.pathname === "/post/popular_recent",
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity) => {
+              return yandeParser.popularGenerator(pageRange, checkValidity, "1d");
+            }
+          },
+          popular_1w: {
+            name: t("downloader.download_type.yande_popular_1w"),
+            match: () => location.pathname === "/post/popular_recent",
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity) => {
+              return yandeParser.popularGenerator(pageRange, checkValidity, "1w");
+            }
+          },
+          popular_1m: {
+            name: t("downloader.download_type.yande_popular_1m"),
+            match: () => location.pathname === "/post/popular_recent",
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity) => {
+              return yandeParser.popularGenerator(pageRange, checkValidity, "1m");
+            }
+          },
+          popular_1y: {
+            name: t("downloader.download_type.yande_popular_1y"),
+            match: () => location.pathname === "/post/popular_recent",
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity) => {
+              return yandeParser.popularGenerator(pageRange, checkValidity, "1y");
+            }
+          },
+          pool: {
+            name: t("downloader.download_type.yande_pool"),
+            match: /\/pool\/show\//,
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity, poolId) => {
+              poolId ?? (poolId = new RegExp("(?<=show\\/)[0-9]+").exec(location.pathname)[0]);
+              return yandeParser.poolGenerator(pageRange, checkValidity, poolId);
+            }
+          }
+        },
+        parseMetaByArtworkId(id) {
+          return yandeParser.parse(id);
+        },
+        async downloadByArtworkId(meta, taskId) {
+          downloader.dirHandleCheck();
+          const { id, tags, artist, title, rating, source } = meta;
+          const downloadConfigs = new YandeDownloadConfig(meta).getDownloadConfig();
+          downloadConfigs.taskId = taskId;
+          await downloader.download(downloadConfigs);
+          historyDb.add({
+            pid: Number(id),
+            user: artist,
+            title,
+            tags,
+            rating,
+            source
+          });
+        },
+        onDownloadAbort(taskIds) {
+          downloader.abort(taskIds);
+        },
+        afterDownload: () => {
+          this.blacklist && (this.blacklist = null);
+        }
+      }));
     }
     inject() {
+      this.resetArrayFrom();
       super.inject();
       const pathname = location.pathname;
       const galleryMatch = pathname.match(new RegExp("(?<=\\/post\\/show\\/)\\d+"));
@@ -27573,6 +28582,14 @@ If you want to offset all timestamps of a track such that the first one is zero,
         );
         this.createThumbnailBtn(Array.from(btnContainers));
       }
+    }
+    // yande.re uses a pollyfill for `Array.from`, which doesn't support `Set` as an argument,
+    // and breaks svelte's `get_binding_group_value` function.
+    resetArrayFrom() {
+      const iframe = document.createElement("iframe");
+      document.body.append(iframe);
+      Array.from = iframe.contentWindow.Array.from;
+      iframe.remove();
     }
     createThumbnailBtn(containers) {
       if (!containers.length) return;
@@ -27670,6 +28687,9 @@ If you want to offset all timestamps of a track such that the first one is zero,
     getFilenameTemplate() {
       return ["{artist}", "{character}", "{id}", "{date}"];
     }
+    static get hostname() {
+      return "yande.re";
+    }
   }
   class ATFbooru extends Danbooru {
     constructor() {
@@ -27711,13 +28731,15 @@ If you want to offset all timestamps of a track such that the first one is zero,
       const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn2);
       this.config.get("addBookmark") && addBookmark$1(id);
       await downloader.download(downloadConfigs);
-      const { tags, artist, title, comment } = mediaMeta;
+      const { tags, artist, title, comment, source, rating } = mediaMeta;
       historyDb.add({
         pid: Number(id),
         user: artist,
         title,
         comment,
-        tags
+        tags,
+        source,
+        rating
       });
     }
   }
