@@ -1,25 +1,19 @@
-<img width='1080' src = 'https://p.sda1.dev/19/c6a3e925e3d274972c1b20c7831762cc/output-90.webp' />
-
 # Pixiv Downloader
 
+<img width='1080' src = 'https://p.sda1.dev/19/c6a3e925e3d274972c1b20c7831762cc/output-90.webp' />
+
+## 主要功能
+
 - 下载 [Pixiv](https://www.pixiv.net) | [Danbooru](https://danbooru.donmai.us/) | [Rule34](https://rule34.xxx/) | [Yande](https://yande.re/post) 图片。
-- 下载时将图片加入收藏。
+- 批量下载。
 - 自定义图片文件名，保存文件夹。
-- 记录下载图片历史。
-- Pixiv支持更多功能：
-  - 批量下载用户作品 / 收藏，按作品标签下载。
-  - 将多页插画，漫画作品打包下载为 zip 压缩包。
-  - 转换动图（ugoira）格式：Mp4 | Webm | Webp | Gif | Apng。
-  - 为下载图片加入 #pixivGlow2024 动画效果。
+- 记录下载图片历史，支持导出 / 导入。
+- 转换Pixiv动图（ugoira）格式，支持 Mp4 | Webm | Webp | Gif | Apng。
 
-## 我的浏览器能用吗
+## 安装
 
-|               | Chrome         | Edge           | Firefox                              |
-| ------------- | -------------- | -------------- | ------------------------------------ |
-| Tampermonkey  | ✔             | ✔             | ✔⚠️FileSystemAccess API             |
-| Violentmonkey | ✔⚠️浏览器 API | ✔⚠️浏览器 API | ✔⚠️浏览器 API，FileSystemAccess API |
-
-其他请自行测试 : )
+1. 安装用户脚本管理器扩展，如[Tampermonkey](https://tampermonkey.net/), [Violentmonkey](https://violentmonkey.github.io/)。
+2. 通过GreasyFork[安装脚本](https://sleazyfork.org/zh-CN/scripts/432150-pixiv-downloader)。
 
 ## 使用前
 
@@ -28,11 +22,24 @@
    2. 在**Pixiv Downloader 设置**中开启“**使用 FileSystemAccess API**”。
 2. 为方便使用，可以将浏览器设置中“**下载前询问每个文件的保存位置**”选项关闭。
 
-## 使用方法
+## 批量下载
 
-1. 只要你见到下载按钮，点他。
-2. Pixiv 用户 / 已关注用户的新作 页面，点击页面右上侧用户头像，进行批量下载。
-3. 点击页面右下方设置图标召出设置面板，修改脚本设置。
+| 网站                                    | 支持页面/方式                                                                                                     | 附注 |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---- |
+| [Pixiv](https://www.pixiv.net)          | [已关注用户的新作](https://www.pixiv.net/bookmark_new_illust.php)<br>画师 / 个人主页<br>按用户作品标签            |      |
+| [Danbooru](https://danbooru.donmai.us/) | [Posts](https://danbooru.donmai.us/posts)<br>[Pools](https://danbooru.donmai.us/pools/gallery)<br>Favorite groups |      |
+| [Yande.re](https://yande.re/post)       | [投稿](https://yande.re/post)<br>[人气](https://yande.re/post/popular_recent)<br>图集                             |      |
+| [Rule34](https://rule34.xxx/)           | [Posts](https://rule34.xxx/index.php?page=post&s=list&tags=all)<br>Pools<br>My Favorites                          |      |
+
+## 更多功能
+
+- 下载作品时收藏 / 点赞。
+- 定时备份下载历史。
+
+### Pixiv
+
+- 将多页插画，漫画作品打包下载为zip压缩包。
+- 为插图加入 #pixivGlow2024 萤火虫季节特效。
 
 ## 使用【浏览器 API】和使用【FileSystemAccess API】的区别
 
@@ -48,9 +55,18 @@
 - Violentmonkey 可用。
 - **限制**: 首次下载，或关闭所有 pixiv 标签后，需要手动选择图片保存目录。Firefox暂不支持。
 
+## 我的浏览器能用吗
+
+|               | Chrome         | Edge           | Firefox                              |
+| ------------- | -------------- | -------------- | ------------------------------------ |
+| Tampermonkey  | ✔             | ✔             | ✔⚠️FileSystemAccess API             |
+| Violentmonkey | ✔⚠️浏览器 API | ✔⚠️浏览器 API | ✔⚠️浏览器 API，FileSystemAccess API |
+
+其他请自行测试 : )
+
 ---
 
-如果你觉得这个脚本有帮助到你，欢迎扫一扫微信赞赏码，赞助我一瓶可口可乐（没有瞧不起百事可乐的意思 ^\_^）。
+如果这个脚本有帮助到你，欢迎扫一扫微信赞赏码，赞助我一瓶可口可乐（没有瞧不起百事可乐的意思 ^\_^）。
 
 <img width='200' style="border-radius: 50%;" src = 'https://s3.bmp.ovh/imgs/2022/11/11/85885dd73ebf6ad5.png' />
 
