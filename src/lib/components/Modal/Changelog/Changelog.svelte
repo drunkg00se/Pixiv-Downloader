@@ -19,19 +19,13 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
   <article class="modal-body mt-4">
     <ul class="list-disc list-inside leading-loose">
-      <li>
-        新增：现在可以批量下载pixiv<a
-          href="https://www.pixiv.net/user/3617446/series/136196"
-          target="_blank"
-          class="anchor">漫画系列</a
-        >。
-      </li>
-      <li>新增：现在可以批量下载Danbooru: posts, pools, favorite groups。</li>
-      <li>
-        新增：现在可以在【设置】【其它】中填入cf_clearance cookie（rule34无法正常下载图片时）。
-      </li>
-      <li>修复：Pixiv多图预览按钮被遮挡的问题。</li>
-      <li>修复：切换主题时Pixiv收藏标签按钮颜色不改变的问题。</li>
+      <p>新的一年希望你爱的人和爱你的人都身体健康^_^</p>
+      <li>新增：支持批量下载Rule34 Posts， Pools， My favorites。</li>
+      <li>新增：支持批量下载Yande 投稿，图集，人气。</li>
+      <li>新增：为Danbooru批量下载添加“排除网站黑名单”筛选器。</li>
+      <li>新增：Danbooru网站“Show deleted posts”设置将适用于批量下载。</li>
+      <li>新增：下载Pixiv作品时为作品点赞（批量下载不适用）。</li>
+      <li>修复了若干问题。</li>
     </ul>
   </article>
   <footer class="modal-footer mt-4">
