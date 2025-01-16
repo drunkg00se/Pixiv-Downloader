@@ -114,13 +114,12 @@ export class Yande extends SiteInject {
       return yandeParser.parse(id);
     },
 
-    async downloadByArtworkId(meta, taskId) {
+    async downloadByArtworkId(meta, signal) {
       downloader.dirHandleCheck();
       const { id, tags, artist, title, rating, source } = meta;
       const downloadConfigs = new YandeDownloadConfig(meta).getDownloadConfig();
-      downloadConfigs.taskId = taskId;
 
-      await downloader.download(downloadConfigs);
+      await downloader.download(downloadConfigs, { signal });
 
       historyDb.add({
         pid: Number(id),
@@ -130,10 +129,6 @@ export class Yande extends SiteInject {
         rating,
         source
       });
-    },
-
-    onDownloadAbort(taskIds) {
-      downloader.abort(taskIds);
     },
 
     afterDownload: () => {

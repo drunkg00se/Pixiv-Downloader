@@ -17,7 +17,7 @@ export async function downloadArtwork(btn: ThumbnailButton) {
 
   config.get('addBookmark') && addBookmark(id);
 
-  await downloader.download(downloadConfigs);
+  await downloader.download(downloadConfigs, { priority: 1 });
 
   historyDb.add({
     pid: Number(id),

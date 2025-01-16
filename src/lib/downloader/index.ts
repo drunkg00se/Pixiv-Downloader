@@ -1,276 +1,225 @@
 import { GM_xmlhttpRequest } from '$';
 import { logger } from '@/lib/logger';
-import { sleep } from '@/lib/util';
-import { CancelError, RequestError } from '@/lib/error';
+import { CancelError, RequestError, TimoutError } from '@/lib/error';
 import { fileSaveAdapters } from './fileSaveAdapters';
+import PQueue from 'p-queue';
 
-export interface DownloaderHooks<T> {
+type XhrResult = [Error, null] | [null, Blob];
+
+type DownloadOption = { signal?: AbortSignal; priority?: number };
+
+export type DownloaderHooks<T> = {
   onProgress?: (progress: number, config: DownloadConfig<T>) => void;
   onXhrLoaded?: (config: DownloadConfig<T>) => void;
   beforeFileSave?: (blob: Blob, config: DownloadConfig<T>) => Promise<Blob | void>;
   onFileSaved?: (config: DownloadConfig<T>) => void;
   onError?: (err: Error, config: DownloadConfig<T>) => void;
   onAbort?: (config: DownloadConfig<T>) => void;
-}
+};
 
-interface DownloadConfigBase<T> {
+export type DownloadConfig<T> = {
   taskId: string;
   src: string;
   path: string;
   source: T;
   timeout?: number;
   headers?: Record<string, string>;
-}
+} & DownloaderHooks<T>;
 
-export type DownloadConfig<T> = DownloadConfigBase<T> & DownloaderHooks<T>;
-
-export interface DownloadMeta<T = DownloadConfig<any>> {
-  taskId: string;
-  config: T;
-  retry: number;
-  isAborted: boolean;
-  timeout?: number;
-  resolve: (val: string) => void;
-  reject: (err: Error) => void;
-  abort?: () => void;
-}
-
-interface Downloader {
+interface IDownloader {
   fileSystemAccessEnabled: Readonly<boolean>;
   dirHandleCheck: () => void;
   updateDirHandle: () => Promise<string>;
   getCurrentFsaDirName: () => string;
-  download: <T>(configs: DownloadConfig<T> | DownloadConfig<T>[]) => Promise<string[]>;
-  abort: (taskIds: string | string[]) => void;
+  download: <T>(
+    configs: DownloadConfig<T> | DownloadConfig<T>[],
+    option?: DownloadOption
+  ) => Promise<void>;
 }
 
-function createDownloader(): Downloader {
-  const MAX_DOWNLOAD = 5;
-  const MAX_RETRY = 3;
-  const DOWNLOAD_INTERVAL = 500;
+class Downloader implements IDownloader {
+  #DOWNLOAD_RETRY = 3;
 
-  let queue: DownloadMeta[] = [];
-  let active: DownloadMeta[] = [];
+  #downloadQueue = new PQueue({ concurrency: 5, interval: 1000, intervalCap: 4 });
 
-  const cleanAndStartNext = (removeMeta: DownloadMeta, nextMeta?: DownloadMeta) => {
-    sleep(DOWNLOAD_INTERVAL).then(() => {
-      active.splice(active.indexOf(removeMeta), 1);
+  get fileSystemAccessEnabled() {
+    return fileSaveAdapters.isFileSystemAccessEnable();
+  }
 
-      if (nextMeta) {
-        active.push(nextMeta);
-        dispatchDownload(nextMeta);
-      } else if (queue.length) {
-        const meta = queue.shift()!;
-        active.push(meta);
-        dispatchDownload(meta);
-      }
-    });
-  };
+  /**
+   * 下载触发后应该先弹窗选择文件保存位置，避免下载/转换用时过长导致错误
+   * Must be handling a user gesture to show a file picker.
+   * https://bugs.chromium.org/p/chromium/issues/detail?id=1193489
+   */
+  dirHandleCheck() {
+    fileSaveAdapters.dirHandleCheck();
+  }
 
-  const xhr = (downloadMeta: DownloadMeta<any>) => {
-    const { taskId, config, timeout } = downloadMeta;
-    const saveFile = fileSaveAdapters.getAdapter();
+  updateDirHandle() {
+    return fileSaveAdapters.updateDirHandle();
+  }
 
-    return GM_xmlhttpRequest({
-      url: config.src,
-      timeout,
-      method: 'GET',
-      headers: config.headers,
-      responseType: 'blob',
+  getCurrentFsaDirName() {
+    return fileSaveAdapters.getFsaDirName();
+  }
 
-      ontimeout() {
-        const { taskId, config, isAborted } = downloadMeta;
-        if (isAborted) return;
+  #xhr<T>(config: DownloadConfig<T>, signal?: AbortSignal): Promise<XhrResult> {
+    if (signal?.aborted) return Promise.resolve([signal.reason as Error, null]);
 
-        if (++downloadMeta.retry > MAX_RETRY) {
-          const err = new Error(`Download timout. ${taskId} | ${config.src}`);
+    const { src, onProgress, timeout, taskId, headers } = config;
 
-          config.onError?.(err, config);
-          downloadMeta.reject(err);
+    return new Promise((resolve) => {
+      const abortObj = GM_xmlhttpRequest({
+        url: src,
+        method: 'GET',
+        responseType: 'blob',
+        timeout,
+        headers,
 
-          cleanAndStartNext(downloadMeta);
-        } else {
-          logger.error(`Download timeout: ${downloadMeta.retry}. ${taskId}`);
-          logger.info('Retry download:', downloadMeta.retry, config.src);
-          cleanAndStartNext(downloadMeta, downloadMeta);
-        }
-      },
+        ontimeout() {
+          resolve([new TimoutError(`${taskId} | ${src}`), null]);
+        },
 
-      onerror(error) {
-        const { taskId, config, isAborted } = downloadMeta;
-        if (isAborted) return;
+        onerror(error) {
+          let err;
 
-        let err;
-        if (error.status === 429) {
-          err = new RequestError(config.src, error.status);
-        } else {
-          err = new Error(`Download failed. ID: ${taskId}.`);
-          logger.error(error);
-        }
-
-        config.onError?.(err, config);
-        downloadMeta.reject(err);
-
-        cleanAndStartNext(downloadMeta);
-      },
-
-      onprogress: (res) => {
-        if (res.loaded > 0 && res.total > 0) {
-          const progress = Math.floor((res.loaded / res.total) * 100);
-          config.onProgress?.(progress, config);
-        }
-      },
-
-      onload: async (e) => {
-        cleanAndStartNext(downloadMeta);
-
-        if (downloadMeta.isAborted)
-          return logger.warn('Download was canceled.', taskId, config.path);
-
-        const { status, statusText, finalUrl } = e;
-        if (status < 200 || status > 299) {
-          const err = new RequestError(statusText + ' ' + finalUrl, status);
-          config.onError?.(err, config);
-          downloadMeta.reject(err);
-          return;
-        }
-
-        logger.info('Xhr complete:', config.src);
-        config.onXhrLoaded?.(config);
-
-        try {
-          // 存在beforeFileSave函数时，若该函数有返回值，则保存该返回值，
-          // 若无返回值，则不保存文件。
-          // 不存在beforeFileSave函数时，直接保存e.response。
-          let modRes: void | Blob;
-          if (typeof config.beforeFileSave === 'function') {
-            modRes = await config.beforeFileSave(e.response, config);
-
-            if (modRes && !downloadMeta.isAborted) {
-              await saveFile(modRes, downloadMeta);
-
-              config.onFileSaved?.(config);
-
-              logger.info('Download complete:', config.path);
-            }
+          if (error.status === 429) {
+            err = new RequestError(config.src, error.status);
           } else {
-            await saveFile(e.response, downloadMeta);
-
-            config.onFileSaved?.(config);
-
-            logger.info('Download complete:', config.path);
+            err = new Error(`Download failed. ID: ${taskId}.`);
           }
 
-          downloadMeta.resolve(downloadMeta.taskId);
-        } catch (error) {
-          config.onError?.(error as Error, config);
+          resolve([err, null]);
+        },
 
-          downloadMeta.reject(error as Error);
+        onprogress(res) {
+          if (res.loaded > 0 && res.total > 0) {
+            const progress = Math.floor((res.loaded / res.total) * 100);
+            onProgress?.(progress, config);
+          }
+        },
+
+        onload(res) {
+          const { status, statusText, finalUrl } = res;
+
+          if (status < 200 || status > 299) {
+            resolve([new RequestError(statusText + ' ' + finalUrl, status), null]);
+            return;
+          }
+
+          resolve([null, res.response]);
         }
-      }
+      });
+
+      signal?.addEventListener(
+        'abort',
+        () => {
+          abortObj.abort();
+          resolve([signal.reason as Error, null]);
+        },
+        { once: true }
+      );
     });
-  };
+  }
 
-  const dispatchDownload = (downloadMeta: DownloadMeta): void => {
-    logger.info('Start download:', downloadMeta.config.src);
+  async #dispatchDownload<T>(
+    config: DownloadConfig<T>,
+    priority: number = 0,
+    signal?: AbortSignal
+  ): Promise<void> {
+    try {
+      const { src, taskId, path } = config;
 
-    const abortObj = xhr(downloadMeta);
-    downloadMeta.abort = abortObj.abort;
-  };
+      const result = await this.#downloadQueue.add(
+        async ({ signal }) => {
+          signal?.throwIfAborted();
 
-  return {
-    get fileSystemAccessEnabled() {
-      return fileSaveAdapters.isFileSystemAccessEnable();
-    },
+          logger.info('Download start:', src);
 
-    /**
-     * 下载触发后应该先弹窗选择文件保存位置，避免下载/转换用时过长导致错误
-     * Must be handling a user gesture to show a file picker.
-     * https://bugs.chromium.org/p/chromium/issues/detail?id=1193489
-     */
-    dirHandleCheck() {
-      fileSaveAdapters.dirHandleCheck();
-    },
+          let result: Blob;
+          let retryCount = 0;
 
-    updateDirHandle() {
-      return fileSaveAdapters.updateDirHandle();
-    },
+          do {
+            const xhrResult = await this.#xhr(config, signal);
 
-    getCurrentFsaDirName() {
-      return fileSaveAdapters.getFsaDirName();
-    },
+            signal?.throwIfAborted();
 
-    async download(configs) {
-      logger.info('Downloader add:', configs);
-      if (!Array.isArray(configs)) configs = [configs];
-      if (configs.length < 1) return Promise.resolve([]);
+            if (xhrResult[0] === null) {
+              result = xhrResult[1];
+              break;
+            } else {
+              const err = xhrResult[0];
+              if (!(err instanceof TimoutError) || ++retryCount > this.#DOWNLOAD_RETRY) {
+                throw err;
+              } else {
+                logger.error(`Download will be retried. Count: ${retryCount}.`, err);
+              }
+            }
+          } while (retryCount <= this.#DOWNLOAD_RETRY);
 
-      const promises: Promise<string>[] = [];
-      configs.forEach((config) => {
-        promises.push(
-          new Promise<string>((resolve, reject) => {
-            const downloadMeta = {
-              taskId: config.taskId,
-              config,
-              isAborted: false,
-              retry: 0,
-              timeout: config.timeout,
-              resolve,
-              reject
-            };
-            queue.push(downloadMeta);
-          })
-        );
-      });
+          return result!;
+        },
+        { signal, priority }
+      );
 
-      while (active.length < MAX_DOWNLOAD && queue.length) {
-        const meta = queue.shift()!;
-        active.push(meta);
-        dispatchDownload(meta);
+      // result won't be void because we does not set `options.timeout`;
+      if (!result) throw new TimoutError(`${taskId} | ${src}`);
+
+      logger.info('Xhr complete:', src);
+
+      config.onXhrLoaded?.(config);
+
+      const saveFile = fileSaveAdapters.getAdapter();
+
+      // 存在beforeFileSave函数时，返回该函数的返回值。
+      // 若无返回值，则不保存文件。
+      // 不存在beforeFileSave函数时，直接保存result。
+      if (typeof config.beforeFileSave === 'function') {
+        const modifiedResult = await config.beforeFileSave(result, config);
+
+        signal?.throwIfAborted();
+
+        if (!modifiedResult) return;
+
+        await saveFile(modifiedResult, path, signal);
+      } else {
+        await saveFile(result, path, signal);
       }
 
-      const results = await Promise.allSettled(promises);
-      const resultIds: string[] = [];
+      config.onFileSaved?.(config);
 
-      for (let i = 0; i < results.length; i++) {
-        const result = results[i];
-        if (result.status === 'rejected') throw result.reason;
-        resultIds.push(result.value);
+      logger.info('Download complete:', path);
+    } catch (error) {
+      if (error instanceof CancelError) {
+        config.onAbort?.(config);
+      } else {
+        config.onError?.(error as Error, config);
       }
 
-      return resultIds;
-    },
-
-    abort(taskIds: string | string[]): void {
-      if (typeof taskIds === 'string') taskIds = [taskIds];
-      if (!taskIds.length) return;
-
-      logger.info('Downloader delete, active:', active.length, 'queue', queue.length);
-
-      active = active.filter((downloadMeta) => {
-        if (taskIds.includes(downloadMeta.taskId) && !downloadMeta.isAborted) {
-          downloadMeta.isAborted = true;
-          downloadMeta.abort?.();
-
-          downloadMeta.config.onAbort?.(downloadMeta.config);
-
-          downloadMeta.reject(new CancelError());
-
-          logger.warn('Download aborted:', downloadMeta.config.path);
-        } else {
-          return true;
-        }
-      });
-
-      queue = queue.filter((downloadMeta) => !taskIds.includes(downloadMeta.taskId));
-
-      while (active.length < MAX_DOWNLOAD && queue.length) {
-        const meta = queue.shift()!;
-        active.push(meta);
-        dispatchDownload(meta);
-      }
+      throw error;
     }
-  };
+  }
+
+  async download<T>(configs: DownloadConfig<T> | DownloadConfig<T>[], option: DownloadOption = {}) {
+    const { signal, priority } = option;
+
+    signal?.throwIfAborted();
+
+    logger.info('Downloader add:', configs);
+
+    if (!Array.isArray(configs)) configs = [configs];
+    if (configs.length < 1) return;
+
+    const downloads = configs.map((config) => {
+      return this.#dispatchDownload(config, priority, signal);
+    });
+
+    const downloadResult = await Promise.allSettled(downloads);
+
+    for (const result of downloadResult) {
+      if (result.status === 'rejected') throw result.reason;
+    }
+  }
 }
 
-export const downloader = createDownloader();
+export const downloader = new Downloader();

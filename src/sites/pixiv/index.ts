@@ -212,15 +212,12 @@ export class Pixiv extends SiteInject {
       return pixivParser.parse(id, { tagLang: this.config.get('tagLang'), type: 'api' });
     },
 
-    async downloadByArtworkId(meta, taskId) {
+    async downloadByArtworkId(meta, signal) {
       downloader.dirHandleCheck();
 
       const downloadConfigs = new PixivDownloadConfig(meta).getDownloadConfig();
-      downloadConfigs.forEach((config) => {
-        config.taskId = taskId;
-      });
 
-      await downloader.download(downloadConfigs);
+      await downloader.download(downloadConfigs, { signal });
 
       const { comment, id, tags, artist, userId, title } = meta;
       const historyData: HistoryData = {
@@ -232,10 +229,6 @@ export class Pixiv extends SiteInject {
         tags
       };
       historyDb.add(historyData);
-    },
-
-    onDownloadAbort(taskIds) {
-      downloader.abort(taskIds);
     }
   });
 

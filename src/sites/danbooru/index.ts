@@ -155,13 +155,12 @@ export class Danbooru extends SiteInject {
       return danbooruParser.parseIdByApi(id);
     },
 
-    async downloadByArtworkId(meta, taskId) {
+    async downloadByArtworkId(meta, signal) {
       downloader.dirHandleCheck();
 
       const downloadConfigs = new DanbooruDownloadConfig(meta).getDownloadConfig();
-      downloadConfigs.taskId = taskId;
 
-      await downloader.download(downloadConfigs);
+      await downloader.download(downloadConfigs, { signal });
 
       const { id, tags, artist, title, comment, source, rating } = meta;
       historyDb.add({
@@ -181,10 +180,6 @@ export class Danbooru extends SiteInject {
         'profile',
         this.profile.blacklisted_tags ?? ''
       );
-    },
-
-    onDownloadAbort(taskIds) {
-      downloader.abort(taskIds);
     },
 
     afterDownload: () => {
@@ -315,7 +310,7 @@ export class Danbooru extends SiteInject {
 
     this.config.get('addBookmark') && addBookmark(id);
 
-    await downloader.download(downloadConfigs);
+    await downloader.download(downloadConfigs, { priority: 1 });
 
     const { tags, artist, title, comment, source, rating } = mediaMeta;
     historyDb.add({

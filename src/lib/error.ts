@@ -23,3 +23,10 @@ export class JsonDataError extends Error {
     this.name = 'JsonDataError';
   }
 }
+
+export class TimoutError extends Error {
+  constructor(msg: string) {
+    super(msg);
+    this.name = 'TimoutError';
+  }
+}

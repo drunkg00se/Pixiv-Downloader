@@ -11,7 +11,7 @@ export async function downloadArtwork(btn: ThumbnailButton) {
   const { tags, artist, title, rating, source } = mediaMeta;
   const downloadConfigs = new YandeDownloadConfig(mediaMeta).getDownloadConfig(btn);
 
-  await downloader.download(downloadConfigs);
+  await downloader.download(downloadConfigs, { priority: 1 });
 
   historyDb.add({
     pid: Number(id),

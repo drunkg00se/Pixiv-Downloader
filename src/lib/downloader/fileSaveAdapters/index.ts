@@ -3,12 +3,13 @@ import { fsaHandler } from './fileSystemAccess';
 import { gmDownload } from './gmDownload';
 import { logger } from '@/lib/logger';
 import { aDownload } from './aDownload';
-import type { DownloadMeta } from '..';
 import { config } from '@/lib/config';
 import { GM_info } from '$';
 import { gmDownloadDataUrl } from './gmDownloadDataUrl';
 
-type FileSaveFn = (blob: Blob, downloadMeta: DownloadMeta) => Promise<void>;
+type FileSaveFn =
+  | ((blob: Blob, path: string, signal?: AbortSignal) => Promise<void>)
+  | ((blob: Blob, path: string) => void);
 
 let saveFile: FileSaveFn;
 

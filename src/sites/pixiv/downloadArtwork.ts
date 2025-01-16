@@ -49,7 +49,7 @@ export async function downloadArtwork(btn: ThumbnailButton) {
 
   const downloadConfigs = new PixivDownloadConfig(pixivMeta).getDownloadConfig(btn);
 
-  await downloader.download(downloadConfigs);
+  await downloader.download(downloadConfigs, { priority: 1 });
 
   const { comment, tags, artist, userId, title } = pixivMeta;
   const historyData: HistoryData = {

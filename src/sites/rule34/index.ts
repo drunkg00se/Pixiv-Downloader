@@ -84,14 +84,13 @@ export class Rule34 extends SiteInject {
       return rule34Parser.parse(id);
     },
 
-    async downloadByArtworkId(meta, taskId) {
+    async downloadByArtworkId(meta, signal) {
       downloader.dirHandleCheck();
 
       const { id, tags, artist, title, source, rating } = meta;
       const downloadConfigs = new Rule34DownloadConfig(meta).getDownloadConfig();
-      downloadConfigs.taskId = taskId;
 
-      await downloader.download(downloadConfigs);
+      await downloader.download(downloadConfigs, { signal });
 
       historyDb.add({
         pid: Number(id),
@@ -101,10 +100,6 @@ export class Rule34 extends SiteInject {
         source,
         rating
       });
-    },
-
-    onDownloadAbort(taskIds) {
-      downloader.abort(taskIds);
     }
   });
 

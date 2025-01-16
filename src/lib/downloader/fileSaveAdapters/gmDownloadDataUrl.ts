@@ -1,34 +1,33 @@
-import { CancelError } from '@/lib/error';
-import type { DownloadMeta } from '..';
-import { type GmDownloadRequest, GM_download } from '$';
+import { GM_download } from '$';
+import { logger } from '@/lib/logger';
 import { readBlobAsDataUrl } from '@/lib/util';
 
 // firefox 将动图保存到子目录
-export function gmDownloadDataUrl(blob: Blob, downloadMeta: DownloadMeta): Promise<void> {
+export function gmDownloadDataUrl(blob: Blob, path: string, signal?: AbortSignal): Promise<void> {
   return readBlobAsDataUrl(blob).then((dataUrl) => {
-    return new Promise((resolve, reject) => {
-      if (downloadMeta.isAborted) return reject(new CancelError());
+    signal?.throwIfAborted();
 
-      const request: GmDownloadRequest = {
+    return new Promise((resolve, reject) => {
+      const abortObj = GM_download({
         url: dataUrl,
-        name: downloadMeta.config.path,
+        name: path,
 
         onerror: (error) => {
           // GM_download.abort()执行时会触发onerror
-          if (downloadMeta.isAborted) {
+          if (signal?.aborted) {
             resolve();
           } else {
-            console.error(error);
-            reject(new Error(`FileSave error: ${downloadMeta.config.path}`));
+            logger.error(error);
+            reject(new Error(`FileSave error: ${path}`));
           }
         },
 
         onload: () => {
           resolve();
         }
-      };
+      });
 
-      downloadMeta.abort = GM_download(request).abort;
+      signal?.addEventListener('abort', () => abortObj.abort(), { once: true });
     });
   });
 }

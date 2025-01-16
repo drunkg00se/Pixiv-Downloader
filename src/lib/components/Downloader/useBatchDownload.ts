@@ -131,6 +131,7 @@ export interface BatchDownloadConfig<T extends MediaMeta, P extends PageOption<T
 
   beforeDownload?(): void | Promise<void>;
   afterDownload?(): void;
+  onDownloadAbort?(): void;
 
   filterOption: {
     filters: {
@@ -153,8 +154,7 @@ export interface BatchDownloadConfig<T extends MediaMeta, P extends PageOption<T
   pageOption: P;
 
   parseMetaByArtworkId(id: string): Promise<T>;
-  downloadByArtworkId(meta: T, taskId: string): Promise<void>;
-  onDownloadAbort(taskIds: string[]): void;
+  downloadByArtworkId(meta: T, signal: AbortSignal): Promise<void>;
 }
 
 interface FailedItem {
@@ -357,6 +357,8 @@ const ERROR_MASKED = 'Masked.';
 export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T> = PageOption<T>>(
   downloaderConfig: BatchDownloadConfig<T, P>
 ): BatchDownloadDefinition<T, P> {
+  const { requestDownload, cancelDownloadRequest, processNextDownload } = useChannel();
+
   const artworkCount = writable<number>(0);
   const successd = writable<string[]>([]);
   const failed = writable<FailedItem[]>([]);
@@ -364,17 +366,16 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
   const downloading = writable<boolean>(false);
   const log = writable<LogItem>();
 
-  const { requestDownload, cancelDownloadRequest, processNextDownload } = useChannel();
-
-  const tasks: string[] = [];
   const failedIdTasks: string[] = [];
   const unavaliableIdTasks: string[] = [];
   const failedMetaTasks: T[] = [];
   const unavaliableMetaTasks: T[] = [];
 
   let controller: AbortController | null;
-  let downloadCompleted: () => void;
-  let downloadAbort: (reason?: unknown) => void;
+  const taskControllers: Set<AbortController> = new Set();
+
+  let resolveDownload: () => void;
+  let rejectDownload: (reason?: unknown) => void;
 
   let $pageStart!: number;
   let $pageEnd!: number;
@@ -440,7 +441,7 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
   );
   checkIfDownloadCompleted.subscribe((isDone) => {
     // resolve waitUntilDownloadComplete when download completed.
-    isDone && downloadCompleted?.();
+    isDone && resolveDownload?.();
   });
 
   function isStringArray(arr: string[] | T[]): arr is string[] {
@@ -452,14 +453,18 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
     successd.set([]);
     failed.set([]);
     excluded.set([]);
-    tasks.length = 0;
+
     failedIdTasks.length = 0;
     unavaliableIdTasks.length = 0;
     failedMetaTasks.length = 0;
     unavaliableMetaTasks.length = 0;
+
     controller = null;
-    downloadCompleted = () => {};
-    downloadAbort = () => {};
+    taskControllers.clear();
+
+    resolveDownload = () => {};
+    rejectDownload = () => {};
+
     writeLog('Info', 'Reset store.');
   }
 
@@ -638,9 +643,10 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
     signal.addEventListener(
       'abort',
       () => {
+        taskControllers.forEach((controller) => controller.abort(signal.reason));
         cancelDownloadRequest(signal.reason);
-        downloadAbort?.(signal.reason);
-        downloaderConfig.onDownloadAbort(tasks);
+        rejectDownload?.(signal.reason);
+        downloaderConfig.onDownloadAbort?.();
       },
       { once: true }
     );
@@ -676,6 +682,7 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
             failedIdTasks.slice(),
             unavaliableIdTasks.slice()
           );
+
           failedIdTasks.length = 0;
           unavaliableIdTasks.length = 0;
         } else if (failedMetaTasks.length) {
@@ -684,13 +691,16 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
             failedMetaTasks.slice(),
             unavaliableMetaTasks.slice()
           );
+
           failedMetaTasks.length = 0;
           unavaliableMetaTasks.length = 0;
         }
 
+        taskControllers.clear();
         failed.set([]);
 
         writeLog('Info', 'Retry...');
+
         await dispatchDownload(generator, filterInGenerator, signal);
       }
 
@@ -787,8 +797,8 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
     signal.throwIfAborted();
 
     const waitUntilDownloadComplete = new Promise<void>((resolve, reject) => {
-      downloadCompleted = resolve;
-      downloadAbort = reject;
+      resolveDownload = resolve;
+      rejectDownload = reject;
     });
 
     const THRESHOLD = 5;
@@ -800,7 +810,7 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
       | void;
     let status429: boolean = false;
 
-    const failedHanlderFactory = (idOrMeta: string | T) => {
+    const failedHandlerFactory = (idOrMeta: string | T) => {
       return (reason: unknown) => {
         if (signal.aborted) return;
 
@@ -855,7 +865,6 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
       for (const idOrMeta of avaliable) {
         let artworkMeta: T | void;
         let metaId: string;
-        let taskId: string;
 
         if (status429) {
           writeLog('Error', new Error('Http status: 429, wait for 30 seconds.'));
@@ -865,7 +874,7 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
 
         if (typeof idOrMeta === 'string') {
           metaId = idOrMeta;
-          artworkMeta = await parseMetaByArtworkId(metaId).catch(failedHanlderFactory(metaId));
+          artworkMeta = await parseMetaByArtworkId(metaId).catch(failedHandlerFactory(metaId));
 
           signal.throwIfAborted();
           if (!artworkMeta) continue;
@@ -878,24 +887,23 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
               continue;
             }
           }
-
-          taskId = generateTaskID(metaId);
         } else {
           artworkMeta = idOrMeta;
           metaId = artworkMeta.id;
-          taskId = generateTaskID(metaId);
         }
 
         writeLog('Add', metaId);
-        tasks.push(taskId);
 
-        const processDownload = downloadByArtworkId(artworkMeta, taskId)
+        const taskController = new AbortController();
+        const taskSingal = taskController.signal;
+        taskControllers.add(taskController);
+
+        const processDownload = downloadByArtworkId(artworkMeta, taskSingal)
           .then(function handleSucccess() {
             !signal.aborted && addSuccessd(metaId);
-          }, failedHanlderFactory(idOrMeta))
+          }, failedHandlerFactory(idOrMeta))
           .finally(function removeTask() {
-            const idx = tasks.findIndex((storeId) => storeId === taskId);
-            idx !== -1 && tasks.splice(idx, 1);
+            taskControllers.delete(taskController);
           });
 
         dlPromise.push(processDownload);
@@ -914,10 +922,6 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
 
   function abort() {
     controller && controller.abort(new CancelError());
-  }
-
-  function generateTaskID(id: string): string {
-    return id + '_' + Math.random().toString(36).slice(2);
   }
 
   function overwrite(

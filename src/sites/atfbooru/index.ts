@@ -59,7 +59,7 @@ export class ATFbooru extends Danbooru {
 
     this.config.get('addBookmark') && addBookmark(id);
 
-    await downloader.download(downloadConfigs);
+    await downloader.download(downloadConfigs, { priority: 1 });
 
     const { tags, artist, title, comment, source, rating } = mediaMeta;
     historyDb.add({

@@ -1,7 +1,6 @@
 import { unsafeWindow } from '$';
-import { logger } from '@/lib/logger';
-import type { DownloadMeta } from '..';
 import { CancelError } from '@/lib/error';
+import { logger } from '@/lib/logger';
 
 // 状态标识，避免下载多图时多次弹出DirectoryPicker
 const enum DirHandleStatus {
@@ -49,7 +48,13 @@ class FileSystemAccessHandler {
   private dirHandle: FileSystemDirectoryHandle | undefined = undefined;
   private dirHandleStatus = DirHandleStatus.unpick;
 
-  private cachedTasks: [Blob, DownloadMeta, () => void, (reason?: any) => void][] = [];
+  private cachedTasks: [
+    data: Blob,
+    path: string,
+    signal: AbortSignal | undefined,
+    resolve: () => void,
+    reject: (reason?: unknown) => void
+  ][] = [];
 
   private duplicateFilenameCached: Record<string, string[]> = {};
 
@@ -127,8 +132,8 @@ class FileSystemAccessHandler {
   protected processCachedTasks() {
     const { length } = this.cachedTasks;
     for (let i = 0; i < length; i++) {
-      const [blob, downloadMeta, onSaveFullfilled, onSaveRejected] = this.cachedTasks[i];
-      this.saveFile(blob, downloadMeta).then(onSaveFullfilled, onSaveRejected);
+      const [blob, path, signal, onSaveFullfilled, onSaveRejected] = this.cachedTasks[i];
+      this.saveFile(blob, path, signal).then(onSaveFullfilled, onSaveRejected);
     }
     logger.info(`执行${length}个缓存任务`);
 
@@ -141,7 +146,7 @@ class FileSystemAccessHandler {
   }
 
   protected rejectCachedTasks() {
-    this.cachedTasks.forEach(([, , , onSaveRejected]) => onSaveRejected(new CancelError()));
+    this.cachedTasks.forEach(([, , , , onSaveRejected]) => onSaveRejected(new CancelError()));
     this.cachedTasks.length = 0;
     logger.info(`取消${this.cachedTasks.length}个缓存任务`);
   }
@@ -172,9 +177,8 @@ class FileSystemAccessHandler {
     if (this.filenameConflictAction === 'prompt') {
       return await unsafeWindow.showSaveFilePicker({
         suggestedName: filename,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        types: [{ description: 'Image file', accept: { ['image/' + ext]: ['.' + ext] } }]
+        // @ts-expect-error accept MIMEType & FileExtension
+        types: [{ description: 'Image file', accept: { ['image/' + ext]: '.' + ext } }]
       });
     } else {
       for (let suffix = 1; suffix < 1000; suffix++) {
@@ -264,19 +268,19 @@ class FileSystemAccessHandler {
     this.filenameConflictAction = action;
   }
 
-  public async saveFile(blob: Blob, downloadMeta: DownloadMeta): Promise<void> {
-    if (downloadMeta.isAborted) throw new CancelError();
+  public async saveFile(blob: Blob, path: string, signal?: AbortSignal): Promise<void> {
+    signal?.throwIfAborted();
 
     if (this.dirHandleStatus === DirHandleStatus.picking) {
       let onSaveFullfilled!: () => void;
-      let onSaveRejected!: (reason?: any) => void;
+      let onSaveRejected!: (reason?: unknown) => void;
 
       const promiseExcutor = new Promise<void>((resolve, reject) => {
         onSaveFullfilled = resolve;
         onSaveRejected = reject;
       });
 
-      this.cachedTasks.push([blob, downloadMeta, onSaveFullfilled, onSaveRejected]);
+      this.cachedTasks.push([blob, path, signal, onSaveFullfilled, onSaveRejected]);
       return promiseExcutor;
     }
 
@@ -287,7 +291,6 @@ class FileSystemAccessHandler {
 
     let currenDirHandle: FileSystemDirectoryHandle;
     let filename: string;
-    const path = downloadMeta.config.path;
     const index = path.lastIndexOf('/');
 
     if (index === -1) {
@@ -298,7 +301,7 @@ class FileSystemAccessHandler {
       currenDirHandle = await this.getDirHandleRecursive(path.slice(0, index));
     }
 
-    if (downloadMeta.isAborted) throw new CancelError();
+    signal?.throwIfAborted();
 
     const fileHandle = await this.getFilenameHandle(currenDirHandle, filename);
     const writableStream = await fileHandle.createWritable();
