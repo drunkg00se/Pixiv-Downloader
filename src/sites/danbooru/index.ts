@@ -155,7 +155,7 @@ export class Danbooru extends SiteInject {
       return danbooruParser.parseIdByApi(id);
     },
 
-    async downloadByArtworkId(meta, signal) {
+    async downloadArtworkByMeta(meta, signal) {
       downloader.dirHandleCheck();
 
       const downloadConfigs = new DanbooruDownloadConfig(meta).getDownloadConfig();

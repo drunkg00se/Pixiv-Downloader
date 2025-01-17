@@ -84,7 +84,7 @@ export class Rule34 extends SiteInject {
       return rule34Parser.parse(id);
     },
 
-    async downloadByArtworkId(meta, signal) {
+    async downloadArtworkByMeta(meta, signal) {
       downloader.dirHandleCheck();
 
       const { id, tags, artist, title, source, rating } = meta;

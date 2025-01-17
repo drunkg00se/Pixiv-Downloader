@@ -114,7 +114,7 @@ export class Yande extends SiteInject {
       return yandeParser.parse(id);
     },
 
-    async downloadByArtworkId(meta, signal) {
+    async downloadArtworkByMeta(meta, signal) {
       downloader.dirHandleCheck();
       const { id, tags, artist, title, rating, source } = meta;
       const downloadConfigs = new YandeDownloadConfig(meta).getDownloadConfig();

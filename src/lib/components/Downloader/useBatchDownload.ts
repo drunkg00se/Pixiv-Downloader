@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { CancelError, RequestError } from '@/lib/error';
 import { sleep } from '@/lib/util';
 import type { MediaMeta } from '@/sites/interface';
+import PQueue from 'p-queue';
 
 interface YieldArtworkId {
   total: number;
@@ -112,7 +113,7 @@ interface BatchDownload<T extends MediaMeta, P extends PageOption<T> = PageOptio
     partialConfig: Partial<
       Pick<
         BatchDownloadConfig<T, P>,
-        'avatar' | 'downloadByArtworkId' | 'onDownloadAbort' | 'parseMetaByArtworkId'
+        'avatar' | 'downloadArtworkByMeta' | 'onDownloadAbort' | 'parseMetaByArtworkId'
       >
     >
   ): BatchDownloadDefinition<T, P>;
@@ -154,7 +155,7 @@ export interface BatchDownloadConfig<T extends MediaMeta, P extends PageOption<T
   pageOption: P;
 
   parseMetaByArtworkId(id: string): Promise<T>;
-  downloadByArtworkId(meta: T, signal: AbortSignal): Promise<void>;
+  downloadArtworkByMeta(meta: T, signal: AbortSignal): Promise<void>;
 }
 
 interface FailedItem {
@@ -374,6 +375,8 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
   let controller: AbortController | null;
   const taskControllers: Set<AbortController> = new Set();
 
+  const downloadQueue = new PQueue({ concurrency: 5, interval: 1100, intervalCap: 1 });
+
   let resolveDownload: () => void;
   let rejectDownload: (reason?: unknown) => void;
 
@@ -460,7 +463,11 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
     unavaliableMetaTasks.length = 0;
 
     controller = null;
-    taskControllers.clear();
+    downloadQueue.size !== 0 && downloadQueue.clear();
+    taskControllers.size !== 0 && taskControllers.clear();
+
+    // may be paused by http status 429, so we need to start it.
+    downloadQueue.start();
 
     resolveDownload = () => {};
     rejectDownload = () => {};
@@ -633,19 +640,29 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
     // reset store before download start, so we can still access store data after download finished.
     reset();
 
-    let downloadError: unknown;
     const { beforeDownload, afterDownload } = downloaderConfig;
-    let generaotrAfterDownload: (() => void) | undefined = undefined;
+
+    let generatorAfterDownloadCb: (() => void) | undefined = undefined;
+
+    let downloadError: unknown = null;
+
     let generator!: ReturnType<typeof getGenerator>;
 
     controller = new AbortController();
+
     const signal = controller.signal;
+
     signal.addEventListener(
       'abort',
       () => {
+        downloadQueue.size !== 0 && downloadQueue.clear();
+
         taskControllers.forEach((controller) => controller.abort(signal.reason));
+        taskControllers.clear();
+
         cancelDownloadRequest(signal.reason);
         rejectDownload?.(signal.reason);
+
         downloaderConfig.onDownloadAbort?.();
       },
       { once: true }
@@ -658,13 +675,13 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
 
       const {
         filterInGenerator,
-        beforeDownload: generaotrBeforeDownload,
+        beforeDownload: generaotrBeforeDownloadCb,
         afterDownload
       } = pageIdItem;
-      generaotrAfterDownload = afterDownload;
+      generatorAfterDownloadCb = afterDownload;
 
       typeof beforeDownload === 'function' && (await beforeDownload());
-      typeof generaotrBeforeDownload === 'function' && (await generaotrBeforeDownload());
+      typeof generaotrBeforeDownloadCb === 'function' && (await generaotrBeforeDownloadCb());
 
       generator = getGenerator(pageIdItem, ...restArgs);
 
@@ -696,7 +713,6 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
           unavaliableMetaTasks.length = 0;
         }
 
-        taskControllers.clear();
         failed.set([]);
 
         writeLog('Info', 'Retry...');
@@ -720,7 +736,7 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
       }
     }
 
-    typeof generaotrAfterDownload === 'function' && generaotrAfterDownload();
+    typeof generatorAfterDownloadCb === 'function' && generatorAfterDownloadCb();
     typeof afterDownload === 'function' && afterDownload();
 
     setDownloading(false);
@@ -792,63 +808,36 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
   async function dispatchDownload(
     generator: ReturnType<typeof getGenerator>,
     filterInGenerator: boolean,
-    signal: AbortSignal
+    batchDownloadSignal: AbortSignal
   ) {
-    signal.throwIfAborted();
+    batchDownloadSignal.throwIfAborted();
 
     const waitUntilDownloadComplete = new Promise<void>((resolve, reject) => {
       resolveDownload = resolve;
       rejectDownload = reject;
     });
 
-    const THRESHOLD = 5;
-    const { parseMetaByArtworkId, downloadByArtworkId } = downloaderConfig;
-    const dlPromise: Promise<void>[] = [];
+    const { parseMetaByArtworkId, downloadArtworkByMeta } = downloaderConfig;
+
     let result:
       | IteratorResult<YieldArtworkId, void>
       | IteratorResult<YieldArtworkMeta<T>, void>
       | void;
-    let status429: boolean = false;
-
-    const failedHandlerFactory = (idOrMeta: string | T) => {
-      return (reason: unknown) => {
-        if (signal.aborted) return;
-
-        let isFailedTask = false;
-
-        if (reason) {
-          isFailedTask = reason !== ERROR_MASKED;
-
-          if (reason instanceof RequestError && reason.status === 429) {
-            status429 = true;
-          }
-
-          logger.error(reason);
-        }
-
-        if (typeof idOrMeta === 'string') {
-          addFailed({ id: idOrMeta, reason });
-          isFailedTask && failedIdTasks.push(idOrMeta);
-        } else {
-          addFailed({ id: idOrMeta.id, reason });
-          isFailedTask && failedMetaTasks.push(idOrMeta);
-        }
-      };
-    };
 
     while (
       (result = await Promise.race([generator.next(), waitUntilDownloadComplete])) &&
       !result.done
     ) {
+      batchDownloadSignal.throwIfAborted();
+
       const { total, avaliable, invalid, unavaliable } = result.value;
 
       logger.info(total, avaliable, invalid, unavaliable);
 
-      signal.throwIfAborted();
-
       // Update artwork count store
       setArtworkCount(total);
       invalid.length && addExcluded(invalid);
+
       if (unavaliable.length) {
         if (isStringArray(unavaliable)) {
           addFailed(unavaliable.map((id) => ({ id, reason: ERROR_MASKED })));
@@ -859,62 +848,93 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
         }
       }
 
-      // Avoid frequent network requests by the generator.
-      if (!avaliable.length) await Promise.race([sleep(1500), waitUntilDownloadComplete]);
+      if (!avaliable.length) {
+        // Avoid frequent network requests by the generator.
+        await Promise.race([sleep(1500), waitUntilDownloadComplete]);
+        continue;
+      }
 
       for (const idOrMeta of avaliable) {
-        let artworkMeta: T | void;
-        let metaId: string;
-
-        if (status429) {
-          writeLog('Error', new Error('Http status: 429, wait for 30 seconds.'));
-          await Promise.race([sleep(30000), waitUntilDownloadComplete]);
-          status429 = false;
-        }
-
-        if (typeof idOrMeta === 'string') {
-          metaId = idOrMeta;
-          artworkMeta = await parseMetaByArtworkId(metaId).catch(failedHandlerFactory(metaId));
-
-          signal.throwIfAborted();
-          if (!artworkMeta) continue;
-
-          if (!filterInGenerator) {
-            const isValid = await checkValidity(artworkMeta);
-            if (!isValid) {
-              addExcluded(metaId);
-              await Promise.race([sleep(1000), waitUntilDownloadComplete]);
-              continue;
-            }
-          }
-        } else {
-          artworkMeta = idOrMeta;
-          metaId = artworkMeta.id;
-        }
-
-        writeLog('Add', metaId);
-
         const taskController = new AbortController();
         const taskSingal = taskController.signal;
+
         taskControllers.add(taskController);
 
-        const processDownload = downloadByArtworkId(artworkMeta, taskSingal)
-          .then(function handleSucccess() {
-            !signal.aborted && addSuccessd(metaId);
-          }, failedHandlerFactory(idOrMeta))
-          .finally(function removeTask() {
+        downloadQueue
+          .add(
+            async ({ signal: taskSingal }) => {
+              if (!taskSingal)
+                throw new Error(
+                  'Expect `QueueAddOptions.signal` to be a AbortSignal but got undefined.'
+                );
+
+              try {
+                taskSingal.throwIfAborted();
+
+                let artworkMeta: T;
+                let metaId: string;
+
+                if (typeof idOrMeta !== 'string') {
+                  artworkMeta = idOrMeta;
+                  metaId = artworkMeta.id;
+                } else {
+                  metaId = idOrMeta;
+
+                  artworkMeta = await parseMetaByArtworkId(metaId);
+
+                  taskSingal.throwIfAborted();
+
+                  if (!filterInGenerator && !(await checkValidity(artworkMeta))) {
+                    addExcluded(metaId);
+                    return;
+                  }
+                }
+
+                writeLog('Add', metaId);
+
+                await downloadArtworkByMeta(artworkMeta, taskSingal);
+
+                !taskSingal.aborted && addSuccessd(metaId);
+              } catch (error) {
+                if (taskSingal.aborted) return;
+
+                const isFailedTask = error !== ERROR_MASKED;
+
+                if (typeof idOrMeta === 'string') {
+                  addFailed({ id: idOrMeta, reason: error });
+                  isFailedTask && failedIdTasks.push(idOrMeta);
+                } else {
+                  addFailed({ id: idOrMeta.id, reason: error });
+                  isFailedTask && failedMetaTasks.push(idOrMeta);
+                }
+
+                if (
+                  error instanceof RequestError &&
+                  error.status === 429 &&
+                  !downloadQueue.isPaused
+                ) {
+                  // too many request, pause the download queue and resume is after 30 seconds.
+                  downloadQueue.pause();
+
+                  setTimeout(() => {
+                    !batchDownloadSignal.aborted && downloadQueue.start();
+                  }, 30000);
+
+                  writeLog('Error', new Error('Http status: 429, wait for 30 seconds.'));
+                }
+
+                logger.error(error);
+              }
+            },
+            { signal: taskSingal }
+          )
+          .catch(logger.warn)
+          .finally(() => {
             taskControllers.delete(taskController);
           });
-
-        dlPromise.push(processDownload);
-
-        if (dlPromise.length >= THRESHOLD) {
-          await Promise.race([...dlPromise, waitUntilDownloadComplete]);
-          dlPromise.length = 0;
-        } else {
-          await Promise.race([sleep(1000), waitUntilDownloadComplete]);
-        }
       }
+
+      await downloadQueue.onEmpty();
     }
 
     return waitUntilDownloadComplete;
@@ -928,7 +948,7 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
     partialConfig: Partial<
       Pick<
         BatchDownloadConfig<T, P>,
-        'avatar' | 'downloadByArtworkId' | 'onDownloadAbort' | 'parseMetaByArtworkId'
+        'avatar' | 'downloadArtworkByMeta' | 'onDownloadAbort' | 'parseMetaByArtworkId'
       >
     >
   ): BatchDownloadDefinition<T, P> {

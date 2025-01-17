@@ -212,7 +212,7 @@ export class Pixiv extends SiteInject {
       return pixivParser.parse(id, { tagLang: this.config.get('tagLang'), type: 'api' });
     },
 
-    async downloadByArtworkId(meta, signal) {
+    async downloadArtworkByMeta(meta, signal) {
       downloader.dirHandleCheck();
 
       const downloadConfigs = new PixivDownloadConfig(meta).getDownloadConfig();
