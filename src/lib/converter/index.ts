@@ -34,6 +34,7 @@ type AppendEffectOptions = ConvertOptions & {
 
 interface IConverter {
   addFrame(addFrameOptions: AddFrameOptions): void;
+  clearFrames(taskId: string): void;
   convert(convertOptions: ConvertOptions): Promise<Blob>;
   framesCount(taskId: string): number;
   appendPixivEffect(appendEffectOptions: AppendEffectOptions): Promise<Blob>;
@@ -82,6 +83,10 @@ class Converter implements IConverter {
     }
   }
 
+  clearFrames(taskId: string): void {
+    taskId in this.#ugoiraFramesData && delete this.#ugoiraFramesData[taskId];
+  }
+
   framesCount(taskId: string): number {
     return taskId in this.#ugoiraFramesData
       ? this.#ugoiraFramesData[taskId]['ugoiraFrames'].filter(Boolean).length
@@ -107,7 +112,7 @@ class Converter implements IConverter {
           throw new Error('No frame data found in taskId: ' + id);
         }
 
-        delete this.#ugoiraFramesData[id];
+        this.clearFrames(id);
 
         onProgress?.(0);
 

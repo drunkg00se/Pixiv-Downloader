@@ -52,25 +52,33 @@ const pixivHooks = {
   },
 
   bundle: {
-    async beforeFileSave(imgBlob: Blob, config: DownloadConfig<PixivSource>): Promise<Blob | void> {
-      // TODO: clear frames if signal is aborted before bundle started
+    async beforeFileSave(
+      imgBlob: Blob,
+      config: DownloadConfig<PixivSource>,
+      signal?: AbortSignal
+    ): Promise<Blob | void> {
+      signal?.throwIfAborted();
 
       const { taskId, source } = config;
 
       compressor.add(taskId, source.filename, imgBlob);
 
-      if (compressor.fileCount(taskId) === source.pageCount) {
-        let comment: string | undefined;
+      if (compressor.fileCount(taskId) !== source.pageCount) return;
 
-        if ('ugoiraMeta' in config.source) {
-          const delays = config.source.ugoiraMeta.frames.map((frames) => frames.delay);
-          comment = JSON.stringify(delays);
-        }
+      let comment: string | undefined;
 
-        const zipData = await compressor.bundle(taskId, comment);
-        compressor.remove(taskId);
-        return zipData;
+      if ('ugoiraMeta' in config.source) {
+        const delays = config.source.ugoiraMeta.frames.map((frames) => frames.delay);
+        comment = JSON.stringify(delays);
       }
+
+      const zipData = await compressor.bundle(taskId, comment);
+
+      signal?.throwIfAborted();
+
+      compressor.remove(taskId);
+
+      return zipData;
     },
 
     onError(_: Error, config: DownloadConfig<PixivSource>) {
@@ -96,6 +104,8 @@ const pixivHooks = {
     beforeFileSaveFactory(btn?: ThumbnailButton) {
       const onProgress = btn ? this.convertProgressFactory(btn) : undefined;
 
+      let clearFrames: () => void;
+
       return async function beforeFileSave(
         imgBlob: Blob,
         config: DownloadConfig<PixivSource>,
@@ -103,11 +113,15 @@ const pixivHooks = {
       ): Promise<Blob | void> {
         signal?.throwIfAborted();
 
-        // TODO: clear frames if signal is aborted before convert started
-
         const { taskId, source } = config;
 
         if (source.illustType !== IllustType.ugoira) return;
+
+        clearFrames ??= () => {
+          converter.clearFrames(taskId);
+        };
+
+        signal?.addEventListener('abort', clearFrames, { once: true });
 
         converter.addFrame({
           id: taskId,

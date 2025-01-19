@@ -1,10 +1,9 @@
 import JSZip from 'jszip';
-import { logger } from '@/lib/logger';
 
 interface Compressor {
   add(id: string, name: string, data: Blob): void;
   bundle(id: string, comment?: string): Promise<Blob>;
-  remove(ids: string | string[]): void;
+  remove(ids: string): void;
   fileCount(id: string): number;
   unzip(data: Blob): Promise<Blob[]>;
 }
@@ -20,20 +19,12 @@ function createCompressor(): Compressor {
     bundle(id: string, comment?: string): Promise<Blob> {
       const folder = zip.folder(id);
       if (!folder) throw new TypeError('no such folder:' + id);
+
       return folder.generateAsync<'blob'>({ type: 'blob', comment });
     },
 
-    remove(ids: string | string[]): void {
-      if (typeof ids === 'string') {
-        zip.remove(ids);
-      } else {
-        // dirs末尾带'/'
-        const dirs = zip.filter((_, file) => file.dir).map((dir) => dir.name);
-        const dirsToDel = ids.filter((id) => dirs.some((dir) => dir.includes(id)));
-        dirsToDel.forEach((dir) => zip.remove(dir));
-
-        logger.info('Compressor: Remove', zip);
-      }
+    remove(ids: string): void {
+      zip.remove(ids);
     },
 
     fileCount(id: string): number {
