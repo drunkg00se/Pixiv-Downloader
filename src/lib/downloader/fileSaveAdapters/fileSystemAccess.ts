@@ -1,52 +1,33 @@
 import { unsafeWindow } from '$';
+import { channelEvent } from '@/lib/channelEvent';
 import { CancelError } from '@/lib/error';
 import { logger } from '@/lib/logger';
 
 // 状态标识，避免下载多图时多次弹出DirectoryPicker
 const enum DirHandleStatus {
-  unpick,
-  picking,
-  picked
+  REQUEST = 'dirHandle.request',
+  RESPONSE = 'dirHandle.response',
+  PICKED = 'dirHandle.picked',
+  UNPICK = 'dirHandle.unpick',
+  PICKING = 'dirHandle.picking'
 }
 
-type PickingStatus = {
-  kind: DirHandleStatus.picking;
+type DirHandleEventArgsMap = {
+  [DirHandleStatus.REQUEST]: never;
+  [DirHandleStatus.RESPONSE]: FileSystemDirectoryHandle;
+  [DirHandleStatus.PICKED]: FileSystemDirectoryHandle;
+  [DirHandleStatus.UNPICK]: never;
+  [DirHandleStatus.PICKING]: never;
 };
-
-type UpdateHandle = {
-  kind: DirHandleStatus.picked;
-  handle: FileSystemDirectoryHandle;
-};
-
-type UnpickStatus = {
-  kind: DirHandleStatus.unpick;
-};
-
-type RequestHandle = {
-  kind: 'request';
-};
-
-type ReponseHandle = {
-  kind: 'response';
-  handle: FileSystemDirectoryHandle;
-};
-
-type UpdateChannelData =
-  | UnpickStatus
-  | PickingStatus
-  | UpdateHandle
-  | RequestHandle
-  | ReponseHandle;
 
 type FilenameConflictAction = 'uniquify' | 'overwrite' | 'prompt';
 
 class FileSystemAccessHandler {
   private filenameConflictAction: FilenameConflictAction = 'uniquify';
 
-  private updateDirHandleChannel: BroadcastChannel;
-
   private dirHandle: FileSystemDirectoryHandle | undefined = undefined;
-  private dirHandleStatus = DirHandleStatus.unpick;
+
+  private dirHandleStatus = DirHandleStatus.UNPICK;
 
   private cachedTasks: [
     data: Blob,
@@ -58,56 +39,65 @@ class FileSystemAccessHandler {
 
   private duplicateFilenameCached: Record<string, string[]> = {};
 
-  constructor(channelName: string) {
-    this.updateDirHandleChannel = new BroadcastChannel(channelName);
+  constructor() {
+    this.#addChannelEventListeners();
 
-    this.updateDirHandleChannel.onmessage = (evt: MessageEvent) => {
-      const data = evt.data as UpdateChannelData;
+    channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.REQUEST>(DirHandleStatus.REQUEST);
+  }
 
-      switch (data.kind) {
-        case DirHandleStatus.picking:
-          this.dirHandleStatus = DirHandleStatus.picking;
-          logger.info('正在选择目录');
-          break;
-        case DirHandleStatus.unpick:
-          logger.warn('取消更新dirHandle');
-          if (this.dirHandle) {
-            this.dirHandleStatus = DirHandleStatus.picked;
-            this.processCachedTasks();
-          } else {
-            this.dirHandleStatus = DirHandleStatus.unpick;
-            this.rejectCachedTasks();
-          }
-          break;
-        case DirHandleStatus.picked:
-          this.dirHandleStatus = DirHandleStatus.picked;
-          this.dirHandle = data.handle;
-          logger.info('更新dirHandle', this.dirHandle);
-          this.processCachedTasks();
-          break;
-        case 'request':
-          if (this.dirHandle) {
-            this.updateDirHandleChannel.postMessage({
-              kind: 'response',
-              handle: this.dirHandle
-            });
-            logger.info('响应请求dirHandle');
-          }
-          break;
-        case 'response':
-          if (!this.dirHandle) {
-            if (this.dirHandleStatus === DirHandleStatus.unpick)
-              this.dirHandleStatus = DirHandleStatus.picked;
-            this.dirHandle = data.handle;
-            logger.info('首次获取dirHandle', this.dirHandle);
-          }
-          break;
-        default:
-          throw new Error('Invalid data kind.');
+  #addChannelEventListeners() {
+    channelEvent.on(DirHandleStatus.REQUEST, () => {
+      if (!this.dirHandle) return;
+
+      channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.RESPONSE>(
+        DirHandleStatus.RESPONSE,
+        this.dirHandle
+      );
+
+      logger.info('响应请求dirHandle');
+    });
+
+    channelEvent.on<DirHandleEventArgsMap, DirHandleStatus.RESPONSE>(
+      DirHandleStatus.RESPONSE,
+      (handler: FileSystemDirectoryHandle) => {
+        if (this.dirHandle) return;
+
+        if (this.dirHandleStatus === DirHandleStatus.UNPICK)
+          this.dirHandleStatus = DirHandleStatus.PICKED;
+
+        this.dirHandle = handler;
+
+        logger.info('首次获取dirHandle', this.dirHandle);
       }
-    };
+    );
 
-    this.updateDirHandleChannel.postMessage({ kind: 'request' });
+    channelEvent.on(DirHandleStatus.PICKING, () => {
+      this.dirHandleStatus = DirHandleStatus.PICKING;
+      logger.info('正在选择目录');
+    });
+
+    channelEvent.on(DirHandleStatus.UNPICK, () => {
+      logger.warn('取消更新dirHandle');
+
+      if (this.dirHandle) {
+        this.dirHandleStatus = DirHandleStatus.PICKED;
+        this.processCachedTasks();
+      } else {
+        this.dirHandleStatus = DirHandleStatus.UNPICK;
+        this.rejectCachedTasks();
+      }
+    });
+
+    channelEvent.on<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
+      DirHandleStatus.PICKED,
+      (handler: FileSystemDirectoryHandle) => {
+        this.dirHandleStatus = DirHandleStatus.PICKED;
+        this.dirHandle = handler;
+
+        logger.info('更新dirHandle', this.dirHandle);
+        this.processCachedTasks();
+      }
+    );
   }
 
   protected async getDirHandleRecursive(
@@ -223,17 +213,20 @@ class FileSystemAccessHandler {
 
   public async updateDirHandle(): Promise<boolean> {
     try {
-      this.dirHandleStatus = DirHandleStatus.picking;
-      this.updateDirHandleChannel.postMessage({ kind: DirHandleStatus.picking });
+      this.dirHandleStatus = DirHandleStatus.PICKING;
+
+      channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKING>(DirHandleStatus.PICKING);
 
       this.dirHandle = await unsafeWindow.showDirectoryPicker({ id: 'pdl', mode: 'readwrite' });
+
       logger.info('更新dirHandle', this.dirHandle);
 
-      this.dirHandleStatus = DirHandleStatus.picked;
-      this.updateDirHandleChannel.postMessage({
-        kind: DirHandleStatus.picked,
-        handle: this.dirHandle
-      });
+      this.dirHandleStatus = DirHandleStatus.PICKED;
+
+      channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
+        DirHandleStatus.PICKED,
+        this.dirHandle
+      );
 
       this.processCachedTasks();
 
@@ -241,15 +234,15 @@ class FileSystemAccessHandler {
     } catch (error) {
       logger.warn(error);
 
-      this.updateDirHandleChannel.postMessage({ kind: DirHandleStatus.unpick });
+      channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.UNPICK>(DirHandleStatus.UNPICK);
 
       /** 更新目录失败，如果旧目录存在则继续存储到旧目录 */
       if (this.dirHandle) {
-        this.dirHandleStatus = DirHandleStatus.picked;
+        this.dirHandleStatus = DirHandleStatus.PICKED;
         this.processCachedTasks();
       } else {
         /** 目录不存在，reject待下载的任务 */
-        this.dirHandleStatus = DirHandleStatus.unpick;
+        this.dirHandleStatus = DirHandleStatus.UNPICK;
         this.rejectCachedTasks();
       }
       return false;
@@ -261,7 +254,7 @@ class FileSystemAccessHandler {
   }
 
   public isDirHandleNotSet(): boolean {
-    return this.dirHandleStatus === DirHandleStatus.unpick;
+    return this.dirHandleStatus === DirHandleStatus.UNPICK;
   }
 
   public setFilenameConflictAction(action: FilenameConflictAction) {
@@ -271,7 +264,7 @@ class FileSystemAccessHandler {
   public async saveFile(blob: Blob, path: string, signal?: AbortSignal): Promise<void> {
     signal?.throwIfAborted();
 
-    if (this.dirHandleStatus === DirHandleStatus.picking) {
+    if (this.dirHandleStatus === DirHandleStatus.PICKING) {
       let onSaveFullfilled!: () => void;
       let onSaveRejected!: (reason?: unknown) => void;
 
@@ -284,7 +277,7 @@ class FileSystemAccessHandler {
       return promiseExcutor;
     }
 
-    if (this.dirHandleStatus === DirHandleStatus.unpick) {
+    if (this.dirHandleStatus === DirHandleStatus.UNPICK) {
       const isSuccess = await this.updateDirHandle();
       if (!isSuccess) throw new TypeError('Failed to get dir handle.');
     }
@@ -312,4 +305,4 @@ class FileSystemAccessHandler {
   }
 }
 
-export const fsaHandler = new FileSystemAccessHandler('update_dir_channel');
+export const fsaHandler = new FileSystemAccessHandler();

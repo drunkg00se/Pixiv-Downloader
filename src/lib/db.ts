@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie';
 import { logger } from './logger';
 import { generateCsv } from './util';
 import type { Readable, Unsubscriber } from 'svelte/store';
+import { channelEvent } from './channelEvent';
 
 interface HistoryItemBase {
   pid: number;
@@ -32,6 +33,20 @@ interface CacheItem {
   pid: number;
   page: Uint8Array | null;
 }
+
+type HistoryCache = Map<CacheItem['pid'], CacheItem['page']>;
+
+type Subscription = (val: HistoryCache) => void;
+
+const enum DbEvents {
+  SYNC = 'db.sync',
+  CLEAR = 'db.clear'
+}
+
+type DBEventArgsMap = {
+  [DbEvents.SYNC]: CacheItem | CacheItem[];
+  [DbEvents.CLEAR]: never;
+};
 
 class HistoryDb extends Dexie {
   private history!: Table<HistoryItem, number>;
@@ -174,17 +189,17 @@ class HistoryDb extends Dexie {
   }
 }
 
-type HistoryCache = Map<CacheItem['pid'], CacheItem['page']>;
-
 class CachedHistoryDb extends HistoryDb {
   protected cache: HistoryCache = new Map();
+
   private initCachePromise: Promise<void>;
-  private channel: BroadcastChannel;
 
   constructor() {
     super();
+
     this.initCachePromise = this.initCache();
-    this.channel = this.initChannel();
+
+    this.initChannel();
   }
 
   protected async initCache() {
@@ -200,32 +215,22 @@ class CachedHistoryDb extends HistoryDb {
   }
 
   protected initChannel() {
-    const CHANNEL_NAME = 'pdl_sync-cache';
-    const channel = new BroadcastChannel(CHANNEL_NAME);
-
-    channel.addEventListener('message', (evt) => {
-      const { data }: { data: CacheItem | CacheItem[] | undefined } = evt;
-      if (data === undefined) {
-        this.cache.clear();
-        logger.info('clear database cache');
-        return;
-      }
-
-      if (Array.isArray(data)) {
-        data.forEach((item) => {
+    channelEvent.on<DBEventArgsMap, DbEvents.SYNC>(DbEvents.SYNC, (items) => {
+      if (Array.isArray(items)) {
+        items.forEach((item) => {
           this.cache.set(item.pid, item.page);
         });
-        logger.info('Sync database cache:', data.length);
+
+        logger.info('Sync database cache:', items.length);
       } else {
-        this.cache.set(data.pid, data.page);
+        this.cache.set(items.pid, items.page);
       }
     });
 
-    return channel;
-  }
-
-  private syncCacheViaChannel(item?: CacheItem | CacheItem[]) {
-    this.channel.postMessage(item);
+    channelEvent.on<DBEventArgsMap, DbEvents.CLEAR>(DbEvents.CLEAR, () => {
+      this.cache.clear();
+      logger.info('clear database cache');
+    });
   }
 
   protected updateCache(item: CacheItem | CacheItem[]) {
@@ -236,12 +241,14 @@ class CachedHistoryDb extends HistoryDb {
     } else {
       this.cache.set(item.pid, item.page);
     }
-    this.syncCacheViaChannel(item);
+
+    channelEvent.emit<DBEventArgsMap, DbEvents.SYNC>(DbEvents.SYNC, item);
   }
 
   protected clearCache() {
     this.cache.clear();
-    this.syncCacheViaChannel();
+
+    channelEvent.emit<DBEventArgsMap, DbEvents.CLEAR>(DbEvents.CLEAR);
   }
 
   private async getCache(pid: number | string): Promise<CacheItem['page'] | undefined> {
@@ -279,6 +286,7 @@ class CachedHistoryDb extends HistoryDb {
         page: historyObj.page ? new Uint8Array(Object.values(historyObj.page)) : null
       };
     });
+
     this.updateCache(cacheItems);
 
     return super.import(objArr);
@@ -307,12 +315,12 @@ class CachedHistoryDb extends HistoryDb {
   }
 }
 
-type Subscription = (val: HistoryCache) => void;
 class ReadableHistoryDb extends CachedHistoryDb implements Readable<HistoryCache> {
   private subscribers: Set<Subscription> = new Set();
 
   private runSubscription() {
     logger.info('runSubscription', this.subscribers.size);
+
     this.subscribers.forEach((subscription) => {
       subscription(this.cache);
     });
@@ -320,16 +328,17 @@ class ReadableHistoryDb extends CachedHistoryDb implements Readable<HistoryCache
 
   protected async initCache(): Promise<void> {
     await super.initCache();
+
     this.runSubscription();
   }
 
-  protected initChannel(): BroadcastChannel {
-    const channel = super.initChannel();
-    channel.addEventListener('message', () => {
-      this.runSubscription();
-    });
+  protected initChannel() {
+    super.initChannel();
 
-    return channel;
+    const runSubscription = this.runSubscription.bind(this);
+
+    channelEvent.on<DBEventArgsMap, DbEvents.SYNC>(DbEvents.SYNC, runSubscription);
+    channelEvent.on<DBEventArgsMap, DbEvents.CLEAR>(DbEvents.CLEAR, runSubscription);
   }
 
   protected updateCache(item: CacheItem | CacheItem[]): void {

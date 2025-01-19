@@ -71,7 +71,6 @@
 
   async function updatefsaDir() {
     fsaDirectory = await downloader.updateDirHandle();
-    console.log(fsaDirectory);
   }
 
   function insertDirTemplateAtCursor(template: string) {
