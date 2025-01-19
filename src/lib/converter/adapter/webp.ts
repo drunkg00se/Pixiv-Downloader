@@ -1,6 +1,4 @@
-import type { ConvertMeta, ConvertUgoiraSource } from '..';
 import { logger } from '@/lib/logger';
-import { CancelError } from '@/lib/error';
 import webpWorkerFragment from '../worker/webpWorkerFragment?rawjs';
 import webpWasm from '../wasm/toWebpWorker?raw';
 import { config } from '@/lib/config';
@@ -11,68 +9,64 @@ const workerUrl = URL.createObjectURL(
 
 const freeWebpWorkers: Worker[] = [];
 
-export function webp(
+export async function webp(
   frames: Blob[] | ImageBitmap[],
-  convertMeta: ConvertMeta<ConvertUgoiraSource>
+  delays: number[],
+  signal?: AbortSignal,
+  onProgress?: (val: number) => void
 ): Promise<Blob> {
-  return new Promise<Worker>((resolve, reject) => {
-    logger.time(convertMeta.id);
+  signal?.throwIfAborted();
 
-    let worker: Worker;
+  let worker: Worker;
 
-    if (freeWebpWorkers.length) {
-      logger.info('Reuse webp workers.');
-      worker = freeWebpWorkers.shift() as Worker;
-      resolve(worker);
-    } else {
-      worker = new Worker(workerUrl);
-      worker.onmessage = (evt) => {
-        if (evt.data === 'ok') {
-          logger.info('Webp worker loaded.');
-          resolve(worker);
-        } else {
-          reject(evt.data);
-        }
-      };
-    }
-  }).then((worker) => {
-    if (convertMeta.isAborted) {
-      freeWebpWorkers.push(worker);
-      logger.timeEnd(convertMeta.id);
-      logger.warn('Convert stop manually.' + convertMeta.id);
-      throw new CancelError();
-    }
+  if (freeWebpWorkers.length) {
+    worker = freeWebpWorkers.shift() as Worker;
+    logger.info('Reuse webp workers.');
+  } else {
+    worker = new Worker(workerUrl);
+  }
 
-    return new Promise<Blob>((resolve, reject) => {
-      worker.onmessage = (evt) => {
-        if (convertMeta.isAborted) {
-          worker.terminate();
-          logger.timeEnd(convertMeta.id);
-          logger.warn('Convert stop manually.' + convertMeta.id);
-          reject(new CancelError());
-        } else {
-          const data = evt.data as number | Uint8Array;
-          if (typeof data !== 'object') {
-            convertMeta.onProgress?.(evt.data);
-          } else {
-            logger.timeEnd(convertMeta.id);
-            freeWebpWorkers.push(worker);
-            resolve(new Blob([evt.data], { type: 'image/webp' }));
-          }
-        }
-      };
+  let resolveConvert: (blob: Blob) => void;
+  let rejectConvert: (reason?: unknown) => void;
 
-      const delays = convertMeta.source.delays;
-      worker.postMessage(
-        {
-          frames,
-          delays,
-          lossless: Number(config.get('losslessWebp')),
-          quality: config.get('webpQuality'),
-          method: config.get('webpMehtod')
-        },
-        frames[0] instanceof ImageBitmap ? (frames as ImageBitmap[]) : []
-      );
-    });
+  const convertPromise = new Promise<Blob>((resolve, reject) => {
+    resolveConvert = resolve;
+    rejectConvert = reject;
   });
+
+  signal?.addEventListener(
+    'abort',
+    () => {
+      worker.terminate();
+      rejectConvert(signal?.reason);
+    },
+    { once: true }
+  );
+
+  worker.onmessage = (evt) => {
+    if (signal?.aborted) return;
+
+    const data = evt.data as number | Uint8Array;
+
+    if (typeof data !== 'object') {
+      onProgress?.(evt.data);
+    } else {
+      freeWebpWorkers.push(worker);
+
+      resolveConvert(new Blob([evt.data], { type: 'image/webp' }));
+    }
+  };
+
+  worker.postMessage(
+    {
+      frames,
+      delays,
+      lossless: Number(config.get('losslessWebp')),
+      quality: config.get('webpQuality'),
+      method: config.get('webpMehtod')
+    },
+    frames[0] instanceof ImageBitmap ? (frames as ImageBitmap[]) : []
+  );
+
+  return convertPromise;
 }

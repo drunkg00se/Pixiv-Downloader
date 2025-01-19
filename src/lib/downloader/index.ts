@@ -11,7 +11,11 @@ type DownloadOption = { signal?: AbortSignal; priority?: number };
 export type DownloaderHooks<T> = {
   onProgress?: (progress: number, config: DownloadConfig<T>) => void;
   onXhrLoaded?: (config: DownloadConfig<T>) => void;
-  beforeFileSave?: (blob: Blob, config: DownloadConfig<T>) => Promise<Blob | void>;
+  beforeFileSave?: (
+    blob: Blob,
+    config: DownloadConfig<T>,
+    signal?: AbortSignal
+  ) => Promise<Blob | void>;
   onFileSaved?: (config: DownloadConfig<T>) => void;
   onError?: (err: Error, config: DownloadConfig<T>) => void;
   onAbort?: (config: DownloadConfig<T>) => void;

@@ -10,7 +10,14 @@
 
 declare const Module: any;
 
+let resolveModule: () => void;
+
+const moduleLoaded = new Promise<void>((resolve) => {
+  resolveModule = resolve;
+});
+
 let webpApi = {} as any;
+
 Module.onRuntimeInitialized = () => {
   webpApi = {
     init: Module.cwrap('init', '', ['number', 'number', 'number']),
@@ -22,23 +29,24 @@ Module.onRuntimeInitialized = () => {
     getResultSize: Module.cwrap('getResultSize', 'number', [])
   };
 
-  postMessage('ok');
+  resolveModule();
 };
 
+function isBlobArray(frames: Blob[] | ImageBitmap[]): frames is Blob[] {
+  return frames[0] instanceof Blob;
+}
+
 onmessage = async (evt) => {
+  await moduleLoaded;
+
   const { frames, delays, lossless = 0, quality = 95, method = 4 } = evt.data;
 
   webpApi.init(lossless, quality, method);
 
-  const bitmaps: ImageBitmap[] = await Promise.all(
-    frames.map((frame: ImageBitmap | Blob) => {
-      if (frame instanceof Blob) {
-        return createImageBitmap(frame);
-      } else {
-        return frame;
-      }
-    })
-  );
+  const bitmaps: ImageBitmap[] = isBlobArray(frames)
+    ? await Promise.all(frames.map((frame) => createImageBitmap(frame)))
+    : frames;
+
   const width = bitmaps[0].width;
   const height = bitmaps[0].height;
   const canvas = new OffscreenCanvas(width, height);

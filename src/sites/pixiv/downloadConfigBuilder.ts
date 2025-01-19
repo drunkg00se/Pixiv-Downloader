@@ -53,6 +53,8 @@ const pixivHooks = {
 
   bundle: {
     async beforeFileSave(imgBlob: Blob, config: DownloadConfig<PixivSource>): Promise<Blob | void> {
+      // TODO: clear frames if signal is aborted before bundle started
+
       const { taskId, source } = config;
 
       compressor.add(taskId, source.filename, imgBlob);
@@ -71,7 +73,7 @@ const pixivHooks = {
       }
     },
 
-    onError(err: Error, config: DownloadConfig<PixivSource>) {
+    onError(_: Error, config: DownloadConfig<PixivSource>) {
       compressor.remove(config.taskId);
     },
 
@@ -96,22 +98,32 @@ const pixivHooks = {
 
       return async function beforeFileSave(
         imgBlob: Blob,
-        config: DownloadConfig<PixivSource>
+        config: DownloadConfig<PixivSource>,
+        signal?: AbortSignal
       ): Promise<Blob | void> {
+        signal?.throwIfAborted();
+
+        // TODO: clear frames if signal is aborted before convert started
+
         const { taskId, source } = config;
 
-        if (source.illustType === IllustType.ugoira) {
-          converter.addFrame(
-            taskId,
-            imgBlob,
-            source.ugoiraMeta.frames[source.order]['delay'],
-            source.order
-          );
+        if (source.illustType !== IllustType.ugoira) return;
 
-          if (converter.framesCount(taskId) === source.pageCount) {
-            return await converter.convert(taskId, source.extendName as ConvertFormat, onProgress);
-          }
-        }
+        converter.addFrame({
+          id: taskId,
+          frame: imgBlob,
+          delay: source.ugoiraMeta.frames[source.order]['delay'],
+          order: source.order
+        });
+
+        if (converter.framesCount(taskId) !== source.pageCount) return;
+
+        return await converter.convert({
+          id: taskId,
+          format: config.source.extendName as ConvertFormat,
+          onProgress,
+          signal
+        });
       };
     },
 
@@ -120,8 +132,11 @@ const pixivHooks = {
 
       return async function beforeFileSave(
         imgBlob: Blob,
-        pixivConfig: DownloadConfig<PixivSource>
+        pixivConfig: DownloadConfig<PixivSource>,
+        signal?: AbortSignal
       ): Promise<Blob | void> {
+        signal?.throwIfAborted();
+
         const effectId = 'pixivGlow2024';
         const url =
           'https://source.pixiv.net/special/seasonal-effect-tag/pixiv-glow-2024/effect.png';
@@ -129,18 +144,16 @@ const pixivHooks = {
         const { taskId } = pixivConfig;
         const effectData = await historyDb.getImageEffect(effectId);
 
-        if (
-          effectData &&
-          effectData.data[0] instanceof ArrayBuffer // check whether data is legacy type.
-        ) {
-          const { data, delays, width, height } = effectData;
-          const { blob } = await converter.appendPixivEffect(
-            taskId,
-            pixivConfig.source.extendName,
-            imgBlob,
-            { frames: data, delays, width, height },
-            onProgress
-          );
+        if (effectData && !('width' in effectData)) {
+          const { data } = effectData;
+          const blob = await converter.appendPixivEffect({
+            id: taskId,
+            format: pixivConfig.source.extendName as ConvertFormat,
+            illust: imgBlob,
+            seasonalEffect: data,
+            onProgress,
+            signal
+          });
 
           return blob;
         } else {
@@ -159,33 +172,24 @@ const pixivHooks = {
             });
           });
 
-          const { blob, frames, delays, width, height } = await converter.appendPixivEffect(
-            taskId,
-            pixivConfig.source.extendName,
-            imgBlob,
-            effctBlob,
-            onProgress
-          );
+          const blob = await converter.appendPixivEffect({
+            id: taskId,
+            format: pixivConfig.source.extendName as ConvertFormat,
+            illust: imgBlob,
+            // seasonalEffect will be transfered to worker
+            seasonalEffect: await effctBlob.arrayBuffer(),
+            onProgress,
+            signal
+          });
 
           historyDb.addImageEffect({
             id: effectId,
-            data: frames,
-            delays,
-            width,
-            height
+            data: await effctBlob.arrayBuffer()
           });
 
           return blob;
         }
       };
-    },
-
-    onError(err: Error, config: DownloadConfig<PixivSource>) {
-      converter.del(config.taskId);
-    },
-
-    onAbort(config: DownloadConfig<PixivSource>) {
-      converter.del(config.taskId);
     }
   }
 };
@@ -211,14 +215,13 @@ const downloaderHooks = {
       case 'convert':
         return {
           onXhrLoaded: pixivHooks.download.mulityArtworksProgressFactory(button, meta.pageCount),
-          beforeFileSave: pixivHooks.convert.beforeFileSaveFactory(button),
-          onError: pixivHooks.convert.onError
+          beforeFileSave: pixivHooks.convert.beforeFileSaveFactory(button)
         };
+
       case 'mixEffect':
         return {
           onProgress: pixivHooks.download.singleArtworkProgressFactory(button, meta.pageCount),
-          beforeFileSave: pixivHooks.convert.mixGlowEffect(button),
-          onError: pixivHooks.convert.onError
+          beforeFileSave: pixivHooks.convert.mixGlowEffect(button)
         };
     }
   }
@@ -282,7 +285,7 @@ export class PixivDownloadConfig extends DownloadConfigBuilder<PixivSource> {
     const fTitle = this.normalizeString(title) || id;
     const fTags = this.normalizeString(useTags.join('_'));
 
-    const replaceDate = (match: string, p1: string): string => {
+    const replaceDate = (_: string, p1: string): string => {
       const format = p1 || 'YYYY-MM-DD';
       return dayjs(createDate).format(format);
     };

@@ -1,37 +1,24 @@
-import type {
-  ConvertMeta,
-  ConvertUgoiraSource,
-  MixEffectEncodedData,
-  EffectImageDecodedData,
-  ConvertImageEffectSource
-} from '..';
 import { logger } from '@/lib/logger';
-import { CancelError } from '@/lib/error';
 import pngWorkerFragment from '../worker/pngWorkerFragment?rawjs';
 import UPNG from 'upng-js?raw';
 import pako from 'pako/dist/pako.js?raw';
 import { config } from '@/lib/config';
 
-type PngWorkerEffectConfig =
-  | {
-      illust: Blob;
-      effect: ArrayBuffer;
-    }
-  | {
-      illust: Blob;
-      effect: ArrayBuffer[];
-      delays: number[];
-      width: number;
-      height: number;
-    };
-
-type EncodeApngConfig = {
+export type EncodeApngConfig = {
   frames: Blob[] | ImageBitmap[];
   delays: number[];
   cnum: number;
 };
 
-export type PngWorkerConfig = PngWorkerEffectConfig | EncodeApngConfig;
+export type AppendEffectWorkerOptions = {
+  illust: Blob;
+  effect: ArrayBuffer;
+};
+
+export type AppendEffectResult = {
+  frames: ImageBitmap[];
+  delays: number[];
+};
 
 const workerUrl = URL.createObjectURL(
   new Blob(
@@ -48,107 +35,102 @@ const workerUrl = URL.createObjectURL(
 
 const freeApngWorkers: Worker[] = [];
 
-export function png(
+export async function png(
   frames: Blob[] | ImageBitmap[],
-  convertMeta: ConvertMeta<ConvertUgoiraSource>
+  delays: number[],
+  signal?: AbortSignal
 ): Promise<Blob> {
-  return new Promise<Blob>((resolve, reject) => {
-    logger.info('Start convert:', convertMeta.id);
-    logger.time(convertMeta.id);
+  signal?.throwIfAborted();
 
-    let worker: Worker;
-    if (freeApngWorkers.length) {
-      worker = freeApngWorkers.shift() as Worker;
-      logger.info('Reuse apng workers.');
-    } else {
-      worker = new Worker(workerUrl);
+  let resolveConvert: (blob: Blob) => void;
+  let rejectConvert: (reason?: unknown) => void;
+
+  const convertPromise = new Promise<Blob>((resolve, reject) => {
+    resolveConvert = resolve;
+    rejectConvert = reject;
+  });
+
+  let worker: Worker;
+  if (freeApngWorkers.length) {
+    worker = freeApngWorkers.shift() as Worker;
+    logger.info('Reuse apng workers.');
+  } else {
+    worker = new Worker(workerUrl);
+  }
+
+  signal?.addEventListener(
+    'abort',
+    () => {
+      worker.terminate();
+      rejectConvert(signal?.reason);
+    },
+    { once: true }
+  );
+
+  worker.onmessage = function (e) {
+    freeApngWorkers.push(worker);
+
+    if (signal?.aborted) return;
+
+    if (!e.data) {
+      return rejectConvert(new TypeError('Failed to get png data.'));
     }
 
-    convertMeta.abort = () => {
-      logger.timeEnd(convertMeta.id);
-      logger.warn('Convert stop manually. ' + convertMeta.id);
-      reject(new CancelError());
-      convertMeta.isAborted = true;
-      worker.terminate();
-    };
+    const pngBlob = new Blob([e.data], { type: 'image/png' });
 
-    worker.onmessage = function (e) {
-      freeApngWorkers.push(worker);
-      logger.timeEnd(convertMeta.id);
+    resolveConvert(pngBlob);
+  };
 
-      if (!e.data) {
-        return reject(new TypeError('Failed to get png data. ' + convertMeta.id));
-      }
+  const cfg: EncodeApngConfig = { frames, delays, cnum: config.get('pngColor') };
 
-      const pngBlob = new Blob([e.data], { type: 'image/png' });
-      resolve(pngBlob);
-    };
+  worker.postMessage(
+    cfg,
+    cfg.frames[0] instanceof ImageBitmap ? (cfg.frames as ImageBitmap[]) : []
+  );
 
-    const delays = convertMeta.source.delays;
-    const cfg: EncodeApngConfig = { frames, delays, cnum: config.get('pngColor') };
-    worker.postMessage(
-      cfg,
-      cfg.frames[0] instanceof ImageBitmap ? (cfg.frames as ImageBitmap[]) : []
-    );
-  });
+  return convertPromise;
 }
 
 export function mixPngEffect(
-  convertMeta: ConvertMeta<ConvertImageEffectSource>
-): Promise<MixEffectEncodedData> {
-  logger.info('Start convert:', convertMeta.id);
-  logger.time(convertMeta.id);
+  illust: Blob,
+  seasonalEffect: ArrayBuffer,
+  signal?: AbortSignal
+): Promise<AppendEffectResult> {
+  signal?.throwIfAborted();
 
-  const { illust, data } = convertMeta.source;
+  let resolveConvert: (result: AppendEffectResult) => void;
+  let rejectConvert: (reason?: unknown) => void;
 
-  let p: Promise<ArrayBuffer | EffectImageDecodedData>;
+  const convertPromise = new Promise<AppendEffectResult>((resolve, reject) => {
+    resolveConvert = resolve;
+    rejectConvert = reject;
+  });
 
-  if (data instanceof Blob) {
-    p = data.arrayBuffer();
+  let worker: Worker;
+  if (freeApngWorkers.length) {
+    worker = freeApngWorkers.shift() as Worker;
+    logger.info('Reuse apng workers.');
   } else {
-    p = Promise.resolve(data);
+    worker = new Worker(workerUrl);
   }
 
-  return p.then((effect) => {
-    return new Promise((resolve, reject) => {
-      let worker: Worker;
-      if (freeApngWorkers.length) {
-        worker = freeApngWorkers.shift() as Worker;
-        logger.info('Reuse apng workers.');
-      } else {
-        worker = new Worker(workerUrl);
-      }
-
-      convertMeta.abort = () => {
-        logger.timeEnd(convertMeta.id);
-        logger.warn('Convert stop manually. ' + convertMeta.id);
-        reject(new CancelError());
-        convertMeta.isAborted = true;
-        worker.terminate();
-      };
-
-      worker.onmessage = function (e) {
-        logger.timeEnd(convertMeta.id);
-        worker.terminate();
-
-        if (!e.data) {
-          return reject(new Error('Mix Effect convert Failed ' + convertMeta.id));
-        }
-
-        resolve(e.data as MixEffectEncodedData);
-      };
-
-      let cfg: PngWorkerConfig;
-
-      if (effect instanceof ArrayBuffer) {
-        cfg = { illust, effect };
-        worker.postMessage(cfg, [effect]);
-      } else {
-        const { frames, delays, width, height } = effect;
-        cfg = { illust, delays, effect: frames, width, height };
-
-        worker.postMessage(cfg, frames);
-      }
-    });
+  signal?.addEventListener('abort', () => {
+    worker.terminate();
+    rejectConvert(signal?.reason);
   });
+
+  worker.onmessage = function (e) {
+    worker.terminate();
+
+    if (!e.data) {
+      return rejectConvert(new Error('Mix Effect convert Failed.'));
+    }
+
+    resolveConvert(e.data as AppendEffectResult);
+  };
+
+  const cfg: AppendEffectWorkerOptions = { illust, effect: seasonalEffect };
+  worker.postMessage(cfg, [seasonalEffect]);
+
+  return convertPromise;
 }

@@ -23,12 +23,9 @@ export type HistoryData = HistoryItemBase & { page?: number };
 
 export type HistoryImportObject = HistoryItemBase & { page?: Record<string, number> };
 
-interface EffectImageItem {
+interface pixivSeasonalEffectItem {
   id: string;
-  data: ArrayBuffer[];
-  width: number;
-  height: number;
-  delays: number[];
+  data: ArrayBuffer;
 }
 
 interface CacheItem {
@@ -38,7 +35,7 @@ interface CacheItem {
 
 class HistoryDb extends Dexie {
   private history!: Table<HistoryItem, number>;
-  private imageEffect!: Table<EffectImageItem, string>;
+  private imageEffect!: Table<pixivSeasonalEffectItem, string>;
 
   constructor() {
     super('PdlHistory');
@@ -140,15 +137,12 @@ class HistoryDb extends Dexie {
     return this.history.clear();
   }
 
-  // Firefox does not support storing `ImageData`, so it will always return `undefined`.
-  public async getImageEffect(effectId: string): Promise<EffectImageItem | undefined> {
-    const item = await this.imageEffect.get(effectId);
-    if (!item) return item;
-
-    return item;
+  // Firefox does not support storing `Arraybuffer`, so it will always return `undefined`.
+  public async getImageEffect(effectId: string): Promise<pixivSeasonalEffectItem | undefined> {
+    return await this.imageEffect.get(effectId);
   }
 
-  public addImageEffect(effectData: EffectImageItem) {
+  public addImageEffect(effectData: pixivSeasonalEffectItem) {
     return this.imageEffect.put(effectData);
   }
 

@@ -1,48 +1,57 @@
 /// <reference lib="webworker" />
 
-import type { Image } from 'upng-js';
-import type { EffectImageDecodedData, MixEffectEncodedData } from '../index';
-import type { PngWorkerConfig } from '../adapter/png';
+import type * as UPNG from 'upng-js';
+import type {
+  AppendEffectResult,
+  AppendEffectWorkerOptions,
+  EncodeApngConfig
+} from '../adapter/png';
+
+type ApngDecodeResult = {
+  frames: ArrayBuffer[];
+  width: number;
+  height: number;
+  delays: number[];
+};
+
+function isBlobArray(frames: Blob[] | ImageBitmap[]): frames is Blob[] {
+  return frames[0] instanceof Blob;
+}
 
 async function encodeAPNG(
   frames: Blob[] | ImageBitmap[],
   delays: number[],
   cnum: number
 ): Promise<ArrayBuffer> {
-  const bitmaps = await Promise.all(
-    frames.map((frame) => {
-      if (frame instanceof Blob) {
-        return createImageBitmap(frame);
-      } else {
-        return frame;
-      }
-    })
-  );
+  if (isBlobArray(frames)) {
+    frames = await Promise.all(frames.map((frame) => createImageBitmap(frame)));
+  }
 
-  const width = bitmaps[0].width;
-  const height = bitmaps[0].height;
+  const width = frames[0].width;
+  const height = frames[0].height;
   const canvas = new OffscreenCanvas(width, height);
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+
   const u8arrs: Uint8ClampedArray[] = [];
 
-  for (let i = 0; i < bitmaps.length; i++) {
-    ctx.drawImage(bitmaps[i], 0, 0);
-    bitmaps[i].close();
+  for (const frame of frames) {
+    ctx.drawImage(frame, 0, 0);
+    frame.close();
     u8arrs.push(ctx.getImageData(0, 0, width, height).data);
   }
 
   //@ts-expect-error UPNG
-  const png: ArrayBuffer = UPNG.encode(u8arrs, width, height, cnum, delays, { loop: 0 });
+  const png = UPNG.encode(u8arrs, width, height, cnum, delays, { loop: 0 });
   if (!png) throw new Error('Failed to encode apng.');
 
   return png;
 }
 
-async function decodeApng(ab: ArrayBuffer): Promise<EffectImageDecodedData> {
+function decodeApng(ab: ArrayBuffer): ApngDecodeResult {
   //@ts-expect-error UPNG
-  const img: Image = UPNG.decode(ab);
+  const img = UPNG.decode(ab);
   //@ts-expect-error UPNG
-  const rgba: ArrayBuffer[] = UPNG.toRGBA8(img);
+  const rgba = UPNG.toRGBA8(img);
 
   const { width, height } = img;
 
@@ -51,35 +60,15 @@ async function decodeApng(ab: ArrayBuffer): Promise<EffectImageDecodedData> {
   return { frames: rgba, delays, width, height };
 }
 
-async function appendEffect(illustBlob: Blob, effect: ArrayBuffer): Promise<MixEffectEncodedData>;
-async function appendEffect(
-  illustBlob: Blob,
-  effect: ArrayBuffer[],
-  delays: number[],
-  width: number,
-  height: number
-): Promise<MixEffectEncodedData>;
-async function appendEffect(
-  illustBlob: Blob,
-  effect: ArrayBuffer | ArrayBuffer[],
-  delays?: number[],
-  width?: number,
-  height?: number
-): Promise<MixEffectEncodedData> {
-  if (!Array.isArray(effect)) {
-    const apngDatas = await decodeApng(effect);
-    effect = apngDatas.frames;
-    delays = apngDatas.delays;
-    width = apngDatas.width;
-    height = apngDatas.height;
-  } else {
-    if (!delays || width === undefined || height === undefined)
-      throw new Error('Missing argument.');
-  }
-
+async function appendEffect(illustBlob: Blob, effect: ArrayBuffer): Promise<AppendEffectResult> {
   const illustBitmap = await createImageBitmap(illustBlob);
+
+  const { frames: effectFrames, delays, width, height } = decodeApng(effect);
+
   const effectBitmaps = await Promise.all(
-    effect.map((buf) => createImageBitmap(new ImageData(new Uint8ClampedArray(buf), width, height)))
+    effectFrames.map((buf) =>
+      createImageBitmap(new ImageData(new Uint8ClampedArray(buf), width, height))
+    )
   );
 
   const { width: illustWidth, height: illustHeight } = illustBitmap;
@@ -108,48 +97,34 @@ async function appendEffect(
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
   const finalDatas: ImageData[] = [];
 
-  for (let i = 0; i < effectBitmaps.length; i++) {
+  for (const effectBitmap of effectBitmaps) {
     ctx.drawImage(illustBitmap, 0, 0);
-    ctx.drawImage(effectBitmaps[i], dx, dy, dWidth, dHeight);
+    ctx.drawImage(effectBitmap, dx, dy, dWidth, dHeight);
+
     finalDatas.push(ctx.getImageData(0, 0, illustWidth, illustHeight));
 
-    effectBitmaps[i].close();
+    effectBitmap.close();
   }
 
   illustBitmap.close();
 
-  const bitmaps: ImageBitmap[] = [];
-
-  for (let i = 0; i < finalDatas.length; i++) {
-    const bitmap = await createImageBitmap(finalDatas[i]);
-    bitmaps.push(bitmap);
-  }
+  const result = finalDatas.map((data) => createImageBitmap(data));
 
   return {
-    bitmaps,
-    frames: effect,
-    width,
-    height,
+    frames: await Promise.all(result),
     delays
   };
 }
 
 self.onmessage = async (evt) => {
   try {
-    const data = evt.data as PngWorkerConfig;
+    const data = evt.data as AppendEffectWorkerOptions | EncodeApngConfig;
 
     if ('effect' in data) {
-      let result: MixEffectEncodedData;
+      const { illust, effect } = data;
+      const result = await appendEffect(illust, effect);
 
-      if ('delays' in data) {
-        const { illust, effect, width, height, delays } = data;
-        result = await appendEffect(illust, effect, delays, width, height);
-      } else {
-        const { illust, effect } = data;
-        result = await appendEffect(illust, effect);
-      }
-
-      self.postMessage(result, [...result.frames, ...result.bitmaps]);
+      self.postMessage(result, [...result.frames]);
     } else {
       const { frames, delays, cnum = 256 } = data;
       const apng = await encodeAPNG(frames, delays, cnum);

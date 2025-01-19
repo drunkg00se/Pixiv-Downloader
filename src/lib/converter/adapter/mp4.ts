@@ -1,26 +1,26 @@
 import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
-import type { ConvertMeta, ConvertUgoiraSource } from '..';
-import { CancelError } from '@/lib/error';
 import { logger } from '@/lib/logger';
 import { config } from '@/lib/config';
 
+function isBlobArray(frames: Blob[] | ImageBitmap[]): frames is Blob[] {
+  return frames[0] instanceof Blob;
+}
+
 export async function mp4(
   frames: Blob[] | ImageBitmap[],
-  convertMeta: ConvertMeta<ConvertUgoiraSource>
+  delays: number[],
+  signal?: AbortSignal
 ): Promise<Blob> {
-  const p = frames.map((frame) => {
-    if (frame instanceof Blob) {
-      return createImageBitmap(frame);
-    } else {
-      return frame;
-    }
-  });
-  const bitmaps = await Promise.all(p);
+  signal?.throwIfAborted();
 
-  if (convertMeta.isAborted) throw new CancelError();
+  if (isBlobArray(frames)) {
+    frames = await Promise.all(frames.map((frame) => createImageBitmap(frame)));
+  }
 
-  let width = bitmaps[0].width;
-  let height = bitmaps[0].height;
+  signal?.throwIfAborted();
+
+  let width = frames[0].width;
+  let height = frames[0].height;
 
   // H264 only supports even sized frames.
   if (width % 2 !== 0) width += 1;
@@ -49,28 +49,41 @@ export async function mp4(
     bitrate: config.get('mp4Bitrate') * 1e6
   });
 
-  const delays = convertMeta.source.delays.map((delay) => (delay *= 1000));
-
   let timestamp = 0;
-  const videoFrames: VideoFrame[] = [];
-  for (let i = 0; i < bitmaps.length; i++) {
-    const frame = new VideoFrame(bitmaps[i], { duration: delays[i], timestamp });
-    videoFrames.push(frame);
-    bitmaps[i].close();
 
-    videoEncoder.encode(frame);
+  delays = delays.map((delay) => (delay *= 1000));
+
+  const videoFrames: VideoFrame[] = [];
+
+  signal?.addEventListener(
+    'abort',
+    () => {
+      videoFrames.forEach((frame) => frame.close());
+    },
+    { once: true }
+  );
+
+  for (const [i, frame] of frames.entries()) {
+    const videoFrame = new VideoFrame(frame, { duration: delays[i], timestamp });
+
+    videoEncoder.encode(videoFrame);
+
+    videoFrames.push(videoFrame);
+
+    frame.close();
+
     timestamp += delays[i];
   }
 
   await videoEncoder.flush();
-  if (convertMeta.isAborted) {
-    videoFrames.forEach((frame) => frame.close());
-    throw new CancelError();
-  }
 
-  muxer.finalize();
-  const { buffer } = muxer.target;
+  signal?.throwIfAborted();
 
   videoFrames.forEach((frame) => frame.close());
+
+  muxer.finalize();
+
+  const { buffer } = muxer.target;
+
   return new Blob([buffer], { type: 'video/mp4' });
 }
