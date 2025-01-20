@@ -1,6 +1,6 @@
-import { default as WebMWriter } from 'webm-writer';
 import { config } from '@/lib/config';
-import { readBlobAsDataUrl } from '@/lib/util';
+import { Muxer, ArrayBufferTarget } from 'webm-muxer';
+import { logger } from '@/lib/logger';
 
 function isBlobArray(frames: Blob[] | ImageBitmap[]): frames is Blob[] {
   return frames[0] instanceof Blob;
@@ -13,8 +13,6 @@ export async function webm(
 ): Promise<Blob> {
   signal?.throwIfAborted();
 
-  const quality = config.get('webmQuality') / 100;
-
   if (isBlobArray(frames)) {
     frames = await Promise.all(frames.map((frame) => createImageBitmap(frame)));
   }
@@ -23,38 +21,64 @@ export async function webm(
 
   const width = frames[0].width;
   const height = frames[0].height;
-  const canvas = new OffscreenCanvas(width, height);
-  const ctx = canvas.getContext('2d')!;
 
-  const dataUrlsPromises: Promise<string>[] = [];
-
-  for (const frame of frames) {
-    ctx.drawImage(frame, 0, 0);
-
-    frame.close();
-
-    const url = canvas.convertToBlob({ type: 'image/webp', quality }).then(readBlobAsDataUrl);
-
-    dataUrlsPromises.push(url);
-  }
-
-  const dataUrls = await Promise.all(dataUrlsPromises);
-
-  signal?.throwIfAborted();
-
-  const videoWriter = new WebMWriter({
-    quality, // WebM image quality from 0.0 (worst) to 0.99999 (best), 1.00 (VP8L lossless) is not supported
-    frameRate: 30, // Number of frames per second
-    transparent: false // True if an alpha channel should be included in the video
+  const muxer = new Muxer({
+    target: new ArrayBufferTarget(),
+    video: {
+      codec: 'V_VP9',
+      width,
+      height
+    }
   });
 
-  for (const [i, dataUrl] of dataUrls.entries()) {
-    videoWriter.addFrame(dataUrl, delays[i]);
+  const videoEncoder = new VideoEncoder({
+    output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+    error: (e) => logger.error(e)
+  });
+
+  // https://cconcolato.github.io/media-mime-support/
+  videoEncoder.configure({
+    codec: 'vp09.00.51.08.01.01.01.01.00',
+    width,
+    height,
+    bitrate: config.get('webmBitrate') * 1e6
+  });
+
+  let timestamp = 0;
+
+  delays = delays.map((delay) => (delay *= 1000));
+
+  const videoFrames: VideoFrame[] = [];
+
+  signal?.addEventListener(
+    'abort',
+    () => {
+      videoFrames.forEach((frame) => frame.close());
+    },
+    { once: true }
+  );
+
+  for (const [i, frame] of frames.entries()) {
+    const videoFrame = new VideoFrame(frame, { duration: delays[i], timestamp });
+
+    videoEncoder.encode(videoFrame);
+
+    videoFrames.push(videoFrame);
+
+    frame.close();
+    timestamp += delays[i];
   }
 
-  const blob: Blob = await videoWriter.complete();
+  await videoEncoder.flush();
+
+  videoEncoder.close();
+  videoFrames.forEach((frame) => frame.close());
 
   signal?.throwIfAborted();
 
-  return blob;
+  muxer.finalize();
+
+  const { buffer } = muxer.target;
+
+  return new Blob([buffer], { type: 'video/webm' });
 }

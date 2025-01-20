@@ -71,15 +71,15 @@ export async function mp4(
     videoFrames.push(videoFrame);
 
     frame.close();
-
     timestamp += delays[i];
   }
 
   await videoEncoder.flush();
 
-  signal?.throwIfAborted();
-
+  videoEncoder.close();
   videoFrames.forEach((frame) => frame.close());
+
+  signal?.throwIfAborted();
 
   muxer.finalize();
 

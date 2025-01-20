@@ -78,16 +78,16 @@
       <li>
         <div class="flex-auto">
           <p>Webm</p>
-          <p class={descriptionText}>{t('setting.ugoira.options.webm_tips')}</p>
+          <p class={descriptionText}>Bitrate (Mbps)</p>
         </div>
         <input
           type="number"
           class="input {inputClasses}"
-          min="0"
-          max="99"
+          min="1"
+          max="120"
           step="1"
-          use:nonNegativeInt={{ store, key: 'webmQuality' }}
-          bind:value={$store.webmQuality}
+          use:nonNegativeInt={{ store, key: 'webmBitrate' }}
+          bind:value={$store.webmBitrate}
         />
       </li>
       <li>

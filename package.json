@@ -68,7 +68,7 @@
     "p-queue": "^8.0.1",
     "pako": "^2.1.0",
     "upng-js": "^2.1.0",
-    "webm-writer": "^1.0.0"
+    "webm-muxer": "^5.0.3"
   },
   "config": {
     "commitizen": {

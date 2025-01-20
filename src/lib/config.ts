@@ -47,7 +47,7 @@ export interface ConfigData {
   fileSystemFilenameConflictAction: FilenameConfigAction;
   showPopupButton: boolean;
   gifQuality: number;
-  webmQuality: number;
+  webmBitrate: number;
   mp4Bitrate: number;
   losslessWebp: boolean;
   webpQuality: number;
@@ -93,7 +93,7 @@ export function loadConfig(customConfig: Partial<ConfigData> = {}): Config {
     fileSystemFilenameConflictAction: FilenameConfigAction.UNIQUIFY,
     showPopupButton: true,
     gifQuality: 10,
-    webmQuality: 95,
+    webmBitrate: 20,
     mp4Bitrate: 20,
     losslessWebp: false,
     webpQuality: 95,
