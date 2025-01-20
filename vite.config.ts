@@ -84,7 +84,9 @@ export default defineConfig({
           dexie: cdn.unpkg('Dexie', 'dist/dexie.min.js'),
           jszip: cdn.unpkg('JSZip', 'dist/jszip.min.js'),
           'gif.js': cdn.unpkg('GIF', 'dist/gif.js'),
-          dayjs: cdn.unpkg('dayjs', 'dayjs.min.js')
+          dayjs: cdn.unpkg('dayjs', 'dayjs.min.js'),
+          'mp4-muxer': cdn.unpkg('Mp4Muxer', 'build/mp4-muxer.js'),
+          'webm-muxer': cdn.unpkg('WebMMuxer', 'build/webm-muxer.js')
         },
         externalResource: {
           'gif.js/dist/gif.worker?raw': {
