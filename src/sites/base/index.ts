@@ -7,8 +7,10 @@ import type { BatchDownloadDefinition } from '@/lib/components/Downloader/useBat
 import type { MediaMeta } from '../interface';
 
 export abstract class SiteInject {
-  protected app: PdlApp;
+  protected app: InstanceType<typeof PdlApp>;
+
   protected config: ReturnType<typeof loadConfig>;
+
   protected useBatchDownload?: BatchDownloadDefinition<MediaMeta>;
 
   constructor() {

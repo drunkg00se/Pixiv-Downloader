@@ -91,22 +91,22 @@ export default defineConfig({
         externalResource: {
           'gif.js/dist/gif.worker?raw': {
             resourceUrl: 'https://unpkg.com/gif.js@0.2.0/dist/gif.worker.js',
-            //@ts-expect-error no declaration
+            //@ts-expect-error GM_getResourceText_missing_declaration
             loader: () => GM_getResourceText('gif.js/dist/gif.worker?raw')
           },
           'pako/dist/pako.js?raw': {
             resourceUrl: 'https://unpkg.com/pako@2.1.0/dist/pako.min.js',
-            //@ts-expect-error no declaration
+            //@ts-expect-error GM_getResourceText_missing_declaration
             loader: () => GM_getResourceText('pako/dist/pako.js?raw')
           },
           'upng-js?raw': {
             resourceUrl: 'https://unpkg.com/upng-js@2.1.0/UPNG.js',
-            //@ts-expect-error no declaration
+            //@ts-expect-error GM_getResourceText_missing_declaration
             loader: () => GM_getResourceText('upng-js?raw')
           },
           '../wasm/toWebpWorker?raw': {
             resourceUrl: 'https://update.greasyfork.org/scripts/500281/1409041/libwebp_wasm.js',
-            //@ts-expect-error no declaration
+            //@ts-expect-error GM_getResourceText_missing_declaration
             loader: () => GM_getResourceText('../wasm/toWebpWorker?raw')
           }
         }

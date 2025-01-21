@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { SvelteComponent } from 'svelte';
   import { ListBox, ListBoxItem, AppBar } from '@skeletonlabs/skeleton';
+  import { env } from '@/lib/env';
   import ModalWrapper from '../ModalWrapper.svelte';
   import SaveTo from './Panels/SaveTo.svelte';
   import UgoiraConvert from './Panels/UgoiraConvert.svelte';
@@ -8,14 +8,15 @@
   import BtnPosition from './Panels/BtnPosition.svelte';
   import Others from './Panels/Others.svelte';
   import FeedBack from './Panels/FeedBack.svelte';
+  import t from '@/lib/lang';
+
   import menuOpen from '@/assets/menu-open.svg?src';
   import menuClose from '@/assets/menu-close.svg?src';
-  import t from '@/lib/lang';
-  import { env } from '@/lib/env';
 
-  export let parent: SvelteComponent;
+  interface Props {
+    parent: { onClose: () => void };
+  }
 
-  let slected = 0;
   const optionList = [
     {
       name: t('setting.save_to.title'),
@@ -44,10 +45,19 @@
     }
   ];
 
-  let showListbox = true;
+  let { parent }: Props = $props();
+
+  let slected = $state(0);
+
+  let showListbox = $state(true);
+
+  const OptionComponent = $derived(optionList[slected].component);
+
+  const gridCol = $derived(showListbox ? 'grid-cols-[140px_1fr]' : 'grid-cols-[0px_1fr]');
+
+  const transform = $derived(showListbox ? 'translate-x-0' : '-translate-x-full');
+
   const sidebarWidth = 'w-[140px]';
-  $: gridCol = showListbox ? 'grid-cols-[140px_1fr]' : 'grid-cols-[0px_1fr]';
-  $: transform = showListbox ? 'translate-x-0' : '-translate-x-full';
 </script>
 
 <ModalWrapper
@@ -76,11 +86,11 @@
       background="bg-transparent"
       class="mr-6 border-b border-surface-800-100-token"
     >
-      <svelte:fragment slot="lead">
+      {#snippet lead()}
         <button
           type="button"
           class="btn-icon hover:variant-soft-surface ml-1"
-          on:click={() => (showListbox = !showListbox)}
+          onclick={() => (showListbox = !showListbox)}
         >
           <i class="w-8 fill-current">
             {#if showListbox}
@@ -90,7 +100,7 @@
             {/if}
           </i>
         </button>
-      </svelte:fragment>
+      {/snippet}
       <h3 class="h3">{optionList[slected].name || '设置'}</h3>
     </AppBar>
 
@@ -98,10 +108,7 @@
       class="mt-4 pr-4 scrollbar-track-transparent scrollbar-thumb-slate-400/50 scrollbar-corner-transparent scrollbar-thin overflow-y-auto"
       style="scrollbar-gutter: stable"
     >
-      <svelte:component
-        this={optionList[slected].component}
-        bg="bg-white/30 dark:bg-surface-500/20 backdrop-blur-sm"
-      />
+      <OptionComponent bg="bg-white/30 dark:bg-surface-500/20 backdrop-blur-sm" />
     </div>
   </div>
 </ModalWrapper>

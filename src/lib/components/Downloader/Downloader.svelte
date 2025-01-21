@@ -10,14 +10,9 @@
     ProgressBar,
     SlideToggle
   } from '@skeletonlabs/skeleton';
-  import optionStore from './store';
-  import {
-    type BatchDownloadConfig,
-    type BatchDownloadDefinition,
-    type PageOption
-  } from './useBatchDownload';
   import { logger } from '@/lib/logger';
   import { nonNegativeInt } from '../Actions/nonNegativeInt';
+  import optionStore from './store';
   import t from '@/lib/lang';
 
   import downloadSvg from '@/assets/download.svg?src';
@@ -25,11 +20,93 @@
   import playSvg from '@/assets/play-circle-outline.svg?src';
   import stopOutLineSvg from '@/assets/stop-circle-outline.svg?src';
   import downloadMultipleSvg from '@/assets/download-multiple.svg?src';
+
+  import type {
+    BatchDownloadConfig,
+    BatchDownloadDefinition,
+    PageOption
+  } from './useBatchDownload';
   import type { MediaMeta } from '@/sites/interface';
+
+  interface Props {
+    downloaderConfig: BatchDownloadConfig<MediaMeta>;
+    useBatchDownload: BatchDownloadDefinition<MediaMeta>;
+  }
 
   type FunctionKeys<T> = {
     [K in keyof T]: T[K] extends Function ? K : never;
   }[keyof T];
+
+  let { downloaderConfig, useBatchDownload }: Props = $props();
+
+  const { artworkCount, successd, failed, excluded, downloading, log, batchDownload, abort } =
+    useBatchDownload();
+
+  const {
+    selectedFilters,
+    blacklistTag,
+    whitelistTag,
+    downloadAllPages,
+    pageStart,
+    pageEnd,
+    retryFailed
+  } = optionStore;
+
+  initFilterStore();
+
+  let batchDownloadEntries: [string, PageOption<MediaMeta>['string']][] | null = $state(null);
+
+  // dom binding
+  let startDownloadEl: HTMLDivElement;
+  let stopDownloadEl: HTMLDivElement;
+  let avatarEl: HTMLImageElement;
+  let avatarProgressEl: HTMLDivElement;
+  let avatarDownloadIcon: HTMLElement;
+
+  const avatarCache: Record<string, string> = {};
+
+  let nextAvatarUrl: string;
+
+  let avatarUpdated: Promise<string | null> | undefined = $state(undefined);
+
+  let menuTabSet: number = $state(0);
+
+  let showMenu = $state(false);
+
+  watchUrlChange();
+
+  onUrlChange(location.href);
+
+  downloading.subscribe((val) => {
+    if (val) {
+      // show avatar if triggers batch download in page that doesn't show batch downloader
+      if (!avatarUpdated) updateAvatarSrc(location.href);
+      // alert before unload while downloading
+      window.addEventListener('beforeunload', beforeUnloadHandler);
+    } else {
+      window.removeEventListener('beforeunload', beforeUnloadHandler);
+
+      // update avatar if downloader still visible after download complete.
+      nextAvatarUrl && batchDownloadEntries && updateAvatarSrc(nextAvatarUrl);
+    }
+  });
+
+  const showDownloader = $derived($downloading || !!batchDownloadEntries);
+
+  const processed = $derived($successd.length + $failed.length + $excluded.length);
+
+  const downloadProgress = $derived($artworkCount ? (processed / $artworkCount) * 100 : undefined);
+
+  const downloadResult = $derived(
+    !$downloading && $artworkCount
+      ? `Completed: ${$successd.length}. Failed: ${$failed.length}. Excluded: ${$excluded.length}.`
+      : ''
+  );
+
+  $effect(() => {
+    // prevent the menu from showing again when the avatar appears
+    if (!showDownloader) showMenu = false;
+  });
 
   function initFilterStore() {
     Array.isArray($selectedFilters) ||
@@ -43,7 +120,7 @@
 
     // don't update avatar during download.
     if ($downloading && avatarUpdated !== undefined) {
-      updateAvatarAfterDownload = url;
+      nextAvatarUrl = url;
       return;
     }
 
@@ -102,7 +179,7 @@
       updateAvatarSrc(url);
     } else {
       batchDownloadEntries = null;
-      updateAvatarAfterDownload = '';
+      nextAvatarUrl = '';
     }
   }
 
@@ -154,75 +231,9 @@
       logger.error(error);
     }
   }
-
-  export let downloaderConfig: BatchDownloadConfig<MediaMeta>;
-  export let useBatchDownload: BatchDownloadDefinition<MediaMeta>;
-
-  let batchDownloadEntries: [string, PageOption<MediaMeta>['string']][] | null;
-
-  const {
-    selectedFilters,
-    blacklistTag,
-    whitelistTag,
-    downloadAllPages,
-    pageStart,
-    pageEnd,
-    retryFailed
-  } = optionStore;
-
-  // dom binding
-  let startDownloadEl: HTMLDivElement;
-  let stopDownloadEl: HTMLDivElement;
-  let avatarEl: HTMLImageElement;
-  let avatarProgressEl: HTMLDivElement;
-  let avatarDownloadIcon: HTMLElement;
-
-  const avatarCache: Record<string, string> = {};
-  let avatarUpdated: Promise<string | null>;
-  let updateAvatarAfterDownload: string;
-
-  let tabSet: number = 0;
-  let showDownloadMenu = false;
-
-  initFilterStore();
-
-  const { artworkCount, successd, failed, excluded, downloading, log, batchDownload, abort } =
-    useBatchDownload();
-
-  watchUrlChange();
-  onUrlChange(location.href);
-
-  downloading.subscribe((val) => {
-    if (val) {
-      // show avatar if triggers batch download in page that doesn't show batch downloader
-      if (!avatarUpdated) updateAvatarSrc(location.href);
-      // alert before unload while downloading
-      window.addEventListener('beforeunload', beforeUnloadHandler);
-    } else {
-      window.removeEventListener('beforeunload', beforeUnloadHandler);
-
-      // update avatar if downloader still visible after download complete.
-      updateAvatarAfterDownload &&
-        batchDownloadEntries &&
-        updateAvatarSrc(updateAvatarAfterDownload);
-    }
-  });
-
-  $: ifDownloaderCanShow = $downloading || !!batchDownloadEntries;
-  $: {
-    // prevent from showing menu again when avatar shows
-    if (!ifDownloaderCanShow) showDownloadMenu = false;
-  }
-
-  $: processed = $successd.length + $failed.length + $excluded.length;
-  $: downloadProgress = $artworkCount ? (processed / $artworkCount) * 100 : undefined;
-  $: downloadResult =
-    !$downloading && $artworkCount
-      ? `Completed: ${$successd.length}. Failed: ${$failed.length}. Excluded: ${$excluded.length}.`
-      : '';
 </script>
 
-{#if showDownloadMenu && ifDownloaderCanShow}
+{#if showMenu && showDownloader}
   <div
     transition:fly={{ x: 50, opacity: 0 }}
     data-theme="skeleton"
@@ -231,20 +242,20 @@
     {#if !$downloading}
       <div transition:slide class="downloader-filter">
         <TabGroup regionList="text-surface-700-200-token" class="text-sm">
-          <Tab bind:group={tabSet} name="category" value={0}
+          <Tab bind:group={menuTabSet} name="category" value={0}
             >{t('downloader.category.tab_name')}</Tab
           >
           {#if !!downloaderConfig.filterOption.enableTagFilter}
-            <Tab bind:group={tabSet} name="tag_filter" value={1}
+            <Tab bind:group={menuTabSet} name="tag_filter" value={1}
               >{t('downloader.tag_filter.tab_name')}</Tab
             >
           {/if}
-          <Tab bind:group={tabSet} name="tag_filter" value={2}
+          <Tab bind:group={menuTabSet} name="tag_filter" value={2}
             >{t('downloader.others.tab_name')}</Tab
           >
 
           <svelte:fragment slot="panel">
-            {#if tabSet === 0}
+            {#if menuTabSet === 0}
               {#if downloaderConfig.filterOption.filters.length}
                 <div class="flex justify-end items-center my-4">
                   <div class="btn-group w-full">
@@ -328,7 +339,7 @@
                   </label>
                 </div>
               </div>
-            {:else if tabSet === 1}
+            {:else if menuTabSet === 1}
               <InputChip
                 bind:value={$blacklistTag}
                 allowUpperCase
@@ -344,7 +355,7 @@
                 placeholder={t('downloader.tag_filter.placeholder.whitelist_tag')}
                 class="my-4"
               />
-            {:else if tabSet === 2}
+            {:else if menuTabSet === 2}
               <div class="flex justify-between items-center text-base text-surface-700-200-token">
                 <p>{t('downloader.others.options.retry_failed')}</p>
                 <SlideToggle size="sm" name="download-retry" bind:checked={$retryFailed}
@@ -362,10 +373,10 @@
         <div
           bind:this={startDownloadEl}
           transition:fade={{ duration: 250 }}
-          on:introstart={() =>
+          onintrostart={() =>
             // required when the transition reverses
             startDownloadEl.classList.remove('absolute')}
-          on:outrostart={() => startDownloadEl.classList.add('absolute')}
+          onoutrostart={() => startDownloadEl.classList.add('absolute')}
           class="flex justify-end flex-grow w-full gap-4"
         >
           <div
@@ -385,7 +396,7 @@
                 {#if 'fn' in item}
                   <button
                     class="btn rounded-none !transform-none !variant-filled-primary"
-                    on:click={() => {
+                    onclick={() => {
                       startDownload(id);
                     }}
                   >
@@ -400,7 +411,7 @@
           {:else if batchDownloadEntries && 'fn' in batchDownloadEntries[0][1]}
             <button
               class="btn variant-filled-primary self-start"
-              on:click={() => {
+              onclick={() => {
                 startDownload(batchDownloadEntries?.[0][0] ?? '');
               }}
             >
@@ -416,8 +427,8 @@
           bind:this={stopDownloadEl}
           transition:fade={{ duration: 250 }}
           class="flex flex-grow w-full gap-6 items-center"
-          on:introstart={() => stopDownloadEl.classList.remove('absolute')}
-          on:outrostart={() => stopDownloadEl.classList.add('absolute')}
+          onintrostart={() => stopDownloadEl.classList.remove('absolute')}
+          onoutrostart={() => stopDownloadEl.classList.add('absolute')}
         >
           <div class="flex flex-grow flex-col justify-between h-full overflow-hidden">
             <ProgressBar
@@ -440,7 +451,7 @@
 
           <button
             class="btn variant-filled-primary"
-            on:click={() => {
+            onclick={() => {
               abort();
             }}
           >
@@ -455,21 +466,21 @@
   </div>
 {/if}
 
-{#if ifDownloaderCanShow}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
+{#if showDownloader}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     transition:fly={{ opacity: 0, x: 50 }}
     class="size-14 rounded-full fixed right-4 top-36 drop-shadow-xl cursor-pointer hover:brightness-110 backdrop-blur-sm"
-    on:click={() => {
-      showDownloadMenu = !showDownloadMenu;
+    onclick={() => {
+      showMenu = !showMenu;
     }}
   >
     <div
       data-theme="skeleton"
       class="avatar absolute -z-10 size-14 rounded-full overflow-hidden bg-scroll transition-opacity duration-[250ms]"
-      class:opacity-70={!showDownloadMenu}
-      class:blur-[1px]={!showDownloadMenu}
+      class:opacity-70={!showMenu}
+      class:blur-[1px]={!showMenu}
     >
       {#await avatarUpdated then val}
         {#if val}
@@ -483,7 +494,7 @@
       {/await}
     </div>
 
-    {#if $downloading && !showDownloadMenu}
+    {#if $downloading && !showMenu}
       <div
         transition:fade={{ duration: 250 }}
         class="!absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
@@ -502,12 +513,12 @@
 
     <div class="size-14 flex justify-center items-center relative">
       <!-- TODO: out-in transition -->
-      {#if $downloading && $artworkCount && !showDownloadMenu}
+      {#if $downloading && $artworkCount && !showMenu}
         <div
           transition:fade={{ duration: 250 }}
           bind:this={avatarProgressEl}
-          on:introstart={() => avatarProgressEl.classList.remove('absolute')}
-          on:outrostart={() => avatarProgressEl.classList.add('absolute')}
+          onintrostart={() => avatarProgressEl.classList.remove('absolute')}
+          onoutrostart={() => avatarProgressEl.classList.add('absolute')}
           class="flex flex-col justify-center items-center px-3 font-bold text-[12px] leading-[14px] overflow-hidden text-surface-700-200-token"
         >
           <span class=" truncate max-w-full">{processed}</span>
@@ -516,12 +527,12 @@
           />
           <span class=" truncate max-w-full">{$artworkCount}</span>
         </div>
-      {:else if !showDownloadMenu}
+      {:else if !showMenu}
         <i
           transition:fade={{ duration: 250 }}
           bind:this={avatarDownloadIcon}
-          on:introstart={() => avatarDownloadIcon.classList.remove('absolute')}
-          on:outrostart={() => avatarDownloadIcon.classList.add('absolute')}
+          onintrostart={() => avatarDownloadIcon.classList.remove('absolute')}
+          onoutrostart={() => avatarDownloadIcon.classList.add('absolute')}
           class="w-6 fill-slate-700 dark:fill-slate-200 mix-blend-hard-light mt-4"
         >
           {@html downloadMultipleSvg}

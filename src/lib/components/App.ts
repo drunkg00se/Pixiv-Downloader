@@ -6,27 +6,14 @@ import {
   type BatchDownloadDefinition,
   type PageOption
 } from './Downloader/useBatchDownload';
-// @ts-expect-error no-declaration
-import { create_custom_element } from 'svelte/internal';
+import { create_custom_element } from 'svelte/internal/client';
 
-export type PdlApp = HTMLElement & {
-  showChangelog(): void;
-  showSetting(): void;
-  initBatchDownloader<T extends MediaMeta, P extends PageOption<T>>(
-    downloaderConfig: BatchDownloadConfig<T, P>
-  ): BatchDownloadDefinition<T, P>;
-};
-
-interface PdlAppProps {
+type PdlAppProps = {
   filenameTemplate: string[];
   updated: boolean;
-}
+};
 
-interface PdlAppConstructor {
-  new (props: PdlAppProps): PdlApp;
-}
-
-export const PdlApp: PdlAppConstructor = create_custom_element(
+export const PdlApp = create_custom_element(
   App,
   {
     dark: { type: 'Boolean' },
@@ -38,20 +25,34 @@ export const PdlApp: PdlAppConstructor = create_custom_element(
   [],
   ['showChangelog', 'showSetting'],
   true,
-  (customElementConstructor: any) => {
+  (customElementConstructor) => {
     return class extends customElementConstructor {
+      //@ts-expect-error no_unsed_var
+      private filenameTemplate: string[];
+
+      //@ts-expect-error no_unsed_var
+      private updated: boolean;
+
+      //@ts-expect-error no_unsed_var
+      private downloaderConfig?: BatchDownloadConfig<any, any>;
+
+      //@ts-expect-error no_unsed_var
+      private useBatchDownload?: BatchDownloadDefinition<any, any>;
+
       constructor(props: PdlAppProps) {
         super();
+
         this.filenameTemplate = props.filenameTemplate;
+
         this.updated = props.updated ?? false;
       }
 
       initBatchDownloader<T extends MediaMeta, P extends PageOption<T>>(
         config: BatchDownloadConfig<T, P>
-      ) {
+      ): BatchDownloadDefinition<T, P> {
         this.downloaderConfig = config;
-        const useBatchDownload = (this.useBatchDownload = defineBatchDownload(config));
-        return useBatchDownload;
+
+        return (this.useBatchDownload = defineBatchDownload(config));
       }
     };
   }

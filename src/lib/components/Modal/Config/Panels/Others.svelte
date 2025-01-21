@@ -4,20 +4,24 @@
   import t from '@/lib/lang';
   import { env } from '@/lib/env';
 
-  export let bg = 'bg-white/30 dark:bg-black/15';
-  export let border = 'divide-y-[1px] *:border-surface-300-600-token';
-  export let padding = 'px-4 *:py-4';
-  export let margin = 'mt-2 *:!m-0';
-  export let rounded = 'rounded-container-token *:!rounded-none';
-  export let descritionText = 'text-sm text-surface-400';
+  let {
+    bg = 'bg-white/30 dark:bg-black/15',
+    border = 'divide-y-[1px] *:border-surface-300-600-token',
+    padding = 'px-4 *:py-4',
+    margin = 'mt-2 *:!m-0',
+    rounded = 'rounded-container-token *:!rounded-none',
+    sectionSpace = `space-y-4`,
+    sectionTitle = 'font-bold',
+    descritionText = 'text-sm text-surface-400',
+    class: UlClass = ''
+  } = $props();
 
-  $: ulClasses = `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${$$props.class ?? ''}`;
-
-  export let sectionSpace = `space-y-4`;
-  export let sectionTitle = 'font-bold';
+  const ulClasses = $derived(
+    `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
+  );
 </script>
 
-<!-- svelte-ignore a11y-label-has-associated-control -->
+<!-- svelte-ignore a11y_label_has_associated_control -->
 <div class={sectionSpace}>
   <ul class={ulClasses}>
     <li>

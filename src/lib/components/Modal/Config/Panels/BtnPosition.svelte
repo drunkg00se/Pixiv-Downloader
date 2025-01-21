@@ -10,45 +10,41 @@
   } from '@/lib/components/Button/thumbnailButton';
   import { onMount } from 'svelte';
 
-  export let bg = 'bg-white/30 dark:bg-black/15';
-  export let border = 'divide-y-[1px] *:border-surface-300-600-token';
-  export let padding = 'px-4 *:py-4';
-  export let margin = 'mt-2 *:!m-0';
-  export let rounded = 'rounded-container-token *:!rounded-none';
-
-  $: ulClasses = `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${$$props.class ?? ''}`;
-
-  export let sectionSpace = `space-y-4`;
-  export let sectionTitle = 'font-bold';
-
-  const max = 100;
-  const step = 4;
-
-  let btnLeft = $store['pdl-btn-left'];
-  let btnTop = $store['pdl-btn-top'];
-  let bookmarkBtnLeft = $store['pdl-btn-self-bookmark-left'];
-  let bookmarkBtnTop = $store['pdl-btn-self-bookmark-top'];
-
   type BtnPosProp =
     | 'pdl-btn-self-bookmark-left'
     | 'pdl-btn-self-bookmark-top'
     | 'pdl-btn-left'
     | 'pdl-btn-top';
-  function updateBtnPosConfig(key: BtnPosProp, val: number) {
-    $store[key] = val;
-  }
 
-  function changeCssProp(key: string, value: number) {
-    document.documentElement.style.setProperty(key, String(value));
-  }
+  let {
+    bg = 'bg-white/30 dark:bg-black/15',
+    border = 'divide-y-[1px] *:border-surface-300-600-token',
+    padding = 'px-4 *:py-4',
+    margin = 'mt-2 *:!m-0',
+    rounded = 'rounded-container-token *:!rounded-none',
+    sectionSpace = `space-y-4`,
+    sectionTitle = 'font-bold',
+    class: UlClass = ''
+  } = $props();
 
-  $: changeCssProp('--pdl-btn-left', btnLeft);
-  $: changeCssProp('--pdl-btn-top', btnTop);
-  $: changeCssProp('--pdl-btn-self-bookmark-left', bookmarkBtnLeft);
-  $: changeCssProp('--pdl-btn-self-bookmark-top', bookmarkBtnTop);
+  const ulClasses = $derived(
+    `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
+  );
+
+  const max = 100;
+  const step = 4;
+
+  let btnLeft = $state($store['pdl-btn-left']);
+  let btnTop = $state($store['pdl-btn-top']);
+  let bookmarkBtnLeft = $state($store['pdl-btn-self-bookmark-left']);
+  let bookmarkBtnTop = $state($store['pdl-btn-self-bookmark-top']);
+
+  $effect(() => changeCssProp('--pdl-btn-left', btnLeft));
+  $effect(() => changeCssProp('--pdl-btn-top', btnTop));
+  $effect(() => changeCssProp('--pdl-btn-self-bookmark-left', bookmarkBtnLeft));
+  $effect(() => changeCssProp('--pdl-btn-self-bookmark-top', bookmarkBtnTop));
 
   // 预览按钮
-
   let buttonContainer: HTMLDivElement;
 
   onMount(() => {
@@ -74,6 +70,14 @@
 
     buttonContainer.appendChild(sampleBookmarkBtn);
   });
+
+  function updateBtnPosConfig(key: BtnPosProp, val: number) {
+    $store[key] = val;
+  }
+
+  function changeCssProp(key: string, value: number) {
+    document.documentElement.style.setProperty(key, String(value));
+  }
 </script>
 
 <div class={sectionSpace}>

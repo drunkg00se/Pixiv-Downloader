@@ -1,28 +1,39 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
   import { Modal, getModalStore, initializeStores } from '@skeletonlabs/skeleton';
-  import type { ModalSettings, ModalComponent } from '@skeletonlabs/skeleton';
+  import { initConfigStore } from './Modal/Config/store';
+  import { addStyleToShadow } from '../util';
   import Changelog from './Modal/Changelog/Changelog.svelte';
   import Config from './Modal/Config/Config.svelte';
   import Downloader from './Downloader/Downloader.svelte';
   import cog from '@/assets/cog.svg?src';
-  import { initConfigStore } from './Modal/Config/store';
   import t from '../lang';
-  import { addStyleToShadow } from '../util';
+  import type { ModalComponent } from '@skeletonlabs/skeleton';
   import type { BatchDownloadConfig, BatchDownloadDefinition } from './Downloader/useBatchDownload';
   import type { MediaMeta } from '@/sites/interface';
 
-  export let dark = false;
-  export let updated = false;
-  export let filenameTemplate: string[] = [];
-  export let downloaderConfig: BatchDownloadConfig<MediaMeta> | undefined;
-  export let useBatchDownload: BatchDownloadDefinition<MediaMeta> | undefined;
+  interface Props {
+    dark?: boolean;
+    updated?: boolean;
+    filenameTemplate?: string[];
+    downloaderConfig?: BatchDownloadConfig<MediaMeta>;
+    useBatchDownload?: BatchDownloadDefinition<MediaMeta>;
+  }
+
+  let {
+    dark = false,
+    updated = false,
+    filenameTemplate = [],
+    downloaderConfig,
+    useBatchDownload
+  }: Props = $props();
 
   setContext('filenameTemplate', filenameTemplate);
 
   initializeStores();
   const store = initConfigStore();
   const modalStore = getModalStore();
+
   let root: HTMLDivElement;
 
   const components: Record<string, ModalComponent> = {
@@ -30,34 +41,19 @@
     setting: { ref: Config }
   };
 
-  const changelogModal: ModalSettings = {
-    type: 'component',
-    component: 'changelog'
-  };
-
-  const settingModal: ModalSettings = {
-    type: 'component',
-    component: 'setting'
-  };
-
   export function showChangelog() {
-    modalStore.trigger(changelogModal);
+    modalStore.trigger({
+      type: 'component',
+      component: 'changelog'
+    });
   }
 
   export function showSetting() {
-    modalStore.trigger(settingModal);
+    modalStore.trigger({
+      type: 'component',
+      component: 'setting'
+    });
   }
-
-  onMount(async () => {
-    const shadow = root.getRootNode() as ShadowRoot;
-
-    addStyleToShadow(shadow);
-    shadow.host.setAttribute('style', 'position:fixed; z-index:99999');
-
-    if (updated) {
-      showChangelog();
-    }
-  });
 
   /** disable the backdrop's click */
   function preventBackDropClick(event: MouseEvent) {
@@ -90,18 +86,28 @@
     }
   }
 
-  $: darkMode = dark ? 'dark' : '';
+  onMount(() => {
+    const shadow = root.getRootNode() as ShadowRoot;
+
+    addStyleToShadow(shadow);
+    shadow.host.setAttribute('style', 'position:fixed; z-index:99999');
+
+    if (updated) {
+      showChangelog();
+    }
+  });
 </script>
 
-<svelte:window on:keydown|capture={handleKeydown} />
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<svelte:window onkeydowncapture={handleKeydown} />
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   bind:this={root}
-  on:keydown|stopPropagation
-  on:mousedown|capture={preventBackDropClick}
-  on:mouseup|capture={preventBackDropClick}
-  class="contents {darkMode}"
+  onkeydown={(e) => e.stopImmediatePropagation()}
+  onmousedowncapture={preventBackDropClick}
+  onmouseupcapture={preventBackDropClick}
   data-theme="skeleton"
+  class="contents"
+  class:dark
 >
   <Modal {components} class="!p-0" />
 
@@ -111,7 +117,7 @@
 
   {#if $store.showPopupButton}
     <button
-      on:click={() => modalStore.trigger(settingModal)}
+      onclick={showSetting}
       type="button"
       class="btn btn-sm variant-filled fixed bottom-24 rounded-none rounded-s-full opacity-40 hover:opacity-100 right-0 translate-x-[calc(100%-44px)] hover:translate-x-0 delay-100"
     >

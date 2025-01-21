@@ -11,26 +11,30 @@
   import { downloader } from '@/lib/downloader';
   import { getContext, tick } from 'svelte';
 
-  export let bg = 'bg-white/30 dark:bg-black/15';
-  export let border = 'divide-y-[1px] *:border-surface-300-600-token';
-  export let padding = 'px-4 *:py-4';
-  export let margin = 'mt-2 *:!m-0';
-  export let rounded = 'rounded-container-token *:!rounded-none';
-  export let descritionText = 'text-sm text-surface-400';
+  let {
+    bg = 'bg-white/30 dark:bg-black/15',
+    border = 'divide-y-[1px] *:border-surface-300-600-token',
+    padding = 'px-4 *:py-4',
+    margin = 'mt-2 *:!m-0',
+    rounded = 'rounded-container-token *:!rounded-none',
+    sectionSpace = `space-y-4`,
+    sectionTitle = 'font-bold',
+    class: UlClass = '',
 
-  $: ulClasses = `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${$$props.class ?? ''}`;
+    templates = getContext('filenameTemplate'),
+    descritionText = 'text-sm text-surface-400'
+  } = $props();
 
-  export let sectionSpace = `space-y-4`;
-  export let sectionTitle = 'font-bold';
-
-  export let templates: string[] = getContext('filenameTemplate');
+  const ulClasses = $derived(
+    `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
+  );
 
   let directoryRef: HTMLInputElement;
   let filenameRef: HTMLInputElement;
 
-  let directory = $store.folderPattern;
-  let filename = $store.filenamePattern;
-  let fsaDirectory = downloader.getCurrentFsaDirName();
+  let directory = $state($store.folderPattern);
+  let filename = $state($store.filenamePattern);
+  let fsaDirectory = $state(downloader.getCurrentFsaDirName());
 
   function updateDirectory() {
     const newDirectory = directory
@@ -38,6 +42,7 @@
       .map(replaceInvalidChar)
       .filter((path: string) => !!path)
       .join('/');
+
     $store.folderPattern = directory = newDirectory;
   }
 
@@ -99,15 +104,19 @@
     };
   }
 
-  $: subDirectoryAvailable = $store.useFileSystemAccess || env.isSupportSubpath();
-  $: folderBtnDisabled = directory === $store.folderPattern;
-  $: filenameBtnDisabled = filename === $store.filenamePattern;
+  const subDirectoryAvailable = $derived($store.useFileSystemAccess || env.isSupportSubpath());
 
-  $: directoryPlaceholder = subDirectoryAvailable
-    ? t('setting.save_to.placeholder.sub_directory_unused')
-    : env.isViolentmonkey()
-      ? t('setting.save_to.placeholder.vm_not_supported')
-      : t('setting.save_to.placeholder.need_browser_api');
+  const folderBtnDisabled = $derived(directory === $store.folderPattern);
+
+  const filenameBtnDisabled = $derived(filename === $store.filenamePattern);
+
+  const directoryPlaceholder = $derived(
+    subDirectoryAvailable
+      ? t('setting.save_to.placeholder.sub_directory_unused')
+      : env.isViolentmonkey()
+        ? t('setting.save_to.placeholder.vm_not_supported')
+        : t('setting.save_to.placeholder.need_browser_api')
+  );
 </script>
 
 <div class={sectionSpace}>
@@ -121,7 +130,7 @@
             type="button"
             class="[&:not([disabled])]:variant-soft-primary"
             disabled={folderBtnDisabled}
-            on:click={resetFolder}
+            onclick={resetFolder}
           >
             <i class=" w-6 fill-current">
               {@html folderSvg}
@@ -143,7 +152,7 @@
             type="button"
             class="variant-soft-surface [&:not([disabled])]:variant-soft-primary"
             disabled={folderBtnDisabled}
-            on:click={updateDirectory}
+            onclick={updateDirectory}
           >
             <i class=" w-6 fill-current">
               {@html check}
@@ -156,7 +165,7 @@
             <button
               class="chip variant-soft hover:variant-filled"
               disabled={!subDirectoryAvailable}
-              on:click={insertDirTemplateAtCursor(template)}
+              onclick={insertDirTemplateAtCursor(template)}
             >
               <span>{template}</span>
             </button>
@@ -179,7 +188,7 @@
           <p class="flex-auto">{t('setting.save_to.options.fsa_directory')}</p>
 
           <span class="text-sm italic">{fsaDirectory}</span>
-          <button class="btn btn-sm variant-filled" on:click={updatefsaDir}
+          <button class="btn btn-sm variant-filled" onclick={updatefsaDir}
             >{t('setting.save_to.button.choose_fsa_directory')}</button
           >
         </li>
@@ -224,7 +233,7 @@
             type="button"
             class="[&:not([disabled])]:variant-soft-primary"
             disabled={filenameBtnDisabled}
-            on:click={resetFilename}
+            onclick={resetFilename}
           >
             <i class=" w-6 fill-current">
               {@html fileSvg}
@@ -243,7 +252,7 @@
             type="button"
             class="variant-soft-surface dark:variant-fill-surface [&:not([disabled])]:variant-soft-primary"
             disabled={filenameBtnDisabled}
-            on:click={updateFilename}
+            onclick={updateFilename}
           >
             <i class=" w-6 fill-current">
               {@html check}
@@ -255,7 +264,7 @@
           {#each templates as template}
             <button
               class="chip variant-soft hover:variant-filled"
-              on:click={insertFilenameTemplateAtCursor(template)}
+              onclick={insertFilenameTemplateAtCursor(template)}
             >
               <span>{template}</span>
             </button>

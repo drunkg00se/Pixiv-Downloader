@@ -8,32 +8,40 @@
   import { logger } from '@/lib/logger';
   import { writable } from 'svelte/store';
 
-  export let bg = 'bg-white/30 dark:bg-black/15';
-  export let border = 'divide-y-[1px] *:border-surface-300-600-token';
-  export let padding = 'px-4 *:py-4';
-  export let margin = 'mt-2 *:!m-0';
-  export let rounded = 'rounded-container-token *:!rounded-none';
-  export let inputRounded = 'rounded-full';
-  export let inputWidth = 'w-32';
+  let {
+    bg = 'bg-white/30 dark:bg-black/15',
+    border = 'divide-y-[1px] *:border-surface-300-600-token',
+    padding = 'px-4 *:py-4',
+    margin = 'mt-2 *:!m-0',
+    rounded = 'rounded-container-token *:!rounded-none',
+    sectionSpace = `space-y-4`,
+    sectionTitle = 'font-bold',
+    inputRounded = 'rounded-full',
+    inputWidth = 'w-32',
+    class: UlClass = ''
+  } = $props();
 
-  $: ulClasses = `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${$$props.class ?? ''}`;
-  $: inputClasses = `${inputWidth} ${inputRounded} shrink-0`;
+  const ulClasses = $derived(
+    `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
+  );
 
-  export let sectionSpace = `space-y-4`;
-  export let sectionTitle = 'font-bold';
+  const inputClasses = $derived(`${inputWidth} ${inputRounded} shrink-0`);
 
   function usePendingButton<T extends (...args: any[]) => any>(fn: T) {
     const store = writable(false);
-    const wrapFn = async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
-      store.set(true);
-      const result = await fn(...args);
-      store.set(false);
-      return result;
-    };
 
     return {
       store,
-      wrapFn
+
+      async wrapFn(...args: Parameters<T>) {
+        store.set(true);
+
+        const result = await fn(...args);
+
+        store.set(false);
+
+        return result;
+      }
     };
   }
 
@@ -92,11 +100,7 @@
     <ul class={ulClasses}>
       <li>
         <p class="flex-auto">{t('setting.history.options.export_as_json')}</p>
-        <button
-          disabled={$exportJsonPending}
-          class="btn variant-filled"
-          on:click={wrapExportAsJSON}
-        >
+        <button disabled={$exportJsonPending} class="btn variant-filled" onclick={wrapExportAsJSON}>
           {#if $exportJsonPending}
             <ProgressRadial
               stroke={80}
@@ -112,7 +116,7 @@
       </li>
       <li>
         <p class="flex-auto">{t('setting.history.options.export_as_csv')}</p>
-        <button disabled={$exportCsvPending} class="btn variant-filled" on:click={wrapExportAsCSV}>
+        <button disabled={$exportCsvPending} class="btn variant-filled" onclick={wrapExportAsCSV}>
           {#if $exportCsvPending}
             <ProgressRadial
               stroke={80}
@@ -161,7 +165,7 @@
     <ul class={ulClasses}>
       <li>
         <p class="flex-auto">{t('setting.history.options.clear_history')}</p>
-        <button disabled={$clearPending} class="btn variant-filled" on:click={wrapClearDb}>
+        <button disabled={$clearPending} class="btn variant-filled" onclick={wrapClearDb}>
           {#if $clearPending}
             <ProgressRadial
               stroke={80}

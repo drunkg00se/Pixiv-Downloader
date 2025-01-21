@@ -6,20 +6,26 @@
   import { env } from '@/lib/env';
   import { nonNegativeInt } from '@/lib/components/Actions/nonNegativeInt';
 
-  export let bg = 'bg-white/30 dark:bg-black/15';
-  export let border = 'divide-y-[1px] *:border-surface-300-600-token';
-  export let padding = 'px-4 *:py-4';
-  export let margin = 'mt-2 *:!m-0';
-  export let rounded = 'rounded-container-token *:!rounded-none';
-  export let descriptionText = 'text-sm text-surface-400';
-  export let inputRounded = 'rounded-full';
-  export let inputWidth = 'w-32';
+  let {
+    bg = 'bg-white/30 dark:bg-black/15',
+    border = 'divide-y-[1px] *:border-surface-300-600-token',
+    padding = 'px-4 *:py-4',
+    margin = 'mt-2 *:!m-0',
+    rounded = 'rounded-container-token *:!rounded-none',
+    sectionSpace = `space-y-4`,
+    sectionTitle = 'font-bold',
+    class: UlClass = '',
 
-  $: ulClasses = `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${$$props.class ?? ''}`;
-  $: inputClasses = `${inputWidth} ${inputRounded} shrink-0`;
+    descriptionText = 'text-sm text-surface-400',
+    inputRounded = 'rounded-full',
+    inputWidth = 'w-32'
+  } = $props();
 
-  export let sectionSpace = `space-y-4`;
-  export let sectionTitle = 'font-bold';
+  const ulClasses = $derived(
+    `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
+  );
+
+  const inputClasses = $derived(`${inputWidth} ${inputRounded} shrink-0`);
 </script>
 
 <div class={sectionSpace}>
