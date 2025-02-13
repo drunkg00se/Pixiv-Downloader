@@ -235,7 +235,7 @@ export class Danbooru extends SiteInject {
 
   protected createArtworkBtn(id: string) {
     const btnContainer = document.querySelector<HTMLElement>(
-      'section.image-container:has(picture)'
+      'section.image-container:has(picture), section.image-container:has(video)'
     );
     btnContainer?.appendChild(
       new ArtworkButton({
