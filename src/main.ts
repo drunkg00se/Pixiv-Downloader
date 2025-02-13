@@ -1,3 +1,5 @@
+import './sites/yande/resetArrayFrom';
+
 import { Rule34 } from './sites/rule34';
 import { Danbooru } from './sites/danbooru';
 import { Pixiv } from './sites/pixiv';
