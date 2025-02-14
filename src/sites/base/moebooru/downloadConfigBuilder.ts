@@ -1,11 +1,11 @@
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-import type { YandeMeta } from './parser';
+import type { MoebooruMeta } from './parser';
 import { type DownloadConfig } from '@/lib/downloader';
-import { DownloadConfigBuilder } from '../base/downloadConfigBuilder';
+import { DownloadConfigBuilder } from '../downloadConfigBuilder';
 
 function artworkProgressFactory(
   btn?: ThumbnailButton
-): DownloadConfig<YandeMeta>['onProgress'] | undefined {
+): DownloadConfig<MoebooruMeta>['onProgress'] | undefined {
   if (!btn) return;
 
   return function onArtworkProgress(progress) {
@@ -13,12 +13,12 @@ function artworkProgressFactory(
   };
 }
 
-export class YandeDownloadConfig extends DownloadConfigBuilder<YandeMeta> {
-  constructor(protected meta: YandeMeta) {
+export class MoebooruDownloadConfig extends DownloadConfigBuilder<MoebooruMeta> {
+  constructor(protected meta: MoebooruMeta) {
     super(meta);
   }
 
-  public getDownloadConfig(btn?: ThumbnailButton): DownloadConfig<YandeMeta> {
+  public getDownloadConfig(btn?: ThumbnailButton): DownloadConfig<MoebooruMeta> {
     return {
       taskId: this.generateTaskId(),
       src: this.meta.src,

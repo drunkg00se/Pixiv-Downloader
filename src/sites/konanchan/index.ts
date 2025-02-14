@@ -1,12 +1,13 @@
 import { Moebooru } from '../base/moebooru';
-export class Yande extends Moebooru {
+
+export class Konachan extends Moebooru {
   static get hostname(): string {
-    return 'yande.re';
+    return 'konachan.com';
   }
 
   protected getCustomConfig() {
     return {
-      folderPattern: 'yande/{artist}',
+      folderPattern: 'konachan/{artist}',
       filenamePattern: '{id}_{artist}_{character}'
     };
   }

@@ -1,12 +1,13 @@
-import type { MediaMeta, SiteParser } from '../interface';
-import { yandeApi, type YandePoolData, type YandePostData } from './api';
+import type { MediaMeta, SiteParser } from '../../interface';
+import { moebooruApi } from './api';
+import type { MoebooruPostDataLegacy, MoebooruPostData, MoebooruPoolData } from './api';
 import type {
   ValidatedMetaGenerator,
   YieldArtworkMeta
 } from '@/lib/components/Downloader/useBatchDownload';
 
-interface YandeWebPostData {
-  posts: YandePostData[];
+interface MoebooruHtmlPostDataLegacy {
+  posts: MoebooruPostDataLegacy[];
   pool_posts: {
     id: number;
     pool_id: number;
@@ -17,34 +18,56 @@ interface YandeWebPostData {
     next_post_id: number | null;
     prev_post_id: number | null;
   }[];
-  pools: Omit<YandePoolData, 'posts'>[];
+  pools: Omit<MoebooruPoolData, 'posts'>[];
   /* tag, tagType pair */
   tags: Record<string, string>;
   votes: object;
 }
 
-export interface YandeBlacklistItem {
+// interface MoebooruHtmlPostData extends MoebooruHtmlPostDataLegacy {
+//   posts: MoebooruPostData[];
+// }
+
+export interface MoebooruBlacklistItem {
   tags: string[];
   original_tag_string: string;
   require: string[];
   exclude: string[];
 }
 
-type YandeWebPostListData = Pick<YandeWebPostData, 'posts' | 'tags'>;
+type MoebooruHtmlPostListData<T extends MoebooruHtmlPostDataLegacy = MoebooruHtmlPostDataLegacy> =
+  Pick<T, 'posts' | 'tags'>;
 
-type YandeGeneratorPostData = YandePostData & { tagType: Record<string, string> };
+type MoebooruGeneratorPostData<T extends MoebooruPostDataLegacy = MoebooruPostDataLegacy> = T & {
+  tagType: Record<string, string>;
+};
 
-export type YandeMeta = MediaMeta & { character: string; rating: 'q' | 'e' | 's'; source: string };
+export type MoebooruMeta = MediaMeta & {
+  character: string;
+  rating: MoebooruPostData['rating'];
+  source: string;
+};
 
 type PopularPeriod = '1d' | '1w' | '1m' | '1y';
 
-interface YandeParser extends SiteParser<YandeMeta> {
+interface MoebooruParser extends SiteParser<MoebooruMeta> {
+  _isLatestData(data: MoebooruPostDataLegacy | MoebooruPostData): data is MoebooruPostData;
+
   _isValidCallbackFactory(
-    checkValidity: (meta: Partial<YandeMeta>) => Promise<boolean>
-  ): (postData: YandeGeneratorPostData) => Promise<boolean>;
-  _buildMeta<T extends YandePostData>(postData: T, tagType: Record<string, string>): YandeMeta;
-  _parsePostListData(docText: string): YandePostData[];
+    checkValidity: (meta: Partial<MoebooruMeta>) => Promise<boolean>
+  ): (postData: MoebooruGeneratorPostData) => Promise<boolean>;
+
+  _buildMeta<T extends MoebooruPostDataLegacy = MoebooruPostDataLegacy>(
+    postData: T,
+    tagType: Record<string, string>
+  ): MoebooruMeta;
+
+  _parsePostListData<T extends MoebooruPostDataLegacy = MoebooruPostDataLegacy>(
+    docText: string
+  ): T[];
+
   _parseTagListData(docText: string): Record<string, string>;
+
   _paginationGenerator<T, M>(
     pageRange: [start: number, end: number] | null,
     postsPerPage: number,
@@ -52,25 +75,50 @@ interface YandeParser extends SiteParser<YandeMeta> {
     isValid: (data: T) => Promise<boolean>,
     buildMeta: (data: T) => M
   ): AsyncGenerator<YieldArtworkMeta<M>, void, undefined>;
-  isBlacklisted(matchTags: string[], blacklist: YandeBlacklistItem[]): boolean;
-  parse(id: string): Promise<YandeMeta>;
-  parseArtwork(artworkId: string): Promise<YandeWebPostData>;
-  parsePostList(tags: string | string[], page: number): Promise<YandeWebPostListData>;
-  parsePopular(period: PopularPeriod): Promise<YandeWebPostListData>;
-  parsePool(poolId: string): Promise<YandeWebPostData>;
-  parseBlacklist(): Promise<YandeBlacklistItem[]>;
-  postGenerator: ValidatedMetaGenerator<YandeMeta, [tags: string | string[]]>;
-  popularGenerator: ValidatedMetaGenerator<YandeMeta, [period: PopularPeriod]>;
-  poolGenerator: ValidatedMetaGenerator<YandeMeta, [poolId: string]>;
+
+  isBlacklisted(matchTags: string[], blacklist: MoebooruBlacklistItem[]): boolean;
+
+  parse(id: string): Promise<MoebooruMeta>;
+
+  parseArtwork<T extends MoebooruHtmlPostDataLegacy = MoebooruHtmlPostDataLegacy>(
+    artworkId: string
+  ): Promise<T>;
+
+  parsePostList<T extends MoebooruHtmlPostDataLegacy = MoebooruHtmlPostDataLegacy>(
+    tags: string | string[],
+    page: number
+  ): Promise<MoebooruHtmlPostListData<T>>;
+
+  parsePopular<T extends MoebooruHtmlPostDataLegacy = MoebooruHtmlPostDataLegacy>(
+    period: PopularPeriod
+  ): Promise<MoebooruHtmlPostListData<T>>;
+
+  parsePool<T extends MoebooruHtmlPostDataLegacy = MoebooruHtmlPostDataLegacy>(
+    poolId: string
+  ): Promise<T>;
+
+  parseBlacklist(): Promise<MoebooruBlacklistItem[]>;
+
+  postGenerator: ValidatedMetaGenerator<MoebooruMeta, [tags: string | string[]]>;
+
+  popularGenerator: ValidatedMetaGenerator<MoebooruMeta, [period: PopularPeriod]>;
+
+  poolGenerator: ValidatedMetaGenerator<MoebooruMeta, [poolId: string]>;
 }
 
-export const yandeParser: YandeParser = {
-  async parse(id: string): Promise<YandeMeta> {
+export const MoebooruParser: MoebooruParser = {
+  async parse(id: string): Promise<MoebooruMeta> {
     const { posts, tags } = await this.parseArtwork(id);
     return this._buildMeta(posts[0], tags);
   },
 
-  _parsePostListData(docText: string): YandePostData[] {
+  _isLatestData(data: MoebooruPostDataLegacy | MoebooruPostData): data is MoebooruPostData {
+    return 'file_ext' in data;
+  },
+
+  _parsePostListData<T extends MoebooruPostDataLegacy = MoebooruPostDataLegacy>(
+    docText: string
+  ): T[] {
     const matchData = docText.match(/(?<=Post\.register\().+(?=\))/g)!;
     return matchData.map((dataStr) => JSON.parse(dataStr));
   },
@@ -80,9 +128,12 @@ export const yandeParser: YandeParser = {
     return JSON.parse(tagStr);
   },
 
-  async parsePostList(tags: string | string[], page: number): Promise<YandeWebPostListData> {
+  async parsePostList<T extends MoebooruHtmlPostDataLegacy = MoebooruHtmlPostDataLegacy>(
+    tags: string | string[],
+    page: number
+  ): Promise<MoebooruHtmlPostListData<T>> {
     Array.isArray(tags) && tags.join('+');
-    const htmlText = await yandeApi.getHtml(`/post?page=${page}&tags=${tags}`);
+    const htmlText = await moebooruApi.getHtml(`/post?page=${page}&tags=${tags}`);
 
     return {
       posts: this._parsePostListData(htmlText),
@@ -90,8 +141,10 @@ export const yandeParser: YandeParser = {
     };
   },
 
-  async parsePopular(period: PopularPeriod): Promise<YandeWebPostListData> {
-    const htmlText = await yandeApi.getHtml(`/post/popular_recent?period=${period}`);
+  async parsePopular<T extends MoebooruHtmlPostDataLegacy = MoebooruHtmlPostDataLegacy>(
+    period: PopularPeriod
+  ): Promise<MoebooruHtmlPostListData<T>> {
+    const htmlText = await moebooruApi.getHtml(`/post/popular_recent?period=${period}`);
 
     return {
       posts: this._parsePostListData(htmlText),
@@ -99,15 +152,19 @@ export const yandeParser: YandeParser = {
     };
   },
 
-  async parseArtwork(id: string): Promise<YandeWebPostData> {
-    const htmlText = await yandeApi.getHtml(`/post/show/${id}`);
+  async parseArtwork<T extends MoebooruHtmlPostDataLegacy = MoebooruHtmlPostDataLegacy>(
+    id: string
+  ): Promise<T> {
+    const htmlText = await moebooruApi.getHtml(`/post/show/${id}`);
     const [dataStr] = /(?<=Post\.register_resp\().+(?=\);)/.exec(htmlText)!;
 
     return JSON.parse(dataStr);
   },
 
-  async parsePool(poolId: string): Promise<YandeWebPostData> {
-    const htmlText = await yandeApi.getHtml(`/pool/show/${poolId}`);
+  async parsePool<T extends MoebooruHtmlPostDataLegacy = MoebooruHtmlPostDataLegacy>(
+    poolId: string
+  ): Promise<T> {
+    const htmlText = await moebooruApi.getHtml(`/pool/show/${poolId}`);
     const [dataStr] = /(?<=Post\.register_resp\().+(?=\);)/.exec(htmlText)!;
 
     return JSON.parse(dataStr);
@@ -119,7 +176,7 @@ export const yandeParser: YandeParser = {
    */
   async parseBlacklist() {
     // blacklist can be updated via ajax so we shouldn't get blacklist from current document.
-    const doc = await yandeApi.getDoc('/static/more');
+    const doc = await moebooruApi.getDoc('/static/more');
     const el = doc.querySelector('script#user-blacklisted-tags');
     if (!el) throw new Error('Can not get blacklist.');
 
@@ -161,8 +218,14 @@ export const yandeParser: YandeParser = {
     });
   },
 
-  _buildMeta(data, tagType): YandeMeta {
-    const { id, file_url, file_ext, md5, created_at, source, rating } = data;
+  _buildMeta<T extends MoebooruPostDataLegacy = MoebooruPostDataLegacy>(
+    data: T,
+    tagType: Record<string, string>
+  ): MoebooruMeta {
+    const { id, file_url, md5, created_at, source, rating } = data;
+
+    const file_ext = this._isLatestData(data) ? data.file_ext : file_url.match(/\.(\w+)$/)![1];
+
     const artists: string[] = [];
     const characters: string[] = [];
 
@@ -268,12 +331,12 @@ export const yandeParser: YandeParser = {
   async *postGenerator(pageRange, checkValidity, postTags) {
     const POSTS_PER_PAGE = 40;
 
-    const getPostData = async (page: number): Promise<YandeGeneratorPostData[]> => {
+    const getPostData = async (page: number): Promise<MoebooruGeneratorPostData[]> => {
       const { posts, tags } = await this.parsePostList(postTags, page);
       return posts.map((post) => ({ ...post, tagType: tags }));
     };
 
-    const buildMeta = (data: YandeGeneratorPostData): YandeMeta => {
+    const buildMeta = (data: MoebooruGeneratorPostData): MoebooruMeta => {
       return this._buildMeta(data, data.tagType);
     };
 
@@ -287,12 +350,12 @@ export const yandeParser: YandeParser = {
   },
 
   async *popularGenerator(_, checkValidity, period) {
-    const getPopularData = async (): Promise<YandeGeneratorPostData[]> => {
+    const getPopularData = async (): Promise<MoebooruGeneratorPostData[]> => {
       const { posts, tags } = await this.parsePopular(period);
       return posts.map((post) => ({ ...post, tagType: tags }));
     };
 
-    const buildMeta = (data: YandeGeneratorPostData): YandeMeta => {
+    const buildMeta = (data: MoebooruGeneratorPostData): MoebooruMeta => {
       return this._buildMeta(data, data.tagType);
     };
 
@@ -306,12 +369,12 @@ export const yandeParser: YandeParser = {
   },
 
   async *poolGenerator(_, checkValidity, poolId) {
-    const getPoolData = async (): Promise<YandeGeneratorPostData[]> => {
+    const getPoolData = async (): Promise<MoebooruGeneratorPostData[]> => {
       const { posts, tags } = await this.parsePool(poolId);
       return posts.map((post) => ({ ...post, tagType: tags }));
     };
 
-    const buildMeta = (data: YandeGeneratorPostData): YandeMeta => {
+    const buildMeta = (data: MoebooruGeneratorPostData): MoebooruMeta => {
       return this._buildMeta(data, data.tagType);
     };
 

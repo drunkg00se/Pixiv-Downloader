@@ -59,7 +59,8 @@ export default defineConfig({
           'https://rule34.xxx/*',
           'https://danbooru.donmai.us/*',
           'https://yande.re/*',
-          'https://booru.allthefallen.moe/*'
+          'https://booru.allthefallen.moe/*',
+          'https://konachan.com/*'
         ],
         noframes: true,
         connect: [
@@ -68,7 +69,8 @@ export default defineConfig({
           'rule34.xxx',
           'donmai.us',
           'yande.re',
-          'allthefallen.moe'
+          'allthefallen.moe',
+          'konachan.com'
         ]
       },
       build: {
