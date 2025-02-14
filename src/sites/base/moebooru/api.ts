@@ -73,6 +73,8 @@ export interface MoebooruPostData extends MoebooruPostDataLegacy {
   last_commented_at: number;
 }
 
+export type PossibleMoebooruPostData = MoebooruPostDataLegacy | MoebooruPostData;
+
 export interface MoebooruPoolDataLegacy {
   id: number;
   name: string;
@@ -112,7 +114,9 @@ type PopularPostsParams =
       year: number;
     };
 
-class MoebooruApi extends ApiBase {
+export type PopularPeriod = '1d' | '1w' | '1m' | '1y';
+
+export class MoebooruApi extends ApiBase {
   private isBadResponse(obj: object): obj is BadResponse {
     return 'success' in obj && !obj.success;
   }
@@ -126,7 +130,7 @@ class MoebooruApi extends ApiBase {
     return json;
   }
 
-  async getPostById(id: string) {
+  async getPost(id: string) {
     const [data] = await this.getJSON<MoebooruPostData[] | MoebooruPostDataLegacy[]>(
       `/post.json?tags=id:${id}`
     );
@@ -158,7 +162,7 @@ class MoebooruApi extends ApiBase {
     );
   }
 
-  async getPopularPosts(params: PopularPostsParams) {
+  async getPopularByDate(params: PopularPostsParams) {
     let url;
 
     const { month, year } = params;
@@ -171,6 +175,26 @@ class MoebooruApi extends ApiBase {
 
     return this.getJSON<MoebooruPoolDataLegacy[] | MoebooruPoolData[]>(url);
   }
-}
 
-export const moebooruApi = new MoebooruApi();
+  async getPostHtml(id: string) {
+    return this.getHtml(`/post/show/${id}`);
+  }
+
+  async getPostsHtml(tags: string | string[], page: number) {
+    Array.isArray(tags) && tags.join('+');
+    return this.getHtml(`/post?page=${page}&tags=${tags}`);
+  }
+
+  async getPopularHtmlByPeriod(period: PopularPeriod) {
+    return this.getHtml(`/post/popular_recent?period=${period}`);
+  }
+
+  async getPoolHtml(poolId: string) {
+    return this.getHtml(`/pool/show/${poolId}`);
+  }
+
+  // blacklist can be updated via ajax so we shouldn't get blacklist from current document.
+  async getBlacklistDoc() {
+    return this.getDoc('/static/more');
+  }
+}

@@ -18,7 +18,7 @@ export abstract class SiteInject {
     this.app = this.createApp();
   }
 
-  static get hostname(): string {
+  static get hostname(): string | string[] {
     throw new Error('`hostname` should be overwritten by a subclass.');
   }
 

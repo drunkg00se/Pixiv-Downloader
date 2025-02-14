@@ -14,11 +14,18 @@ if (import.meta.env.DEV) {
 }
 
 function getSiteInjector() {
-  const sitesAdapter = [Pixiv, Danbooru, Rule34, Yande, ATFbooru, Konachan];
+  const sitesAdapters = [Pixiv, Danbooru, Rule34, Yande, ATFbooru, Konachan];
+  const hostname = location.hostname;
 
-  for (let i = 0; i < sitesAdapter.length; i++) {
-    if (location.hostname === sitesAdapter[i].hostname) {
-      return sitesAdapter[i];
+  for (const sites of sitesAdapters) {
+    if (typeof sites.hostname === 'string') {
+      if (hostname === sites.hostname) {
+        return sites;
+      }
+    } else {
+      if (sites.hostname.includes(hostname)) {
+        return sites;
+      }
     }
   }
 }

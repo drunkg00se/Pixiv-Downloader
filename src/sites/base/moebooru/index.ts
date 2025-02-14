@@ -6,9 +6,50 @@ import { MoebooruDownloadConfig } from './downloadConfigBuilder';
 import { downloader } from '@/lib/downloader';
 import { historyDb } from '@/lib/db';
 import t from '@/lib/lang';
+import { MoebooruApi, type PopularPeriod, type PossibleMoebooruPostData } from './api';
+
+type MoebooruGeneratorPostData = PossibleMoebooruPostData & {
+  tagType: Record<string, string>;
+};
 
 export abstract class Moebooru extends SiteInject {
+  protected abstract parser: MoebooruParser;
+  protected abstract api: MoebooruApi;
+
+  protected abstract getBlacklist(): Promise<MoebooruBlacklistItem[]>;
+
   protected blacklist: MoebooruBlacklistItem[] | null = null;
+
+  protected getFilenameTemplate(): string[] {
+    return ['{artist}', '{character}', '{id}', '{date}'];
+  }
+
+  /**
+   * register
+   * https://github.com/moebooru/moebooru/blob/master/app/javascript/src/legacy/post.coffee#L286
+   */
+  #validityCallbackFactory(
+    checkValidity: (meta: Partial<MoebooruMeta>) => Promise<boolean>
+  ): (postData: MoebooruGeneratorPostData) => Promise<boolean> {
+    return async (data) => {
+      const tags = data.tags.split(' ');
+      tags.push('rating:' + data.rating.charAt(0));
+      tags.push('status:' + data.status);
+      return await checkValidity({ id: String(data.id), tags });
+    };
+  }
+
+  #buildMetaByGeneratorData(data: MoebooruGeneratorPostData): MoebooruMeta {
+    return this.parser.buildMeta(data, data.tagType);
+  }
+
+  #getPopularDataFactory(period: PopularPeriod) {
+    return async () => {
+      const htmlText = await this.api.getPopularHtmlByPeriod(period);
+      const { posts, tags: tagType } = this.parser.parsePostsList(htmlText);
+      return posts.map((post) => ({ ...post, tagType }));
+    };
+  }
 
   protected useBatchDownload = this.app.initBatchDownloader({
     metaType: {} as MoebooruMeta,
@@ -33,8 +74,8 @@ export abstract class Moebooru extends SiteInject {
           checked: true,
           fn: async (meta) => {
             if (!meta.tags) return false;
-            this.blacklist ??= await MoebooruParser.parseBlacklist();
-            return MoebooruParser.isBlacklisted(meta.tags, this.blacklist);
+            this.blacklist ??= await this.getBlacklist();
+            return this.parser.isBlacklisted(meta.tags, this.blacklist);
           }
         },
         {
@@ -58,7 +99,22 @@ export abstract class Moebooru extends SiteInject {
         filterInGenerator: true,
         fn: (pageRange, checkValidity, tags?: string | string[]) => {
           tags ??= new URLSearchParams(location.search).get('tags') ?? '';
-          return MoebooruParser.postGenerator(pageRange, checkValidity, tags);
+
+          const POSTS_PER_PAGE = 40;
+
+          const getPostData = async (page: number) => {
+            const htmlText = await this.api.getPostsHtml(tags, page);
+            const { posts, tags: tagType } = this.parser.parsePostsList(htmlText);
+            return posts.map((post) => ({ ...post, tagType }));
+          };
+
+          return this.parser.paginationGenerator(
+            pageRange,
+            POSTS_PER_PAGE,
+            getPostData,
+            this.#validityCallbackFactory(checkValidity),
+            this.#buildMetaByGeneratorData.bind(this)
+          );
         }
       },
 
@@ -66,8 +122,14 @@ export abstract class Moebooru extends SiteInject {
         name: t('downloader.download_type.yande_popular_1d'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
-        fn: (pageRange, checkValidity) => {
-          return MoebooruParser.popularGenerator(pageRange, checkValidity, '1d');
+        fn: (_, checkValidity) => {
+          return this.parser.paginationGenerator(
+            [1, 1],
+            Number.POSITIVE_INFINITY,
+            this.#getPopularDataFactory('1d'),
+            this.#validityCallbackFactory(checkValidity),
+            this.#buildMetaByGeneratorData.bind(this)
+          );
         }
       },
 
@@ -75,8 +137,14 @@ export abstract class Moebooru extends SiteInject {
         name: t('downloader.download_type.yande_popular_1w'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
-        fn: (pageRange, checkValidity) => {
-          return MoebooruParser.popularGenerator(pageRange, checkValidity, '1w');
+        fn: (_, checkValidity) => {
+          return this.parser.paginationGenerator(
+            [1, 1],
+            Number.POSITIVE_INFINITY,
+            this.#getPopularDataFactory('1w'),
+            this.#validityCallbackFactory(checkValidity),
+            this.#buildMetaByGeneratorData.bind(this)
+          );
         }
       },
 
@@ -84,8 +152,14 @@ export abstract class Moebooru extends SiteInject {
         name: t('downloader.download_type.yande_popular_1m'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
-        fn: (pageRange, checkValidity) => {
-          return MoebooruParser.popularGenerator(pageRange, checkValidity, '1m');
+        fn: (_, checkValidity) => {
+          return this.parser.paginationGenerator(
+            [1, 1],
+            Number.POSITIVE_INFINITY,
+            this.#getPopularDataFactory('1m'),
+            this.#validityCallbackFactory(checkValidity),
+            this.#buildMetaByGeneratorData.bind(this)
+          );
         }
       },
 
@@ -93,8 +167,14 @@ export abstract class Moebooru extends SiteInject {
         name: t('downloader.download_type.yande_popular_1y'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
-        fn: (pageRange, checkValidity) => {
-          return MoebooruParser.popularGenerator(pageRange, checkValidity, '1y');
+        fn: (_, checkValidity) => {
+          return this.parser.paginationGenerator(
+            [1, 1],
+            Number.POSITIVE_INFINITY,
+            this.#getPopularDataFactory('1y'),
+            this.#validityCallbackFactory(checkValidity),
+            this.#buildMetaByGeneratorData.bind(this)
+          );
         }
       },
 
@@ -102,15 +182,30 @@ export abstract class Moebooru extends SiteInject {
         name: t('downloader.download_type.yande_pool'),
         match: /\/pool\/show\//,
         filterInGenerator: true,
-        fn: (pageRange, checkValidity, poolId?: string) => {
+        fn: (_, checkValidity, poolId?: string) => {
           poolId ??= /(?<=show\/)[0-9]+/.exec(location.pathname)![0];
-          return MoebooruParser.poolGenerator(pageRange, checkValidity, poolId);
+
+          const getPoolData = async (): Promise<MoebooruGeneratorPostData[]> => {
+            const htmlText = await this.api.getPoolHtml(poolId);
+            const { posts, tags: tagType } = this.parser.parsePostAndPool(htmlText);
+            return posts.map((post) => ({ ...post, tagType }));
+          };
+
+          return this.parser.paginationGenerator(
+            [1, 1],
+            Number.POSITIVE_INFINITY,
+            getPoolData,
+            this.#validityCallbackFactory(checkValidity),
+            this.#buildMetaByGeneratorData.bind(this)
+          );
         }
       }
     },
 
-    parseMetaByArtworkId(id) {
-      return MoebooruParser.parse(id);
+    parseMetaByArtworkId: async (id) => {
+      const htmlText = await this.api.getPostHtml(id);
+      const { posts, tags } = this.parser.parsePostAndPool(htmlText);
+      return this.parser.buildMeta(posts[0], tags);
     },
 
     async downloadArtworkByMeta(meta, signal) {
@@ -135,29 +230,14 @@ export abstract class Moebooru extends SiteInject {
     }
   });
 
-  public inject() {
-    super.inject();
-
-    const pathname = location.pathname;
-    const galleryMatch = pathname.match(/(?<=\/post\/show\/)\d+/);
-
-    if (galleryMatch) {
-      this.createArtworkBtn(galleryMatch[0]);
-    } else if (pathname === '/post/browse') {
-      this.createScrollerBtn();
-      this.createImageBrowseBtn();
-    } else {
-      const btnContainers = document.querySelectorAll<HTMLAnchorElement>(
-        'a.thumb, div.post div.col1 a'
-      );
-      this.createThumbnailBtn(Array.from(btnContainers));
-    }
-  }
-
-  protected async downloadArtwork(btn: ThumbnailButton) {
+  async #downloadArtwork(btn: ThumbnailButton) {
     downloader.dirHandleCheck();
     const id = btn.dataset.id!;
-    const mediaMeta = await MoebooruParser.parse(id);
+
+    const htmlText = await this.api.getPostHtml(id);
+    const { posts, tags: tagType } = this.parser.parsePostAndPool(htmlText);
+    const mediaMeta = this.parser.buildMeta(posts[0], tagType);
+
     const { tags, artist, title, rating, source } = mediaMeta;
     const downloadConfigs = new MoebooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
 
@@ -217,7 +297,7 @@ export abstract class Moebooru extends SiteInject {
       el.appendChild(
         new ThumbnailButton({
           id,
-          onClick: this.downloadArtwork
+          onClick: this.#downloadArtwork.bind(this)
         })
       );
     });
@@ -234,7 +314,7 @@ export abstract class Moebooru extends SiteInject {
       new ArtworkButton({
         id,
         site: 'yande',
-        onClick: this.downloadArtwork
+        onClick: this.#downloadArtwork.bind(this)
       })
     );
   }
@@ -263,7 +343,6 @@ export abstract class Moebooru extends SiteInject {
     ob.observe(scrollerList, { subtree: true, childList: true });
   }
 
-  // TODO: check konanchan
   protected createImageBrowseBtn() {
     const postId = document.querySelector<HTMLSpanElement>('span.post-id');
     if (!postId) return;
@@ -283,7 +362,7 @@ export abstract class Moebooru extends SiteInject {
         new ThumbnailButton({
           id,
           type: ThumbnailBtnType.YandeBrowse,
-          onClick: this.downloadArtwork
+          onClick: this.#downloadArtwork.bind(this)
         })
       );
     };
@@ -293,7 +372,22 @@ export abstract class Moebooru extends SiteInject {
     new MutationObserver(createBtn).observe(postId, { childList: true });
   }
 
-  protected getFilenameTemplate(): string[] {
-    return ['{artist}', '{character}', '{id}', '{date}'];
+  public inject() {
+    super.inject();
+
+    const pathname = location.pathname;
+    const galleryMatch = pathname.match(/(?<=\/post\/show\/)\d+/);
+
+    if (galleryMatch) {
+      this.createArtworkBtn(galleryMatch[0]);
+    } else if (pathname === '/post/browse') {
+      this.createScrollerBtn();
+      this.createImageBrowseBtn();
+    } else {
+      const btnContainers = document.querySelectorAll<HTMLAnchorElement>(
+        'a.thumb, div.post div.col1 a'
+      );
+      this.createThumbnailBtn(Array.from(btnContainers));
+    }
   }
 }

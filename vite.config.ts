@@ -60,7 +60,8 @@ export default defineConfig({
           'https://danbooru.donmai.us/*',
           'https://yande.re/*',
           'https://booru.allthefallen.moe/*',
-          'https://konachan.com/*'
+          'https://konachan.com/*',
+          'https://konachan.net/*'
         ],
         noframes: true,
         connect: [
@@ -70,7 +71,8 @@ export default defineConfig({
           'donmai.us',
           'yande.re',
           'allthefallen.moe',
-          'konachan.com'
+          'konachan.com',
+          'konachan.net'
         ]
       },
       build: {
