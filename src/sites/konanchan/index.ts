@@ -20,4 +20,21 @@ export class Konachan extends Moebooru {
       filenamePattern: '{id}_{artist}_{character}'
     };
   }
+
+  #fixPoolImageStyle() {
+    document.querySelectorAll<HTMLLIElement>('ul#post-list-posts li').forEach((el) => {
+      el.style.width = 'auto';
+      const innerEl = el.firstElementChild as HTMLDivElement;
+      innerEl.style.width = 'auto';
+      innerEl.style.height = 'auto';
+    });
+  }
+
+  public inject() {
+    super.inject();
+
+    if (/pool\/show\//.test(location.pathname)) {
+      this.#fixPoolImageStyle();
+    }
+  }
 }
