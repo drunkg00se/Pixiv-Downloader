@@ -101,17 +101,17 @@ interface PostParams {
   tags: string | string[];
 }
 
-type PopularPostsParams =
+export type PopularPostsParams =
   | {
       period: 'day' | 'week';
-      day: number;
-      month: number;
-      year: number;
+      day?: number | string;
+      month?: number | string;
+      year?: number | string;
     }
   | {
       period: 'month';
-      month: number;
-      year: number;
+      month?: number | string;
+      year?: number | string;
     };
 
 export type PopularPeriod = '1d' | '1w' | '1m' | '1y';
@@ -165,12 +165,12 @@ export class MoebooruApi extends ApiBase {
   async getPopularByDate(params: PopularPostsParams) {
     let url;
 
-    const { month, year } = params;
+    const { month = '', year = '' } = params;
 
     if (params.period === 'month') {
-      url = `post/popular_by_month.json?month=${month}&year=${year}`;
+      url = `/post/popular_by_month.json?month=${month}&year=${year}`;
     } else {
-      url = `post/popular_by_${params.period}.json?day=${params.day}&month=${month}&year=${year}`;
+      url = `/post/popular_by_${params.period}.json?day=${params.day ?? ''}&month=${month}&year=${year}`;
     }
 
     return this.getJSON<MoebooruPoolDataLegacy[] | MoebooruPoolData[]>(url);
@@ -196,5 +196,19 @@ export class MoebooruApi extends ApiBase {
   // blacklist can be updated via ajax so we shouldn't get blacklist from current document.
   async getBlacklistDoc() {
     return this.getDoc('/static/more');
+  }
+
+  async getPopularHtmlByDate(params: PopularPostsParams) {
+    let url;
+
+    const { month = '', year = '' } = params;
+
+    if (params.period === 'month') {
+      url = `/post/popular_by_month?month=${month}&year=${year}`;
+    } else {
+      url = `/post/popular_by_${params.period}?day=${params.day ?? ''}&month=${month}&year=${year}`;
+    }
+
+    return this.getHtml(url);
   }
 }

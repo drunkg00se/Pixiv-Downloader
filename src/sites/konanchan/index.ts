@@ -2,6 +2,7 @@ import { Moebooru } from '../base/moebooru';
 import { MoebooruApi } from '../base/moebooru/api';
 import { MoebooruParser, type MoebooruBlacklistItem } from '../base/moebooru/parser';
 
+// FIXME: svelte5 is borken in dev server.
 export class Konachan extends Moebooru {
   protected api = new MoebooruApi();
   protected parser = new MoebooruParser();

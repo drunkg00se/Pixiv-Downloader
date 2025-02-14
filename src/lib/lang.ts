@@ -156,12 +156,13 @@ const zh = {
       pixiv_follow_latest_all: '全部',
       pixiv_follow_latest_r18: 'R-18',
       pixiv_series: '系列',
-      yande_posts: '投稿',
-      yande_pool: '图集',
-      yande_popular_1d: '日',
-      yande_popular_1w: '周',
-      yande_popular_1m: '月',
-      yande_popular_1y: '年'
+      moebooru_posts: '投稿',
+      moebooru_pool: '图集',
+      moebooru_popular_1d: '日',
+      moebooru_popular_1w: '周',
+      moebooru_popular_1m: '月',
+      moebooru_popular_1y: '年',
+      moebooru_popular_date: '人气'
     }
   },
 
@@ -336,12 +337,13 @@ const en: typeof zh = {
       pixiv_follow_latest_all: 'All',
       pixiv_follow_latest_r18: 'R-18',
       pixiv_series: 'Series',
-      yande_posts: 'Posts',
-      yande_pool: 'Pool',
-      yande_popular_1d: '1d',
-      yande_popular_1w: '1w',
-      yande_popular_1m: '1m',
-      yande_popular_1y: '1y'
+      moebooru_posts: 'Posts',
+      moebooru_pool: 'Pool',
+      moebooru_popular_1d: '1d',
+      moebooru_popular_1w: '1w',
+      moebooru_popular_1m: '1m',
+      moebooru_popular_1y: '1y',
+      moebooru_popular_date: 'Popular'
     }
   },
 

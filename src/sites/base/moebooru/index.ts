@@ -6,7 +6,12 @@ import { MoebooruDownloadConfig } from './downloadConfigBuilder';
 import { downloader } from '@/lib/downloader';
 import { historyDb } from '@/lib/db';
 import t from '@/lib/lang';
-import { MoebooruApi, type PopularPeriod, type PossibleMoebooruPostData } from './api';
+import {
+  MoebooruApi,
+  type PopularPeriod,
+  type PopularPostsParams,
+  type PossibleMoebooruPostData
+} from './api';
 
 type MoebooruGeneratorPostData = PossibleMoebooruPostData & {
   tagType: Record<string, string>;
@@ -94,7 +99,7 @@ export abstract class Moebooru extends SiteInject {
 
     pageOption: {
       posts: {
-        name: t('downloader.download_type.yande_posts'),
+        name: t('downloader.download_type.moebooru_posts'),
         match: () => location.pathname === '/post',
         filterInGenerator: true,
         fn: (pageRange, checkValidity, tags?: string | string[]) => {
@@ -119,7 +124,7 @@ export abstract class Moebooru extends SiteInject {
       },
 
       popular_1d: {
-        name: t('downloader.download_type.yande_popular_1d'),
+        name: t('downloader.download_type.moebooru_popular_1d'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
         fn: (_, checkValidity) => {
@@ -134,7 +139,7 @@ export abstract class Moebooru extends SiteInject {
       },
 
       popular_1w: {
-        name: t('downloader.download_type.yande_popular_1w'),
+        name: t('downloader.download_type.moebooru_popular_1w'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
         fn: (_, checkValidity) => {
@@ -149,7 +154,7 @@ export abstract class Moebooru extends SiteInject {
       },
 
       popular_1m: {
-        name: t('downloader.download_type.yande_popular_1m'),
+        name: t('downloader.download_type.moebooru_popular_1m'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
         fn: (_, checkValidity) => {
@@ -164,7 +169,7 @@ export abstract class Moebooru extends SiteInject {
       },
 
       popular_1y: {
-        name: t('downloader.download_type.yande_popular_1y'),
+        name: t('downloader.download_type.moebooru_popular_1y'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
         fn: (_, checkValidity) => {
@@ -178,8 +183,51 @@ export abstract class Moebooru extends SiteInject {
         }
       },
 
+      popular_by_date: {
+        name: t('downloader.download_type.moebooru_popular_date'),
+        match: /\/post\/popular_by_(day|week|month)/,
+        filterInGenerator: true,
+        fn: (_, checkValidity) => {
+          const period = /(?<=popular_by_)day|week|month/.exec(location.pathname)![0] as
+            | 'day'
+            | 'week'
+            | 'month';
+          const searchParams = new URLSearchParams(location.search);
+
+          let params: PopularPostsParams;
+
+          if (searchParams.size === 0) {
+            params = { period };
+          } else {
+            params = {
+              period,
+              month: searchParams.get('month') || undefined,
+              year: searchParams.get('year') || undefined
+            };
+
+            if (params.period !== 'month') {
+              params.day = searchParams.get('day') || undefined;
+            }
+          }
+
+          const getPopularData = async (): Promise<MoebooruGeneratorPostData[]> => {
+            const htmlText = await this.api.getPopularHtmlByDate(params);
+            const { posts, tags: tagType } = this.parser.parsePostsList(htmlText);
+            return posts.map((post) => ({ ...post, tagType }));
+          };
+
+          return this.parser.paginationGenerator(
+            [1, 1],
+            Number.POSITIVE_INFINITY,
+            getPopularData,
+            this.#validityCallbackFactory(checkValidity),
+            this.#buildMetaByGeneratorData.bind(this)
+          );
+        }
+      },
+
       pool: {
-        name: t('downloader.download_type.yande_pool'),
+        name: t('downloader.download_type.moebooru_pool'),
         match: /\/pool\/show\//,
         filterInGenerator: true,
         fn: (_, checkValidity, poolId?: string) => {
