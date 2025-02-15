@@ -20,9 +20,7 @@ interface BadResponse {
 }
 
 // https://github.com/moebooru/moebooru/blob/master/app/models/post/api_methods.rb
-
-// konanchan
-export interface MoebooruPostDataLegacy {
+interface PostDataBase {
   id: number;
   tags: string;
   created_at: number;
@@ -51,7 +49,6 @@ export interface MoebooruPostDataLegacy {
   rating: 's' | 'e' | 'q';
   has_children: false;
   parent_id: null;
-  status: 'active';
   width: number;
   height: number;
   /* artwork will not be shown in the posts list if it's held */
@@ -60,9 +57,26 @@ export interface MoebooruPostDataLegacy {
   frames_pending: unknown[];
   frames_string: string;
   frames: unknown[];
+  /** For post/similar results */
+  similarity?: unknown;
 }
 
-export interface MoebooruPostData extends MoebooruPostDataLegacy {
+type DeletedPostData = Omit<PostDataBase, 'sample_url' | 'jpeg_url' | 'file_url'> & {
+  status: 'deleted';
+  flag_detail: { hide_user: boolean };
+};
+
+type PendingOrFlaggedPostData = PostDataBase & {
+  status: 'pending' | 'flagged';
+  flag_detail: { hide_user: false };
+};
+
+type ActivePostData = PostDataBase & { status: 'active' };
+
+// konanchan
+export type MoebooruPostDataLegacy = DeletedPostData | PendingOrFlaggedPostData | ActivePostData;
+
+export type MoebooruPostData = MoebooruPostDataLegacy & {
   updated_at: number;
   approver_id: number | null;
   file_ext: string;
@@ -71,7 +85,7 @@ export interface MoebooruPostData extends MoebooruPostDataLegacy {
   is_note_locked: boolean;
   last_noted_at: number;
   last_commented_at: number;
-}
+};
 
 export type PossibleMoebooruPostData = MoebooruPostDataLegacy | MoebooruPostData;
 

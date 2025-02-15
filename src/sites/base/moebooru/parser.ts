@@ -105,6 +105,8 @@ export class MoebooruParser {
     data: MoebooruPostDataLegacy | MoebooruPostData,
     tagType: Record<string, string>
   ): MoebooruMeta {
+    if (data.status === 'deleted') throw new Error(`Post ${data.id} is deleted.`);
+
     const { id, file_url, md5, created_at, source, rating } = data;
 
     const file_ext = this.isLatestData(data) ? data.file_ext : file_url.match(/\.(\w+)$/)![1];
