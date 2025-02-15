@@ -49,37 +49,35 @@
         <SlideToggle name="bundle-manga" bind:checked={$store.likeIllust} size="sm"></SlideToggle>
       </li>
     {/if}
-    {#if !env.isYande()}
-      <li class="flex-col !items-stretch">
-        <div class="flex items-center">
-          <div class="flex-auto">
-            <p>{t('setting.others.options.add_bookmark_when_downloading')}</p>
-            <p class={descritionText}>
-              {t('setting.others.options.option_does_not_apply_to_batch_download')}
-            </p>
-          </div>
-          <SlideToggle name="fsa-enable" bind:checked={$store.addBookmark} size="sm"></SlideToggle>
+    <li class="flex-col !items-stretch">
+      <div class="flex items-center">
+        <div class="flex-auto">
+          <p>{t('setting.others.options.add_bookmark_when_downloading')}</p>
+          <p class={descritionText}>
+            {t('setting.others.options.option_does_not_apply_to_batch_download')}
+          </p>
         </div>
-        {#if $store.addBookmark && env.isPixiv()}
-          <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
-            <li>
-              <label class="label flex flex-grow items-center justify-center">
-                <p class="flex-auto">{t('setting.others.options.add_bookmark_with_tags')}</p>
-                <SlideToggle name="fsa-enable" bind:checked={$store.addBookmarkWithTags} size="sm"
-                ></SlideToggle>
-              </label>
-            </li>
-            <li>
-              <label class="label flex flex-grow items-center justify-center">
-                <p class="flex-auto">{t('setting.others.options.add_bookmark_private_r18')}</p>
-                <SlideToggle name="fsa-enable" bind:checked={$store.privateR18} size="sm"
-                ></SlideToggle>
-              </label>
-            </li>
-          </ul>
-        {/if}
-      </li>
-    {/if}
+        <SlideToggle name="fsa-enable" bind:checked={$store.addBookmark} size="sm"></SlideToggle>
+      </div>
+      {#if $store.addBookmark && env.isPixiv()}
+        <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
+          <li>
+            <label class="label flex flex-grow items-center justify-center">
+              <p class="flex-auto">{t('setting.others.options.add_bookmark_with_tags')}</p>
+              <SlideToggle name="fsa-enable" bind:checked={$store.addBookmarkWithTags} size="sm"
+              ></SlideToggle>
+            </label>
+          </li>
+          <li>
+            <label class="label flex flex-grow items-center justify-center">
+              <p class="flex-auto">{t('setting.others.options.add_bookmark_private_r18')}</p>
+              <SlideToggle name="fsa-enable" bind:checked={$store.privateR18} size="sm"
+              ></SlideToggle>
+            </label>
+          </li>
+        </ul>
+      {/if}
+    </li>
   </ul>
 
   {#if env.isPixiv()}

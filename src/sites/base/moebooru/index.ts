@@ -12,6 +12,7 @@ import {
   type PopularPostsParams,
   type PossibleMoebooruPostData
 } from './api';
+import { logger } from '@/lib/logger';
 
 type MoebooruGeneratorPostData = PossibleMoebooruPostData & {
   tagType: Record<string, string>;
@@ -283,11 +284,16 @@ export abstract class Moebooru extends SiteInject {
     const id = btn.dataset.id!;
 
     const htmlText = await this.api.getPostHtml(id);
-    const { posts, tags: tagType } = this.parser.parsePostAndPool(htmlText);
+    const { posts, tags: tagType, votes } = this.parser.parsePostAndPool(htmlText);
     const mediaMeta = this.parser.buildMeta(posts[0], tagType);
 
     const { tags, artist, title, rating, source } = mediaMeta;
     const downloadConfigs = new MoebooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
+
+    if (this.config.get('addBookmark') && !this.parser.isFavorite(id, votes)) {
+      const token = this.parser.parseCsrfToken();
+      this.api.addFavorite(id, token).catch(logger.error);
+    }
 
     await downloader.download(downloadConfigs, { priority: 1 });
 

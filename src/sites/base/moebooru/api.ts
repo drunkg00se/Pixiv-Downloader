@@ -1,4 +1,4 @@
-import { JsonDataError } from '@/lib/error';
+import { JsonDataError, RequestError } from '@/lib/error';
 import { ApiBase } from '../api';
 
 // https://yande.re/help/api
@@ -210,5 +210,18 @@ export class MoebooruApi extends ApiBase {
     }
 
     return this.getHtml(url);
+  }
+
+  async addFavorite(id: string, token: string) {
+    const res = await fetch('/post/vote.json', {
+      method: 'POST',
+      headers: {
+        'x-csrf-token': token,
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body: `id=${id}&score=3`
+    });
+
+    if (!res.ok) throw new RequestError(res.url, res.status);
   }
 }

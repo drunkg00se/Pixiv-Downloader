@@ -22,7 +22,13 @@ interface MoebooruHtmlPostDataLegacy {
   pools: Omit<MoebooruPoolData, 'posts'>[];
   /* tag, tagType pair */
   tags: Record<string, string>;
-  votes: object;
+  votes: {
+    /**
+     * 2: added to favorite but later removed
+     * 3: favorite
+     */
+    [id: string]: 2 | 3;
+  };
 }
 
 interface MoebooruHtmlPostData extends MoebooruHtmlPostDataLegacy {
@@ -85,6 +91,12 @@ export class MoebooruParser {
     });
   }
 
+  public parseCsrfToken() {
+    const el = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]');
+    if (!el) throw new Error('Can not find csrf-token element.');
+    return el.content;
+  }
+
   public isLatestData(data: PossibleMoebooruPostData): data is MoebooruPostData {
     return 'file_ext' in data;
   }
@@ -124,6 +136,10 @@ export class MoebooruParser {
       rating,
       source
     };
+  }
+
+  public isFavorite(id: string, votesData: MoebooruHtmlPostDataLegacy['votes']): boolean {
+    return id in votesData && votesData[id] === 3;
   }
 
   /**
