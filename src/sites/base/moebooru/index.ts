@@ -358,8 +358,10 @@ export abstract class Moebooru extends SiteInject {
   }
 
   protected createArtworkBtn(id: string) {
-    const image = document.querySelector('#image')!;
-    const btnContainer = image.closest('div')!;
+    const btnContainer = document.querySelector<HTMLDivElement>(
+      '#post-view > .content > div:has(:is(img, video))'
+    );
+    if (!btnContainer) throw new Error('Can not find button container');
 
     btnContainer.style.position = 'relative';
     btnContainer.style.width = 'max-content';
@@ -367,7 +369,7 @@ export abstract class Moebooru extends SiteInject {
     btnContainer.appendChild(
       new ArtworkButton({
         id,
-        site: 'yande',
+        site: btnContainer.querySelector('video') ? undefined : 'moebooru_image',
         onClick: this.#downloadArtwork.bind(this)
       })
     );

@@ -6,6 +6,7 @@ import { Pixiv } from './sites/pixiv';
 import { Yande } from './sites/yande';
 import { ATFbooru } from './sites/atfbooru';
 import { Konachan } from './sites/konanchan';
+import { Sakugabooru } from './sites/sakugabooru';
 import './lib/components/app.tailwind.css';
 
 // Remove CSS injected into dom in the dev server
@@ -14,7 +15,7 @@ if (import.meta.env.DEV) {
 }
 
 function getSiteInjector() {
-  const sitesAdapters = [Pixiv, Danbooru, Rule34, Yande, ATFbooru, Konachan];
+  const sitesAdapters = [Pixiv, Danbooru, Rule34, Yande, ATFbooru, Konachan, Sakugabooru];
   const hostname = location.hostname;
 
   for (const sites of sitesAdapters) {

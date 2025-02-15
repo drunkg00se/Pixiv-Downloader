@@ -61,7 +61,8 @@ export default defineConfig({
           'https://yande.re/*',
           'https://booru.allthefallen.moe/*',
           'https://konachan.com/*',
-          'https://konachan.net/*'
+          'https://konachan.net/*',
+          'https://www.sakugabooru.com/*'
         ],
         noframes: true,
         connect: [
@@ -72,7 +73,8 @@ export default defineConfig({
           'yande.re',
           'allthefallen.moe',
           'konachan.com',
-          'konachan.net'
+          'konachan.net',
+          'sakugabooru.com'
         ]
       },
       build: {
