@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.6.0
+// @version            1.6.1
 // @author             ruaruarua
 // @description        Pixiv | Danbooru | Rule34 | Yande. 一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。
 // @description:zh-TW  Pixiv | Danbooru | Rule34 | Yande. 一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。
@@ -18,11 +18,12 @@
 // @match              https://konachan.net/*
 // @match              https://www.sakugabooru.com/*
 // @require            https://unpkg.com/dexie@3.2.7/dist/dexie.min.js
-// @require            https://unpkg.com/jszip@3.10.1/dist/jszip.min.js
+// @require            https://unpkg.com/jszip@3.9.1/dist/jszip.min.js
 // @require            https://unpkg.com/gif.js@0.2.0/dist/gif.js
 // @require            https://unpkg.com/dayjs@1.11.13/dayjs.min.js
 // @require            https://unpkg.com/mp4-muxer@5.1.5/build/mp4-muxer.js
 // @require            https://unpkg.com/webm-muxer@5.0.3/build/webm-muxer.js
+// @require            https://unpkg.com/systemjs@6.15.1/dist/system.min.js
 // @resource           ../wasm/toWebpWorker?raw    https://update.greasyfork.org/scripts/500281/1409041/libwebp_wasm.js
 // @resource           gif.js/dist/gif.worker?raw  https://unpkg.com/gif.js@0.2.0/dist/gif.worker.js
 // @resource           pako/dist/pako.js?raw       https://unpkg.com/pako@2.1.0/dist/pako.min.js
@@ -508,7 +509,7 @@
   function loadConfig(customConfig = {}) {
     if (config) throw new Error("`config` has already been defined.");
     const defaultConfig = Object.freeze({
-      version: "1.6.0",
+      version: "1.6.1",
       ugoiraFormat: "zip",
       folderPattern: "",
       filenamePattern: "{id}",
@@ -10322,7 +10323,7 @@
       children: ($$anchor2, $$slotProps) => {
         var fragment_1 = root_1$7();
         var header = first_child(fragment_1);
-        header.textContent = `Pixiv Downloader ${"1.6.0"}`;
+        header.textContent = `Pixiv Downloader ${"1.6.1"}`;
         var footer = sibling(header, 4);
         var div = child(footer);
         var button = child(div);
