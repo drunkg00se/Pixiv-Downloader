@@ -3,7 +3,7 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { purgeCss } from 'vite-plugin-tailwind-purgecss';
-import monkey, { cdn } from 'vite-plugin-monkey';
+import monkey from 'vite-plugin-monkey';
 import svg from '@poppanator/sveltekit-svg';
 import ts from 'typescript';
 import { version } from './package.json';
@@ -81,11 +81,13 @@ export default defineConfig({
           'https://unpkg.com/jszip@3.9.1/dist/jszip.min.js',
           'https://unpkg.com/gif.js@0.2.0/dist/gif.js',
           'https://unpkg.com/dayjs@1.11.13/dayjs.min.js',
-          'https://unpkg.com/mp4-muxer@5.1.5/build/mp4-muxer.js',
-          'https://unpkg.com/webm-muxer@5.0.3/build/webm-muxer.js',
-          // Don't know why I need systemjs, and it must be the last require,
-          // but this fix the issue now.
-          'https://unpkg.com/systemjs@6.15.1/dist/system.min.js'
+          // mp4-muxer and webm-muxer deps from unpkg are missing a ";" at the end of the code:
+          // `if (typeof module === "object" && typeof module.exports === "object") Object.assign(module.exports, WebMMuxer)`.
+          // This makes CSS side effects not run in Tampermonkey.
+          // So, we use the jsdelivr CDN instead.
+          // By the way, Violentmonkey automatically adds a ";". Well done, Violentmonkey!
+          'https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.5/build/mp4-muxer.min.js',
+          'https://cdn.jsdelivr.net/npm/webm-muxer@5.0.3/build/webm-muxer.min.js'
         ]
       },
       build: {
@@ -93,7 +95,6 @@ export default defineConfig({
           return (css: string) => {
             const style = new CSSStyleSheet();
             style.replaceSync(css);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (window as any)._pdlShadowStyle = style;
           };
         },
@@ -105,15 +106,6 @@ export default defineConfig({
           'mp4-muxer': 'Mp4Muxer',
           'webm-muxer': 'WebMMuxer'
         },
-        // externalGlobals: {
-        //   dexie: cdn.unpkg('Dexie', 'dist/dexie.min.js'),
-        //   jszip: ['JSZip', 'https://unpkg.com/jszip@3.9.1/dist/jszip.min.js'],
-        //   'gif.js': cdn.unpkg('GIF', 'dist/gif.js'),
-        //   dayjs: cdn.unpkg('dayjs', 'dayjs.min.js'),
-        //   'mp4-muxer': cdn.unpkg('Mp4Muxer', 'build/mp4-muxer.js'),
-        //   'webm-muxer': cdn.unpkg('WebMMuxer', 'build/webm-muxer.js'),
-        //   systemjs: ['System', 'https://unpkg.com/systemjs@6.15.1/dist/system.min.js']
-        // },
         externalResource: {
           'gif.js/dist/gif.worker?raw': {
             resourceUrl: 'https://unpkg.com/gif.js@0.2.0/dist/gif.worker.js',
