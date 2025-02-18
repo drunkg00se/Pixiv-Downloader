@@ -44,6 +44,7 @@ export abstract class GelbooruV020 extends SiteInject {
             return !!meta.tags && !meta.tags.includes('video');
           }
         },
+        // Safebooru doesn't really have videos, although it has about 73 GIFs tagged with 'video'
         {
           id: 'allow_video',
           type: 'include',
@@ -157,7 +158,7 @@ export abstract class GelbooruV020 extends SiteInject {
     (unsafeWindow as any).addFav(id);
   }
 
-  async #downloadArtwork(btn: ThumbnailButton) {
+  protected async downloadArtwork(btn: ThumbnailButton) {
     downloader.dirHandleCheck();
 
     const id = btn.dataset.id!;
@@ -210,7 +211,7 @@ export abstract class GelbooruV020 extends SiteInject {
       el.appendChild(
         new ThumbnailButton({
           id,
-          onClick: this.#downloadArtwork.bind(this)
+          onClick: this.downloadArtwork.bind(this)
         })
       );
     });
@@ -224,7 +225,7 @@ export abstract class GelbooruV020 extends SiteInject {
       new ArtworkButton({
         id,
         site: 'gelbooru',
-        onClick: this.#downloadArtwork.bind(this)
+        onClick: this.downloadArtwork.bind(this)
       })
     );
   }

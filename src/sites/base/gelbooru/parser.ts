@@ -9,7 +9,7 @@ export type GelbooruMeta = MediaMeta & {
   source: string;
 };
 
-interface GelbooruHtmlPostDataV020 {
+export interface GelbooruHtmlPostDataV020 {
   id: string;
   tags: string[];
   rating: string;
