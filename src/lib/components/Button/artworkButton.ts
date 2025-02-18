@@ -1,7 +1,7 @@
 import { ThumbnailButton, ThumbnailBtnType, type ThumbnailBtnProp } from './thumbnailButton';
 import wrapperStyle from '@/assets/styles/artworkButton.scss?inline';
 
-type ArtworkButtonProps = Omit<ThumbnailBtnProp, 'type'> & { site?: 'rule34' | 'moebooru_image' };
+type ArtworkButtonProps = Omit<ThumbnailBtnProp, 'type'> & { site?: 'gelbooru' | 'moebooru_image' };
 
 export class ArtworkButton extends HTMLElement {
   private props: ArtworkButtonProps;

@@ -62,7 +62,8 @@ export default defineConfig({
           'https://booru.allthefallen.moe/*',
           'https://konachan.com/*',
           'https://konachan.net/*',
-          'https://www.sakugabooru.com/*'
+          'https://www.sakugabooru.com/*',
+          'https://safebooru.org/*'
         ],
         noframes: true,
         connect: [

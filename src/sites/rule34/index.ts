@@ -168,7 +168,7 @@ export class Rule34 extends SiteInject {
     btnContainer.appendChild(
       new ArtworkButton({
         id,
-        site: 'rule34',
+        site: 'gelbooru',
         onClick: downloadArtwork
       })
     );
