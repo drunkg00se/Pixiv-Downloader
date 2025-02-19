@@ -26,6 +26,23 @@ export class Rule34 extends GelbooruV020 {
     };
   }
 
+  protected setThumbnailStyle(btnContainer: HTMLAnchorElement) {
+    btnContainer.setAttribute(
+      'style',
+      'position: relative; align-self: center; width: auto; height: auto;'
+    );
+
+    const imgEl = btnContainer.querySelector<HTMLImageElement>('img')!;
+
+    const setContainerHeight = () => {
+      const aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
+      aspectRatio > 1 && (btnContainer.style.height = 'inherit');
+    };
+    setContainerHeight();
+
+    imgEl.onload = setContainerHeight;
+  }
+
   protected createArtworkBtn(id: string): void {
     let btnContainer = document.querySelector<HTMLDivElement>('#gelcomVideoContainer');
 

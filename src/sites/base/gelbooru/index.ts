@@ -187,20 +187,7 @@ export abstract class GelbooruV020 extends SiteInject {
   }
 
   protected setThumbnailStyle(btnContainer: HTMLAnchorElement) {
-    btnContainer.setAttribute(
-      'style',
-      'position: relative; align-self: center; width: auto; height: auto;'
-    );
-
-    const imgEl = btnContainer.querySelector<HTMLImageElement>('img')!;
-
-    const setContainerHeight = () => {
-      const aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
-      aspectRatio > 1 && (btnContainer.style.height = 'inherit');
-    };
-    setContainerHeight();
-
-    imgEl.onload = setContainerHeight;
+    btnContainer.style.position = 'relative';
   }
 
   protected createThumbnailBtn() {
