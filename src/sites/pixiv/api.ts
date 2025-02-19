@@ -23,7 +23,7 @@ class PixivApi extends ApiBase {
   }
 
   async getArtworkHtml(illustId: string, lang: TagLanguage): Promise<string> {
-    const res = await fetch(`/artworks/${illustId}?lang=${lang}`);
+    const res = await this.fetch(`/artworks/${illustId}?lang=${lang}`);
     if (!res.ok) throw new RequestError(res.url, res.status);
     return await res.text();
   }

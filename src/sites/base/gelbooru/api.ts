@@ -66,7 +66,7 @@ export class GelbooruApiV020 extends ApiBase {
       url += `&${key}=${val}`;
     });
 
-    const res = await fetch(url);
+    const res = await this.fetch(url);
     if (!res.ok) throw new RequestError(url, res.status);
 
     try {

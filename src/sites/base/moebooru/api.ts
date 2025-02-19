@@ -227,7 +227,7 @@ export class MoebooruApi extends ApiBase {
   }
 
   async addFavorite(id: string, token: string) {
-    const res = await fetch('/post/vote.json', {
+    const res = await this.fetch('/post/vote.json', {
       method: 'POST',
       headers: {
         'x-csrf-token': token,

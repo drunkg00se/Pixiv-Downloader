@@ -36,7 +36,7 @@ class DanbooruApi extends ApiBase {
   // 503 Service Unavailable: Server cannot currently handle the request, try again later (returned during downbooru)
   async getJSON<T>(url: string, init?: RequestInit): Promise<T> {
     logger.info('Fetch url:', url);
-    const res = await fetch(url, init);
+    const res = await this.fetch(url, init);
     if (res.status >= 500) throw new RequestError(res.url, res.status);
 
     const data = await res.json();
@@ -80,7 +80,7 @@ class DanbooruApi extends ApiBase {
   }
 
   async addFavorite(id: string, token: string) {
-    const res = await fetch(`/favorites?post_id=${id}`, {
+    const res = await this.fetch(`/favorites?post_id=${id}`, {
       method: 'POST',
       headers: {
         'X-Csrf-Token': token

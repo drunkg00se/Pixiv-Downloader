@@ -55,7 +55,7 @@ export class GelbooruApiV025 extends GelbooruApiV020 {
       url += `&${key}=${val}`;
     });
 
-    const res = await fetch(url);
+    const res = await this.fetch(url);
 
     if (!res.ok) throw new RequestError(url, res.status);
 
