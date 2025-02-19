@@ -63,7 +63,8 @@ export default defineConfig({
           'https://konachan.com/*',
           'https://konachan.net/*',
           'https://www.sakugabooru.com/*',
-          'https://safebooru.org/*'
+          'https://safebooru.org/*',
+          'https://gelbooru.com/*'
         ],
         noframes: true,
         connect: [
@@ -75,7 +76,9 @@ export default defineConfig({
           'allthefallen.moe',
           'konachan.com',
           'konachan.net',
-          'sakugabooru.com'
+          'sakugabooru.com',
+          'safebooru.org',
+          'gelbooru.com'
         ],
         require: [
           'https://unpkg.com/dexie@3.2.7/dist/dexie.min.js',

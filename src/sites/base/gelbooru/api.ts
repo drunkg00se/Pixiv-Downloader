@@ -1,3 +1,4 @@
+import { RequestError } from '@/lib/error';
 import { ApiBase } from '../../base/api';
 
 export interface GelbooruPostDataV020 {
@@ -15,7 +16,12 @@ export interface GelbooruPostDataV020 {
   change: number;
   owner: string;
   parent_id: number;
-  rating: 'explicit' | 'safe' | 'questionable' | 'general';
+  /**
+   * Gelbooru: Explicit Questionable Sensitive General
+   * Safebooru: Safe  General
+   * Rule34: Explicit  Questionable
+   */
+  rating: 'explicit' | 'safe' | 'questionable' | 'general' | 'sensitive';
   sample: boolean;
   sample_height: number;
   sample_width: number;
@@ -31,7 +37,7 @@ export interface GelbooruPostDataV020 {
   comment_count: number;
 }
 
-interface PostsListParams {
+export interface PostsListParams {
   /** How many posts you want to retrieve. There is a hard limit of 1000 posts per request. */
   limit: number;
   /** The page number. */
@@ -61,6 +67,8 @@ export class GelbooruApiV020 extends ApiBase {
     });
 
     const res = await fetch(url);
+    if (!res.ok) throw new RequestError(url, res.status);
+
     try {
       // response will be empty if there is no post.
       return await res.json();

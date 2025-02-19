@@ -1,6 +1,13 @@
 import { GelbooruParserV020, type GelbooruHtmlPostDataV020 } from '../base/gelbooru/parser';
 
 export class Rule34Parser extends GelbooruParserV020 {
+  protected parseArtworkSrc(doc: Document): string {
+    return (
+      doc.querySelector<HTMLSourceElement>('#gelcomVideoPlayer > source')?.src ||
+      doc.querySelector('meta[property="og:image"]')!.getAttribute('content')!
+    );
+  }
+
   parseFavoriteByDoc(doc: Document): GelbooruHtmlPostDataV020[] {
     const favDataScripts = doc.querySelectorAll<HTMLScriptElement>('.image-list > span + script');
 

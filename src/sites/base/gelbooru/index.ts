@@ -15,6 +15,8 @@ export abstract class GelbooruV020 extends SiteInject {
 
   protected abstract getThumbnailSelector(): string;
 
+  protected searchParams = new URLSearchParams(location.search);
+
   protected getAvatar() {
     return '/favicon.ico';
   }
@@ -184,25 +186,29 @@ export abstract class GelbooruV020 extends SiteInject {
     });
   }
 
+  protected setThumbnailStyle(btnContainer: HTMLAnchorElement) {
+    btnContainer.setAttribute(
+      'style',
+      'position: relative; align-self: center; width: auto; height: auto;'
+    );
+
+    const imgEl = btnContainer.querySelector<HTMLImageElement>('img')!;
+
+    const setContainerHeight = () => {
+      const aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
+      aspectRatio > 1 && (btnContainer.style.height = 'inherit');
+    };
+    setContainerHeight();
+
+    imgEl.onload = setContainerHeight;
+  }
+
   protected createThumbnailBtn() {
     const btnContainers = document.querySelectorAll<HTMLAnchorElement>(this.getThumbnailSelector());
     if (!btnContainers.length) return;
 
     btnContainers.forEach((el) => {
-      el.setAttribute(
-        'style',
-        'position: relative; align-self: center; width: auto; height: auto;'
-      );
-
-      const imgEl = el.querySelector<HTMLImageElement>('img')!;
-
-      const setContainerHeight = () => {
-        const aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
-        aspectRatio > 1 && (el.style.height = 'inherit');
-      };
-      setContainerHeight();
-
-      imgEl.onload = setContainerHeight;
+      this.setThumbnailStyle(el);
 
       const idMathch = /(?<=&id=)\d+/.exec(el.href);
       if (!idMathch) return;
@@ -234,23 +240,36 @@ export abstract class GelbooruV020 extends SiteInject {
     return ['{artist}', '{character}', '{id}', '{date}'];
   }
 
+  protected isPostsList() {
+    return this.searchParams.get('page') === 'post' && this.searchParams.get('s') === 'list';
+  }
+
+  protected isPostView() {
+    return this.searchParams.get('page') === 'post' && this.searchParams.get('s') === 'view';
+  }
+
+  protected isPool() {
+    return this.searchParams.get('page') === 'pool' && this.searchParams.get('s') === 'show';
+  }
+
+  protected isMyfavorites() {
+    return this.searchParams.get('page') === 'favorites' && this.searchParams.get('s') === 'view';
+  }
+
+  protected isAccountProfile() {
+    return this.searchParams.get('page') === 'account' && this.searchParams.get('s') === 'profile';
+  }
+
   public inject() {
     super.inject();
 
-    const query = location.search;
-    if (!query) return;
+    if (this.searchParams.size === 0) return;
 
-    const searchParams = new URLSearchParams(query);
-    const page = searchParams.get('page');
-    const s = searchParams.get('s');
-
-    if (page === 'post' && s === 'view') {
-      // 画廊页
-
+    if (this.isPostView()) {
       // 检查artwork是否被删除
       if (!document.querySelector('#image, #gelcomVideoPlayer')) return;
 
-      const id = searchParams.get('id')!;
+      const id = this.searchParams.get('id')!;
       this.createArtworkBtn(id);
     } else {
       this.createThumbnailBtn();

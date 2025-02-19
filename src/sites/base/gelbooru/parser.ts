@@ -29,21 +29,22 @@ interface IGelbooruParserV020 {
 }
 
 export class GelbooruParserV020 implements IGelbooruParserV020 {
-  buildMeta(id: string, doc: Document): GelbooruMeta {
-    const src =
-      doc.querySelector<HTMLSourceElement>('#gelcomVideoPlayer > source')?.src ||
-      doc.querySelector('meta[property="og:image"]')!.getAttribute('content')!;
+  protected parseArtworkSrc(doc: Document): string {
+    return doc.querySelector('meta[property="og:image"]')!.getAttribute('content')!;
+  }
 
-    const imageNameMatch = /(?<=\/)\w+\.\w+(?=\?)/.exec(src);
+  protected parseArtworkNameBySrc(src: string): [title: string, ext: string] {
+    const imageNameMatch = /(?<=\/)\w+\.\w+(?=\?|$)/.exec(src);
     if (!imageNameMatch) throw new Error('Can not parse image name from src.');
 
     const imageName = imageNameMatch[0];
-    const [title, extendName] = imageName.split('.');
+    return imageName.split('.') as [string, string];
+  }
 
-    const artists: string[] = [];
-    const characters: string[] = [];
+  protected parseTags(doc: Document) {
+    const artist: string[] = [];
+    const character: string[] = [];
     const tags: string[] = [];
-    let source = '';
 
     const tagEls = doc.querySelectorAll<HTMLLIElement>('li[class*="tag-type"]');
     tagEls.forEach((tagEl) => {
@@ -56,18 +57,27 @@ export class GelbooruParserV020 implements IGelbooruParserV020 {
       ).replaceAll(' ', '_');
 
       if (tagType === 'artist') {
-        artists.push(tag);
+        artist.push(tag);
       } else if (tagType === 'character') {
-        characters.push(tag);
+        character.push(tag);
       }
 
       tags.push(tagType + ':' + tag);
     });
 
+    return {
+      artist,
+      character,
+      tags
+    };
+  }
+
+  protected parseStatistics(doc: Document) {
     const uploaderEl = doc.querySelector<HTMLAnchorElement>('a[href*="page=account&s=profile"]');
     const postDateStr = uploaderEl?.parentElement?.firstChild?.nodeValue;
     const postDate = postDateStr ? postDateStr.split(': ')[1] : '';
 
+    let source = '';
     const sourceEl = uploaderEl?.parentElement?.nextElementSibling?.nextElementSibling as
       | HTMLLIElement
       | undefined
@@ -82,16 +92,29 @@ export class GelbooruParserV020 implements IGelbooruParserV020 {
       }
     }
 
-    const rating = /Rating: ?(General|Explicit|Questionable|Safe)/
+    const rating = /Rating: ?(General|Explicit|Questionable|Safe|Sensitive)/
       .exec(doc.documentElement.innerHTML)![1]
       .toLowerCase() as GelbooruPostDataV020['rating'];
+
+    return {
+      postDate,
+      source,
+      rating
+    };
+  }
+
+  buildMeta(id: string, doc: Document): GelbooruMeta {
+    const src = this.parseArtworkSrc(doc);
+    const [title, extendName] = this.parseArtworkNameBySrc(src);
+    const { artist, character, tags } = this.parseTags(doc);
+    const { postDate, source, rating } = this.parseStatistics(doc);
 
     return {
       id,
       src,
       extendName,
-      artist: artists.join(',') || 'UnknownArtist',
-      character: characters.join(',') || 'UnknownCharacter',
+      artist: artist.join(',') || 'UnknownArtist',
+      character: character.join(',') || 'UnknownCharacter',
       title,
       tags,
       createDate: postDate,
@@ -109,7 +132,7 @@ export class GelbooruParserV020 implements IGelbooruParserV020 {
   }
 
   parseFavoriteByDoc(doc: Document): GelbooruHtmlPostDataV020[] {
-    const favDataScripts = doc.querySelectorAll<HTMLScriptElement>('.image-list > span + script');
+    const favDataScripts = doc.querySelectorAll<HTMLScriptElement>('span + script');
 
     const favData = Array.from(favDataScripts).map((el) => {
       const content = el.textContent!;
@@ -133,7 +156,8 @@ export class GelbooruParserV020 implements IGelbooruParserV020 {
   }
 
   parsePostsByDoc(doc: Document): GelbooruHtmlPostDataV020[] {
-    const imageItems = Array.from(doc.querySelectorAll('span[id].thumb'));
+    // gelbooru posts list: thumbnail-preview > a[id]
+    const imageItems = Array.from(doc.querySelectorAll('span[id], .thumbnail-preview > a[id]'));
     const postData = imageItems.map((el) => {
       const image = el.querySelector('img')!;
       const fullTags = image.title.trim().replaceAll(/ +/g, ' ').split(' ');
