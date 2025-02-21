@@ -64,7 +64,9 @@ export default defineConfig({
           'https://konachan.net/*',
           'https://www.sakugabooru.com/*',
           'https://safebooru.org/*',
-          'https://gelbooru.com/*'
+          'https://gelbooru.com/*',
+          'https://e621.net/*',
+          'https://e926.net/*'
         ],
         noframes: true,
         connect: [
@@ -78,7 +80,9 @@ export default defineConfig({
           'konachan.net',
           'sakugabooru.com',
           'safebooru.org',
-          'gelbooru.com'
+          'gelbooru.com',
+          'e621.net',
+          'e926.net'
         ],
         require: [
           'https://unpkg.com/dexie@3.2.7/dist/dexie.min.js',

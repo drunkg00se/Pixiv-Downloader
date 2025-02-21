@@ -2,11 +2,17 @@ import { RequestError } from '@/lib/error';
 import { logger } from '@/lib/logger';
 import PQueue from 'p-queue';
 
+export interface ApiOption {
+  /** per sec */
+  rateLimit: number;
+}
+
 export class ApiBase {
   private queue: PQueue;
   protected fetch: typeof window.fetch;
 
-  constructor(rateLimit = 4) {
+  constructor(option: ApiOption = { rateLimit: 4 }) {
+    const { rateLimit } = option;
     this.queue = new PQueue({ interval: 1000, intervalCap: rateLimit });
 
     this.fetch = (input: RequestInfo | URL, init?: RequestInit) => {

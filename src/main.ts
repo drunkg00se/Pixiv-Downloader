@@ -9,6 +9,7 @@ import { Konachan } from './sites/konanchan';
 import { Sakugabooru } from './sites/sakugabooru';
 import { Safebooru } from './sites/safebooru';
 import { Gelbooru } from './sites/gelbooru';
+import { E621ng } from './sites/e621';
 import './lib/components/app.tailwind.css';
 
 // Remove CSS injected into dom in the dev server
@@ -26,7 +27,8 @@ function getSiteInjector() {
     Konachan,
     Sakugabooru,
     Safebooru,
-    Gelbooru
+    Gelbooru,
+    E621ng
   ];
   const hostname = location.hostname;
 
