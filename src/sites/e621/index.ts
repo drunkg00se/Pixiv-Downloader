@@ -14,7 +14,7 @@ import t from '@/lib/lang';
 
 export class E621ng extends SiteInject {
   static get hostname(): string[] {
-    return ['e621.net', 'e926.net'];
+    return ['e621.net', 'e926.net', 'e6ai.net'];
   }
 
   protected api: E621ngApi;
@@ -112,21 +112,6 @@ export class E621ng extends SiteInject {
             return !!meta.id && historyDb.has(meta.id);
           }
         },
-        // {
-        //   id: 'exclude_blacklist',
-        //   type: 'exclude',
-        //   name: t('downloader.category.filter.exclude_blacklist'),
-        //   checked: true,
-        //   fn: async (meta) => {
-        //     return (
-        //       !!meta.matchTags &&
-        //       danbooruParser.isBlacklisted(
-        //         meta.matchTags,
-        //         (this.blacklist ??= await danbooruParser.parseBlacklist('api'))
-        //       )
-        //     );
-        //   }
-        // },
         {
           id: 'allow_image',
           type: 'include',
@@ -376,15 +361,10 @@ export class E621ng extends SiteInject {
       const userId = this.parser.parseCurrentUserId();
       if (!userId) throw new Error('Cannot get user id.');
       this.profile = await this.api.getCurrentUserProfile(+userId);
-      // this.blacklist = await danbooruParser.parseBlacklist(
-      //   'profile',
-      //   this.profile.blacklisted_tags ?? ''
-      // );
     },
 
     afterDownload: () => {
       this.profile = null;
-      // this.blacklist = null;
     }
   });
 

@@ -66,7 +66,8 @@ export default defineConfig({
           'https://safebooru.org/*',
           'https://gelbooru.com/*',
           'https://e621.net/*',
-          'https://e926.net/*'
+          'https://e926.net/*',
+          'https://e6ai.net/*'
         ],
         noframes: true,
         connect: [
@@ -82,7 +83,8 @@ export default defineConfig({
           'safebooru.org',
           'gelbooru.com',
           'e621.net',
-          'e926.net'
+          'e926.net',
+          'e6ai.net'
         ],
         require: [
           'https://unpkg.com/dexie@3.2.7/dist/dexie.min.js',

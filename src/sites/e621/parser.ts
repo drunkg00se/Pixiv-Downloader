@@ -7,7 +7,6 @@ export type E621ngMeta = MediaMeta & {
   character: string;
   rating: E621Post['rating'];
   source: string;
-  matchTags: Record<string, string>;
   isFavorited: boolean;
 };
 
@@ -28,14 +27,9 @@ export class E621ngParser {
     if (!url) throw new Error(`Url can not be null: Post ${id}`);
 
     const tags: string[] = [];
-    const matchTags: Record<string, string> = {};
 
     for (const [type, tagArr] of Object.entries(fullTags)) {
-      tagArr.forEach((tag) => {
-        tags.push(`${type}:${tag}`);
-
-        matchTags[tag] = type;
-      });
+      tagArr.forEach((tag) => tags.push(`${type}:${tag}`));
     }
 
     return {
@@ -50,7 +44,6 @@ export class E621ngParser {
       createDate: created_at,
       source: sources.join('\n'),
       rating,
-      matchTags,
       isFavorited
     };
   }
