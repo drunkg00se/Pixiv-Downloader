@@ -96,6 +96,7 @@ export class Gelbooru extends GelbooruV020 {
     btnContainer.appendChild(
       new ArtworkButton({
         id,
+        site: btnContainer.nodeName === 'DIV' ? 'native_video' : undefined,
         onClick: this.downloadArtwork.bind(this)
       })
     );

@@ -369,7 +369,7 @@ export abstract class Moebooru extends SiteInject {
     btnContainer.appendChild(
       new ArtworkButton({
         id,
-        site: btnContainer.querySelector('video') ? undefined : 'moebooru_image',
+        site: btnContainer.querySelector('video') ? 'vjs_video' : 'moebooru_image',
         onClick: this.#downloadArtwork.bind(this)
       })
     );

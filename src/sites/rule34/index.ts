@@ -44,14 +44,19 @@ export class Rule34 extends GelbooruV020 {
   }
 
   protected createArtworkBtn(id: string): void {
+    let isImage = false;
     let btnContainer = document.querySelector<HTMLDivElement>('#gelcomVideoContainer');
 
     // post is an image, create a wrapper for the image.
     if (!btnContainer) {
+      isImage = true;
+
       const image = document.querySelector('#image')!;
       btnContainer = document.createElement('div');
       image.parentElement?.insertBefore(btnContainer, image);
       btnContainer.append(image);
+    } else {
+      btnContainer.style.fontSize = '0px';
     }
 
     btnContainer.style.position = 'relative';
@@ -59,6 +64,7 @@ export class Rule34 extends GelbooruV020 {
     btnContainer.appendChild(
       new ArtworkButton({
         id,
+        site: isImage ? undefined : 'fluid_video',
         onClick: this.downloadArtwork.bind(this)
       })
     );

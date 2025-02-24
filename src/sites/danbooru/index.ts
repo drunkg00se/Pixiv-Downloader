@@ -237,9 +237,12 @@ export class Danbooru extends SiteInject {
     const btnContainer = document.querySelector<HTMLElement>(
       'section.image-container:has(picture), section.image-container:has(video)'
     );
-    btnContainer?.appendChild(
+    if (!btnContainer) return;
+
+    btnContainer.appendChild(
       new ArtworkButton({
         id,
+        site: btnContainer.querySelector('video') ? 'native_video' : undefined,
         onClick: this.downloadArtwork
       })
     );

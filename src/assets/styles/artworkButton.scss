@@ -12,4 +12,16 @@
   &.moebooru_image {
     right: calc(5em + 8px);
   }
+
+  &.native_video {
+    bottom: 70px;
+  }
+
+  &.vjs_video {
+    bottom: 32px;
+  }
+
+  &.fluid_video {
+    bottom: 56px;
+  }
 }

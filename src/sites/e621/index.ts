@@ -424,6 +424,7 @@ export class E621ng extends SiteInject {
     btnContainer.appendChild(
       new ArtworkButton({
         id,
+        site: btnContainer.querySelector('video') ? 'native_video' : undefined,
         onClick: this.downloadArtwork
       })
     );
