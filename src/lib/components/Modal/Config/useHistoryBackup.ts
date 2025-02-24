@@ -51,7 +51,7 @@ function scheduleBackup() {
   if (!lastTimestamp || lastTimestamp + interval * 1000 < timestamp) {
     exportAsJSON();
 
-    config.set('lastHistoryBackup', timestamp);
+    config.update((val) => ({ ...val, lastHistoryBackup: timestamp }));
   }
 }
 

@@ -23,15 +23,10 @@ export abstract class SiteInject {
   }
 
   private createApp() {
-    const updated = this.config.get('showMsg');
-    updated && this.config.set('showMsg', false);
-
-    const app = new PdlApp({
-      updated,
+    return new PdlApp({
+      config: this.config,
       filenameTemplate: this.getFilenameTemplate()
     });
-
-    return app;
   }
 
   private injectStyle() {

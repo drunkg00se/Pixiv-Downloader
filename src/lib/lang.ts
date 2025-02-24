@@ -28,6 +28,7 @@ const zh = {
         filename_requried: '必填'
       }
     },
+
     ugoira: {
       title: '动图转换',
       label: {
@@ -47,6 +48,7 @@ const zh = {
         png_tips: '颜色数量。0：所有颜色（无损PNG）'
       }
     },
+
     history: {
       title: '下载历史',
       label: {
@@ -77,6 +79,7 @@ const zh = {
         confirm_clear_history: '真的要清除历史记录吗？'
       }
     },
+
     button_position: {
       title: '按钮位置',
       label: {
@@ -88,6 +91,11 @@ const zh = {
         vertical_position: '垂直位置'
       }
     },
+
+    authorization: {
+      title: '网站认证'
+    },
+
     others: {
       title: '其它',
       options: {
@@ -101,6 +109,7 @@ const zh = {
         option_does_not_apply_to_batch_download: '批量下载不适用'
       }
     },
+
     feedback: {
       title: '反馈 / 赞赏',
       label: {
@@ -208,6 +217,7 @@ const en: typeof zh = {
         filename_requried: 'Required'
       }
     },
+
     ugoira: {
       title: 'Ugoira',
       label: {
@@ -227,6 +237,7 @@ const en: typeof zh = {
         png_tips: 'Number of colors in the result; 0: all colors (lossless PNG)'
       }
     },
+
     history: {
       title: 'History',
       label: {
@@ -257,6 +268,7 @@ const en: typeof zh = {
         confirm_clear_history: 'Do you really want to clear history?'
       }
     },
+
     button_position: {
       title: 'Button',
       label: {
@@ -268,6 +280,11 @@ const en: typeof zh = {
         vertical_position: 'Vertical Position'
       }
     },
+
+    authorization: {
+      title: 'Auth'
+    },
+
     others: {
       title: 'Others',
       options: {
@@ -281,6 +298,7 @@ const en: typeof zh = {
         option_does_not_apply_to_batch_download: 'This option does not apply to batch download'
       }
     },
+
     feedback: {
       title: 'Feedback',
       label: {

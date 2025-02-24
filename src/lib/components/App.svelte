@@ -1,20 +1,20 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
   import { Modal, getModalStore, initializeStores } from '@skeletonlabs/skeleton';
-  import { initConfigStore } from './Modal/Config/store';
   import { addStyleToShadow } from '../util';
   import Changelog from './Modal/Changelog/Changelog.svelte';
-  import Config from './Modal/Config/Config.svelte';
   import Downloader from './Downloader/Downloader.svelte';
   import cog from '@/assets/cog.svg?src';
   import t from '../lang';
   import type { ModalComponent } from '@skeletonlabs/skeleton';
   import type { BatchDownloadConfig, BatchDownloadDefinition } from './Downloader/useBatchDownload';
   import type { MediaMeta } from '@/sites/interface';
+  import type { Config as ConfigStore } from '../config';
+  import Config from './Modal/Config/Config.svelte';
 
-  interface Props {
+  interface Props extends Record<string, unknown> {
     dark?: boolean;
-    updated?: boolean;
+    config: ConfigStore;
     filenameTemplate?: string[];
     downloaderConfig?: BatchDownloadConfig<MediaMeta>;
     useBatchDownload?: BatchDownloadDefinition<MediaMeta>;
@@ -22,16 +22,16 @@
 
   let {
     dark = false,
-    updated = false,
+    config,
     filenameTemplate = [],
     downloaderConfig,
     useBatchDownload
   }: Props = $props();
 
   setContext('filenameTemplate', filenameTemplate);
+  setContext('store', config);
 
   initializeStores();
-  const store = initConfigStore();
   const modalStore = getModalStore();
 
   let root: HTMLDivElement;
@@ -92,7 +92,8 @@
     addStyleToShadow(shadow);
     shadow.host.setAttribute('style', 'position:fixed; z-index:99999');
 
-    if (updated) {
+    if ($config.showMsg) {
+      $config.showMsg = false;
       showChangelog();
     }
   });
@@ -115,7 +116,7 @@
     <Downloader {downloaderConfig} {useBatchDownload} />
   {/if}
 
-  {#if $store.showPopupButton}
+  {#if $config.showPopupButton}
     <button
       onclick={showSetting}
       type="button"

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { RadioGroup, RadioItem, SlideToggle } from '@skeletonlabs/skeleton';
-  import { UgoiraFormat } from '@/lib/config';
-  import store from '../store';
+  import { UgoiraFormat, type Config } from '@/lib/config';
   import t from '@/lib/lang';
   import { env } from '@/lib/env';
   import { nonNegativeInt } from '@/lib/components/Actions/nonNegativeInt';
+  import { getContext } from 'svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -20,6 +20,8 @@
     inputRounded = 'rounded-full',
     inputWidth = 'w-32'
   } = $props();
+
+  const configStore: Config = getContext('store');
 
   const ulClasses = $derived(
     `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
@@ -38,39 +40,39 @@
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={$store.ugoiraFormat}
+            bind:group={$configStore.ugoiraFormat}
             value={UgoiraFormat.ZIP}>Zip</RadioItem
           >
 
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={$store.ugoiraFormat}
+            bind:group={$configStore.ugoiraFormat}
             value={UgoiraFormat.WEBM}>Webm</RadioItem
           >
           <RadioItem
             disabled={!env.videoFrameSupported()}
             class="text-sm"
-            bind:group={$store.ugoiraFormat}
+            bind:group={$configStore.ugoiraFormat}
             name="ugoiraFormat"
             value={UgoiraFormat.MP4}>Mp4</RadioItem
           >
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={$store.ugoiraFormat}
+            bind:group={$configStore.ugoiraFormat}
             value={UgoiraFormat.WEBP}>Webp</RadioItem
           >
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={$store.ugoiraFormat}
+            bind:group={$configStore.ugoiraFormat}
             value={UgoiraFormat.GIF}>Gif</RadioItem
           >
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={$store.ugoiraFormat}
+            bind:group={$configStore.ugoiraFormat}
             value={UgoiraFormat.PNG}>Png</RadioItem
           >
         </RadioGroup>
@@ -92,8 +94,8 @@
           min="1"
           max="120"
           step="1"
-          use:nonNegativeInt={{ store, key: 'webmBitrate' }}
-          bind:value={$store.webmBitrate}
+          use:nonNegativeInt={{ store: configStore, key: 'webmBitrate' }}
+          bind:value={$configStore.webmBitrate}
         />
       </li>
       <li>
@@ -107,8 +109,8 @@
           min="1"
           max="99"
           step="1"
-          use:nonNegativeInt={{ store, key: 'mp4Bitrate' }}
-          bind:value={$store.mp4Bitrate}
+          use:nonNegativeInt={{ store: configStore, key: 'mp4Bitrate' }}
+          bind:value={$configStore.mp4Bitrate}
         />
       </li>
       <li class="flex-col !items-stretch">
@@ -116,7 +118,7 @@
         <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
           <li class="items-center">
             <p class="flex-auto">{t('setting.ugoira.options.webp_lossy')}</p>
-            <SlideToggle name="lossless-webp" bind:checked={$store.losslessWebp} size="sm"
+            <SlideToggle name="lossless-webp" bind:checked={$configStore.losslessWebp} size="sm"
             ></SlideToggle>
           </li>
 
@@ -131,8 +133,8 @@
               min="0"
               max="100"
               step="1"
-              use:nonNegativeInt={{ store, key: 'webpQuality' }}
-              bind:value={$store.webpQuality}
+              use:nonNegativeInt={{ store: configStore, key: 'webpQuality' }}
+              bind:value={$configStore.webpQuality}
             />
           </li>
           <li class="items-center">
@@ -141,7 +143,7 @@
               <p class={descriptionText}>{t('setting.ugoira.options.webp_method_tips')}</p>
             </div>
 
-            <select class="select {inputClasses}" bind:value={$store.webpMehtod}>
+            <select class="select {inputClasses}" bind:value={$configStore.webpMehtod}>
               {#each Array.from({ length: 7 }, (_, idx) => idx) as quality}
                 <option value={quality}>{quality}</option>
               {/each}
@@ -156,7 +158,7 @@
             {t('setting.ugoira.options.gif_tips')}
           </p>
         </div>
-        <select class="select {inputClasses}" bind:value={$store.gifQuality}>
+        <select class="select {inputClasses}" bind:value={$configStore.gifQuality}>
           {#each Array.from({ length: 20 }, (_, idx) => idx) as quality}
             <option value={quality + 1}>{quality + 1}</option>
           {/each}
@@ -173,8 +175,8 @@
           min="0"
           max="256"
           step="1"
-          use:nonNegativeInt={{ store, key: 'pngColor' }}
-          bind:value={$store.pngColor}
+          use:nonNegativeInt={{ store: configStore, key: 'pngColor' }}
+          bind:value={$configStore.pngColor}
         />
       </li>
     </ul>

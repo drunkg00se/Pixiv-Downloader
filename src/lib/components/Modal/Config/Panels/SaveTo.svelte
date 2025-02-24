@@ -3,10 +3,9 @@
   import folderSvg from '@/assets/folder.svg?src';
   import fileSvg from '@/assets/file.svg?src';
   import { RadioGroup, RadioItem, SlideToggle } from '@skeletonlabs/skeleton';
-  import { FilenameConfigAction, TagLanguage } from '@/lib/config';
+  import { FilenameConfigAction, TagLanguage, type Config } from '@/lib/config';
   import { replaceInvalidChar } from '@/lib/util';
   import t from '@/lib/lang';
-  import store from '../store';
   import { env } from '@/lib/env';
   import { downloader } from '@/lib/downloader';
   import { getContext, tick } from 'svelte';
@@ -25,6 +24,8 @@
     descritionText = 'text-sm text-surface-400'
   } = $props();
 
+  const configStore: Config = getContext('store');
+
   const ulClasses = $derived(
     `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
   );
@@ -32,8 +33,8 @@
   let directoryRef: HTMLInputElement;
   let filenameRef: HTMLInputElement;
 
-  let directory = $state($store.folderPattern);
-  let filename = $state($store.filenamePattern);
+  let directory = $state($configStore.folderPattern);
+  let filename = $state($configStore.filenamePattern);
   let fsaDirectory = $state(downloader.getCurrentFsaDirName());
 
   function updateDirectory() {
@@ -43,20 +44,20 @@
       .filter((path: string) => !!path)
       .join('/');
 
-    $store.folderPattern = directory = newDirectory;
+    $configStore.folderPattern = directory = newDirectory;
   }
 
   function updateFilename() {
     const newFilename = replaceInvalidChar(filename);
     if (newFilename === '') {
-      filename = $store.filenamePattern;
+      filename = $configStore.filenamePattern;
     } else {
-      $store.filenamePattern = filename = newFilename;
+      $configStore.filenamePattern = filename = newFilename;
     }
   }
 
   async function resetFolder() {
-    directory = $store.folderPattern;
+    directory = $configStore.folderPattern;
 
     // Chromium sets `selectionStart` and `selectionEnd` to 0 after changing `input.value`
     await tick();
@@ -66,7 +67,7 @@
   }
 
   async function resetFilename() {
-    filename = $store.filenamePattern;
+    filename = $configStore.filenamePattern;
 
     await tick();
     const pos = filename.length;
@@ -104,11 +105,13 @@
     };
   }
 
-  const subDirectoryAvailable = $derived($store.useFileSystemAccess || env.isSupportSubpath());
+  const subDirectoryAvailable = $derived(
+    $configStore.useFileSystemAccess || env.isSupportSubpath()
+  );
 
-  const folderBtnDisabled = $derived(directory === $store.folderPattern);
+  const folderBtnDisabled = $derived(directory === $configStore.folderPattern);
 
-  const filenameBtnDisabled = $derived(filename === $store.filenamePattern);
+  const filenameBtnDisabled = $derived(filename === $configStore.filenamePattern);
 
   const directoryPlaceholder = $derived(
     subDirectoryAvailable
@@ -179,11 +182,11 @@
           size="sm"
           name="fsa-enable"
           disabled={!env.isFileSystemAccessAvaliable()}
-          bind:checked={$store.useFileSystemAccess}
+          bind:checked={$configStore.useFileSystemAccess}
         ></SlideToggle>
       </li>
 
-      {#if $store.useFileSystemAccess}
+      {#if $configStore.useFileSystemAccess}
         <li>
           <p class="flex-auto">{t('setting.save_to.options.fsa_directory')}</p>
 
@@ -199,21 +202,21 @@
             <RadioItem
               name="filenameConfigAction"
               class="text-sm"
-              bind:group={$store.fileSystemFilenameConflictAction}
+              bind:group={$configStore.fileSystemFilenameConflictAction}
               value={FilenameConfigAction.UNIQUIFY}
               >{t('setting.save_to.radio.filename_conflict_option_uniquify')}</RadioItem
             >
             <RadioItem
               name="filenameConfigAction"
               class="text-sm"
-              bind:group={$store.fileSystemFilenameConflictAction}
+              bind:group={$configStore.fileSystemFilenameConflictAction}
               value={FilenameConfigAction.OVERWRITE}
               >{t('setting.save_to.radio.filename_conflict_option_overwrite')}</RadioItem
             >
             <RadioItem
               name="filenameConfigAction"
               class="text-sm"
-              bind:group={$store.fileSystemFilenameConflictAction}
+              bind:group={$configStore.fileSystemFilenameConflictAction}
               value={FilenameConfigAction.PROMPT}
               >{t('setting.save_to.radio.filename_conflict_option_prompt')}</RadioItem
             >
@@ -283,25 +286,25 @@
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={$store.tagLang}
+              bind:group={$configStore.tagLang}
               value={TagLanguage.JAPANESE}>日本語</RadioItem
             >
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={$store.tagLang}
+              bind:group={$configStore.tagLang}
               value={TagLanguage.CHINESE}>简中</RadioItem
             >
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={$store.tagLang}
+              bind:group={$configStore.tagLang}
               value={TagLanguage.TRADITIONAL_CHINESE}>繁中</RadioItem
             >
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={$store.tagLang}
+              bind:group={$configStore.tagLang}
               value={TagLanguage.ENGLISH}>En</RadioItem
             >
           </RadioGroup>

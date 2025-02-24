@@ -1,6 +1,5 @@
 <script lang="ts">
   import { RangeSlider } from '@skeletonlabs/skeleton';
-  import store from '../store';
   import t from '@/lib/lang';
   import { env } from '@/lib/env';
   import {
@@ -8,7 +7,8 @@
     ThumbnailBtnType,
     ThumbnailButton
   } from '@/lib/components/Button/thumbnailButton';
-  import { onMount } from 'svelte';
+  import { getContext, onMount } from 'svelte';
+  import type { Config } from '@/lib/config';
 
   type BtnPosProp =
     | 'pdl-btn-self-bookmark-left'
@@ -27,6 +27,8 @@
     class: UlClass = ''
   } = $props();
 
+  const configStore: Config = getContext('store');
+
   const ulClasses = $derived(
     `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
   );
@@ -34,10 +36,10 @@
   const max = 100;
   const step = 4;
 
-  let btnLeft = $state($store['pdl-btn-left']);
-  let btnTop = $state($store['pdl-btn-top']);
-  let bookmarkBtnLeft = $state($store['pdl-btn-self-bookmark-left']);
-  let bookmarkBtnTop = $state($store['pdl-btn-self-bookmark-top']);
+  let btnLeft = $state($configStore['pdl-btn-left']);
+  let btnTop = $state($configStore['pdl-btn-top']);
+  let bookmarkBtnLeft = $state($configStore['pdl-btn-self-bookmark-left']);
+  let bookmarkBtnTop = $state($configStore['pdl-btn-self-bookmark-top']);
 
   $effect(() => changeCssProp('--pdl-btn-left', btnLeft));
   $effect(() => changeCssProp('--pdl-btn-top', btnTop));
@@ -72,7 +74,7 @@
   });
 
   function updateBtnPosConfig(key: BtnPosProp, val: number) {
-    $store[key] = val;
+    $configStore[key] = val;
   }
 
   function changeCssProp(key: string, value: number) {

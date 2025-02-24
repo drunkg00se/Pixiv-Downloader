@@ -215,6 +215,11 @@ export class E621ngApi extends ApiBase {
     this.#authParams = new URLSearchParams({ username, apiKey, _client: UA });
   }
 
+  updateAuthIfNeeded(username: string, apiKey: string) {
+    username !== this.#authParams.get('username') && this.#authParams.set('username', username);
+    apiKey !== this.#authParams.get('apiKey') && this.#authParams.set('apiKey', apiKey);
+  }
+
   async getJSON<T extends object>(url: string, init?: RequestInit): Promise<T> {
     const fullUrl = new URL(url, location.origin);
 

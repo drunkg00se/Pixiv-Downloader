@@ -3,10 +3,10 @@
   import { FileButton, ProgressRadial } from '@skeletonlabs/skeleton';
   import t from '@/lib/lang';
   import { useHistoryBackup } from '../useHistoryBackup';
-  import configStore from '../store';
-  import { HistoryBackupInterval } from '@/lib/config';
+  import { HistoryBackupInterval, type Config } from '@/lib/config';
   import { logger } from '@/lib/logger';
   import { writable } from 'svelte/store';
+  import { getContext } from 'svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -20,6 +20,8 @@
     inputWidth = 'w-32',
     class: UlClass = ''
   } = $props();
+
+  const configStore: Config = getContext('store');
 
   const ulClasses = $derived(
     `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`

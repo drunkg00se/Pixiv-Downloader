@@ -8,14 +8,25 @@
   import BtnPosition from './Panels/BtnPosition.svelte';
   import Others from './Panels/Others.svelte';
   import FeedBack from './Panels/FeedBack.svelte';
+  import Auth from './Panels/Auth.svelte';
   import t from '@/lib/lang';
 
   import menuOpen from '@/assets/menu-open.svg?src';
   import menuClose from '@/assets/menu-close.svg?src';
+  import { getContext } from 'svelte';
+  import type { Config } from '@/lib/config';
 
   interface Props {
     parent: { onClose: () => void };
   }
+
+  let { parent }: Props = $props();
+
+  let slected = $state(0);
+
+  let showListbox = $state(true);
+
+  const configStore: Config = getContext('store');
 
   const optionList = [
     {
@@ -40,16 +51,15 @@
       component: Others
     },
     {
+      name: t('setting.authorization.title'),
+      component: Auth,
+      show: !!$configStore.auth
+    },
+    {
       name: t('setting.feedback.title'),
       component: FeedBack
     }
   ];
-
-  let { parent }: Props = $props();
-
-  let slected = $state(0);
-
-  let showListbox = $state(true);
 
   const OptionComponent = $derived(optionList[slected].component);
 

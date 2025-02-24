@@ -17,24 +17,50 @@ export class E621ng extends SiteInject {
     return ['e621.net', 'e926.net'];
   }
 
-  protected api = new E621ngApi({
-    rateLimit: 2,
-    authorization: ['', '']
-  });
+  protected api: E621ngApi;
+  protected parser: E621ngParser;
+  protected profile: E621FullCurrentUser | null;
 
-  protected parser = new E621ngParser();
+  constructor() {
+    super();
 
-  protected profile: E621FullCurrentUser | null = null;
+    const { username, apiKey } = this.config.get('auth')!;
+
+    this.api = new E621ngApi({
+      rateLimit: 2,
+      authorization: [username, apiKey]
+    });
+
+    this.parser = new E621ngParser();
+
+    this.profile = null;
+
+    this.config.subscribe((configData) => {
+      const { username, apiKey } = configData.auth!;
+      this.api.updateAuthIfNeeded(username, apiKey);
+    });
+  }
 
   protected getCustomConfig(): Partial<ConfigData> | void {
     return {
       folderPattern: 'e621/{artist}',
-      filenamePattern: '{id}_{artist}_{character}'
+      filenamePattern: '{id}_{artist}_{character}',
+      auth: {
+        username: '',
+        apiKey: ''
+      }
     };
   }
 
   protected getFilenameTemplate(): string[] {
     return ['{artist}', '{character}', '{id}', '{date}'];
+  }
+
+  #notice(msg: string) {
+    (unsafeWindow as any).Danbooru.Utility.notice(msg);
+  }
+  #noticeError(msg: string) {
+    (unsafeWindow as any).Danbooru.Utility.error(msg);
   }
 
   #isPoolGallery() {
@@ -55,6 +81,19 @@ export class E621ng extends SiteInject {
 
   #isPostsPage() {
     return location.pathname === '/posts';
+  }
+
+  #isAuthorized() {
+    const auth = this.config.get('auth');
+    return auth && auth.username && auth.apiKey;
+  }
+
+  #throwIfNotAuthorized() {
+    if (!this.#isAuthorized()) {
+      const msg = 'Please input your username and apiKey in setting.';
+      this.#noticeError(msg);
+      throw new Error(msg);
+    }
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
@@ -332,6 +371,8 @@ export class E621ng extends SiteInject {
     },
 
     beforeDownload: async () => {
+      this.#throwIfNotAuthorized();
+
       const userId = this.parser.parseCurrentUserId();
       if (!userId) throw new Error('Cannot get user id.');
       this.profile = await this.api.getCurrentUserProfile(+userId);
@@ -351,21 +392,19 @@ export class E621ng extends SiteInject {
     const csrfToken = this.parser.parseCsrfToken();
     if (!csrfToken) throw new Error('Cannot parse csrf-token.');
 
-    const noticeFn: (msg: string, permanent?: boolean) => void = (unsafeWindow as any).Danbooru
-      .Utility.notice;
-    const noticeErr: (msg: string) => void = (unsafeWindow as any).Danbooru.Utility.notice;
-
     try {
-      noticeFn(`Updating posts: ${id}`);
+      this.#notice(`Updating posts: ${id}`);
       await this.api.addFavorites(id, csrfToken);
-      noticeFn(`Favorite added: ${id}`);
+      this.#notice(`Favorite added: ${id}`);
     } catch (error) {
-      noticeErr(`Failed to add favorite: ${id}. Reason: ${error}`);
+      this.#noticeError(`Failed to add favorite: ${id}. Reason: ${error}`);
       logger.error(error);
     }
   }
 
   protected async downloadArtwork(btn: ThumbnailButton) {
+    this.#throwIfNotAuthorized();
+
     downloader.dirHandleCheck();
     const id = +btn.dataset.id!;
 

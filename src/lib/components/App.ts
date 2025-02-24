@@ -7,17 +7,18 @@ import {
   type PageOption
 } from './Downloader/useBatchDownload';
 import { create_custom_element } from 'svelte/internal/client';
+import type { Config } from '../config';
 
 type PdlAppProps = {
   filenameTemplate: string[];
-  updated: boolean;
+  config: Config;
 };
 
 export const PdlApp = create_custom_element(
   App,
   {
     dark: { type: 'Boolean' },
-    updated: { type: 'Boolean' },
+    config: {},
     filenameTemplate: {},
     downloaderConfig: {},
     useBatchDownload: {}
@@ -31,7 +32,7 @@ export const PdlApp = create_custom_element(
       private filenameTemplate: string[];
 
       //@ts-expect-error no_unsed_var
-      private updated: boolean;
+      private config: Config;
 
       //@ts-expect-error no_unsed_var
       private downloaderConfig?: BatchDownloadConfig<any, any>;
@@ -44,7 +45,7 @@ export const PdlApp = create_custom_element(
 
         this.filenameTemplate = props.filenameTemplate;
 
-        this.updated = props.updated ?? false;
+        this.config = props.config;
       }
 
       initBatchDownloader<T extends MediaMeta, P extends PageOption<T>>(

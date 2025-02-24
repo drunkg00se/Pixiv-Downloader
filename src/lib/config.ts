@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import type { Writable } from 'svelte/store';
 
 export const enum UgoiraFormat {
   ZIP = 'zip',
@@ -57,18 +58,19 @@ export interface ConfigData {
   lastHistoryBackup: number;
   /** rule34 cf_clearance */
   token: string;
+  auth: Record<string, string> | null;
+
   'pdl-btn-self-bookmark-left': number;
   'pdl-btn-self-bookmark-top': number;
   'pdl-btn-left': number;
   'pdl-btn-top': number;
 }
 
-interface Config {
+export interface Config extends Writable<ConfigData> {
   get<T extends keyof ConfigData>(key: T): ConfigData[T];
-  set<T extends keyof ConfigData>(key: T, value: ConfigData[T]): void;
-  getAll(): ConfigData;
-  update(config: ConfigData): void;
 }
+
+type Subscriber = (config: ConfigData) => void;
 
 export let config: Config;
 
@@ -102,10 +104,13 @@ export function loadConfig(customConfig: Partial<ConfigData> = {}): Config {
     historyBackupInterval: HistoryBackupInterval.NEVER,
     lastHistoryBackup: 0,
     token: '',
+    auth: null,
+
     'pdl-btn-self-bookmark-left': 100,
     'pdl-btn-self-bookmark-top': 76,
     'pdl-btn-left': 0,
     'pdl-btn-top': 100,
+
     ...customConfig
   });
 
@@ -133,26 +138,38 @@ export function loadConfig(customConfig: Partial<ConfigData> = {}): Config {
     localStorage.pdlSetting = JSON.stringify(configData);
   }
 
-  return (config = {
-    get<T extends keyof ConfigData>(key: T): ConfigData[T] {
-      return configData[key] ?? defaultConfig[key];
-    },
+  const subscribers = new Set<Subscriber>();
 
-    set<T extends keyof ConfigData>(key: T, value: ConfigData[T]): void {
-      if (configData[key] !== value) {
-        configData[key] = value;
-        localStorage.pdlSetting = JSON.stringify(configData);
-        logger.info('Config set:', key, value);
-      }
-    },
+  const set = (newConfig: ConfigData) => {
+    configData = newConfig;
+    localStorage.pdlSetting = JSON.stringify(configData);
 
-    getAll(): ConfigData {
-      return { ...configData };
-    },
-
-    update(newConfig: ConfigData) {
-      configData = { ...newConfig };
-      localStorage.pdlSetting = JSON.stringify(configData);
+    for (const subscriber of subscribers) {
+      subscriber(configData);
     }
-  });
+  };
+
+  const update = (fn: (config: ConfigData) => ConfigData) => {
+    set(fn(configData));
+  };
+
+  const subscribe = (fn: Subscriber) => {
+    subscribers.add(fn);
+    fn(configData);
+
+    return () => {
+      subscribers.delete(fn);
+    };
+  };
+
+  config = {
+    get<T extends keyof ConfigData>(key: T): ConfigData[T] {
+      return configData[key];
+    },
+    set,
+    update,
+    subscribe
+  };
+
+  return config;
 }

@@ -1,8 +1,9 @@
 <script lang="ts">
   import { SlideToggle } from '@skeletonlabs/skeleton';
-  import store from '../store';
   import t from '@/lib/lang';
   import { env } from '@/lib/env';
+  import { getContext } from 'svelte';
+  import type { Config } from '@/lib/config';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -16,6 +17,8 @@
     class: UlClass = ''
   } = $props();
 
+  const configStore: Config = getContext('store');
+
   const ulClasses = $derived(
     `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
   );
@@ -26,18 +29,19 @@
   <ul class={ulClasses}>
     <li>
       <p class="flex-auto">{t('setting.others.options.show_setting_button')}</p>
-      <SlideToggle name="show-popup-button" bind:checked={$store.showPopupButton} size="sm"
+      <SlideToggle name="show-popup-button" bind:checked={$configStore.showPopupButton} size="sm"
       ></SlideToggle>
     </li>
     {#if env.isPixiv()}
       <li>
         <p class="flex-auto">{t('setting.others.options.bundle_multipage_illust')}</p>
-        <SlideToggle name="bundle-illusts" bind:checked={$store.bundleIllusts} size="sm"
+        <SlideToggle name="bundle-illusts" bind:checked={$configStore.bundleIllusts} size="sm"
         ></SlideToggle>
       </li>
       <li>
         <p class="flex-auto">{t('setting.others.options.bundle_manga')}</p>
-        <SlideToggle name="bundle-manga" bind:checked={$store.bundleManga} size="sm"></SlideToggle>
+        <SlideToggle name="bundle-manga" bind:checked={$configStore.bundleManga} size="sm"
+        ></SlideToggle>
       </li>
       <li>
         <div class="flex-auto">
@@ -46,7 +50,8 @@
             {t('setting.others.options.option_does_not_apply_to_batch_download')}
           </p>
         </div>
-        <SlideToggle name="bundle-manga" bind:checked={$store.likeIllust} size="sm"></SlideToggle>
+        <SlideToggle name="bundle-manga" bind:checked={$configStore.likeIllust} size="sm"
+        ></SlideToggle>
       </li>
     {/if}
     <li class="flex-col !items-stretch">
@@ -57,21 +62,25 @@
             {t('setting.others.options.option_does_not_apply_to_batch_download')}
           </p>
         </div>
-        <SlideToggle name="fsa-enable" bind:checked={$store.addBookmark} size="sm"></SlideToggle>
+        <SlideToggle name="fsa-enable" bind:checked={$configStore.addBookmark} size="sm"
+        ></SlideToggle>
       </div>
-      {#if $store.addBookmark && env.isPixiv()}
+      {#if $configStore.addBookmark && env.isPixiv()}
         <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
           <li>
             <label class="label flex flex-grow items-center justify-center">
               <p class="flex-auto">{t('setting.others.options.add_bookmark_with_tags')}</p>
-              <SlideToggle name="fsa-enable" bind:checked={$store.addBookmarkWithTags} size="sm"
+              <SlideToggle
+                name="fsa-enable"
+                bind:checked={$configStore.addBookmarkWithTags}
+                size="sm"
               ></SlideToggle>
             </label>
           </li>
           <li>
             <label class="label flex flex-grow items-center justify-center">
               <p class="flex-auto">{t('setting.others.options.add_bookmark_private_r18')}</p>
-              <SlideToggle name="fsa-enable" bind:checked={$store.privateR18} size="sm"
+              <SlideToggle name="fsa-enable" bind:checked={$configStore.privateR18} size="sm"
               ></SlideToggle>
             </label>
           </li>
@@ -91,7 +100,8 @@
               * 转换至动图格式。如果插图尺寸过大，可能占用大量内存 / 转换失败
             </p>
           </div>
-          <SlideToggle name="mix-effect" bind:checked={$store.mixEffect} size="sm"></SlideToggle>
+          <SlideToggle name="mix-effect" bind:checked={$configStore.mixEffect} size="sm"
+          ></SlideToggle>
         </li>
       </ul>
     </section>
@@ -102,7 +112,7 @@
       <p class={sectionTitle}>cf_clearance</p>
       <ul class={ulClasses}>
         <li class="flex-col !items-start gap-2">
-          <input bind:value={$store.token} type="text" class="input" name="cf_clearance" />
+          <input bind:value={$configStore.token} type="text" class="input" name="cf_clearance" />
           <p class={descritionText}>如果无法正常下载，可尝试填入cf_clearance cookie</p>
         </li>
       </ul>
