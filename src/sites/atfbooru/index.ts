@@ -1,8 +1,13 @@
-import { Danbooru } from '../danbooru';
 import { RequestError } from '@/lib/error';
-import type { DanbooruMeta } from '../danbooru/parser';
+import type { DanbooruMeta } from '../base/danbooru/parser';
+import { AbstractDanbooru } from '../base/danbooru';
+import { DanbooruApi } from '../base/danbooru/api';
+import { DanbooruParser } from '../base/danbooru/parser';
 
-export class ATFbooru extends Danbooru {
+export class ATFbooru extends AbstractDanbooru {
+  protected api = new DanbooruApi();
+  protected parser = new DanbooruParser();
+
   private commentaryAccessible?: boolean;
 
   static get hostname(): string {

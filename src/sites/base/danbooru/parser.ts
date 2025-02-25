@@ -1,4 +1,4 @@
-import type { MediaMeta } from '../interface';
+import type { MediaMeta } from '../../interface';
 import { getElementText, intersect } from '@/lib/util';
 import type { YieldArtworkMeta } from '@/lib/components/Downloader/useBatchDownload';
 import type { DanbooruPost, DanbooruArtistCommentary } from './types';

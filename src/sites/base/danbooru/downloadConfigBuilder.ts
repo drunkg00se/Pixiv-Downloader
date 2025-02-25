@@ -1,7 +1,7 @@
 import type { DownloadConfig } from '@/lib/downloader';
-import { DownloadConfigBuilder } from '../base/downloadConfigBuilder';
+import { DownloadConfigBuilder } from '../downloadConfigBuilder';
 import type { DanbooruMeta } from './parser';
-import { ThumbnailButton } from '../../lib/components/Button/thumbnailButton';
+import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 
 function artworkProgressFactory(
   btn?: ThumbnailButton

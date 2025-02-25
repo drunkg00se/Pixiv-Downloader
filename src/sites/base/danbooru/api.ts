@@ -8,7 +8,7 @@ import type {
   DanbooruPool,
   DanbooruPost
 } from './types';
-import { ApiBase } from '../base/api';
+import { ApiBase } from '../api';
 
 /** limit: https://danbooru.donmai.us/wiki_pages/help%3Ausers */
 interface PostListSearchParam {
