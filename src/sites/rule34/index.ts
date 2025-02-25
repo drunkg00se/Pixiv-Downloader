@@ -2,6 +2,7 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { GelbooruV020 } from '../base/gelbooru';
 import { GelbooruApiV020 } from '../base/gelbooru/api';
 import { Rule34Parser } from './parser';
+import type { ConfigData } from '@/lib/config';
 
 export class Rule34 extends GelbooruV020 {
   protected api = new GelbooruApiV020();
@@ -19,10 +20,13 @@ export class Rule34 extends GelbooruV020 {
     return '.thumb > a:first-child:not(:has(.blacklist-img))';
   }
 
-  protected getCustomConfig() {
+  protected getCustomConfig(): Partial<ConfigData> {
     return {
       folderPattern: 'rule34/{artist}',
-      filenamePattern: '{id}_{artist}_{character}'
+      filenamePattern: '{id}_{artist}_{character}',
+      auth: {
+        cf_clearance: ''
+      }
     };
   }
 

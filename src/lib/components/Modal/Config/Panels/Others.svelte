@@ -106,16 +106,4 @@
       </ul>
     </section>
   {/if}
-
-  {#if env.isRule34()}
-    <section>
-      <p class={sectionTitle}>cf_clearance</p>
-      <ul class={ulClasses}>
-        <li class="flex-col !items-start gap-2">
-          <input bind:value={$configStore.token} type="text" class="input" name="cf_clearance" />
-          <p class={descritionText}>如果无法正常下载，可尝试填入cf_clearance cookie</p>
-        </li>
-      </ul>
-    </section>
-  {/if}
 </div>

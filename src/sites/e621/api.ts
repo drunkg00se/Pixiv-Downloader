@@ -75,6 +75,7 @@ export interface E621Post {
     rating_locked: boolean;
     deleted: boolean;
   };
+  /** Safe, Questionable, Explicit */
   rating: 's' | 'q' | 'e';
   fav_count: number;
   sources: string[];

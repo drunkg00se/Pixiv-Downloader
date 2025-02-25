@@ -13,7 +13,10 @@ export class Safebooru extends GelbooruV020 {
   protected getCustomConfig() {
     return {
       folderPattern: 'safebooru/{artist}',
-      filenamePattern: '{id}_{artist}_{character}'
+      filenamePattern: '{id}_{artist}_{character}',
+      auth: {
+        cf_clearance: ''
+      }
     };
   }
 

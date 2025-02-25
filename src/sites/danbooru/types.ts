@@ -91,7 +91,7 @@ export interface DanbooruPost {
   tag_string_copyright: string;
   tag_string_character: string;
   tag_string_meta: string;
-  /** general | safe | questionable | explicit */
+  /** general | sensitive | questionable | explicit */
   rating: 'g' | 's' | 'q' | 'e' | null;
   parent_id: number | null;
   source: string;

@@ -15,19 +15,23 @@ function artworkProgressFactory(
 }
 
 export class GelbooruDownloadConfig extends DownloadConfigBuilder<GelbooruMeta> {
-  protected headers = config.get('token')
-    ? {
-        cookie: `cf_clearance=${config.get('token')}`
-      }
-    : undefined;
+  #headers: Record<string, string> | undefined;
 
   constructor(protected meta: GelbooruMeta) {
     super(meta);
+
+    const cf_clearance = config.get('auth')?.cf_clearance;
+
+    this.#headers = cf_clearance
+      ? {
+          cookie: `cf_clearance=${cf_clearance}`
+        }
+      : undefined;
   }
 
   public getDownloadConfig(btn?: ThumbnailButton): DownloadConfig<GelbooruMeta> {
     return {
-      headers: this.headers,
+      headers: this.#headers,
       taskId: this.generateTaskId(),
       src: this.meta.src,
       path: this.buildFilePath(),

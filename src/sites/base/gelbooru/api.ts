@@ -17,9 +17,13 @@ export interface GelbooruPostDataV020 {
   owner: string;
   parent_id: number;
   /**
+   * Explicit (Adult)
+   * Questionable (Mature)
+   * Safe (General)
+   *
    * Gelbooru: Explicit Questionable Sensitive General
    * Safebooru: Safe  General
-   * Rule34: Explicit  Questionable
+   * Rule34: Safe Explicit Questionable
    */
   rating: 'explicit' | 'safe' | 'questionable' | 'general' | 'sensitive';
   sample: boolean;

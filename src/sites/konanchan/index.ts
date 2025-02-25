@@ -18,7 +18,10 @@ export class Konachan extends Moebooru {
   protected getCustomConfig() {
     return {
       folderPattern: 'konachan/{artist}',
-      filenamePattern: '{id}_{artist}_{character}'
+      filenamePattern: '{id}_{artist}_{character}',
+      auth: {
+        cf_clearance: ''
+      }
     };
   }
 
