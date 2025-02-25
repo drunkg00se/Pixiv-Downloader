@@ -1,29 +1,9 @@
 import { Danbooru } from '../danbooru';
-import { danbooruParser } from '../danbooru/parser';
-import { danbooruApi } from '../danbooru/api';
 import { RequestError } from '@/lib/error';
-import { downloader } from '@/lib/downloader';
-import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-import { DanbooruDownloadConfig } from '../danbooru/downloadConfigBuilder';
-import { addBookmark } from '../danbooru/addBookmark';
-import { historyDb } from '@/lib/db';
+import type { DanbooruMeta } from '../danbooru/parser';
 
 export class ATFbooru extends Danbooru {
-  private commentaryAccessible?: Promise<boolean>;
-
-  constructor() {
-    super();
-    this.useBatchDownload = this.useBatchDownload().overwrite({
-      avatar: '/favicon.svg',
-      parseMetaByArtworkId: async (id: string) => {
-        return await danbooruParser.parse(id, {
-          type: (await (this.commentaryAccessible ??= this.isCommentaryAccessible()))
-            ? 'api'
-            : 'html'
-        });
-      }
-    });
-  }
+  private commentaryAccessible?: boolean;
 
   static get hostname(): string {
     return 'booru.allthefallen.moe';
@@ -36,40 +16,33 @@ export class ATFbooru extends Danbooru {
     };
   }
 
+  protected getAvatar() {
+    return '/favicon.svg';
+  }
+
   // check if user has permission to access artist commentary.
   private async isCommentaryAccessible() {
     try {
-      await danbooruApi.getArtistCommentary('703816');
+      await this.api.getArtistCommentary('703816');
     } catch (error) {
       if (!(error instanceof RequestError)) return false;
+      throw error;
     }
 
     return true;
   }
 
-  protected async downloadArtwork(btn: ThumbnailButton) {
-    downloader.dirHandleCheck();
+  protected async getMetaByPostId(id: string) {
+    let mediaMeta: DanbooruMeta;
 
-    const id = btn.dataset.id!;
-    const mediaMeta = await danbooruParser.parse(id, {
-      type: (await (this.commentaryAccessible ??= this.isCommentaryAccessible())) ? 'api' : 'html'
-    });
+    if ((this.commentaryAccessible ??= await this.isCommentaryAccessible())) {
+      const { post, comment: commentary } = await this.getPostAndComment(id);
+      mediaMeta = this.parser.buildMetaByApi(post, commentary);
+    } else {
+      const doc = await this.api.getPostDoc(id);
+      mediaMeta = this.parser.buildMetaByDoc(doc);
+    }
 
-    const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
-
-    this.config.get('addBookmark') && addBookmark(id);
-
-    await downloader.download(downloadConfigs, { priority: 1 });
-
-    const { tags, artist, title, comment, source, rating } = mediaMeta;
-    historyDb.add({
-      pid: Number(id),
-      user: artist,
-      title,
-      comment,
-      tags,
-      source,
-      rating
-    });
+    return mediaMeta;
   }
 }

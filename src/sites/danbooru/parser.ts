@@ -1,12 +1,13 @@
-import { JsonDataError } from '@/lib/error';
-import type { MediaMeta, SiteParser } from '../interface';
+import type { MediaMeta } from '../interface';
 import { getElementText, intersect } from '@/lib/util';
-import { danbooruApi } from './api';
-import type {
-  IdGenerator,
-  ValidatedIdGenerator
-} from '@/lib/components/Downloader/useBatchDownload';
-import type { DanbooruPost } from './types';
+import type { YieldArtworkMeta } from '@/lib/components/Downloader/useBatchDownload';
+import type { DanbooruPost, DanbooruArtistCommentary } from './types';
+
+export enum PostValidState {
+  VALID,
+  INVALID,
+  UNAVAILABLE
+}
 
 // general | sensitive | questionable | explicit
 type Rating = 'g' | 's' | 'q' | 'e' | '';
@@ -16,7 +17,7 @@ export type DanbooruMeta = MediaMeta & {
   character: string;
   rating: Rating;
   source: string;
-  matchTags: string[];
+  blacklistValidationTags?: string[];
 };
 
 export interface DanbooruBlacklistItem {
@@ -27,41 +28,27 @@ export interface DanbooruBlacklistItem {
   min_score: number | null;
 }
 
-interface DanbooruParser extends SiteParser<DanbooruMeta> {
-  _getMatchTags(data: DanbooruPost): string[];
-  _getMatchTagsByEl(el: HTMLElement): string[];
-  _parseBlacklistItem(tag: string): DanbooruBlacklistItem;
-  parse(id: string, param: { type: 'html' | 'api' }): Promise<DanbooruMeta>;
-  parseIdByHtml(id: string): Promise<DanbooruMeta>;
-  parseIdByApi(id: string): Promise<DanbooruMeta>;
-  parseBlacklist: {
-    (type: 'html' | 'api'): Promise<DanbooruBlacklistItem[]>;
-    (type: 'profile', blacklistedTags: string): Promise<DanbooruBlacklistItem[]>;
-  };
+interface IDanbooruParser {
+  getBlacklistValidationTags(data: DanbooruPost): string[];
+
+  parseCsrfToken(): string | null;
+
+  buildMetaByDoc(doc: Document): DanbooruMeta;
+
+  buildMetaByApi(post: DanbooruPost, artistCommentary?: DanbooruArtistCommentary): DanbooruMeta;
+
+  getBlacklistByHtml(): string;
+
+  getBlacklistItem(blacklistedTags: string, source?: 'html' | 'api'): DanbooruBlacklistItem[];
+
   isBlacklisted(matchTags: string[], blacklist: DanbooruBlacklistItem[]): boolean;
-  poolAndGroupGenerator: IdGenerator<
-    [id: string, type: 'pool' | 'favoriteGroup', postsPerPage?: number]
-  >;
-  postListGenerator: ValidatedIdGenerator<
-    DanbooruMeta,
-    [tags?: string[], limit?: number, showDeletedPosts?: boolean]
-  >;
 }
 
-export const danbooruParser: DanbooruParser = {
-  async parse(id, params) {
-    const { type } = params;
-    if (type === 'html') {
-      return this.parseIdByHtml(id);
-    } else {
-      return this.parseIdByApi(id);
-    }
-  },
-
+export class DanbooruParser implements IDanbooruParser {
   /**
    * https://github.com/danbooru/danbooru/blob/master/app/javascript/src/javascripts/blacklists.js
    */
-  _parseBlacklistItem(tags: string) {
+  #parseBlacklistItem(tags: string): DanbooruBlacklistItem {
     const tagsArr = tags.split(' ');
     const require: string[] = [];
     const exclude: string[] = [];
@@ -82,9 +69,9 @@ export const danbooruParser: DanbooruParser = {
     });
 
     return { tags, require, exclude, optional, min_score };
-  },
+  }
 
-  _getMatchTags(data: DanbooruPost): string[] {
+  getBlacklistValidationTags(data: DanbooruPost): string[] {
     const { tag_string, rating, uploader_id, is_deleted, is_flagged, is_pending } = data;
     const matchTags: string[] = tag_string.match(/\S+/g) ?? [];
 
@@ -95,52 +82,36 @@ export const danbooruParser: DanbooruParser = {
     is_pending && matchTags.push('status:pending');
 
     return matchTags;
-  },
+  }
 
-  _getMatchTagsByEl(el: HTMLElement): string[] {
-    const splitWordsRe = /\S+/g;
-    const { tags = '', pools, rating, uploaderId, flags } = el.dataset;
+  parseCsrfToken(): string | null {
+    const token = document.head.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
+    return token || null;
+  }
 
-    const matchTags: string[] = tags.match(splitWordsRe) ?? [];
-    pools && matchTags.push(...(pools.match(splitWordsRe) ?? []));
-    rating && matchTags.push('rating:' + rating);
-    uploaderId && matchTags.push('uploaderid:' + uploaderId);
+  getBlacklistByHtml(): string {
+    return document.querySelector<HTMLMetaElement>('meta[name="blacklisted-tags"]')?.content ?? '';
+  }
 
-    if (flags) {
-      const status = flags.match(splitWordsRe);
-      status && status.forEach((val) => matchTags.push('status:' + val));
-    }
-    return matchTags;
-  },
-
-  async parseBlacklist(type, blacklistTags?) {
-    let tagStr: string;
+  getBlacklistItem(blacklistTags: string, source = 'api') {
     let separator: RegExp;
 
-    if (type === 'html') {
-      tagStr =
-        document.querySelector<HTMLMetaElement>('meta[name="blacklisted-tags"]')?.content ?? '';
+    if (source === 'html') {
       separator = /,/;
-    } else if (type === 'api') {
-      tagStr = (await danbooruApi.getProfile()).blacklisted_tags ?? '';
-      separator = /\n+/;
     } else {
-      tagStr = typeof blacklistTags === 'string' ? blacklistTags : '';
       separator = /\n+/;
     }
 
-    if (!tagStr) return [];
-
-    const tags = tagStr
+    const tags = blacklistTags
       .replace(/(rating:\w)\w+/gi, '$1')
       .toLowerCase()
       .split(separator)
       .filter((tag) => tag.trim() !== '');
 
-    return tags.map(this._parseBlacklistItem);
-  },
+    return tags.map(this.#parseBlacklistItem);
+  }
 
-  isBlacklisted(matchTags, blacklist) {
+  isBlacklisted(matchTags: string[], blacklist: DanbooruBlacklistItem[]) {
     const scoreRe = /score:(-?[0-9]+)/;
     const scoreMatch = (matchTags.find((tag) => scoreRe.test(tag)) ?? '').match(scoreRe);
     const score = scoreMatch ? +scoreMatch[1] : scoreMatch;
@@ -158,10 +129,9 @@ export const danbooruParser: DanbooruParser = {
         !exclude.some(hasTag)
       );
     });
-  },
+  }
 
-  async parseIdByHtml(id: string): Promise<DanbooruMeta> {
-    const doc = await danbooruApi.getDoc('/posts/' + id);
+  buildMetaByDoc(doc: Document): DanbooruMeta {
     const src = doc.querySelector<HTMLAnchorElement>('a[download]')?.href;
     if (!src) throw new Error('Can not get media src');
 
@@ -215,10 +185,17 @@ export const danbooruParser: DanbooruParser = {
     commentEl && (comment = getElementText(commentEl));
 
     const imageContainer = doc.querySelector<HTMLElement>('section.image-container')!;
-    const { source = '', rating = '' } = imageContainer.dataset as {
+    const {
+      source = '',
+      rating = '',
+      id
+    } = imageContainer.dataset as {
       source: string;
       rating: Rating;
+      id: string;
     };
+
+    if (!id) throw new Error('Can not parse post id.');
 
     return {
       id,
@@ -231,27 +208,13 @@ export const danbooruParser: DanbooruParser = {
       tags,
       createDate: postDate,
       source,
-      rating,
-      matchTags: this._getMatchTagsByEl(imageContainer)
+      rating
     };
-  },
+  }
 
-  async parseIdByApi(id: string): Promise<DanbooruMeta> {
-    const [postDataResult, commentDataResult] = await Promise.allSettled([
-      danbooruApi.getPost(id),
-      danbooruApi.getArtistCommentary(id)
-    ]);
-
-    if (postDataResult.status === 'rejected') throw postDataResult.reason;
-
-    // post may not have a comment.
-    if (
-      commentDataResult.status === 'rejected' &&
-      !(commentDataResult.reason instanceof JsonDataError)
-    )
-      throw commentDataResult.reason;
-
+  buildMetaByApi(post: DanbooruPost, artistCommentary?: DanbooruArtistCommentary): DanbooruMeta {
     const {
+      id,
       created_at,
       file_ext,
       file_url,
@@ -263,10 +226,9 @@ export const danbooruParser: DanbooruParser = {
       tag_string_meta,
       source,
       rating
-    } = postDataResult.value;
+    } = post;
 
-    const { original_title = '', original_description = '' } =
-      'value' in commentDataResult ? commentDataResult.value : {};
+    const { original_title = '', original_description = '' } = artistCommentary ?? {};
 
     const addTypeToTag = (type: string, tag: string) =>
       tag.split(' ').map((tag) => type + ':' + tag);
@@ -285,7 +247,7 @@ export const danbooruParser: DanbooruParser = {
         : original_title || original_description;
 
     return {
-      id,
+      id: String(id),
       src: file_url ?? '',
       extendName: file_ext,
       artist: tag_string_artist.replaceAll(' ', ',') || 'UnknownArtist',
@@ -295,79 +257,33 @@ export const danbooruParser: DanbooruParser = {
       tags,
       createDate: created_at,
       rating: rating ?? '',
-      source,
-      matchTags: this._getMatchTags(postDataResult.value)
+      source
     };
-  },
+  }
 
-  async *poolAndGroupGenerator(pageRange, poolOrGroupId, type, postsPerPage) {
-    const data =
-      type === 'pool'
-        ? await danbooruApi.getPool(poolOrGroupId)
-        : await danbooruApi.getFavoriteGroups(poolOrGroupId);
-    postsPerPage ??= (await danbooruApi.getProfile()).per_page;
-
-    const { post_ids } = data;
-    const [pageStart = null, pageEnd = null] = pageRange ?? [];
-    const idsPerPage: string[][] = [];
-    const postCount = post_ids.length;
-
-    for (let i = 0; i < postCount; i += postsPerPage) {
-      const ids = post_ids.slice(i, i + postsPerPage).map((id) => String(id));
-      idsPerPage.push(ids);
-    }
-
-    const poolPage = idsPerPage.length;
-    const start = pageStart ?? 1;
-    const end = pageEnd ? (pageEnd > poolPage ? poolPage : pageEnd) : poolPage;
-    const total =
-      end === poolPage
-        ? (end - start) * postsPerPage + idsPerPage[poolPage - 1].length
-        : (end - start + 1) * postsPerPage;
-
-    if (start > poolPage) throw new RangeError(`Page ${start} exceeds the limit.`);
-
-    for (let page = start - 1; page < end; page++) {
-      yield {
-        total,
-        page,
-        avaliable: idsPerPage[page],
-        invalid: [],
-        unavaliable: []
-      };
-    }
-  },
-
-  async *postListGenerator(pageRange, checkValidity, tags, limit, showDeletedPosts) {
-    if (!showDeletedPosts) {
-      if (!!tags && !!tags.includes('status:deleted')) {
-        showDeletedPosts = true;
-      }
-
-      showDeletedPosts ??= (await danbooruApi.getProfile()).show_deleted_posts;
-    }
-
+  async *paginationGenerator<PostData, Meta>(
+    pageRange: [start: number, end: number] | null,
+    postsPerPage: number,
+    getPostData: (page: number) => Promise<PostData[]>,
+    isValid: (data: PostData) => Promise<PostValidState>,
+    buildMeta: (data: PostData) => Meta
+  ): AsyncGenerator<YieldArtworkMeta<Meta>, void, undefined> {
     const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
 
     let page = pageStart;
-    let postListData: DanbooruPost[] | null = await danbooruApi.getPostList({
-      page,
-      tags,
-      limit
-    });
-    let total = postListData.length;
+    let postDatas: PostData[] | null = await getPostData(page);
+    let total = postDatas.length;
     let fetchError: Error | null = null;
 
     if (total === 0) throw new Error(`There is no post in page ${page}.`);
 
     do {
-      let nextPageData: DanbooruPost[] | null = null;
+      let nextPageData: PostData[] | null = null;
 
       // fetch next page's post data.
-      if (page !== pageEnd) {
+      if (page !== pageEnd && postDatas.length >= postsPerPage) {
         try {
-          nextPageData = await danbooruApi.getPostList({ page: page + 1, tags, limit });
-          // return empty array if there is no post.
+          nextPageData = await getPostData(page + 1);
           if (nextPageData.length) {
             total += nextPageData.length;
           } else {
@@ -379,32 +295,21 @@ export const danbooruParser: DanbooruParser = {
         }
       }
 
-      const avaliable: string[] = [];
-      const invalid: string[] = [];
-      const unavaliable: string[] = [];
+      const avaliable: Meta[] = [];
+      const invalid: Meta[] = [];
+      const unavaliable: Meta[] = [];
 
-      for (let i = 0; i < postListData.length; i++) {
-        const { id, file_ext, tag_string, is_deleted, file_url } = postListData[i];
-        const idStr = String(id);
+      for (const data of postDatas) {
+        const isPostValid = await isValid(data);
+        const meta = buildMeta(data);
 
-        if (is_deleted && !showDeletedPosts) {
-          invalid.push(idStr);
-          continue;
+        if (isPostValid === PostValidState.VALID) {
+          avaliable.push(meta);
+        } else if (isPostValid === PostValidState.INVALID) {
+          invalid.push(meta);
+        } else {
+          unavaliable.push(meta);
         }
-
-        // user don't have permission
-        if (!file_url) {
-          unavaliable.push(idStr);
-        }
-
-        const validityCheckMeta: Partial<DanbooruMeta> = {
-          id: idStr,
-          extendName: file_ext,
-          tags: tag_string.split(' '),
-          matchTags: this._getMatchTags(postListData[i])
-        };
-        const isValid = await checkValidity(validityCheckMeta);
-        isValid ? avaliable.push(idStr) : invalid.push(idStr);
       }
 
       yield {
@@ -416,9 +321,9 @@ export const danbooruParser: DanbooruParser = {
       };
 
       page++;
-      postListData = nextPageData;
-    } while (postListData);
+      postDatas = nextPageData;
+    } while (postDatas);
 
     if (fetchError) throw fetchError;
   }
-};
+}

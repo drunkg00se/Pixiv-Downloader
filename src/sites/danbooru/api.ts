@@ -17,7 +17,7 @@ interface PostListSearchParam {
   page?: number;
 }
 
-class DanbooruApi extends ApiBase {
+export class DanbooruApi extends ApiBase {
   // Danbooru uses some custom status codes in the 4xx and 5xx range:
   // 200 OK: Request was successful
   // 204 No Content: Request was successful (returned by create actions)
@@ -48,15 +48,19 @@ class DanbooruApi extends ApiBase {
     return data as T;
   }
 
-  async getPool(id: string) {
-    return await this.getJSON<DanbooruPool>(`/pools/${id}.json`);
+  getPool(id: string): Promise<DanbooruPool> {
+    return this.getJSON<DanbooruPool>(`/pools/${id}.json`);
   }
 
-  async getPost(id: string) {
-    return await this.getJSON<DanbooruPost>(`/posts/${id}.json`);
+  getPost(id: string): Promise<DanbooruPost> {
+    return this.getJSON<DanbooruPost>(`/posts/${id}.json`);
   }
 
-  async getPostList(param?: PostListSearchParam) {
+  getPostDoc(id: string): Promise<Document> {
+    return this.getDoc('/posts/' + id);
+  }
+
+  getPostList(param?: PostListSearchParam): Promise<DanbooruPost[]> {
     const { tags = [], limit = 0, page = 0 } = param ?? {};
     const searchParam = new URLSearchParams();
 
@@ -64,19 +68,22 @@ class DanbooruApi extends ApiBase {
     limit && searchParam.append('limit', String(limit));
     page && searchParam.append('page', String(page));
 
-    return await this.getJSON<DanbooruPost[]>(`/posts.json?${searchParam.toString()}`);
+    return this.getJSON<DanbooruPost[]>(`/posts.json?${searchParam.toString()}`);
   }
 
-  async getArtistCommentary(id: string) {
-    return await this.getJSON<DanbooruArtistCommentary>(`/posts/${id}/artist_commentary.json`);
+  /**
+   * In aftbooru, account needs to be over a week old to get commentary.
+   */
+  getArtistCommentary(id: string): Promise<DanbooruArtistCommentary> {
+    return this.getJSON<DanbooruArtistCommentary>(`/posts/${id}/artist_commentary.json`);
   }
 
-  async getFavoriteGroups(id: string) {
-    return await this.getJSON<DanbooruFavoriteGroup>(`/favorite_groups/${id}.json`);
+  getFavoriteGroups(id: string): Promise<DanbooruFavoriteGroup> {
+    return this.getJSON<DanbooruFavoriteGroup>(`/favorite_groups/${id}.json`);
   }
 
-  async getProfile() {
-    return await this.getJSON<DanbooruUserProfile>(`/profile.json`);
+  getProfile(): Promise<DanbooruUserProfile> {
+    return this.getJSON<DanbooruUserProfile>(`/profile.json`);
   }
 
   async addFavorite(id: string, token: string) {
@@ -91,5 +98,3 @@ class DanbooruApi extends ApiBase {
     return await res.text();
   }
 }
-
-export const danbooruApi = new DanbooruApi();

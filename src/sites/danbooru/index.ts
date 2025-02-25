@@ -1,24 +1,97 @@
 import { SiteInject } from '../base';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
-import { danbooruParser, type DanbooruBlacklistItem, type DanbooruMeta } from './parser';
+import {
+  DanbooruParser,
+  PostValidState,
+  type DanbooruBlacklistItem,
+  type DanbooruMeta
+} from './parser';
 import t from '@/lib/lang';
 import { historyDb } from '@/lib/db';
 import { DanbooruDownloadConfig } from './downloadConfigBuilder';
 import { downloader } from '@/lib/downloader';
 import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton';
-import { addBookmark } from './addBookmark';
-import type { DanbooruUserProfile } from './types';
-import { danbooruApi } from './api';
+import type { DanbooruArtistCommentary, DanbooruPost, DanbooruUserProfile } from './types';
+import { DanbooruApi } from './api';
+import { JsonDataError } from '@/lib/error';
+import { unsafeWindow } from '$';
+import { evalScript } from '@/lib/util';
+import { logger } from '@/lib/logger';
 
 export class Danbooru extends SiteInject {
+  protected api = new DanbooruApi();
+  protected parser = new DanbooruParser();
+
   protected profile: DanbooruUserProfile | null = null;
   protected blacklist: DanbooruBlacklistItem[] | null = null;
+
+  static get hostname(): string {
+    return 'danbooru.donmai.us';
+  }
+
+  protected getFilenameTemplate(): string[] {
+    return ['{artist}', '{character}', '{id}', '{date}'];
+  }
+
+  protected getAvatar() {
+    return '/packs/static/danbooru-logo-128x128-ea111b6658173e847734.png';
+  }
+
+  protected async getPostAndComment(id: string) {
+    const [postResult, commentResult] = await Promise.allSettled([
+      this.api.getPost(id),
+      this.api.getArtistCommentary(id)
+    ]);
+
+    if (postResult.status === 'rejected') throw postResult.reason;
+
+    let comment: DanbooruArtistCommentary | undefined = undefined;
+
+    //  post may not have comment.
+    if (commentResult.status === 'rejected') {
+      if (!(commentResult.reason instanceof JsonDataError)) {
+        throw commentResult.reason;
+      }
+    } else {
+      comment = commentResult.value;
+    }
+
+    return { post: postResult.value, comment };
+  }
+
+  protected async getMetaByPostId(id: string) {
+    const { post, comment: commentary } = await this.getPostAndComment(id);
+    return this.parser.buildMetaByApi(post, commentary);
+  }
+
+  #validityCheckFactory(
+    checkValidity: (meta: Partial<DanbooruMeta>) => Promise<boolean>,
+    showDeletedPosts = true // deleted post will still be shown in pool.
+  ): (postData: DanbooruPost) => Promise<PostValidState> {
+    return async (post) => {
+      const { id, is_deleted, file_ext, file_url, tag_string } = post;
+
+      if (!file_url) return PostValidState.UNAVAILABLE;
+      if (is_deleted && !showDeletedPosts) return PostValidState.INVALID;
+
+      const blacklistValidationTags = this.parser.getBlacklistValidationTags(post);
+
+      return (await checkValidity({
+        id: String(id),
+        extendName: file_ext,
+        tags: tag_string.split(' '),
+        blacklistValidationTags
+      }))
+        ? PostValidState.VALID
+        : PostValidState.INVALID;
+    };
+  }
 
   protected useBatchDownload = this.app.initBatchDownloader({
     metaType: {} as DanbooruMeta,
 
-    avatar: '/packs/static/danbooru-logo-128x128-ea111b6658173e847734.png',
+    avatar: () => this.getAvatar(),
 
     filterOption: {
       filters: [
@@ -38,11 +111,8 @@ export class Danbooru extends SiteInject {
           checked: true,
           fn: async (meta) => {
             return (
-              !!meta.matchTags &&
-              danbooruParser.isBlacklisted(
-                meta.matchTags,
-                (this.blacklist ??= await danbooruParser.parseBlacklist('api'))
-              )
+              !!meta.blacklistValidationTags &&
+              this.parser.isBlacklisted(meta.blacklistValidationTags, this.blacklist!)
             );
           }
         },
@@ -71,25 +141,34 @@ export class Danbooru extends SiteInject {
         }
       ],
 
-      enableTagFilter: (userTags: string[], metaTags: string[]) => {
-        const pureTags = metaTags.map((typedTag) => /(?<=[a-z]+:).+/.exec(typedTag)?.[0] ?? '');
-        return userTags.some((tag) => pureTags.includes(tag));
-      }
+      enableTagFilter: true
     },
 
     pageOption: {
       pool: {
         name: 'Pool',
         match: /(?<=\/pools\/)[0-9]+/,
-        filterInGenerator: false,
-        fn: (pageRange) => {
+        filterInGenerator: true,
+        fn: (pageRange, checkValidity) => {
           const poolId = /(?<=\/pools\/)[0-9]+/.exec(location.pathname)?.[0];
           if (!poolId) throw new Error('Invalid pool id');
-          return danbooruParser.poolAndGroupGenerator(
+
+          const perPage = this.profile!.per_page;
+
+          const getPostDataByPage = async (page: number): Promise<DanbooruPost[]> => {
+            return this.api.getPostList({
+              tags: [`ordpool:${poolId}`],
+              limit: perPage,
+              page
+            });
+          };
+
+          return this.parser.paginationGenerator(
             pageRange,
-            poolId,
-            'pool',
-            this.profile?.per_page
+            perPage,
+            getPostDataByPage,
+            this.#validityCheckFactory(checkValidity),
+            (post) => String(post.id)
           );
         }
       },
@@ -97,15 +176,27 @@ export class Danbooru extends SiteInject {
       favorite_groups: {
         name: 'FavoriteGroups',
         match: /(?<=\/favorite_groups\/)[0-9]+/,
-        filterInGenerator: false,
-        fn: (pageRange) => {
+        filterInGenerator: true,
+        fn: (pageRange, checkValidity) => {
           const groupId = /(?<=\/favorite_groups\/)[0-9]+/.exec(location.pathname)?.[0];
           if (!groupId) throw new Error('Invalid pool id');
-          return danbooruParser.poolAndGroupGenerator(
+
+          const perPage = this.profile!.per_page;
+
+          const getPostDataByPage = async (page: number): Promise<DanbooruPost[]> => {
+            return this.api.getPostList({
+              tags: [`ordfavgroup:${groupId}`],
+              limit: perPage,
+              page
+            });
+          };
+
+          return this.parser.paginationGenerator(
             pageRange,
-            groupId,
-            'favoriteGroup',
-            this.profile?.per_page
+            perPage,
+            getPostDataByPage,
+            this.#validityCheckFactory(checkValidity),
+            (post) => String(post.id)
           );
         }
       },
@@ -115,17 +206,30 @@ export class Danbooru extends SiteInject {
         match: () => location.pathname === '/' || location.pathname === '/posts',
         filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
-          const searchParam = new URLSearchParams(new URL(location.href).search);
-          const tags = searchParam.get('tags')?.split(' ');
-          const limit = searchParam.get('limit');
-          const limitParam = limit ? Number(limit) : undefined;
+          const perPage = this.profile!.per_page;
 
-          return danbooruParser.postListGenerator(
+          const searchParam = new URLSearchParams(location.search);
+          const tags = searchParam.get('tags')?.split(' ') ?? [];
+          const limit = searchParam.get('limit');
+          const limitParam = limit ? Number(limit) : perPage;
+
+          const getPostDataByPage = async (page: number): Promise<DanbooruPost[]> => {
+            return this.api.getPostList({
+              tags,
+              limit: limitParam,
+              page
+            });
+          };
+
+          const showDeletedPosts =
+            tags?.includes('status:deleted') || this.profile!.show_deleted_posts;
+
+          return this.parser.paginationGenerator(
             pageRange,
-            checkValidity,
-            tags,
-            limitParam,
-            this.profile?.show_deleted_posts
+            perPage,
+            getPostDataByPage,
+            this.#validityCheckFactory(checkValidity, showDeletedPosts),
+            (post) => String(post.id)
           );
         }
       },
@@ -133,14 +237,26 @@ export class Danbooru extends SiteInject {
       pool_gallery_button: {
         name: 'pool_gallery_button',
         match: () => false,
-        filterInGenerator: false,
-        fn: (pageRange, poolId: string) => {
+        filterInGenerator: true,
+        fn: (pageRange, checkValidity, poolId: string) => {
           if (!poolId) throw new Error('Invalid pool id');
-          return danbooruParser.poolAndGroupGenerator(
+
+          const perPage = this.profile!.per_page;
+
+          const getPostDataByPage = async (page: number): Promise<DanbooruPost[]> => {
+            return this.api.getPostList({
+              tags: [`ordpool:${poolId}`],
+              limit: perPage,
+              page
+            });
+          };
+
+          return this.parser.paginationGenerator(
             pageRange,
-            poolId,
-            'pool',
-            this.profile?.per_page
+            perPage,
+            getPostDataByPage,
+            this.#validityCheckFactory(checkValidity),
+            (post) => String(post.id)
           );
         }
       },
@@ -151,8 +267,8 @@ export class Danbooru extends SiteInject {
       }
     },
 
-    parseMetaByArtworkId(id) {
-      return danbooruParser.parseIdByApi(id);
+    parseMetaByArtworkId: async (id) => {
+      return this.getMetaByPostId(id);
     },
 
     async downloadArtworkByMeta(meta, signal) {
@@ -175,11 +291,10 @@ export class Danbooru extends SiteInject {
     },
 
     beforeDownload: async () => {
-      this.profile = await danbooruApi.getProfile();
-      this.blacklist = await danbooruParser.parseBlacklist(
-        'profile',
-        this.profile.blacklisted_tags ?? ''
-      );
+      this.profile = await this.api.getProfile();
+
+      const blacklistTags = this.profile.blacklisted_tags;
+      this.blacklist = blacklistTags ? this.parser.getBlacklistItem(blacklistTags) : null;
     },
 
     afterDownload: () => {
@@ -188,24 +303,77 @@ export class Danbooru extends SiteInject {
     }
   });
 
-  static get hostname(): string {
-    return 'danbooru.donmai.us';
+  protected observeColorScheme() {
+    const query = window.matchMedia('(prefers-color-scheme: dark)');
+    let uaPreferDark = query.matches;
+
+    const siteSetting = document.body.getAttribute('data-current-user-theme') as
+      | 'dark'
+      | 'auto'
+      | 'light';
+    const sitePreferDark = siteSetting === 'dark';
+
+    if (sitePreferDark || (siteSetting === 'auto' && uaPreferDark)) {
+      this.setAppDarkMode();
+    }
+
+    if (siteSetting === 'auto') {
+      query.addEventListener('change', (e) => {
+        uaPreferDark = e.matches;
+        uaPreferDark ? this.setAppDarkMode() : this.setAppLightMode();
+      });
+    }
   }
 
-  public inject(): void {
-    super.inject();
+  protected getCustomConfig() {
+    return {
+      folderPattern: 'danbooru/{artist}',
+      filenamePattern: '{id}_{artist}_{character}'
+    };
+  }
 
-    this.downloadArtwork = this.downloadArtwork.bind(this);
+  protected async addBookmark(id: string) {
+    try {
+      const token = this.parser.parseCsrfToken();
+      if (!token) throw new Error('Can not get csrf-token');
 
-    const path = location.pathname;
-    if (/^\/posts\/\d+/.test(path)) {
-      this.createArtworkBtn();
-      this.createThumbnailBtn();
-    } else if (/^\/pools\/gallery/.test(path)) {
-      this.createPoolThumbnailBtn();
-    } else {
-      this.createThumbnailBtn();
+      const script = await this.api.addFavorite(id, token);
+
+      const galleryMatch = /(?<=^\/posts\/)\d+/.exec(location.pathname);
+
+      // 在画廊页下载其它作品时，只显示提示
+      if (galleryMatch && id !== galleryMatch[0]) {
+        (unsafeWindow as any).Danbooru.Utility.notice('You have favorited ' + id);
+      } else {
+        evalScript(script);
+      }
+    } catch (error) {
+      logger.error(error);
     }
+  }
+
+  protected async downloadArtwork(btn: ThumbnailButton) {
+    downloader.dirHandleCheck();
+
+    const id = btn.dataset.id!;
+
+    const mediaMeta = await this.getMetaByPostId(id);
+    const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
+
+    this.config.get('addBookmark') && this.addBookmark(id);
+
+    await downloader.download(downloadConfigs, { priority: 1 });
+
+    const { tags, artist, title, comment, source, rating } = mediaMeta;
+    historyDb.add({
+      pid: Number(id),
+      user: artist,
+      title,
+      comment,
+      tags,
+      source,
+      rating
+    });
   }
 
   protected createThumbnailBtn() {
@@ -265,60 +433,19 @@ export class Danbooru extends SiteInject {
     });
   }
 
-  protected observeColorScheme() {
-    const query = window.matchMedia('(prefers-color-scheme: dark)');
-    let uaPreferDark = query.matches;
+  public inject(): void {
+    super.inject();
 
-    const siteSetting = document.body.getAttribute('data-current-user-theme') as
-      | 'dark'
-      | 'auto'
-      | 'light';
-    const sitePreferDark = siteSetting === 'dark';
+    this.downloadArtwork = this.downloadArtwork.bind(this);
 
-    if (sitePreferDark || (siteSetting === 'auto' && uaPreferDark)) {
-      this.setAppDarkMode();
+    const path = location.pathname;
+    if (/^\/posts\/\d+/.test(path)) {
+      this.createArtworkBtn();
+      this.createThumbnailBtn();
+    } else if (/^\/pools\/gallery/.test(path)) {
+      this.createPoolThumbnailBtn();
+    } else {
+      this.createThumbnailBtn();
     }
-
-    if (siteSetting === 'auto') {
-      query.addEventListener('change', (e) => {
-        uaPreferDark = e.matches;
-        uaPreferDark ? this.setAppDarkMode() : this.setAppLightMode();
-      });
-    }
-  }
-
-  protected getCustomConfig() {
-    return {
-      folderPattern: 'danbooru/{artist}',
-      filenamePattern: '{id}_{artist}_{character}'
-    };
-  }
-
-  protected getFilenameTemplate(): string[] {
-    return ['{artist}', '{character}', '{id}', '{date}'];
-  }
-
-  protected async downloadArtwork(btn: ThumbnailButton) {
-    downloader.dirHandleCheck();
-
-    const id = btn.dataset.id!;
-    const mediaMeta = await danbooruParser.parse(id, { type: 'api' });
-
-    const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
-
-    this.config.get('addBookmark') && addBookmark(id);
-
-    await downloader.download(downloadConfigs, { priority: 1 });
-
-    const { tags, artist, title, comment, source, rating } = mediaMeta;
-    historyDb.add({
-      pid: Number(id),
-      user: artist,
-      title,
-      comment,
-      tags,
-      source,
-      rating
-    });
   }
 }

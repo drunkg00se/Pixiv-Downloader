@@ -110,14 +110,6 @@ interface BatchDownload<T extends MediaMeta, P extends PageOption<T> = PageOptio
     ...restArgs: GetGeneratorParameters<P[K], T>
   ): Promise<void>;
   abort(): void;
-  overwrite(
-    partialConfig: Partial<
-      Pick<
-        BatchDownloadConfig<T, P>,
-        'avatar' | 'downloadArtworkByMeta' | 'onDownloadAbort' | 'parseMetaByArtworkId'
-      >
-    >
-  ): BatchDownloadDefinition<T, P>;
 }
 
 export interface BatchDownloadDefinition<
@@ -760,25 +752,6 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
     controller && controller.abort(new CancelError());
   }
 
-  function overwrite(
-    partialConfig: Partial<
-      Pick<
-        BatchDownloadConfig<T, P>,
-        'avatar' | 'downloadArtworkByMeta' | 'onDownloadAbort' | 'parseMetaByArtworkId'
-      >
-    >
-  ): BatchDownloadDefinition<T, P> {
-    // reassign value because downloader.svelte share the same downloaderConfig.
-    for (const key in partialConfig) {
-      const val = partialConfig[key as keyof typeof partialConfig];
-      if (val !== undefined) {
-        downloaderConfig[key as keyof typeof partialConfig] = val as any;
-      }
-    }
-
-    return batchDownloadDefinition;
-  }
-
   function batchDownloadDefinition() {
     return batchDownloadStore;
   }
@@ -791,8 +764,7 @@ export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T>
     downloading: readonly(downloading),
     log: readonly(log),
     batchDownload,
-    abort,
-    overwrite
+    abort
   };
 
   return batchDownloadDefinition;
