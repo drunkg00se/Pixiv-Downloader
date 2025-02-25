@@ -140,8 +140,7 @@ export interface DanbooruPost {
     image_width: number;
     image_height: number;
     duration: null;
-    /** 'active' and ... */
-    status: string;
+    status: 'active' | 'pending' | 'flagged' | 'deleted';
     file_key: string;
     is_public: boolean;
     pixel_hash: string;

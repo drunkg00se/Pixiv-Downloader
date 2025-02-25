@@ -199,13 +199,7 @@ export class Danbooru extends SiteInject {
 
     const path = location.pathname;
     if (/^\/posts\/\d+/.test(path)) {
-      const imageContainer = document.querySelector(
-        'section.image-container:not(.blacklisted-active)'
-      );
-      if (!imageContainer) return;
-
-      const id = imageContainer.getAttribute('data-id')!;
-      this.createArtworkBtn(id);
+      this.createArtworkBtn();
       this.createThumbnailBtn();
     } else if (/^\/pools\/gallery/.test(path)) {
       this.createPoolThumbnailBtn();
@@ -233,12 +227,13 @@ export class Danbooru extends SiteInject {
     });
   }
 
-  protected createArtworkBtn(id: string) {
+  protected createArtworkBtn() {
     const btnContainer = document.querySelector<HTMLElement>(
-      'section.image-container:has(picture), section.image-container:has(video)'
+      'section.image-container:has(:is(picture, video))'
     );
     if (!btnContainer) return;
 
+    const id = btnContainer.getAttribute('data-id')!;
     btnContainer.appendChild(
       new ArtworkButton({
         id,
