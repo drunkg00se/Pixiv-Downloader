@@ -10,7 +10,7 @@ import type {
   FollowLatestMode,
   ArtworkDetail
 } from './types';
-import type { MediaMeta, SiteParser } from '../interface';
+import type { MediaMeta } from '@/sites/base/parser';
 import { getElementText } from '@/lib/util';
 import { IllustType } from './types';
 import { pixivApi } from '@/sites/pixiv/api';
@@ -46,7 +46,7 @@ interface PixivParam extends Record<string, string> {
   tagLang: TagLanguage;
 }
 
-interface PixivParser extends SiteParser<PixivMeta> {
+interface PixivParser {
   parse(id: string, param: PixivParam): Promise<PixivMeta>;
   illustMangaGenerator: ValidatedIdGenerator<PixivMeta, string>;
   followLatestGenerator: ValidatedIdGenerator<PixivMeta, FollowLatestMode>;

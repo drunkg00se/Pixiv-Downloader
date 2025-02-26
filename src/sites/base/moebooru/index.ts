@@ -13,6 +13,7 @@ import {
   type PossibleMoebooruPostData
 } from './api';
 import { logger } from '@/lib/logger';
+import { PostValidState } from '../parser';
 
 type MoebooruGeneratorPostData = PossibleMoebooruPostData & {
   tagType: Record<string, string>;
@@ -36,12 +37,14 @@ export abstract class Moebooru extends SiteInject {
    */
   #validityCallbackFactory(
     checkValidity: (meta: Partial<MoebooruMeta>) => Promise<boolean>
-  ): (postData: MoebooruGeneratorPostData) => Promise<boolean> {
+  ): (postData: MoebooruGeneratorPostData) => Promise<PostValidState> {
     return async (data) => {
       const tags = data.tags.split(' ');
       tags.push('rating:' + data.rating.charAt(0));
       tags.push('status:' + data.status);
-      return await checkValidity({ id: String(data.id), tags });
+      return (await checkValidity({ id: String(data.id), tags }))
+        ? PostValidState.VALID
+        : PostValidState.INVALID;
     };
   }
 
@@ -49,7 +52,7 @@ export abstract class Moebooru extends SiteInject {
     return this.parser.buildMeta(data, data.tagType);
   }
 
-  #getPopularDataFactory(period: PopularPeriod) {
+  #getPopularDataFactory(period: PopularPeriod): () => Promise<MoebooruGeneratorPostData[]> {
     return async () => {
       const htmlText = await this.api.getPopularHtmlByPeriod(period);
       const { posts, tags: tagType } = this.parser.parsePostsList(htmlText);

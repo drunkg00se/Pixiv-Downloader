@@ -1,12 +1,7 @@
 import { SiteInject } from '../../base';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
-import {
-  DanbooruParser,
-  PostValidState,
-  type DanbooruBlacklistItem,
-  type DanbooruMeta
-} from './parser';
+import { DanbooruParser, type DanbooruBlacklistItem, type DanbooruMeta } from './parser';
 import t from '@/lib/lang';
 import { historyDb } from '@/lib/db';
 import { DanbooruDownloadConfig } from './downloadConfigBuilder';
@@ -18,6 +13,7 @@ import { JsonDataError } from '@/lib/error';
 import { unsafeWindow } from '$';
 import { evalScript } from '@/lib/util';
 import { logger } from '@/lib/logger';
+import { PostValidState } from '../parser';
 
 export abstract class AbstractDanbooru extends SiteInject {
   protected abstract api: DanbooruApi;

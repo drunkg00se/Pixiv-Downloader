@@ -26,7 +26,7 @@
     BatchDownloadDefinition,
     PageOption
   } from './useBatchDownload';
-  import type { MediaMeta } from '@/sites/interface';
+  import type { MediaMeta } from '@/sites/base/parser';
 
   interface Props {
     downloaderConfig: BatchDownloadConfig<MediaMeta>;

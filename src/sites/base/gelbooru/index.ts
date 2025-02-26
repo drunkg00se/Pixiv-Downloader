@@ -1,13 +1,14 @@
 import { SiteInject } from '../../base';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
-import { GelbooruParserV020, type GelbooruMeta } from './parser';
+import { GelbooruParserV020, type GelbooruHtmlPostDataV020, type GelbooruMeta } from './parser';
 import { downloader } from '@/lib/downloader';
 import { historyDb } from '@/lib/db';
 import { GelbooruDownloadConfig } from './downloadConfigBuilder';
 import t from '@/lib/lang';
 import type { GelbooruApiV020 } from './api';
 import { unsafeWindow } from '$';
+import { PostValidState } from '../parser';
 
 export abstract class GelbooruV020 extends SiteInject {
   protected abstract api: GelbooruApiV020;
@@ -19,6 +20,15 @@ export abstract class GelbooruV020 extends SiteInject {
 
   protected getAvatar() {
     return '/favicon.ico';
+  }
+
+  #validityCheckFactory(
+    checkValidity: (meta: Partial<GelbooruMeta>) => Promise<boolean>
+  ): (postData: GelbooruHtmlPostDataV020) => Promise<PostValidState> {
+    return async (post) => {
+      const { id, tags } = post;
+      return (await checkValidity({ id, tags })) ? PostValidState.VALID : PostValidState.INVALID;
+    };
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
@@ -79,9 +89,10 @@ export abstract class GelbooruV020 extends SiteInject {
 
           return this.parser.paginationGenerator(
             pageRange,
-            checkValidity,
             THUMBS_PER_PAGE,
-            getFavoriteByPage
+            getFavoriteByPage,
+            this.#validityCheckFactory(checkValidity),
+            (post) => post.id
           );
         }
       },
@@ -100,9 +111,10 @@ export abstract class GelbooruV020 extends SiteInject {
 
           return this.parser.paginationGenerator(
             [1, 1],
-            checkValidity,
             Number.POSITIVE_INFINITY,
-            getPoolData
+            getPoolData,
+            this.#validityCheckFactory(checkValidity),
+            (post) => post.id
           );
         }
       },
@@ -124,9 +136,10 @@ export abstract class GelbooruV020 extends SiteInject {
 
           return this.parser.paginationGenerator(
             pageRange,
-            checkValidity,
             THUMBS_PER_PAGE,
-            getPostsByPage
+            getPostsByPage,
+            this.#validityCheckFactory(checkValidity),
+            (post) => post.id
           );
         }
       }

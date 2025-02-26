@@ -1,5 +1,4 @@
-import type { MediaMeta } from '../../interface';
-import type { ValidatedIdGenerator } from '@/lib/components/Downloader/useBatchDownload';
+import { ParserBase, type MediaMeta } from '../parser';
 import type { GelbooruPostDataV020 } from './api';
 import { logger } from '@/lib/logger';
 
@@ -22,13 +21,9 @@ interface IGelbooruParserV020 {
   parseBlacklistTags(): string[];
   parsePostsByDoc(doc: Document): GelbooruHtmlPostDataV020[];
   parseFavoriteByDoc(doc: Document): GelbooruHtmlPostDataV020[];
-  paginationGenerator: ValidatedIdGenerator<
-    GelbooruMeta,
-    [thumbsPerPage: number, (page: number) => Promise<GelbooruHtmlPostDataV020[]>]
-  >;
 }
 
-export class GelbooruParserV020 implements IGelbooruParserV020 {
+export class GelbooruParserV020 extends ParserBase implements IGelbooruParserV020 {
   protected parseArtworkSrc(doc: Document): string {
     return doc.querySelector('meta[property="og:image"]')!.getAttribute('content')!;
   }
@@ -193,67 +188,5 @@ export class GelbooruParserV020 implements IGelbooruParserV020 {
     logger.info(`Parse posts in ${doc.URL}:`, postData);
 
     return postData;
-  }
-
-  async *paginationGenerator(
-    pageRange: [start: number, end: number] | null,
-    checkValidity: (meta: Partial<GelbooruMeta>) => Promise<boolean>,
-    thumbsPerPage: number,
-    getPostDataCallback: (page: number) => Promise<GelbooruHtmlPostDataV020[]>
-  ) {
-    const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
-
-    let page = pageStart;
-    let postData: GelbooruHtmlPostDataV020[] | null = await getPostDataCallback(page);
-    let total = postData.length;
-    let fetchError: Error | null = null;
-
-    if (total === 0) throw new Error(`There is no post in page ${page}.`);
-
-    do {
-      let nextPageData: GelbooruHtmlPostDataV020[] | null = null;
-
-      // fetch next page's post data.
-      if (page !== pageEnd && postData.length >= thumbsPerPage) {
-        try {
-          nextPageData = await getPostDataCallback(page + 1);
-          if (nextPageData.length) {
-            total += nextPageData.length;
-          } else {
-            nextPageData = null;
-          }
-        } catch (error) {
-          fetchError = error as Error;
-          nextPageData = null;
-        }
-      }
-
-      const avaliable: string[] = [];
-      const invalid: string[] = [];
-      const unavaliable: string[] = [];
-
-      for (let i = 0; i < postData.length; i++) {
-        const { id, tags } = postData[i];
-        const validityCheckMeta: Partial<GelbooruMeta> = {
-          id,
-          tags
-        };
-        const isValid = await checkValidity(validityCheckMeta);
-        isValid ? avaliable.push(id) : invalid.push(id);
-      }
-
-      yield {
-        total,
-        page,
-        avaliable,
-        invalid,
-        unavaliable
-      };
-
-      page++;
-      postData = nextPageData;
-    } while (postData);
-
-    if (fetchError) throw fetchError;
   }
 }

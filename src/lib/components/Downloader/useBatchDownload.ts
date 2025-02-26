@@ -3,7 +3,7 @@ import optionStore from './store';
 import { logger } from '@/lib/logger';
 import { CancelError, RequestError } from '@/lib/error';
 import { sleep } from '@/lib/util';
-import type { MediaMeta } from '@/sites/interface';
+import type { MediaMeta } from '@/sites/base/parser';
 import PQueue from 'p-queue';
 import { useChannel } from './useChannel';
 

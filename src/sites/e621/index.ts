@@ -11,6 +11,7 @@ import { historyDb } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { unsafeWindow } from '$';
 import t from '@/lib/lang';
+import { PostValidState } from '../base/parser';
 
 export class E621ng extends SiteInject {
   static get hostname(): string[] {
@@ -96,6 +97,29 @@ export class E621ng extends SiteInject {
     }
   }
 
+  #validityCallbackFactory(
+    checkValidity: (meta: Partial<E621ngMeta>) => Promise<boolean>
+  ): (data: E621Post) => Promise<PostValidState> {
+    return async (data) => {
+      const { id, file, tags: fullTags } = data;
+      const tags: string[] = [];
+
+      for (const tagArr of Object.values(fullTags)) {
+        tagArr.forEach((tag) => {
+          tags.push(tag);
+        });
+      }
+
+      return (await checkValidity({
+        id: String(id),
+        extendName: file.ext,
+        tags
+      }))
+        ? PostValidState.VALID
+        : PostValidState.INVALID;
+    };
+  }
+
   protected useBatchDownload = this.app.initBatchDownloader({
     metaType: {} as E621ngMeta,
 
@@ -160,28 +184,11 @@ export class E621ng extends SiteInject {
             ).posts;
           };
 
-          const isPostValid = async (data: E621Post): Promise<boolean> => {
-            const { id, file, tags: fullTags } = data;
-            const tags: string[] = [];
-
-            for (const tagArr of Object.values(fullTags)) {
-              tagArr.forEach((tag) => {
-                tags.push(tag);
-              });
-            }
-
-            return await checkValidity({
-              id: String(id),
-              extendName: file.ext,
-              tags
-            });
-          };
-
-          return this.parser.paginationMetaGenerator(
+          return this.parser.paginationGenerator(
             pageRange,
             this.profile!.per_page,
             getPostsMetaByPage,
-            isPostValid,
+            this.#validityCallbackFactory(checkValidity),
             (data) => this.parser.buildMeta(data)
           );
         }
@@ -206,28 +213,11 @@ export class E621ng extends SiteInject {
             ).posts;
           };
 
-          const isPostValid = async (data: E621Post): Promise<boolean> => {
-            const { id, file, tags: fullTags } = data;
-            const tags: string[] = [];
-
-            for (const tagArr of Object.values(fullTags)) {
-              tagArr.forEach((tag) => {
-                tags.push(tag);
-              });
-            }
-
-            return await checkValidity({
-              id: String(id),
-              extendName: file.ext,
-              tags
-            });
-          };
-
-          return this.parser.paginationMetaGenerator(
+          return this.parser.paginationGenerator(
             pageRange,
             this.profile!.per_page,
             getPostsMetaByPage,
-            isPostValid,
+            this.#validityCallbackFactory(checkValidity),
             (data) => this.parser.buildMeta(data)
           );
         }
@@ -253,28 +243,11 @@ export class E621ng extends SiteInject {
             ).posts;
           };
 
-          const isPostValid = async (data: E621Post): Promise<boolean> => {
-            const { id, file, tags: fullTags } = data;
-            const tags: string[] = [];
-
-            for (const tagArr of Object.values(fullTags)) {
-              tagArr.forEach((tag) => {
-                tags.push(tag);
-              });
-            }
-
-            return await checkValidity({
-              id: String(id),
-              extendName: file.ext,
-              tags
-            });
-          };
-
-          return this.parser.paginationMetaGenerator(
+          return this.parser.paginationGenerator(
             pageRange,
             this.profile!.per_page,
             getPostsMetaByPage,
-            isPostValid,
+            this.#validityCallbackFactory(checkValidity),
             (data) => this.parser.buildMeta(data)
           );
         }
@@ -297,28 +270,11 @@ export class E621ng extends SiteInject {
             ).posts;
           };
 
-          const isPostValid = async (data: E621Post): Promise<boolean> => {
-            const { id, file, tags: fullTags } = data;
-            const tags: string[] = [];
-
-            for (const tagArr of Object.values(fullTags)) {
-              tagArr.forEach((tag) => {
-                tags.push(tag);
-              });
-            }
-
-            return await checkValidity({
-              id: String(id),
-              extendName: file.ext,
-              tags
-            });
-          };
-
-          return this.parser.paginationMetaGenerator(
+          return this.parser.paginationGenerator(
             pageRange,
             this.profile!.per_page,
             getPostsMetaByPage,
-            isPostValid,
+            this.#validityCallbackFactory(checkValidity),
             (data) => this.parser.buildMeta(data)
           );
         }

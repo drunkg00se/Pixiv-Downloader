@@ -4,7 +4,7 @@ import { type ConfigData, loadConfig } from '@/lib/config';
 import { PdlApp } from '@/lib/components/App';
 import { useHistoryBackup } from '@/lib/components/Modal/Config/useHistoryBackup';
 import type { BatchDownloadDefinition } from '@/lib/components/Downloader/useBatchDownload';
-import type { MediaMeta } from '../interface';
+import type { MediaMeta } from './parser';
 
 export abstract class SiteInject {
   protected app: InstanceType<typeof PdlApp>;

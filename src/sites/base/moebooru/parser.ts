@@ -1,11 +1,10 @@
-import type { MediaMeta } from '../../interface';
+import { ParserBase, type MediaMeta } from '../parser';
 import type {
   MoebooruPostDataLegacy,
   MoebooruPostData,
   MoebooruPoolData,
   PossibleMoebooruPostData
 } from './api';
-import type { YieldArtworkMeta } from '@/lib/components/Downloader/useBatchDownload';
 
 interface MoebooruHtmlPostDataLegacy {
   posts: MoebooruPostDataLegacy[];
@@ -52,7 +51,7 @@ export type MoebooruMeta = MediaMeta & {
   source: string;
 };
 
-export class MoebooruParser {
+export class MoebooruParser extends ParserBase {
   #parsePostListData(docText: string): PossibleMoebooruPostData[] {
     const matchData = docText.match(/(?<=Post\.register\().+(?=\))/g)!;
     return matchData.map((dataStr) => JSON.parse(dataStr));
@@ -192,65 +191,5 @@ export class MoebooruParser {
 
       return require.every(hasTag) && !exclude.some(hasTag);
     });
-  }
-
-  public async *paginationGenerator<T, M>(
-    pageRange: [start: number, end: number] | null,
-    postsPerPage: number,
-    getPostData: (page: number) => Promise<T[]>,
-    isValid: (data: T) => Promise<boolean>,
-    buildMeta: (data: T) => M
-  ): AsyncGenerator<YieldArtworkMeta<M>, void, undefined> {
-    const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
-
-    let page = pageStart;
-    let postDatas: T[] | null = await getPostData(page);
-    let total = postDatas.length;
-    let fetchError: Error | null = null;
-
-    if (total === 0) throw new Error(`There is no post in page ${page}.`);
-
-    do {
-      let nextPageData: T[] | null = null;
-
-      // fetch next page's post data.
-      if (page !== pageEnd && postDatas.length >= postsPerPage) {
-        try {
-          nextPageData = await getPostData(page + 1);
-          if (nextPageData.length) {
-            total += nextPageData.length;
-          } else {
-            nextPageData = null;
-          }
-        } catch (error) {
-          fetchError = error as Error;
-          nextPageData = null;
-        }
-      }
-
-      const avaliable: M[] = [];
-      const invalid: M[] = [];
-      const unavaliable: M[] = [];
-
-      for (let i = 0; i < postDatas.length; i++) {
-        const data = postDatas[i];
-        const isValidData = await isValid(data);
-        const meta = buildMeta(data);
-        isValidData ? avaliable.push(meta) : invalid.push(meta);
-      }
-
-      yield {
-        total,
-        page,
-        avaliable,
-        invalid,
-        unavaliable
-      };
-
-      page++;
-      postDatas = nextPageData;
-    } while (postDatas);
-
-    if (fetchError) throw fetchError;
   }
 }

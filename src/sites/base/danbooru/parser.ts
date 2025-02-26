@@ -1,13 +1,6 @@
-import type { MediaMeta } from '../../interface';
+import { ParserBase, type MediaMeta } from '../parser';
 import { getElementText, intersect } from '@/lib/util';
-import type { YieldArtworkMeta } from '@/lib/components/Downloader/useBatchDownload';
 import type { DanbooruPost, DanbooruArtistCommentary } from './types';
-
-export enum PostValidState {
-  VALID,
-  INVALID,
-  UNAVAILABLE
-}
 
 // general | sensitive | questionable | explicit
 type Rating = 'g' | 's' | 'q' | 'e' | '';
@@ -44,7 +37,7 @@ interface IDanbooruParser {
   isBlacklisted(matchTags: string[], blacklist: DanbooruBlacklistItem[]): boolean;
 }
 
-export class DanbooruParser implements IDanbooruParser {
+export class DanbooruParser extends ParserBase implements IDanbooruParser {
   /**
    * https://github.com/danbooru/danbooru/blob/master/app/javascript/src/javascripts/blacklists.js
    */
@@ -259,71 +252,5 @@ export class DanbooruParser implements IDanbooruParser {
       rating: rating ?? '',
       source
     };
-  }
-
-  async *paginationGenerator<PostData, Meta>(
-    pageRange: [start: number, end: number] | null,
-    postsPerPage: number,
-    getPostData: (page: number) => Promise<PostData[]>,
-    isValid: (data: PostData) => Promise<PostValidState>,
-    buildMeta: (data: PostData) => Meta
-  ): AsyncGenerator<YieldArtworkMeta<Meta>, void, undefined> {
-    const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
-
-    let page = pageStart;
-    let postDatas: PostData[] | null = await getPostData(page);
-    let total = postDatas.length;
-    let fetchError: Error | null = null;
-
-    if (total === 0) throw new Error(`There is no post in page ${page}.`);
-
-    do {
-      let nextPageData: PostData[] | null = null;
-
-      // fetch next page's post data.
-      if (page !== pageEnd && postDatas.length >= postsPerPage) {
-        try {
-          nextPageData = await getPostData(page + 1);
-          if (nextPageData.length) {
-            total += nextPageData.length;
-          } else {
-            nextPageData = null;
-          }
-        } catch (error) {
-          fetchError = error as Error;
-          nextPageData = null;
-        }
-      }
-
-      const avaliable: Meta[] = [];
-      const invalid: Meta[] = [];
-      const unavaliable: Meta[] = [];
-
-      for (const data of postDatas) {
-        const isPostValid = await isValid(data);
-        const meta = buildMeta(data);
-
-        if (isPostValid === PostValidState.VALID) {
-          avaliable.push(meta);
-        } else if (isPostValid === PostValidState.INVALID) {
-          invalid.push(meta);
-        } else {
-          unavaliable.push(meta);
-        }
-      }
-
-      yield {
-        total,
-        page,
-        avaliable,
-        invalid,
-        unavaliable
-      };
-
-      page++;
-      postDatas = nextPageData;
-    } while (postDatas);
-
-    if (fetchError) throw fetchError;
   }
 }
