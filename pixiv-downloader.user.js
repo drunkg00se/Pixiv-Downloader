@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.6.2
+// @version            1.7.0
 // @author             ruaruarua
-// @description        Pixiv | Danbooru | Rule34 | Yande. 一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。
-// @description:zh-TW  Pixiv | Danbooru | Rule34 | Yande. 一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。
-// @description:en     Pixiv | Danbooru | Rule34 | Yande. Download artworks with one click. Batch download artworks or download by tags. Convert ugoira formats: Gif | Apng | Webp | Webm | MP4. Customize image file name, save path. Save / export download history.
+// @description        一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai
+// @description:zh-TW  一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai
+// @description:en     Download artworks with one click. Batch download artworks or download by tags. Convert ugoira formats: Gif | Apng | Webp | Webm | MP4. Customize image file name, save path. Save / export download history. Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai
 // @license            MIT
 // @icon               https://www.pixiv.net/favicon.ico
 // @supportURL         https://github.com/drunkg00se/Pixiv-Downloader/issues
@@ -17,6 +17,11 @@
 // @match              https://konachan.com/*
 // @match              https://konachan.net/*
 // @match              https://www.sakugabooru.com/*
+// @match              https://safebooru.org/*
+// @match              https://gelbooru.com/*
+// @match              https://e621.net/*
+// @match              https://e926.net/*
+// @match              https://e6ai.net/*
 // @require            https://unpkg.com/dexie@3.2.7/dist/dexie.min.js
 // @require            https://unpkg.com/jszip@3.9.1/dist/jszip.min.js
 // @require            https://unpkg.com/gif.js@0.2.0/dist/gif.js
@@ -36,6 +41,11 @@
 // @connect            konachan.com
 // @connect            konachan.net
 // @connect            sakugabooru.com
+// @connect            safebooru.org
+// @connect            gelbooru.com
+// @connect            e621.net
+// @connect            e926.net
+// @connect            e6ai.net
 // @grant              GM_download
 // @grant              GM_getResourceText
 // @grant              GM_info
@@ -45,7 +55,7 @@
 // @noframes
 // ==/UserScript==
 
-(t=>{const r=new CSSStyleSheet;r.replaceSync(t),window._pdlShadowStyle=r})(` .anim-indeterminate.svelte-12wvf64{transform-origin:0% 50%;animation:svelte-12wvf64-anim-indeterminate 2s infinite linear}@keyframes svelte-12wvf64-anim-indeterminate{0%{transform:translate(0) scaleX(0)}40%{transform:translate(0) scaleX(.4)}to{transform:translate(100%) scaleX(.5)}}*,:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}:before,:after{--tw-content: ""}:host [data-theme=skeleton],:host{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}:host [data-theme=skeleton]{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h3{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}dl,dd,h1,h3,hr,figure,p{margin:0}fieldset{margin:0;padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}[type=text],input:where(:not([type])),[type=email],[type=url],[type=password],[type=number],[type=date],[type=datetime-local],[type=month],[type=search],[type=tel],[type=time],[type=week],[multiple],textarea,select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0;padding:8px 12px;font-size:16px;line-height:24px;--tw-shadow: 0 0 #0000}[type=text]:focus,input:where(:not([type])):focus,[type=email]:focus,[type=url]:focus,[type=password]:focus,[type=number]:focus,[type=date]:focus,[type=datetime-local]:focus,[type=month]:focus,[type=search]:focus,[type=tel]:focus,[type=time]:focus,[type=week]:focus,[multiple]:focus,textarea:focus,select:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);border-color:#2563eb}input::-moz-placeholder,textarea::-moz-placeholder{color:#6b7280;opacity:1}input::placeholder,textarea::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 8px center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:initial;background-position:initial;background-repeat:unset;background-size:initial;padding-right:12px;-webkit-print-color-adjust:unset;print-color-adjust:unset}[type=checkbox],[type=radio]{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;flex-shrink:0;height:16px;width:16px;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow: 0 0 #0000}[type=checkbox]{border-radius:0}[type=radio]{border-radius:100%}[type=checkbox]:focus,[type=radio]:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 2px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}[type=checkbox]:checked,[type=radio]:checked{border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}[type=checkbox]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=checkbox]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=radio]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=radio]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:checked:hover,[type=checkbox]:checked:focus,[type=radio]:checked:hover,[type=radio]:checked:focus{border-color:transparent;background-color:currentColor}[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}@media (forced-colors: active){[type=checkbox]:indeterminate{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:indeterminate:hover,[type=checkbox]:indeterminate:focus{border-color:transparent;background-color:currentColor}[type=file]{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type=file]:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}:host [data-theme=skeleton]{background-color:rgb(var(--color-surface-50));font-size:16px;line-height:24px;font-family:var(--theme-font-family-base);color:rgba(var(--theme-font-color-base))}:host .dark [data-theme=skeleton]{background-color:rgb(var(--color-surface-900));color:rgba(var(--theme-font-color-dark))}::-moz-selection{background-color:rgb(var(--color-primary-500) / .3)}::selection{background-color:rgb(var(--color-primary-500) / .3)}:host [data-theme=skeleton]{-webkit-tap-highlight-color:rgba(128,128,128,.5);scrollbar-color:rgba(0,0,0,.2) rgba(255,255,255,.05)}:host [data-theme=skeleton]{scrollbar-color:rgba(128,128,128,.5) rgba(0,0,0,.1);scrollbar-width:thin}:host.dark{scrollbar-color:rgba(255,255,255,.1) rgba(0,0,0,.05)}hr:not(.divider){display:block;border-top-width:1px;border-style:solid;border-color:rgb(var(--color-surface-300))}.dark hr:not(.divider){border-color:rgb(var(--color-surface-600))}fieldset,label{display:block}::-moz-placeholder{color:rgb(var(--color-surface-500))}::placeholder{color:rgb(var(--color-surface-500))}.dark ::-moz-placeholder{color:rgb(var(--color-surface-400))}.dark ::placeholder{color:rgb(var(--color-surface-400))}:is(.dark input::-webkit-calendar-picker-indicator){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z'/%3E%3C/svg%3E") no-repeat 50% 50%;pointer-events:none;height:16px;width:16px;border-radius:9999px;background-size:contain;opacity:0}input[type=search]:focus::-webkit-search-cancel-button{pointer-events:auto;opacity:1}:is(.dark input[type=search]::-webkit-search-cancel-button){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}progress{webkit-appearance:none;-moz-appearance:none;-webkit-appearance:none;appearance:none;height:8px;width:100%;overflow:hidden;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-400))}.dark progress{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-400))}.dark progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-value{background-color:rgb(var(--color-surface-900))}.dark progress::-webkit-progress-value{background-color:rgb(var(--color-surface-50))}::-moz-progress-bar{background-color:rgb(var(--color-surface-900))}.dark ::-moz-progress-bar{background-color:rgb(var(--color-surface-50))}:indeterminate::-moz-progress-bar{width:0}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled{cursor:not-allowed;opacity:.5}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}input[type=file]:not(.file-dropzone-input)::file-selector-button{font-size:14px;line-height:20px;padding:6px 12px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50));margin-right:8px;border-width:0px}input[type=file]:not(.file-dropzone-input)::file-selector-button>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}input[type=file]:not(.file-dropzone-input)::file-selector-button:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.dark input[type=file]:not(.file-dropzone-input)::file-selector-button{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}[type=range]{width:100%;accent-color:rgb(var(--color-surface-900) / 1)}:is(.dark [type=range]){accent-color:rgb(var(--color-surface-50) / 1)}[data-sort]{cursor:pointer}[data-sort]:hover:hover,.dark [data-sort]:hover:hover{background-color:rgb(var(--color-primary-500) / .1)}[data-sort]:after{margin-left:8px!important;opacity:0;--tw-content: "\u2193" !important;content:var(--tw-content)!important}[data-popup]{position:absolute;top:0;left:0;display:none;transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}:host [data-theme=skeleton]{--theme-font-family-base: system-ui;--theme-font-family-heading: system-ui;--theme-font-color-base: 0 0 0;--theme-font-color-dark: 255 255 255;--theme-rounded-base: 9999px;--theme-rounded-container: 8px;--theme-border-base: 1px;--on-primary: 0 0 0;--on-secondary: 255 255 255;--on-tertiary: 0 0 0;--on-success: 0 0 0;--on-warning: 0 0 0;--on-error: 255 255 255;--on-surface: 255 255 255;--color-primary-50: 219 245 236;--color-primary-100: 207 241 230;--color-primary-200: 195 238 224;--color-primary-300: 159 227 205;--color-primary-400: 87 207 167;--color-primary-500: 15 186 129;--color-primary-600: 14 167 116;--color-primary-700: 11 140 97;--color-primary-800: 9 112 77;--color-primary-900: 7 91 63;--color-secondary-50: 229 227 251;--color-secondary-100: 220 218 250;--color-secondary-200: 211 209 249;--color-secondary-300: 185 181 245;--color-secondary-400: 132 126 237;--color-secondary-500: 79 70 229;--color-secondary-600: 71 63 206;--color-secondary-700: 59 53 172;--color-secondary-800: 47 42 137;--color-secondary-900: 39 34 112;--color-tertiary-50: 219 242 252;--color-tertiary-100: 207 237 251;--color-tertiary-200: 195 233 250;--color-tertiary-300: 159 219 246;--color-tertiary-400: 86 192 240;--color-tertiary-500: 14 165 233;--color-tertiary-600: 13 149 210;--color-tertiary-700: 11 124 175;--color-tertiary-800: 8 99 140;--color-tertiary-900: 7 81 114;--color-success-50: 237 247 220;--color-success-100: 230 245 208;--color-success-200: 224 242 197;--color-success-300: 206 235 162;--color-success-400: 169 219 92;--color-success-500: 132 204 22;--color-success-600: 119 184 20;--color-success-700: 99 153 17;--color-success-800: 79 122 13;--color-success-900: 65 100 11;--color-warning-50: 252 244 218;--color-warning-100: 251 240 206;--color-warning-200: 250 236 193;--color-warning-300: 247 225 156;--color-warning-400: 240 202 82;--color-warning-500: 234 179 8;--color-warning-600: 211 161 7;--color-warning-700: 176 134 6;--color-warning-800: 140 107 5;--color-warning-900: 115 88 4;--color-error-50: 249 221 234;--color-error-100: 246 209 228;--color-error-200: 244 198 221;--color-error-300: 238 163 200;--color-error-400: 225 94 159;--color-error-500: 212 25 118;--color-error-600: 191 23 106;--color-error-700: 159 19 89;--color-error-800: 127 15 71;--color-error-900: 104 12 58;--color-surface-50: 228 230 238;--color-surface-100: 219 222 233;--color-surface-200: 210 214 227;--color-surface-300: 182 189 210;--color-surface-400: 128 140 177;--color-surface-500: 73 90 143;--color-surface-600: 66 81 129;--color-surface-700: 55 68 107;--color-surface-800: 44 54 86;--color-surface-900: 36 44 70}[data-theme=skeleton] h1,[data-theme=skeleton] h3{font-weight:700}[data-theme=skeleton]{background-image:radial-gradient(at 0% 0%,rgba(var(--color-secondary-500) / .33) 0px,transparent 50%),radial-gradient(at 98% 1%,rgba(var(--color-error-500) / .33) 0px,transparent 50%);background-attachment:fixed;background-position:center;background-repeat:no-repeat;background-size:cover}*{scrollbar-color:initial;scrollbar-width:initial}.\\!container{width:100%!important}.container{width:100%}@media (min-width: 640px){.\\!container{max-width:640px!important}.container{max-width:640px}}@media (min-width: 768px){.\\!container{max-width:768px!important}.container{max-width:768px}}@media (min-width: 1024px){.\\!container{max-width:1024px!important}.container{max-width:1024px}}@media (min-width: 1280px){.\\!container{max-width:1280px!important}.container{max-width:1280px}}@media (min-width: 1536px){.\\!container{max-width:1536px!important}.container{max-width:1536px}}.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}.h3{font-size:20px;line-height:28px;font-family:var(--theme-font-family-heading)}.anchor{--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));text-decoration-line:underline}.anchor:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}:is(.dark .anchor){--tw-text-opacity: 1;color:rgb(var(--color-primary-500) / var(--tw-text-opacity))}.time{font-size:14px;line-height:20px;--tw-text-opacity: 1;color:rgb(var(--color-surface-500) / var(--tw-text-opacity))}:is(.dark .time){--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-size:12px;line-height:16px;--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .3);border-radius:4px;padding:2px 4px}:is(.dark .code){--tw-text-opacity: 1;color:rgb(var(--color-primary-400) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .2)}.alert{display:flex;flex-direction:column;align-items:flex-start;padding:16px;color:rgb(var(--color-surface-900));border-radius:var(--theme-rounded-container)}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.dark .alert{color:rgb(var(--color-surface-50))}.\\!btn:disabled{cursor:not-allowed!important;opacity:.5!important}.btn:disabled,.btn-icon:disabled,.btn-group>*:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!btn:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:disabled:hover,.btn-icon:disabled:hover,.btn-group>*:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.btn:disabled:active,.btn-icon:disabled:active,.btn-group>*:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!btn{font-size:16px!important;line-height:24px!important;padding:9px 20px!important;white-space:nowrap!important;text-align:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important;border-radius:var(--theme-rounded-base)!important}.btn{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base)}.\\!btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.\\!btn:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:active{--tw-scale-x: 95% !important;--tw-scale-y: 95% !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important;--tw-brightness: brightness(.9) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-sm{padding:6px 12px;font-size:14px;line-height:20px}.btn-icon{font-size:16px;line-height:24px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;padding:0;aspect-ratio:1 / 1;width:43px;border-radius:9999px}.btn-icon>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-icon:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon-sm{aspect-ratio:1 / 1;width:33px;font-size:14px;line-height:20px}.btn-group{display:inline-flex;flex-direction:row;overflow:hidden;border-radius:var(--theme-rounded-base);isolation:isolate}.btn-group>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(0px * var(--tw-space-x-reverse));margin-left:calc(0px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button,.btn-group a{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;color:inherit!important;text-decoration-line:none!important}.btn-group button>:not([hidden])~:not([hidden]),.btn-group a>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button:hover,.btn-group a:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);background-color:rgb(var(--color-surface-50) / 3%)}.btn-group button:active,.btn-group a:active{background-color:rgb(var(--color-surface-900) / 3%)}.btn-group>*+*{border-top-width:0px;border-left-width:1px;border-color:rgb(var(--color-surface-500) / .2)}.card{background-color:rgb(var(--color-surface-100));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(23 23 23 / .05);border-radius:var(--theme-rounded-container)}.dark .card{background-color:rgb(var(--color-surface-800));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(250 250 250 / .05)}a.card{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}a.card:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!chip{cursor:pointer!important;white-space:nowrap!important;padding:6px 12px!important;text-align:center!important;font-size:12px!important;line-height:16px!important;border-radius:4px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important}.chip{cursor:pointer;white-space:nowrap;padding:6px 12px;text-align:center;font-size:12px;line-height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.\\!chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}a.chip:hover,button.chip:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}a.\\!chip:hover,button.\\!chip:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!chip:disabled{cursor:not-allowed!important;opacity:.5!important}.chip:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!chip:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.chip:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.label>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.\\!input{width:100%!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.2s!important;background-color:rgb(var(--color-surface-200))!important;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base)!important;border-color:rgb(var(--color-surface-400))!important}.input,.textarea,.select,.input-group{width:100%;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.2s;background-color:rgb(var(--color-surface-200));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .input,.dark .textarea,.dark .select,.dark .input-group{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.dark .\\!input{background-color:rgb(var(--color-surface-700))!important;border-color:rgb(var(--color-surface-500))!important}.\\!input:hover{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:hover,.textarea:hover,.select:hover,.input-group:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:focus,.textarea:focus,.select:focus,.input-group:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus-within{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))!important}.input:focus-within,.textarea:focus-within,.select:focus-within,.input-group:focus-within{--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.\\!input{border-radius:var(--theme-rounded-base)!important}.input,.input-group{border-radius:var(--theme-rounded-base)}.textarea,.select{border-radius:var(--theme-rounded-container)}.select>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select{padding:8px 32px 8px 8px}.select[size]{background-image:none}.select optgroup>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select optgroup{font-weight:700}.select optgroup option{margin-left:0;padding-left:0}.select optgroup option:first-of-type{margin-top:12px}.select optgroup option:last-child{margin-bottom:12px!important}.select option{cursor:pointer;padding:8px 16px;background-color:rgb(var(--color-surface-200));border-radius:var(--theme-rounded-base)}.dark .select option{background-color:rgb(var(--color-surface-700))}.select option:checked{background:rgb(var(--color-primary-500)) linear-gradient(0deg,rgb(var(--color-primary-500)),rgb(var(--color-primary-500)));color:rgb(var(--on-primary))}.checkbox,.radio{height:20px;width:20px;cursor:pointer;border-radius:4px;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;background-color:rgb(var(--color-surface-200));border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .checkbox,.dark .radio{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.checkbox:hover,.radio:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.checkbox:focus,.radio:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.checkbox:checked,.checkbox:indeterminate,.radio:checked{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:hover,.checkbox:indeterminate:hover,.radio:checked:hover{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:focus,.checkbox:indeterminate:focus,.radio:checked:focus{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)}.radio{border-radius:var(--theme-rounded-base)}.\\!input[type=file]{padding:4px!important}.input[type=file]{padding:4px}.\\!input[type=color]{height:40px!important;width:40px!important;cursor:pointer!important;overflow:hidden!important;border-style:none!important;border-radius:var(--theme-rounded-base)!important;-webkit-appearance:none!important}.input[type=color]{height:40px;width:40px;cursor:pointer;overflow:hidden;border-style:none;border-radius:var(--theme-rounded-base);-webkit-appearance:none}.\\!input[type=color]::-webkit-color-swatch-wrapper{padding:0!important}.input[type=color]::-webkit-color-swatch-wrapper{padding:0}.\\!input[type=color]::-webkit-color-swatch{border-style:none!important}.input[type=color]::-webkit-color-swatch{border-style:none}.\\!input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input[type=color]::-moz-color-swatch{border-style:none!important}.input[type=color]::-moz-color-swatch{border-style:none}.\\!input:disabled{cursor:not-allowed!important;opacity:.5!important}.input:disabled,.textarea:disabled,.select:disabled,.input-group>input:disabled,.input-group>textarea:disabled,.input-group>select:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!input:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:disabled:hover,.textarea:disabled:hover,.select:disabled:hover,.input-group>input:disabled:hover,.input-group>textarea:disabled:hover,.input-group>select:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!input[readonly],.input[readonly],.textarea[readonly],.select[readonly]{cursor:not-allowed!important;border-color:transparent!important}.\\!input[readonly]:hover,.input[readonly]:hover,.textarea[readonly]:hover,.select[readonly]:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input-group{display:grid;overflow:hidden}.input-group input,.input-group select{border-width:0px;background-color:transparent;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.input-group select option{background-color:rgb(var(--color-surface-200))}.dark .input-group select option{background-color:rgb(var(--color-surface-700))}.input-group div,.input-group a,.input-group button{display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:16px}.input-group-divider input,.input-group-divider select,.input-group-divider div,.input-group-divider a{border-left-width:1px;border-color:rgb(var(--color-surface-400));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;min-width:-moz-fit-content!important;min-width:fit-content!important}.dark .input-group-divider input,.dark .input-group-divider select,.dark .input-group-divider div,.dark .input-group-divider a{border-color:rgb(var(--color-surface-500))}.input-group-divider input:focus,.input-group-divider select:focus,.input-group-divider div:focus,.input-group-divider a:focus{border-color:rgb(var(--color-surface-400))}.dark .input-group-divider input:focus,.dark .input-group-divider select:focus,.dark .input-group-divider div:focus,.dark .input-group-divider a:focus{border-color:rgb(var(--color-surface-500))}.input-group-divider *:first-child{border-left-width:0px!important}.input-group-shim{background-color:rgb(var(--color-surface-400) / .1);color:rgb(var(--color-surface-600))}.dark .input-group-shim{color:rgb(var(--color-surface-300))}.input-error{--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}:is(.dark .input-error){--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::-moz-placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.list{list-style-type:none}.list>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.list li{display:flex;align-items:center;border-radius:var(--theme-rounded-base)}.list li>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.placeholder{height:20px;background-color:rgb(var(--color-surface-300));border-radius:var(--theme-rounded-base)}.dark .placeholder{background-color:rgb(var(--color-surface-600))}.w-modal{width:100%;max-width:640px}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-style:auto;outline-color:-webkit-focus-ring-color}.variant-filled{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .variant-filled{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.\\!variant-filled-primary{--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-filled-primary{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .variant-filled-primary){--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .\\!variant-filled-primary){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-ghost-surface{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .variant-ghost-surface){--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}.variant-soft,.variant-soft-surface{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .variant-soft,.dark .variant-soft-surface{color:rgb(var(--color-surface-200))}:is(.dark .variant-soft),:is(.dark .variant-soft-surface){background-color:rgb(var(--color-surface-500) / .2)}@media (min-width: 768px){.h3{font-size:24px;line-height:32px}}@media (min-width: 1024px){.alert{flex-direction:row;align-items:center}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(0px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0px * var(--tw-space-y-reverse));--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-width:0px!important}.visible{visibility:visible}.static{position:static}.fixed{position:fixed}.\\!absolute{position:absolute!important}.absolute{position:absolute}.relative{position:relative}.bottom-0{bottom:0}.bottom-24{bottom:96px}.left-0{left:0}.left-1\\/2{left:50%}.right-0{right:0}.right-2{right:8px}.right-20{right:80px}.right-4{right:16px}.top-0{top:0}.top-1\\/2{top:50%}.top-2{top:8px}.top-36{top:144px}.-z-10{z-index:-10}.z-\\[999\\]{z-index:999}.row-span-2{grid-row:span 2 / span 2}.row-start-1{grid-row-start:1}.\\!m-0{margin:0!important}.m-auto{margin:auto}.mx-2{margin-left:8px;margin-right:8px}.my-4{margin-top:16px;margin-bottom:16px}.my-\\[1px\\]{margin-top:1px;margin-bottom:1px}.ml-1{margin-left:4px}.ml-3{margin-left:12px}.ml-4{margin-left:16px}.mr-2{margin-right:8px}.mr-6{margin-right:24px}.mt-2{margin-top:8px}.mt-4{margin-top:16px}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.contents{display:contents}.hidden{display:none}.size-14{width:56px;height:56px}.size-full{width:100%;height:100%}.h-0{height:0px}.h-10{height:40px}.h-2{height:8px}.h-4{height:16px}.h-48{height:192px}.h-6{height:24px}.h-8{height:32px}.h-\\[38px\\]{height:38px}.h-auto{height:auto}.h-fit{height:-moz-fit-content;height:fit-content}.h-full{height:100%}.h-screen{height:100vh}.max-h-\\[200px\\]{max-height:200px}.min-h-0{min-height:0px}.min-h-full{min-height:100%}.w-0{width:0px}.w-12{width:48px}.w-16{width:64px}.w-20{width:80px}.w-32{width:128px}.w-36{width:144px}.w-48{width:192px}.w-5{width:20px}.w-6{width:24px}.w-8{width:32px}.w-\\[140px\\]{width:140px}.w-\\[38px\\]{width:38px}.w-\\[50\\%\\]{width:50%}.w-\\[600px\\]{width:600px}.w-full{width:100%}.w-screen{width:100vw}.max-w-full{max-width:100%}.flex-1{flex:1 1 0%}.flex-auto{flex:1 1 auto}.flex-none{flex:none}.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.basis-0{flex-basis:0px}.origin-\\[50\\%_50\\%\\]{transform-origin:50% 50%}.-translate-x-1\\/2{--tw-translate-x: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-x-full{--tw-translate-x: -100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\\/2{--tw-translate-y: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-0{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-\\[calc\\(100\\%-44px\\)\\]{--tw-translate-x: calc(100% - 44px) ;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-full{--tw-translate-x: 100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-90{--tw-rotate: -90deg;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-\\[0\\.8\\]{--tw-scale-x: .8;--tw-scale-y: .8;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!transform-none{transform:none!important}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.\\!cursor-default{cursor:default!important}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-\\[0px_1fr\\]{grid-template-columns:0px 1fr}.grid-cols-\\[140px_1fr\\]{grid-template-columns:140px 1fr}.grid-cols-\\[auto_1fr_auto\\]{grid-template-columns:auto 1fr auto}.grid-cols-\\[auto_1fr_auto_auto\\]{grid-template-columns:auto 1fr auto auto}.grid-rows-\\[0fr\\]{grid-template-rows:0fr}.grid-rows-\\[1fr\\]{grid-template-rows:1fr}.grid-rows-\\[auto_1fr\\]{grid-template-rows:auto 1fr}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.\\!items-start{align-items:flex-start!important}.items-center{align-items:center}.\\!items-stretch{align-items:stretch!important}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.justify-evenly{justify-content:space-evenly}.gap-1{gap:4px}.gap-14{gap:56px}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.gap-6{gap:24px}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(8px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(8px * var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.divide-y-\\[1px\\]>:not([hidden])~:not([hidden]){--tw-divide-y-reverse: 0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.self-start{align-self:flex-start}.self-stretch{align-self:stretch}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-y-hidden{overflow-y:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.break-words{overflow-wrap:break-word}.rounded{border-radius:4px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:8px}.rounded-md{border-radius:6px}.rounded-none{border-radius:0}.rounded-e-\\[4px\\]{border-start-end-radius:4px;border-end-end-radius:4px}.rounded-s-full{border-start-start-radius:9999px;border-end-start-radius:9999px}.border{border-width:1px}.border-0{border-width:0px}.\\!border-t-0{border-top-width:0px!important}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l{border-left-width:1px}.\\!border-surface-700{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-700) / var(--tw-border-opacity, 1))!important}.border-surface-400\\/20{border-color:rgb(var(--color-surface-400) / .2)}.bg-primary-500{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity, 1))}.bg-primary-500\\/30{background-color:rgb(var(--color-primary-500) / .3)}.bg-surface-400{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-400) / var(--tw-bg-opacity, 1))}.bg-surface-400\\/20{background-color:rgb(var(--color-surface-400) / .2)}.bg-surface-900{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-900) / var(--tw-bg-opacity, 1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity: 1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\\/30{background-color:#ffffff4d}.bg-white\\/75{background-color:#ffffffbf}.bg-scroll{background-attachment:scroll}.fill-current{fill:currentColor}.fill-primary-500{fill:rgb(var(--color-primary-500) / 1)}.fill-slate-700{fill:#334155}.fill-transparent{fill:transparent}.stroke-primary-500{stroke:rgb(var(--color-primary-500) / 1)}.stroke-primary-500\\/30{stroke:rgb(var(--color-primary-500) / .3)}.stroke-surface-500\\/30{stroke:rgb(var(--color-surface-500) / .3)}.stroke-surface-900{stroke:rgb(var(--color-surface-900) / 1)}.object-cover{-o-object-fit:cover;object-fit:cover}.object-center{-o-object-position:center;object-position:center}.\\!p-0{padding:0!important}.p-0{padding:0}.p-1{padding:4px}.p-2{padding:8px}.p-4{padding:16px}.\\!px-1{padding-left:4px!important;padding-right:4px!important}.\\!py-2{padding-top:8px!important;padding-bottom:8px!important}.\\!py-\\[7px\\]{padding-top:7px!important;padding-bottom:7px!important}.px-3{padding-left:12px;padding-right:12px}.px-4{padding-left:16px;padding-right:16px}.px-8{padding-left:32px;padding-right:32px}.py-1{padding-top:4px;padding-bottom:4px}.py-2{padding-top:8px;padding-bottom:8px}.py-6{padding-top:24px;padding-bottom:24px}.pb-6{padding-bottom:24px}.pl-6{padding-left:24px}.pr-0{padding-right:0}.pr-2{padding-right:8px}.pr-4{padding-right:16px}.pr-6{padding-right:24px}.pt-4{padding-top:16px}.text-center{text-align:center}.text-2xl{font-size:24px;line-height:32px}.text-\\[12px\\]{font-size:12px}.text-base{font-size:16px;line-height:24px}.text-sm{font-size:14px;line-height:20px}.text-xs{font-size:12px;line-height:16px}.font-bold{font-weight:700}.italic{font-style:italic}.leading-\\[14px\\]{line-height:14px}.leading-loose{line-height:2}.\\!text-error-500{--tw-text-opacity: 1 !important;color:rgb(var(--color-error-500) / var(--tw-text-opacity, 1))!important}.text-error-500{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity, 1))}.text-surface-400{--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity, 1))}.underline-offset-2{text-underline-offset:2px}.accent-surface-900{accent-color:rgb(var(--color-surface-900) / 1)}.opacity-40{opacity:.4}.opacity-50{opacity:.5}.opacity-70{opacity:.7}.mix-blend-hard-light{mix-blend-mode:hard-light}.shadow{--tw-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);--tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.shadow-xl{--tw-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);--tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.-outline-offset-\\[3px\\]{outline-offset:-3px}.\\!ring-0{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.blur{--tw-blur: blur(8px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\\[1px\\]{--tw-blur: blur(1px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-xl{--tw-drop-shadow: drop-shadow(0 20px 13px rgb(0 0 0 / .03)) drop-shadow(0 8px 5px rgb(0 0 0 / .08));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur: blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-columns\\]{transition-property:grid-template-columns;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-rows\\]{transition-property:grid-template-rows;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[stroke-dashoffset\\]{transition-property:stroke-dashoffset;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[transform\\]{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[width\\]{transition-property:width;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.delay-100{transition-delay:.1s}.duration-100{transition-duration:.1s}.duration-\\[200ms\\]{transition-duration:.2s}.duration-\\[250ms\\]{transition-duration:.25s}.duration-\\[400ms\\]{transition-duration:.4s}.bg-surface-backdrop-token{background-color:rgb(var(--color-surface-400) / .7)}.dark .bg-surface-backdrop-token{background-color:rgb(var(--color-surface-900) / .7)}.bg-surface-100-800-token{background-color:rgb(var(--color-surface-100))}.dark .bg-surface-100-800-token{background-color:rgb(var(--color-surface-800))}.bg-surface-200-700-token{background-color:rgb(var(--color-surface-200))}.dark .bg-surface-200-700-token{background-color:rgb(var(--color-surface-700))}.bg-surface-900-50-token{background-color:rgb(var(--color-surface-900))}.dark .bg-surface-900-50-token{background-color:rgb(var(--color-surface-50))}.border-token{border-width:var(--theme-border-base)}.border-surface-400-500-token{border-color:rgb(var(--color-surface-400))}.dark .border-surface-400-500-token{border-color:rgb(var(--color-surface-500))}.border-surface-900-50-token{border-color:rgb(var(--color-surface-900))}.dark .border-surface-900-50-token{border-color:rgb(var(--color-surface-50))}.border-surface-800-100-token{border-color:rgb(var(--color-surface-800))}.dark .border-surface-800-100-token{border-color:rgb(var(--color-surface-100))}.rounded-token{border-radius:var(--theme-rounded-base)}.rounded-container-token{border-radius:var(--theme-rounded-container)}.rounded-tl-container-token{border-top-left-radius:var(--theme-rounded-container)}.rounded-tr-container-token{border-top-right-radius:var(--theme-rounded-container)}.fill-token{fill:rgba(var(--theme-font-color-base))}.dark .fill-token{fill:rgba(var(--theme-font-color-dark))}.text-surface-700-200-token{color:rgb(var(--color-surface-700))}.dark .text-surface-700-200-token{color:rgb(var(--color-surface-200))}.scrollbar-thin::-webkit-scrollbar-track{background-color:var(--scrollbar-track);border-radius:var(--scrollbar-track-radius)}.scrollbar-thin::-webkit-scrollbar-track:hover{background-color:var(--scrollbar-track-hover, var(--scrollbar-track))}.scrollbar-thin::-webkit-scrollbar-track:active{background-color:var(--scrollbar-track-active, var(--scrollbar-track-hover, var(--scrollbar-track)))}.scrollbar-thin::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:var(--scrollbar-thumb-radius)}.scrollbar-thin::-webkit-scrollbar-thumb:hover{background-color:var(--scrollbar-thumb-hover, var(--scrollbar-thumb))}.scrollbar-thin::-webkit-scrollbar-thumb:active{background-color:var(--scrollbar-thumb-active, var(--scrollbar-thumb-hover, var(--scrollbar-thumb)))}.scrollbar-thin::-webkit-scrollbar-corner{background-color:var(--scrollbar-corner);border-radius:var(--scrollbar-corner-radius)}.scrollbar-thin::-webkit-scrollbar-corner:hover{background-color:var(--scrollbar-corner-hover, var(--scrollbar-corner))}.scrollbar-thin::-webkit-scrollbar-corner:active{background-color:var(--scrollbar-corner-active, var(--scrollbar-corner-hover, var(--scrollbar-corner)))}.scrollbar-thin{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb, initial) var(--scrollbar-track, initial)}.scrollbar-thin::-webkit-scrollbar{display:block;width:8px;height:8px}.scrollbar-track-transparent{--scrollbar-track: transparent !important}.scrollbar-thumb-slate-400\\/50{--scrollbar-thumb: rgb(148 163 184 / .5) !important}.scrollbar-corner-transparent{--scrollbar-corner: transparent !important}.has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}:is(.dark .has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked)){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.hover\\:variant-soft:hover,.hover\\:variant-soft-surface:hover{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .hover\\:variant-soft:hover,.dark .hover\\:variant-soft-surface:hover{color:rgb(var(--color-surface-200))}:is(.dark .hover\\:variant-soft:hover){background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .hover\\:variant-soft-surface:hover){background-color:rgb(var(--color-surface-500) / .2)}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){background-color:rgb(var(--color-primary-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-primary-700))}.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){color:rgb(var(--color-primary-200))}:is(.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled])){background-color:rgb(var(--color-primary-500) / .2)}.\\*\\:\\!m-0>*{margin:0!important}.\\*\\:items-center>*{align-items:center}.\\*\\:\\!rounded-none>*{border-radius:0!important}.\\*\\:py-4>*{padding-top:16px;padding-bottom:16px}.\\*\\:text-sm>*{font-size:14px;line-height:20px}.\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-300))}.dark .\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-600))}.hover\\:translate-x-0:hover{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\\:text-xl:hover{font-size:20px;line-height:28px}.hover\\:opacity-100:hover{opacity:1}.hover\\:brightness-110:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.hover\\:brightness-\\[105\\%\\]:hover{--tw-brightness: brightness(105%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\\:decoration-wavy:focus{text-decoration-style:wavy}.focus\\:\\!outline-none:focus{outline:2px solid transparent!important;outline-offset:2px!important}.disabled\\:cursor-wait:disabled{cursor:wait}.disabled\\:opacity-70:disabled{opacity:.7}.dark\\:\\!border-surface-200:is(.dark *){--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-200) / var(--tw-border-opacity, 1))!important}.dark\\:border-surface-500\\/20:is(.dark *){border-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-black\\/15:is(.dark *){background-color:#00000026}.dark\\:bg-surface-300:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-300) / var(--tw-bg-opacity, 1))}.dark\\:bg-surface-500\\/20:is(.dark *){background-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-surface-700:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-700) / var(--tw-bg-opacity, 1))}.dark\\:fill-slate-200:is(.dark *){fill:#e2e8f0}.dark\\:stroke-surface-50:is(.dark *){stroke:rgb(var(--color-surface-50) / 1)}.dark\\:accent-surface-50:is(.dark *){accent-color:rgb(var(--color-surface-50) / 1)}.dark\\:hover\\:brightness-110:hover:is(.dark *){--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}@media (min-width: 768px){.md\\:h-\\[600px\\]{height:600px}.md\\:max-w-screen-md{max-width:768px}.md\\:max-w-screen-sm{max-width:640px}.md\\:flex-row{flex-direction:row}.md\\:\\!items-baseline{align-items:baseline!important}}@media (min-width: 1024px){.lg\\:max-w-screen-md{max-width:768px}}@media (min-width: 1280px){.xl\\:max-w-screen-lg{max-width:1024px}}.\\[\\&\\:last-child\\]\\:\\*\\:pt-4>*:last-child{padding-top:16px}.\\[\\&\\:not\\(\\:last-child\\)\\]\\:\\*\\:py-4>*:not(:last-child){padding-top:16px;padding-bottom:16px}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:hover\\:bg-slate-400\\/30:hover:not([disabled]){background-color:#94a3b84d}.\\[\\&\\>input\\]\\:\\!min-w-0>input{min-width:0px!important}.\\[\\&\\>input\\]\\:\\!border-transparent>input{border-color:transparent!important} `);
+(t=>{const r=new CSSStyleSheet;r.replaceSync(t),window._pdlShadowStyle=r})(` .anim-indeterminate.svelte-12wvf64{transform-origin:0% 50%;animation:svelte-12wvf64-anim-indeterminate 2s infinite linear}@keyframes svelte-12wvf64-anim-indeterminate{0%{transform:translate(0) scaleX(0)}40%{transform:translate(0) scaleX(.4)}to{transform:translate(100%) scaleX(.5)}}*,:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}:before,:after{--tw-content: ""}:host [data-theme=skeleton],:host{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}:host [data-theme=skeleton]{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h3,h4{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}dl,dd,h1,h3,h4,hr,figure,p{margin:0}fieldset{margin:0;padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}[type=text],input:where(:not([type])),[type=email],[type=url],[type=password],[type=number],[type=date],[type=datetime-local],[type=month],[type=search],[type=tel],[type=time],[type=week],[multiple],textarea,select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0;padding:8px 12px;font-size:16px;line-height:24px;--tw-shadow: 0 0 #0000}[type=text]:focus,input:where(:not([type])):focus,[type=email]:focus,[type=url]:focus,[type=password]:focus,[type=number]:focus,[type=date]:focus,[type=datetime-local]:focus,[type=month]:focus,[type=search]:focus,[type=tel]:focus,[type=time]:focus,[type=week]:focus,[multiple]:focus,textarea:focus,select:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);border-color:#2563eb}input::-moz-placeholder,textarea::-moz-placeholder{color:#6b7280;opacity:1}input::placeholder,textarea::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 8px center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:initial;background-position:initial;background-repeat:unset;background-size:initial;padding-right:12px;-webkit-print-color-adjust:unset;print-color-adjust:unset}[type=checkbox],[type=radio]{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;flex-shrink:0;height:16px;width:16px;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow: 0 0 #0000}[type=checkbox]{border-radius:0}[type=radio]{border-radius:100%}[type=checkbox]:focus,[type=radio]:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 2px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}[type=checkbox]:checked,[type=radio]:checked{border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}[type=checkbox]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=checkbox]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=radio]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=radio]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:checked:hover,[type=checkbox]:checked:focus,[type=radio]:checked:hover,[type=radio]:checked:focus{border-color:transparent;background-color:currentColor}[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}@media (forced-colors: active){[type=checkbox]:indeterminate{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:indeterminate:hover,[type=checkbox]:indeterminate:focus{border-color:transparent;background-color:currentColor}[type=file]{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type=file]:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}:host [data-theme=skeleton]{background-color:rgb(var(--color-surface-50));font-size:16px;line-height:24px;font-family:var(--theme-font-family-base);color:rgba(var(--theme-font-color-base))}:host .dark [data-theme=skeleton]{background-color:rgb(var(--color-surface-900));color:rgba(var(--theme-font-color-dark))}::-moz-selection{background-color:rgb(var(--color-primary-500) / .3)}::selection{background-color:rgb(var(--color-primary-500) / .3)}:host [data-theme=skeleton]{-webkit-tap-highlight-color:rgba(128,128,128,.5);scrollbar-color:rgba(0,0,0,.2) rgba(255,255,255,.05)}:host [data-theme=skeleton]{scrollbar-color:rgba(128,128,128,.5) rgba(0,0,0,.1);scrollbar-width:thin}:host.dark{scrollbar-color:rgba(255,255,255,.1) rgba(0,0,0,.05)}hr:not(.divider){display:block;border-top-width:1px;border-style:solid;border-color:rgb(var(--color-surface-300))}.dark hr:not(.divider){border-color:rgb(var(--color-surface-600))}fieldset,label{display:block}::-moz-placeholder{color:rgb(var(--color-surface-500))}::placeholder{color:rgb(var(--color-surface-500))}.dark ::-moz-placeholder{color:rgb(var(--color-surface-400))}.dark ::placeholder{color:rgb(var(--color-surface-400))}:is(.dark input::-webkit-calendar-picker-indicator){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z'/%3E%3C/svg%3E") no-repeat 50% 50%;pointer-events:none;height:16px;width:16px;border-radius:9999px;background-size:contain;opacity:0}input[type=search]:focus::-webkit-search-cancel-button{pointer-events:auto;opacity:1}:is(.dark input[type=search]::-webkit-search-cancel-button){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}progress{webkit-appearance:none;-moz-appearance:none;-webkit-appearance:none;appearance:none;height:8px;width:100%;overflow:hidden;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-400))}.dark progress{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-400))}.dark progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-value{background-color:rgb(var(--color-surface-900))}.dark progress::-webkit-progress-value{background-color:rgb(var(--color-surface-50))}::-moz-progress-bar{background-color:rgb(var(--color-surface-900))}.dark ::-moz-progress-bar{background-color:rgb(var(--color-surface-50))}:indeterminate::-moz-progress-bar{width:0}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled{cursor:not-allowed;opacity:.5}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}input[type=file]:not(.file-dropzone-input)::file-selector-button{font-size:14px;line-height:20px;padding:6px 12px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50));margin-right:8px;border-width:0px}input[type=file]:not(.file-dropzone-input)::file-selector-button>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}input[type=file]:not(.file-dropzone-input)::file-selector-button:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.dark input[type=file]:not(.file-dropzone-input)::file-selector-button{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}[type=range]{width:100%;accent-color:rgb(var(--color-surface-900) / 1)}:is(.dark [type=range]){accent-color:rgb(var(--color-surface-50) / 1)}[data-sort]{cursor:pointer}[data-sort]:hover:hover,.dark [data-sort]:hover:hover{background-color:rgb(var(--color-primary-500) / .1)}[data-sort]:after{margin-left:8px!important;opacity:0;--tw-content: "\u2193" !important;content:var(--tw-content)!important}[data-popup]{position:absolute;top:0;left:0;display:none;transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}:host [data-theme=skeleton]{--theme-font-family-base: system-ui;--theme-font-family-heading: system-ui;--theme-font-color-base: 0 0 0;--theme-font-color-dark: 255 255 255;--theme-rounded-base: 9999px;--theme-rounded-container: 8px;--theme-border-base: 1px;--on-primary: 0 0 0;--on-secondary: 255 255 255;--on-tertiary: 0 0 0;--on-success: 0 0 0;--on-warning: 0 0 0;--on-error: 255 255 255;--on-surface: 255 255 255;--color-primary-50: 219 245 236;--color-primary-100: 207 241 230;--color-primary-200: 195 238 224;--color-primary-300: 159 227 205;--color-primary-400: 87 207 167;--color-primary-500: 15 186 129;--color-primary-600: 14 167 116;--color-primary-700: 11 140 97;--color-primary-800: 9 112 77;--color-primary-900: 7 91 63;--color-secondary-50: 229 227 251;--color-secondary-100: 220 218 250;--color-secondary-200: 211 209 249;--color-secondary-300: 185 181 245;--color-secondary-400: 132 126 237;--color-secondary-500: 79 70 229;--color-secondary-600: 71 63 206;--color-secondary-700: 59 53 172;--color-secondary-800: 47 42 137;--color-secondary-900: 39 34 112;--color-tertiary-50: 219 242 252;--color-tertiary-100: 207 237 251;--color-tertiary-200: 195 233 250;--color-tertiary-300: 159 219 246;--color-tertiary-400: 86 192 240;--color-tertiary-500: 14 165 233;--color-tertiary-600: 13 149 210;--color-tertiary-700: 11 124 175;--color-tertiary-800: 8 99 140;--color-tertiary-900: 7 81 114;--color-success-50: 237 247 220;--color-success-100: 230 245 208;--color-success-200: 224 242 197;--color-success-300: 206 235 162;--color-success-400: 169 219 92;--color-success-500: 132 204 22;--color-success-600: 119 184 20;--color-success-700: 99 153 17;--color-success-800: 79 122 13;--color-success-900: 65 100 11;--color-warning-50: 252 244 218;--color-warning-100: 251 240 206;--color-warning-200: 250 236 193;--color-warning-300: 247 225 156;--color-warning-400: 240 202 82;--color-warning-500: 234 179 8;--color-warning-600: 211 161 7;--color-warning-700: 176 134 6;--color-warning-800: 140 107 5;--color-warning-900: 115 88 4;--color-error-50: 249 221 234;--color-error-100: 246 209 228;--color-error-200: 244 198 221;--color-error-300: 238 163 200;--color-error-400: 225 94 159;--color-error-500: 212 25 118;--color-error-600: 191 23 106;--color-error-700: 159 19 89;--color-error-800: 127 15 71;--color-error-900: 104 12 58;--color-surface-50: 228 230 238;--color-surface-100: 219 222 233;--color-surface-200: 210 214 227;--color-surface-300: 182 189 210;--color-surface-400: 128 140 177;--color-surface-500: 73 90 143;--color-surface-600: 66 81 129;--color-surface-700: 55 68 107;--color-surface-800: 44 54 86;--color-surface-900: 36 44 70}[data-theme=skeleton] h1,[data-theme=skeleton] h3,[data-theme=skeleton] h4{font-weight:700}[data-theme=skeleton]{background-image:radial-gradient(at 0% 0%,rgba(var(--color-secondary-500) / .33) 0px,transparent 50%),radial-gradient(at 98% 1%,rgba(var(--color-error-500) / .33) 0px,transparent 50%);background-attachment:fixed;background-position:center;background-repeat:no-repeat;background-size:cover}*{scrollbar-color:initial;scrollbar-width:initial}.\\!container{width:100%!important}.container{width:100%}@media (min-width: 640px){.\\!container{max-width:640px!important}.container{max-width:640px}}@media (min-width: 768px){.\\!container{max-width:768px!important}.container{max-width:768px}}@media (min-width: 1024px){.\\!container{max-width:1024px!important}.container{max-width:1024px}}@media (min-width: 1280px){.\\!container{max-width:1280px!important}.container{max-width:1280px}}@media (min-width: 1536px){.\\!container{max-width:1536px!important}.container{max-width:1536px}}.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}.h3{font-size:20px;line-height:28px;font-family:var(--theme-font-family-heading)}.h4{font-size:18px;line-height:28px;font-family:var(--theme-font-family-heading)}.anchor{--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));text-decoration-line:underline}.anchor:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}:is(.dark .anchor){--tw-text-opacity: 1;color:rgb(var(--color-primary-500) / var(--tw-text-opacity))}.time{font-size:14px;line-height:20px;--tw-text-opacity: 1;color:rgb(var(--color-surface-500) / var(--tw-text-opacity))}:is(.dark .time){--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-size:12px;line-height:16px;--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .3);border-radius:4px;padding:2px 4px}:is(.dark .code){--tw-text-opacity: 1;color:rgb(var(--color-primary-400) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .2)}.alert{display:flex;flex-direction:column;align-items:flex-start;padding:16px;color:rgb(var(--color-surface-900));border-radius:var(--theme-rounded-container)}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.dark .alert{color:rgb(var(--color-surface-50))}.\\!btn:disabled{cursor:not-allowed!important;opacity:.5!important}.btn:disabled,.btn-icon:disabled,.btn-group>*:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!btn:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:disabled:hover,.btn-icon:disabled:hover,.btn-group>*:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.btn:disabled:active,.btn-icon:disabled:active,.btn-group>*:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!btn{font-size:16px!important;line-height:24px!important;padding:9px 20px!important;white-space:nowrap!important;text-align:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important;border-radius:var(--theme-rounded-base)!important}.btn{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base)}.\\!btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.\\!btn:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:active{--tw-scale-x: 95% !important;--tw-scale-y: 95% !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important;--tw-brightness: brightness(.9) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-sm{padding:6px 12px;font-size:14px;line-height:20px}.btn-icon{font-size:16px;line-height:24px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;padding:0;aspect-ratio:1 / 1;width:43px;border-radius:9999px}.btn-icon>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-icon:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon-sm{aspect-ratio:1 / 1;width:33px;font-size:14px;line-height:20px}.btn-group{display:inline-flex;flex-direction:row;overflow:hidden;border-radius:var(--theme-rounded-base);isolation:isolate}.btn-group>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(0px * var(--tw-space-x-reverse));margin-left:calc(0px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button,.btn-group a{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;color:inherit!important;text-decoration-line:none!important}.btn-group button>:not([hidden])~:not([hidden]),.btn-group a>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button:hover,.btn-group a:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);background-color:rgb(var(--color-surface-50) / 3%)}.btn-group button:active,.btn-group a:active{background-color:rgb(var(--color-surface-900) / 3%)}.btn-group>*+*{border-top-width:0px;border-left-width:1px;border-color:rgb(var(--color-surface-500) / .2)}.card{background-color:rgb(var(--color-surface-100));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(23 23 23 / .05);border-radius:var(--theme-rounded-container)}.dark .card{background-color:rgb(var(--color-surface-800));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(250 250 250 / .05)}a.card{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}a.card:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!chip{cursor:pointer!important;white-space:nowrap!important;padding:6px 12px!important;text-align:center!important;font-size:12px!important;line-height:16px!important;border-radius:4px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important}.chip{cursor:pointer;white-space:nowrap;padding:6px 12px;text-align:center;font-size:12px;line-height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.\\!chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}a.chip:hover,button.chip:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}a.\\!chip:hover,button.\\!chip:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!chip:disabled{cursor:not-allowed!important;opacity:.5!important}.chip:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!chip:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.chip:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.label>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.\\!input{width:100%!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.2s!important;background-color:rgb(var(--color-surface-200))!important;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base)!important;border-color:rgb(var(--color-surface-400))!important}.input,.textarea,.select,.input-group{width:100%;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.2s;background-color:rgb(var(--color-surface-200));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .input,.dark .textarea,.dark .select,.dark .input-group{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.dark .\\!input{background-color:rgb(var(--color-surface-700))!important;border-color:rgb(var(--color-surface-500))!important}.\\!input:hover{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:hover,.textarea:hover,.select:hover,.input-group:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:focus,.textarea:focus,.select:focus,.input-group:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus-within{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))!important}.input:focus-within,.textarea:focus-within,.select:focus-within,.input-group:focus-within{--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.\\!input{border-radius:var(--theme-rounded-base)!important}.input,.input-group{border-radius:var(--theme-rounded-base)}.textarea,.select{border-radius:var(--theme-rounded-container)}.select>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select{padding:8px 32px 8px 8px}.select[size]{background-image:none}.select optgroup>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select optgroup{font-weight:700}.select optgroup option{margin-left:0;padding-left:0}.select optgroup option:first-of-type{margin-top:12px}.select optgroup option:last-child{margin-bottom:12px!important}.select option{cursor:pointer;padding:8px 16px;background-color:rgb(var(--color-surface-200));border-radius:var(--theme-rounded-base)}.dark .select option{background-color:rgb(var(--color-surface-700))}.select option:checked{background:rgb(var(--color-primary-500)) linear-gradient(0deg,rgb(var(--color-primary-500)),rgb(var(--color-primary-500)));color:rgb(var(--on-primary))}.checkbox,.radio{height:20px;width:20px;cursor:pointer;border-radius:4px;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;background-color:rgb(var(--color-surface-200));border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .checkbox,.dark .radio{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.checkbox:hover,.radio:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.checkbox:focus,.radio:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.checkbox:checked,.checkbox:indeterminate,.radio:checked{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:hover,.checkbox:indeterminate:hover,.radio:checked:hover{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:focus,.checkbox:indeterminate:focus,.radio:checked:focus{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)}.radio{border-radius:var(--theme-rounded-base)}.\\!input[type=file]{padding:4px!important}.input[type=file]{padding:4px}.\\!input[type=color]{height:40px!important;width:40px!important;cursor:pointer!important;overflow:hidden!important;border-style:none!important;border-radius:var(--theme-rounded-base)!important;-webkit-appearance:none!important}.input[type=color]{height:40px;width:40px;cursor:pointer;overflow:hidden;border-style:none;border-radius:var(--theme-rounded-base);-webkit-appearance:none}.\\!input[type=color]::-webkit-color-swatch-wrapper{padding:0!important}.input[type=color]::-webkit-color-swatch-wrapper{padding:0}.\\!input[type=color]::-webkit-color-swatch{border-style:none!important}.input[type=color]::-webkit-color-swatch{border-style:none}.\\!input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input[type=color]::-moz-color-swatch{border-style:none!important}.input[type=color]::-moz-color-swatch{border-style:none}.\\!input:disabled{cursor:not-allowed!important;opacity:.5!important}.input:disabled,.textarea:disabled,.select:disabled,.input-group>input:disabled,.input-group>textarea:disabled,.input-group>select:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!input:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:disabled:hover,.textarea:disabled:hover,.select:disabled:hover,.input-group>input:disabled:hover,.input-group>textarea:disabled:hover,.input-group>select:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!input[readonly],.input[readonly],.textarea[readonly],.select[readonly]{cursor:not-allowed!important;border-color:transparent!important}.\\!input[readonly]:hover,.input[readonly]:hover,.textarea[readonly]:hover,.select[readonly]:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input-group{display:grid;overflow:hidden}.input-group input,.input-group select{border-width:0px;background-color:transparent;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.input-group select option{background-color:rgb(var(--color-surface-200))}.dark .input-group select option{background-color:rgb(var(--color-surface-700))}.input-group div,.input-group a,.input-group button{display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:16px}.input-group-divider input,.input-group-divider select,.input-group-divider div,.input-group-divider a{border-left-width:1px;border-color:rgb(var(--color-surface-400));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;min-width:-moz-fit-content!important;min-width:fit-content!important}.dark .input-group-divider input,.dark .input-group-divider select,.dark .input-group-divider div,.dark .input-group-divider a{border-color:rgb(var(--color-surface-500))}.input-group-divider input:focus,.input-group-divider select:focus,.input-group-divider div:focus,.input-group-divider a:focus{border-color:rgb(var(--color-surface-400))}.dark .input-group-divider input:focus,.dark .input-group-divider select:focus,.dark .input-group-divider div:focus,.dark .input-group-divider a:focus{border-color:rgb(var(--color-surface-500))}.input-group-divider *:first-child{border-left-width:0px!important}.input-group-shim{background-color:rgb(var(--color-surface-400) / .1);color:rgb(var(--color-surface-600))}.dark .input-group-shim{color:rgb(var(--color-surface-300))}.input-error{--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}:is(.dark .input-error){--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::-moz-placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.list{list-style-type:none}.list>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.list li{display:flex;align-items:center;border-radius:var(--theme-rounded-base)}.list li>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.placeholder{height:20px;background-color:rgb(var(--color-surface-300));border-radius:var(--theme-rounded-base)}.dark .placeholder{background-color:rgb(var(--color-surface-600))}.w-modal{width:100%;max-width:640px}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-style:auto;outline-color:-webkit-focus-ring-color}.variant-filled{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .variant-filled{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.\\!variant-filled-primary{--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-filled-primary{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .variant-filled-primary){--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .\\!variant-filled-primary){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-ghost-surface{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .variant-ghost-surface){--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}.variant-soft,.variant-soft-surface{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .variant-soft,.dark .variant-soft-surface{color:rgb(var(--color-surface-200))}:is(.dark .variant-soft),:is(.dark .variant-soft-surface){background-color:rgb(var(--color-surface-500) / .2)}@media (min-width: 768px){.h3{font-size:24px;line-height:32px}.h4{font-size:20px;line-height:28px}}@media (min-width: 1024px){.alert{flex-direction:row;align-items:center}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(0px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0px * var(--tw-space-y-reverse));--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-width:0px!important}.visible{visibility:visible}.static{position:static}.fixed{position:fixed}.\\!absolute{position:absolute!important}.absolute{position:absolute}.relative{position:relative}.bottom-0{bottom:0}.bottom-24{bottom:96px}.left-0{left:0}.left-1\\/2{left:50%}.right-0{right:0}.right-2{right:8px}.right-20{right:80px}.right-4{right:16px}.top-0{top:0}.top-1\\/2{top:50%}.top-2{top:8px}.top-36{top:144px}.-z-10{z-index:-10}.z-\\[999\\]{z-index:999}.row-span-2{grid-row:span 2 / span 2}.row-start-1{grid-row-start:1}.\\!m-0{margin:0!important}.m-auto{margin:auto}.mx-2{margin-left:8px;margin-right:8px}.my-4{margin-top:16px;margin-bottom:16px}.my-\\[1px\\]{margin-top:1px;margin-bottom:1px}.ml-1{margin-left:4px}.ml-3{margin-left:12px}.ml-4{margin-left:16px}.mr-2{margin-right:8px}.mr-6{margin-right:24px}.mt-2{margin-top:8px}.mt-4{margin-top:16px}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.contents{display:contents}.hidden{display:none}.size-14{width:56px;height:56px}.size-full{width:100%;height:100%}.h-0{height:0px}.h-10{height:40px}.h-2{height:8px}.h-4{height:16px}.h-48{height:192px}.h-6{height:24px}.h-8{height:32px}.h-\\[38px\\]{height:38px}.h-auto{height:auto}.h-fit{height:-moz-fit-content;height:fit-content}.h-full{height:100%}.h-screen{height:100vh}.max-h-\\[200px\\]{max-height:200px}.min-h-0{min-height:0px}.min-h-full{min-height:100%}.w-0{width:0px}.w-12{width:48px}.w-16{width:64px}.w-20{width:80px}.w-32{width:128px}.w-36{width:144px}.w-48{width:192px}.w-5{width:20px}.w-6{width:24px}.w-8{width:32px}.w-\\[140px\\]{width:140px}.w-\\[38px\\]{width:38px}.w-\\[50\\%\\]{width:50%}.w-\\[600px\\]{width:600px}.w-full{width:100%}.w-screen{width:100vw}.max-w-full{max-width:100%}.flex-1{flex:1 1 0%}.flex-auto{flex:1 1 auto}.flex-none{flex:none}.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.basis-0{flex-basis:0px}.origin-\\[50\\%_50\\%\\]{transform-origin:50% 50%}.-translate-x-1\\/2{--tw-translate-x: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-x-full{--tw-translate-x: -100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\\/2{--tw-translate-y: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-0{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-\\[calc\\(100\\%-44px\\)\\]{--tw-translate-x: calc(100% - 44px) ;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-full{--tw-translate-x: 100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-90{--tw-rotate: -90deg;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-\\[0\\.8\\]{--tw-scale-x: .8;--tw-scale-y: .8;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!transform-none{transform:none!important}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.\\!cursor-default{cursor:default!important}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-\\[0px_1fr\\]{grid-template-columns:0px 1fr}.grid-cols-\\[140px_1fr\\]{grid-template-columns:140px 1fr}.grid-cols-\\[auto_1fr_auto\\]{grid-template-columns:auto 1fr auto}.grid-cols-\\[auto_1fr_auto_auto\\]{grid-template-columns:auto 1fr auto auto}.grid-rows-\\[0fr\\]{grid-template-rows:0fr}.grid-rows-\\[1fr\\]{grid-template-rows:1fr}.grid-rows-\\[auto_1fr\\]{grid-template-rows:auto 1fr}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.\\!items-stretch{align-items:stretch!important}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.justify-evenly{justify-content:space-evenly}.gap-1{gap:4px}.gap-14{gap:56px}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.gap-6{gap:24px}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(8px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(8px * var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.divide-y-\\[1px\\]>:not([hidden])~:not([hidden]){--tw-divide-y-reverse: 0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.self-start{align-self:flex-start}.self-stretch{align-self:stretch}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-y-hidden{overflow-y:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.break-words{overflow-wrap:break-word}.rounded{border-radius:4px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:8px}.rounded-md{border-radius:6px}.rounded-none{border-radius:0}.rounded-e-\\[4px\\]{border-start-end-radius:4px;border-end-end-radius:4px}.rounded-s-full{border-start-start-radius:9999px;border-end-start-radius:9999px}.border{border-width:1px}.border-0{border-width:0px}.\\!border-t-0{border-top-width:0px!important}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l{border-left-width:1px}.\\!border-surface-700{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-700) / var(--tw-border-opacity, 1))!important}.border-surface-400\\/20{border-color:rgb(var(--color-surface-400) / .2)}.bg-primary-500{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity, 1))}.bg-primary-500\\/30{background-color:rgb(var(--color-primary-500) / .3)}.bg-surface-400{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-400) / var(--tw-bg-opacity, 1))}.bg-surface-400\\/20{background-color:rgb(var(--color-surface-400) / .2)}.bg-surface-900{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-900) / var(--tw-bg-opacity, 1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity: 1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\\/30{background-color:#ffffff4d}.bg-white\\/75{background-color:#ffffffbf}.bg-scroll{background-attachment:scroll}.fill-current{fill:currentColor}.fill-primary-500{fill:rgb(var(--color-primary-500) / 1)}.fill-slate-700{fill:#334155}.fill-transparent{fill:transparent}.stroke-primary-500{stroke:rgb(var(--color-primary-500) / 1)}.stroke-primary-500\\/30{stroke:rgb(var(--color-primary-500) / .3)}.stroke-surface-500\\/30{stroke:rgb(var(--color-surface-500) / .3)}.stroke-surface-900{stroke:rgb(var(--color-surface-900) / 1)}.object-cover{-o-object-fit:cover;object-fit:cover}.object-center{-o-object-position:center;object-position:center}.\\!p-0{padding:0!important}.p-0{padding:0}.p-1{padding:4px}.p-2{padding:8px}.p-4{padding:16px}.\\!px-1{padding-left:4px!important;padding-right:4px!important}.\\!py-2{padding-top:8px!important;padding-bottom:8px!important}.\\!py-\\[7px\\]{padding-top:7px!important;padding-bottom:7px!important}.px-3{padding-left:12px;padding-right:12px}.px-4{padding-left:16px;padding-right:16px}.px-8{padding-left:32px;padding-right:32px}.py-1{padding-top:4px;padding-bottom:4px}.py-2{padding-top:8px;padding-bottom:8px}.py-6{padding-top:24px;padding-bottom:24px}.pb-6{padding-bottom:24px}.pl-6{padding-left:24px}.pr-0{padding-right:0}.pr-2{padding-right:8px}.pr-4{padding-right:16px}.pr-6{padding-right:24px}.pt-4{padding-top:16px}.text-center{text-align:center}.text-2xl{font-size:24px;line-height:32px}.text-\\[12px\\]{font-size:12px}.text-base{font-size:16px;line-height:24px}.text-sm{font-size:14px;line-height:20px}.text-xl{font-size:20px;line-height:28px}.text-xs{font-size:12px;line-height:16px}.font-bold{font-weight:700}.italic{font-style:italic}.leading-\\[14px\\]{line-height:14px}.leading-loose{line-height:2}.\\!text-error-500{--tw-text-opacity: 1 !important;color:rgb(var(--color-error-500) / var(--tw-text-opacity, 1))!important}.text-error-500{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity, 1))}.text-surface-400{--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity, 1))}.underline-offset-2{text-underline-offset:2px}.accent-surface-900{accent-color:rgb(var(--color-surface-900) / 1)}.opacity-40{opacity:.4}.opacity-50{opacity:.5}.opacity-70{opacity:.7}.mix-blend-hard-light{mix-blend-mode:hard-light}.shadow{--tw-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);--tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.shadow-xl{--tw-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);--tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.-outline-offset-\\[3px\\]{outline-offset:-3px}.\\!ring-0{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.blur{--tw-blur: blur(8px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\\[1px\\]{--tw-blur: blur(1px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-xl{--tw-drop-shadow: drop-shadow(0 20px 13px rgb(0 0 0 / .03)) drop-shadow(0 8px 5px rgb(0 0 0 / .08));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur: blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-columns\\]{transition-property:grid-template-columns;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-rows\\]{transition-property:grid-template-rows;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[stroke-dashoffset\\]{transition-property:stroke-dashoffset;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[transform\\]{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[width\\]{transition-property:width;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.delay-100{transition-delay:.1s}.duration-100{transition-duration:.1s}.duration-\\[200ms\\]{transition-duration:.2s}.duration-\\[250ms\\]{transition-duration:.25s}.duration-\\[400ms\\]{transition-duration:.4s}.bg-surface-backdrop-token{background-color:rgb(var(--color-surface-400) / .7)}.dark .bg-surface-backdrop-token{background-color:rgb(var(--color-surface-900) / .7)}.bg-surface-100-800-token{background-color:rgb(var(--color-surface-100))}.dark .bg-surface-100-800-token{background-color:rgb(var(--color-surface-800))}.bg-surface-200-700-token{background-color:rgb(var(--color-surface-200))}.dark .bg-surface-200-700-token{background-color:rgb(var(--color-surface-700))}.bg-surface-900-50-token{background-color:rgb(var(--color-surface-900))}.dark .bg-surface-900-50-token{background-color:rgb(var(--color-surface-50))}.border-token{border-width:var(--theme-border-base)}.border-surface-400-500-token{border-color:rgb(var(--color-surface-400))}.dark .border-surface-400-500-token{border-color:rgb(var(--color-surface-500))}.border-surface-900-50-token{border-color:rgb(var(--color-surface-900))}.dark .border-surface-900-50-token{border-color:rgb(var(--color-surface-50))}.border-surface-800-100-token{border-color:rgb(var(--color-surface-800))}.dark .border-surface-800-100-token{border-color:rgb(var(--color-surface-100))}.rounded-token{border-radius:var(--theme-rounded-base)}.rounded-container-token{border-radius:var(--theme-rounded-container)}.rounded-tl-container-token{border-top-left-radius:var(--theme-rounded-container)}.rounded-tr-container-token{border-top-right-radius:var(--theme-rounded-container)}.fill-token{fill:rgba(var(--theme-font-color-base))}.dark .fill-token{fill:rgba(var(--theme-font-color-dark))}.text-surface-700-200-token{color:rgb(var(--color-surface-700))}.dark .text-surface-700-200-token{color:rgb(var(--color-surface-200))}.scrollbar-thin::-webkit-scrollbar-track{background-color:var(--scrollbar-track);border-radius:var(--scrollbar-track-radius)}.scrollbar-thin::-webkit-scrollbar-track:hover{background-color:var(--scrollbar-track-hover, var(--scrollbar-track))}.scrollbar-thin::-webkit-scrollbar-track:active{background-color:var(--scrollbar-track-active, var(--scrollbar-track-hover, var(--scrollbar-track)))}.scrollbar-thin::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:var(--scrollbar-thumb-radius)}.scrollbar-thin::-webkit-scrollbar-thumb:hover{background-color:var(--scrollbar-thumb-hover, var(--scrollbar-thumb))}.scrollbar-thin::-webkit-scrollbar-thumb:active{background-color:var(--scrollbar-thumb-active, var(--scrollbar-thumb-hover, var(--scrollbar-thumb)))}.scrollbar-thin::-webkit-scrollbar-corner{background-color:var(--scrollbar-corner);border-radius:var(--scrollbar-corner-radius)}.scrollbar-thin::-webkit-scrollbar-corner:hover{background-color:var(--scrollbar-corner-hover, var(--scrollbar-corner))}.scrollbar-thin::-webkit-scrollbar-corner:active{background-color:var(--scrollbar-corner-active, var(--scrollbar-corner-hover, var(--scrollbar-corner)))}.scrollbar-thin{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb, initial) var(--scrollbar-track, initial)}.scrollbar-thin::-webkit-scrollbar{display:block;width:8px;height:8px}.scrollbar-track-transparent{--scrollbar-track: transparent !important}.scrollbar-thumb-slate-400\\/50{--scrollbar-thumb: rgb(148 163 184 / .5) !important}.scrollbar-corner-transparent{--scrollbar-corner: transparent !important}.has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}:is(.dark .has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked)){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.hover\\:variant-soft:hover,.hover\\:variant-soft-surface:hover{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .hover\\:variant-soft:hover,.dark .hover\\:variant-soft-surface:hover{color:rgb(var(--color-surface-200))}:is(.dark .hover\\:variant-soft:hover){background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .hover\\:variant-soft-surface:hover){background-color:rgb(var(--color-surface-500) / .2)}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){background-color:rgb(var(--color-primary-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-primary-700))}.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){color:rgb(var(--color-primary-200))}:is(.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled])){background-color:rgb(var(--color-primary-500) / .2)}.\\*\\:\\!m-0>*{margin:0!important}.\\*\\:items-center>*{align-items:center}.\\*\\:\\!rounded-none>*{border-radius:0!important}.\\*\\:py-4>*{padding-top:16px;padding-bottom:16px}.\\*\\:text-sm>*{font-size:14px;line-height:20px}.\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-300))}.dark .\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-600))}.hover\\:translate-x-0:hover{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\\:text-xl:hover{font-size:20px;line-height:28px}.hover\\:opacity-100:hover{opacity:1}.hover\\:brightness-110:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.hover\\:brightness-\\[105\\%\\]:hover{--tw-brightness: brightness(105%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\\:decoration-wavy:focus{text-decoration-style:wavy}.focus\\:\\!outline-none:focus{outline:2px solid transparent!important;outline-offset:2px!important}.disabled\\:cursor-wait:disabled{cursor:wait}.disabled\\:opacity-70:disabled{opacity:.7}.dark\\:\\!border-surface-200:is(.dark *){--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-200) / var(--tw-border-opacity, 1))!important}.dark\\:border-surface-500\\/20:is(.dark *){border-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-black\\/15:is(.dark *){background-color:#00000026}.dark\\:bg-surface-300:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-300) / var(--tw-bg-opacity, 1))}.dark\\:bg-surface-500\\/20:is(.dark *){background-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-surface-700:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-700) / var(--tw-bg-opacity, 1))}.dark\\:fill-slate-200:is(.dark *){fill:#e2e8f0}.dark\\:stroke-surface-50:is(.dark *){stroke:rgb(var(--color-surface-50) / 1)}.dark\\:accent-surface-50:is(.dark *){accent-color:rgb(var(--color-surface-50) / 1)}.dark\\:hover\\:brightness-110:hover:is(.dark *){--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}@media (min-width: 768px){.md\\:h-\\[600px\\]{height:600px}.md\\:max-w-screen-md{max-width:768px}.md\\:max-w-screen-sm{max-width:640px}.md\\:flex-row{flex-direction:row}.md\\:\\!items-baseline{align-items:baseline!important}}@media (min-width: 1024px){.lg\\:max-w-screen-md{max-width:768px}}@media (min-width: 1280px){.xl\\:max-w-screen-lg{max-width:1024px}}.\\[\\&\\:last-child\\]\\:\\*\\:pt-4>*:last-child{padding-top:16px}.\\[\\&\\:not\\(\\:last-child\\)\\]\\:\\*\\:py-4>*:not(:last-child){padding-top:16px;padding-bottom:16px}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:hover\\:bg-slate-400\\/30:hover:not([disabled]){background-color:#94a3b84d}.\\[\\&\\>input\\]\\:\\!min-w-0>input{min-width:0px!important}.\\[\\&\\>input\\]\\:\\!border-transparent>input{border-color:transparent!important} `);
 
 (function (Dexie, dayjs, JSZip, GIF, webmMuxer, mp4Muxer) {
   'use strict';
@@ -69,7 +79,7 @@
       return __privateGet(obj, member, getter);
     }
   });
-  var _channel, _event, _FileSystemAccessHandler_instances, addChannelEventListeners_fn, _queue, _carryoverConcurrencyCount, _isIntervalIgnored, _intervalCount, _intervalCap, _interval, _intervalEnd, _intervalId, _timeoutId, _queue2, _queueClass, _pending, _concurrency, _isPaused, _throwOnTimeout, _PQueue_instances, doesIntervalAllowAnother_get, doesConcurrentAllowAnother_get, next_fn, onResumeInterval_fn, isIntervalPaused_get, tryToStartAnother_fn, initializeIntervalIfNeeded_fn, onInterval_fn, processQueue_fn, throwOnAbort_fn, onEvent_fn, _DOWNLOAD_RETRY, _downloadQueue, _Downloader_instances, xhr_fn, dispatchDownload_fn, _a, _events, _instance, _ugoiraFramesData, _queue3, _Converter_instances, processConvert_fn, _MoebooruParser_instances, parsePostListData_fn, parseTagListData_fn, parseBlacklist_fn, _Moebooru_instances, validityCallbackFactory_fn, buildMetaByGeneratorData_fn, getPopularDataFactory_fn, downloadArtwork_fn, _Konachan_instances, fixPoolImageStyle_fn;
+  var _channel, _event, _events, _instance, _FileSystemAccessHandler_instances, addChannelEventListeners_fn, _queue, _carryoverConcurrencyCount, _isIntervalIgnored, _intervalCount, _intervalCap, _interval, _intervalEnd, _intervalId, _timeoutId, _queue2, _queueClass, _pending, _concurrency, _isPaused, _throwOnTimeout, _PQueue_instances, doesIntervalAllowAnother_get, doesConcurrentAllowAnother_get, next_fn, onResumeInterval_fn, isIntervalPaused_get, tryToStartAnother_fn, initializeIntervalIfNeeded_fn, onInterval_fn, processQueue_fn, throwOnAbort_fn, onEvent_fn, _DOWNLOAD_RETRY, _downloadQueue, _Downloader_instances, xhr_fn, dispatchDownload_fn, _headers, _GelbooruV020_instances, validityCheckFactory_fn, addBookmark_fn, _DanbooruParser_instances, parseBlacklistItem_fn, _AbstractDanbooru_instances, validityCheckFactory_fn2, _ugoiraFramesData, _queue3, _Converter_instances, processConvert_fn, _MoebooruParser_instances, parsePostListData_fn, parseTagListData_fn, parseBlacklist_fn, _headers2, _Moebooru_instances, validityCallbackFactory_fn, buildMetaByGeneratorData_fn, getPopularDataFactory_fn, downloadArtwork_fn, _Konachan_instances, fixPoolImageStyle_fn, _authParams, _E621ng_instances, notice_fn, noticeError_fn, isPoolGallery_fn, isPoolView_fn, isPostView_fn, isFavoritesPage_fn, isPostsPage_fn, isAuthorized_fn, throwIfNotAuthorized_fn, validityCallbackFactory_fn2, addFavorites_fn;
   (() => {
     if (/\[native code\]/.test(Array.from.toString())) return;
     const iframe = document.createElement("iframe");
@@ -77,11 +87,6 @@
     Array.from = iframe.contentWindow.Array.from;
     iframe.remove();
   })();
-  var _GM_download = /* @__PURE__ */ (() => typeof GM_download != "undefined" ? GM_download : undefined)();
-  var _GM_info = /* @__PURE__ */ (() => typeof GM_info != "undefined" ? GM_info : undefined)();
-  var _GM_registerMenuCommand = /* @__PURE__ */ (() => typeof GM_registerMenuCommand != "undefined" ? GM_registerMenuCommand : undefined)();
-  var _GM_xmlhttpRequest = /* @__PURE__ */ (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : undefined)();
-  var _unsafeWindow = /* @__PURE__ */ (() => typeof unsafeWindow != "undefined" ? unsafeWindow : undefined)();
   function getLogger() {
     const methods = ["info", "warn", "error"];
     const style = ["color: green;", "color: orange;", "color: red;"];
@@ -119,467 +124,6 @@
     };
   }
   const logger = getLogger();
-  class RequestError extends Error {
-    constructor(url, status) {
-      super(status + " " + url);
-      __publicField(this, "url");
-      __publicField(this, "status");
-      this.name = "RequestError";
-      this.url = url;
-      this.status = status;
-    }
-  }
-  class CancelError extends Error {
-    constructor() {
-      super("User aborted.");
-      this.name = "CancelError";
-    }
-  }
-  class JsonDataError extends Error {
-    constructor(msg) {
-      super(msg);
-      this.name = "JsonDataError";
-    }
-  }
-  class TimoutError extends Error {
-    constructor(msg) {
-      super(msg);
-      this.name = "TimoutError";
-    }
-  }
-  const env = {
-    isFirefox() {
-      return navigator.userAgent.includes("Firefox");
-    },
-    isViolentmonkey() {
-      return _GM_info.scriptHandler === "Violentmonkey";
-    },
-    isTampermonkey() {
-      return _GM_info.scriptHandler === "Tampermonkey";
-    },
-    isBlobDlAvaliable() {
-      return !this.isFirefox() || this.isFirefox() && this.isTampermonkey() && parseFloat(_GM_info.version ?? "") < 4.18;
-    },
-    // firefox使用tampermonkey，downloadmod为默认时也支持子目录，但GM_info显示为原生的“native”，而“原生”不支持子目录
-    isSupportSubpath() {
-      return this.isBrowserDownloadMode();
-    },
-    isBrowserDownloadMode() {
-      return _GM_info.downloadMode === "browser";
-    },
-    isConflictActionEnable() {
-      return this.isTampermonkey() && parseFloat(_GM_info.version ?? "") >= 4.18 && this.isBrowserDownloadMode();
-    },
-    isConflictActionPromptEnable() {
-      return !this.isFirefox() && this.isConflictActionEnable();
-    },
-    isFileSystemAccessAvaliable() {
-      return typeof _unsafeWindow.showDirectoryPicker === "function" && typeof _unsafeWindow.showSaveFilePicker === "function";
-    },
-    videoFrameSupported() {
-      return typeof _unsafeWindow.VideoFrame === "function";
-    },
-    isPixiv() {
-      return location.hostname === "www.pixiv.net";
-    },
-    isYande() {
-      return location.hostname === "yande.re";
-    },
-    isRule34() {
-      return location.hostname === "rule34.xxx";
-    }
-  };
-  class ChannelEvent {
-    constructor(channelName) {
-      __privateAdd(this, _channel);
-      __privateAdd(this, _event);
-      __privateSet(this, _channel, new BroadcastChannel(channelName));
-      __privateSet(this, _event, {});
-      __privateGet(this, _channel).onmessage = (event2) => {
-        const { eventName, args } = event2.data;
-        if (!__privateGet(this, _event)[eventName]) return;
-        __privateGet(this, _event)[eventName].forEach((callback) => callback(...args));
-      };
-    }
-    on(eventName, callback) {
-      var _a2;
-      (_a2 = __privateGet(this, _event))[eventName] ?? (_a2[eventName] = /* @__PURE__ */ new Set());
-      __privateGet(this, _event)[eventName].add(callback);
-    }
-    off(eventName, callback) {
-      if (!__privateGet(this, _event)[eventName]) return;
-      __privateGet(this, _event)[eventName].delete(callback);
-    }
-    emit(eventName, ...args) {
-      const data = { eventName, args };
-      __privateGet(this, _channel).postMessage(data);
-    }
-    once(eventName, callback) {
-      const onceCallback = (...args) => {
-        callback(...args);
-        this.off(eventName, onceCallback);
-      };
-      this.on(eventName, onceCallback);
-    }
-  }
-  _channel = new WeakMap();
-  _event = new WeakMap();
-  const channelEvent = new ChannelEvent("pixiv-downloader");
-  class FileSystemAccessHandler {
-    constructor() {
-      __privateAdd(this, _FileSystemAccessHandler_instances);
-      __publicField(this, "filenameConflictAction", "uniquify");
-      __publicField(this, "dirHandle");
-      __publicField(this, "dirHandleStatus", "dirHandle.unpick");
-      __publicField(this, "cachedTasks", []);
-      __publicField(this, "duplicateFilenameCached", {});
-      __privateMethod(this, _FileSystemAccessHandler_instances, addChannelEventListeners_fn).call(this);
-      channelEvent.emit(
-        "dirHandle.request"
-        /* REQUEST */
-      );
-    }
-    async getDirHandleRecursive(dirs) {
-      if (!this.dirHandle) throw new Error("未选择保存文件夹");
-      let handler = this.dirHandle;
-      if (typeof dirs === "string") {
-        if (dirs.indexOf("/") === -1) return await handler.getDirectoryHandle(dirs, { create: true });
-        dirs = dirs.split("/").filter((dir) => !!dir);
-      }
-      for await (const dir of dirs) {
-        handler = await handler.getDirectoryHandle(dir, { create: true });
-      }
-      return handler;
-    }
-    processCachedTasks() {
-      const { length } = this.cachedTasks;
-      for (let i = 0; i < length; i++) {
-        const [blob, path, signal, onSaveFullfilled, onSaveRejected] = this.cachedTasks[i];
-        this.saveFile(blob, path, signal).then(onSaveFullfilled, onSaveRejected);
-      }
-      logger.info(`执行${length}个缓存任务`);
-      if (this.cachedTasks.length > length) {
-        this.cachedTasks = this.cachedTasks.slice(length);
-      } else {
-        this.cachedTasks.length = 0;
-      }
-    }
-    rejectCachedTasks() {
-      this.cachedTasks.forEach(([, , , , onSaveRejected]) => onSaveRejected(new CancelError()));
-      this.cachedTasks.length = 0;
-      logger.info(`取消${this.cachedTasks.length}个缓存任务`);
-    }
-    async getFilenameHandle(dirHandle, filename) {
-      if (this.filenameConflictAction === "overwrite")
-        return await dirHandle.getFileHandle(filename, { create: true });
-      if (!(filename in this.duplicateFilenameCached)) {
-        this.duplicateFilenameCached[filename] = [];
-        try {
-          await dirHandle.getFileHandle(filename);
-          logger.warn("存在同名文件", filename);
-        } catch (error) {
-          return await dirHandle.getFileHandle(filename, { create: true });
-        }
-      }
-      const extIndex = filename.lastIndexOf(".");
-      const ext = filename.slice(extIndex + 1);
-      const name = filename.slice(0, extIndex);
-      if (this.filenameConflictAction === "prompt") {
-        return await _unsafeWindow.showSaveFilePicker({
-          suggestedName: filename,
-          // @ts-expect-error accept MIMEType & FileExtension
-          types: [{ description: "Image file", accept: { ["image/" + ext]: "." + ext } }]
-        });
-      } else {
-        for (let suffix = 1; suffix < 1e3; suffix++) {
-          const newName = `${name} (${suffix}).${ext}`;
-          try {
-            await dirHandle.getFileHandle(newName);
-          } catch (error) {
-            if (this.duplicateFilenameCached[filename].includes(newName)) {
-              continue;
-            } else {
-              this.duplicateFilenameCached[filename].push(newName);
-            }
-            logger.info("使用文件名:", newName);
-            return await dirHandle.getFileHandle(newName, { create: true });
-          }
-        }
-        throw new RangeError("Oops, you have too many duplicate files.");
-      }
-    }
-    clearFilenameCached(duplicateName, actualName) {
-      if (!(duplicateName in this.duplicateFilenameCached)) return;
-      const usedNameArr = this.duplicateFilenameCached[duplicateName];
-      logger.info("清理重名文件名", usedNameArr, actualName);
-      if (usedNameArr.length === 0) {
-        delete this.duplicateFilenameCached[duplicateName];
-        return;
-      }
-      const index2 = usedNameArr.indexOf(actualName);
-      if (index2 === -1) return;
-      usedNameArr.splice(index2, 1);
-      if (usedNameArr.length === 0) delete this.duplicateFilenameCached[duplicateName];
-    }
-    async updateDirHandle() {
-      try {
-        this.dirHandleStatus = "dirHandle.picking";
-        channelEvent.emit(
-          "dirHandle.picking"
-          /* PICKING */
-        );
-        this.dirHandle = await _unsafeWindow.showDirectoryPicker({ id: "pdl", mode: "readwrite" });
-        logger.info("更新dirHandle", this.dirHandle);
-        this.dirHandleStatus = "dirHandle.picked";
-        channelEvent.emit(
-          "dirHandle.picked",
-          this.dirHandle
-        );
-        this.processCachedTasks();
-        return true;
-      } catch (error) {
-        logger.warn(error);
-        channelEvent.emit(
-          "dirHandle.unpick"
-          /* UNPICK */
-        );
-        if (this.dirHandle) {
-          this.dirHandleStatus = "dirHandle.picked";
-          this.processCachedTasks();
-        } else {
-          this.dirHandleStatus = "dirHandle.unpick";
-          this.rejectCachedTasks();
-        }
-        return false;
-      }
-    }
-    getCurrentDirName() {
-      var _a2;
-      return ((_a2 = this.dirHandle) == null ? undefined : _a2.name) ?? "";
-    }
-    isDirHandleNotSet() {
-      return this.dirHandleStatus === "dirHandle.unpick";
-    }
-    setFilenameConflictAction(action2) {
-      this.filenameConflictAction = action2;
-    }
-    async saveFile(blob, path, signal) {
-      signal == null ? undefined : signal.throwIfAborted();
-      if (this.dirHandleStatus === "dirHandle.picking") {
-        let onSaveFullfilled;
-        let onSaveRejected;
-        const promiseExcutor = new Promise((resolve, reject) => {
-          onSaveFullfilled = resolve;
-          onSaveRejected = reject;
-        });
-        this.cachedTasks.push([blob, path, signal, onSaveFullfilled, onSaveRejected]);
-        return promiseExcutor;
-      }
-      if (this.dirHandleStatus === "dirHandle.unpick") {
-        const isSuccess = await this.updateDirHandle();
-        if (!isSuccess) throw new TypeError("Failed to get dir handle.");
-      }
-      let currenDirHandle;
-      let filename;
-      const index2 = path.lastIndexOf("/");
-      if (index2 === -1) {
-        filename = path;
-        currenDirHandle = this.dirHandle;
-      } else {
-        filename = path.slice(index2 + 1);
-        currenDirHandle = await this.getDirHandleRecursive(path.slice(0, index2));
-      }
-      signal == null ? undefined : signal.throwIfAborted();
-      const fileHandle = await this.getFilenameHandle(currenDirHandle, filename);
-      const writableStream = await fileHandle.createWritable();
-      await writableStream.write(blob);
-      await writableStream.close();
-      this.clearFilenameCached(filename, fileHandle.name);
-    }
-  }
-  _FileSystemAccessHandler_instances = new WeakSet();
-  addChannelEventListeners_fn = function() {
-    channelEvent.on("dirHandle.request", () => {
-      if (!this.dirHandle) return;
-      channelEvent.emit(
-        "dirHandle.response",
-        this.dirHandle
-      );
-      logger.info("响应请求dirHandle");
-    });
-    channelEvent.on(
-      "dirHandle.response",
-      (handler) => {
-        if (this.dirHandle) return;
-        if (this.dirHandleStatus === "dirHandle.unpick")
-          this.dirHandleStatus = "dirHandle.picked";
-        this.dirHandle = handler;
-        logger.info("首次获取dirHandle", this.dirHandle);
-      }
-    );
-    channelEvent.on("dirHandle.picking", () => {
-      this.dirHandleStatus = "dirHandle.picking";
-      logger.info("正在选择目录");
-    });
-    channelEvent.on("dirHandle.unpick", () => {
-      logger.warn("取消更新dirHandle");
-      if (this.dirHandle) {
-        this.dirHandleStatus = "dirHandle.picked";
-        this.processCachedTasks();
-      } else {
-        this.dirHandleStatus = "dirHandle.unpick";
-        this.rejectCachedTasks();
-      }
-    });
-    channelEvent.on(
-      "dirHandle.picked",
-      (handler) => {
-        this.dirHandleStatus = "dirHandle.picked";
-        this.dirHandle = handler;
-        logger.info("更新dirHandle", this.dirHandle);
-        this.processCachedTasks();
-      }
-    );
-  };
-  const fsaHandler = new FileSystemAccessHandler();
-  function gmDownload(blob, path, signal) {
-    return new Promise((resolve, reject) => {
-      signal == null ? undefined : signal.throwIfAborted();
-      const imgUrl = URL.createObjectURL(blob);
-      const abortObj = _GM_download({
-        url: URL.createObjectURL(blob),
-        name: path,
-        onerror: (error) => {
-          URL.revokeObjectURL(imgUrl);
-          if (signal == null ? undefined : signal.aborted) {
-            resolve();
-          } else {
-            logger.error(error);
-            reject(new Error(`FileSave error: ${path}`));
-          }
-        },
-        onload: () => {
-          URL.revokeObjectURL(imgUrl);
-          resolve();
-        }
-      });
-      signal == null ? undefined : signal.addEventListener("abort", () => abortObj.abort(), { once: true });
-    });
-  }
-  function aDownload$1(blob, path) {
-    const separaterIndex = path.lastIndexOf("/");
-    if (separaterIndex !== -1) path = path.slice(separaterIndex + 1);
-    const dlEle = document.createElement("a");
-    dlEle.href = URL.createObjectURL(blob);
-    dlEle.download = path;
-    dlEle.click();
-    URL.revokeObjectURL(dlEle.href);
-  }
-  var UgoiraFormat = /* @__PURE__ */ ((UgoiraFormat2) => {
-    UgoiraFormat2["ZIP"] = "zip";
-    UgoiraFormat2["GIF"] = "gif";
-    UgoiraFormat2["WEBP"] = "webp";
-    UgoiraFormat2["PNG"] = "png";
-    UgoiraFormat2["WEBM"] = "webm";
-    UgoiraFormat2["MP4"] = "mp4";
-    return UgoiraFormat2;
-  })(UgoiraFormat || {});
-  var FilenameConfigAction = /* @__PURE__ */ ((FilenameConfigAction2) => {
-    FilenameConfigAction2["UNIQUIFY"] = "uniquify";
-    FilenameConfigAction2["OVERWRITE"] = "overwrite";
-    FilenameConfigAction2["PROMPT"] = "prompt";
-    return FilenameConfigAction2;
-  })(FilenameConfigAction || {});
-  var TagLanguage = /* @__PURE__ */ ((TagLanguage2) => {
-    TagLanguage2["JAPANESE"] = "ja";
-    TagLanguage2["CHINESE"] = "zh";
-    TagLanguage2["TRADITIONAL_CHINESE"] = "zh_tw";
-    TagLanguage2["ENGLISH"] = "en";
-    return TagLanguage2;
-  })(TagLanguage || {});
-  var HistoryBackupInterval = /* @__PURE__ */ ((HistoryBackupInterval2) => {
-    HistoryBackupInterval2[HistoryBackupInterval2["NEVER"] = 0] = "NEVER";
-    HistoryBackupInterval2[HistoryBackupInterval2["EVERY_DAY"] = 86400] = "EVERY_DAY";
-    HistoryBackupInterval2[HistoryBackupInterval2["EVERY_7_DAY"] = 604800] = "EVERY_7_DAY";
-    HistoryBackupInterval2[HistoryBackupInterval2["EVERY_30_DAY"] = 2592e3] = "EVERY_30_DAY";
-    return HistoryBackupInterval2;
-  })(HistoryBackupInterval || {});
-  let config;
-  function loadConfig(customConfig = {}) {
-    if (config) throw new Error("`config` has already been defined.");
-    const defaultConfig = Object.freeze({
-      version: "1.6.2",
-      ugoiraFormat: "zip",
-      folderPattern: "",
-      filenamePattern: "{id}",
-      tagLang: "ja",
-      showMsg: true,
-      mixEffect: false,
-      bundleIllusts: false,
-      bundleManga: false,
-      addBookmark: false,
-      addBookmarkWithTags: false,
-      privateR18: false,
-      likeIllust: false,
-      useFileSystemAccess: false,
-      fileSystemFilenameConflictAction: "uniquify",
-      showPopupButton: true,
-      gifQuality: 10,
-      webmBitrate: 20,
-      mp4Bitrate: 20,
-      losslessWebp: false,
-      webpQuality: 95,
-      webpMehtod: 4,
-      pngColor: 256,
-      historyBackupInterval: 0,
-      lastHistoryBackup: 0,
-      token: "",
-      "pdl-btn-self-bookmark-left": 100,
-      "pdl-btn-self-bookmark-top": 76,
-      "pdl-btn-left": 0,
-      "pdl-btn-top": 100,
-      ...customConfig
-    });
-    let configData;
-    if (!localStorage.pdlSetting) {
-      configData = Object.assign({}, defaultConfig);
-    } else {
-      try {
-        configData = JSON.parse(localStorage.pdlSetting);
-      } catch (error) {
-        logger.error("Use default config because: ", error);
-        configData = Object.assign({}, defaultConfig);
-      }
-    }
-    if (configData.version !== defaultConfig.version) {
-      configData = {
-        ...defaultConfig,
-        ...configData,
-        version: defaultConfig.version,
-        showMsg: true
-      };
-      localStorage.pdlSetting = JSON.stringify(configData);
-    }
-    return config = {
-      get(key) {
-        return configData[key] ?? defaultConfig[key];
-      },
-      set(key, value) {
-        if (configData[key] !== value) {
-          configData[key] = value;
-          localStorage.pdlSetting = JSON.stringify(configData);
-          logger.info("Config set:", key, value);
-        }
-      },
-      getAll() {
-        return { ...configData };
-      },
-      update(newConfig) {
-        configData = { ...newConfig };
-        localStorage.pdlSetting = JSON.stringify(configData);
-      }
-    };
-  }
   function sleep(delay) {
     return new Promise((resolve) => {
       setTimeout(resolve, delay);
@@ -683,7 +227,7 @@
     }
     return str;
   }
-  function aDownload(blob, filename) {
+  function aDownload$1(blob, filename) {
     const el = document.createElement("a");
     el.href = URL.createObjectURL(blob);
     el.download = filename;
@@ -698,814 +242,42 @@
     });
     return result;
   }
-  function gmDownloadDataUrl(blob, path, signal) {
-    return readBlobAsDataUrl(blob).then((dataUrl) => {
-      signal == null ? undefined : signal.throwIfAborted();
-      return new Promise((resolve, reject) => {
-        const abortObj = _GM_download({
-          url: dataUrl,
-          name: path,
-          onerror: (error) => {
-            if (signal == null ? undefined : signal.aborted) {
-              resolve();
-            } else {
-              logger.error(error);
-              reject(new Error(`FileSave error: ${path}`));
-            }
-          },
-          onload: () => {
-            resolve();
-          }
-        });
-        signal == null ? undefined : signal.addEventListener("abort", () => abortObj.abort(), { once: true });
-      });
-    });
-  }
-  let saveFile;
-  const blobAvaliable = env.isBlobDlAvaliable();
-  const subPathAvaliable = env.isSupportSubpath();
-  if (subPathAvaliable) {
-    if (!blobAvaliable) {
-      saveFile = gmDownloadDataUrl;
-    } else {
-      saveFile = gmDownload;
-    }
-  } else {
-    saveFile = aDownload$1;
-    logger.warn("Download function is not fully supported:", _GM_info.scriptHandler, _GM_info.version);
-  }
-  const fileSaveAdapters = {
-    getAdapter() {
-      if (this.isFileSystemAccessEnable()) {
-        fsaHandler.setFilenameConflictAction(config.get("fileSystemFilenameConflictAction"));
-        return fsaHandler.saveFile.bind(fsaHandler);
-      } else {
-        return saveFile;
-      }
-    },
-    isFileSystemAccessEnable() {
-      return env.isFileSystemAccessAvaliable() && config.get("useFileSystemAccess");
-    },
-    dirHandleCheck() {
-      if (this.isFileSystemAccessEnable() && fsaHandler.isDirHandleNotSet())
-        fsaHandler.updateDirHandle();
-    },
-    async updateDirHandle() {
-      if (this.isFileSystemAccessEnable()) {
-        await fsaHandler.updateDirHandle();
-        return fsaHandler.getCurrentDirName();
-      }
-      return "";
-    },
-    getFsaDirName() {
-      if (this.isFileSystemAccessEnable()) {
-        return fsaHandler.getCurrentDirName();
-      } else {
-        return "";
-      }
-    }
-  };
-  function getDefaultExportFromCjs(x) {
-    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
-  }
-  var eventemitter3 = { exports: {} };
-  (function(module) {
-    var has = Object.prototype.hasOwnProperty, prefix = "~";
-    function Events() {
-    }
-    if (Object.create) {
-      Events.prototype = /* @__PURE__ */ Object.create(null);
-      if (!new Events().__proto__) prefix = false;
-    }
-    function EE(fn, context, once) {
-      this.fn = fn;
-      this.context = context;
-      this.once = once || false;
-    }
-    function addListener(emitter, event2, fn, context, once) {
-      if (typeof fn !== "function") {
-        throw new TypeError("The listener must be a function");
-      }
-      var listener = new EE(fn, context || emitter, once), evt = prefix ? prefix + event2 : event2;
-      if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
-      else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
-      else emitter._events[evt] = [emitter._events[evt], listener];
-      return emitter;
-    }
-    function clearEvent(emitter, evt) {
-      if (--emitter._eventsCount === 0) emitter._events = new Events();
-      else delete emitter._events[evt];
-    }
-    function EventEmitter2() {
-      this._events = new Events();
-      this._eventsCount = 0;
-    }
-    EventEmitter2.prototype.eventNames = function eventNames() {
-      var names = [], events, name;
-      if (this._eventsCount === 0) return names;
-      for (name in events = this._events) {
-        if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
-      }
-      if (Object.getOwnPropertySymbols) {
-        return names.concat(Object.getOwnPropertySymbols(events));
-      }
-      return names;
-    };
-    EventEmitter2.prototype.listeners = function listeners(event2) {
-      var evt = prefix ? prefix + event2 : event2, handlers = this._events[evt];
-      if (!handlers) return [];
-      if (handlers.fn) return [handlers.fn];
-      for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
-        ee[i] = handlers[i].fn;
-      }
-      return ee;
-    };
-    EventEmitter2.prototype.listenerCount = function listenerCount(event2) {
-      var evt = prefix ? prefix + event2 : event2, listeners = this._events[evt];
-      if (!listeners) return 0;
-      if (listeners.fn) return 1;
-      return listeners.length;
-    };
-    EventEmitter2.prototype.emit = function emit(event2, a1, a2, a3, a4, a5) {
-      var evt = prefix ? prefix + event2 : event2;
-      if (!this._events[evt]) return false;
-      var listeners = this._events[evt], len = arguments.length, args, i;
-      if (listeners.fn) {
-        if (listeners.once) this.removeListener(event2, listeners.fn, undefined, true);
-        switch (len) {
-          case 1:
-            return listeners.fn.call(listeners.context), true;
-          case 2:
-            return listeners.fn.call(listeners.context, a1), true;
-          case 3:
-            return listeners.fn.call(listeners.context, a1, a2), true;
-          case 4:
-            return listeners.fn.call(listeners.context, a1, a2, a3), true;
-          case 5:
-            return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
-          case 6:
-            return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
-        }
-        for (i = 1, args = new Array(len - 1); i < len; i++) {
-          args[i - 1] = arguments[i];
-        }
-        listeners.fn.apply(listeners.context, args);
-      } else {
-        var length = listeners.length, j;
-        for (i = 0; i < length; i++) {
-          if (listeners[i].once) this.removeListener(event2, listeners[i].fn, undefined, true);
-          switch (len) {
-            case 1:
-              listeners[i].fn.call(listeners[i].context);
-              break;
-            case 2:
-              listeners[i].fn.call(listeners[i].context, a1);
-              break;
-            case 3:
-              listeners[i].fn.call(listeners[i].context, a1, a2);
-              break;
-            case 4:
-              listeners[i].fn.call(listeners[i].context, a1, a2, a3);
-              break;
-            default:
-              if (!args) for (j = 1, args = new Array(len - 1); j < len; j++) {
-                args[j - 1] = arguments[j];
-              }
-              listeners[i].fn.apply(listeners[i].context, args);
-          }
-        }
-      }
-      return true;
-    };
-    EventEmitter2.prototype.on = function on(event2, fn, context) {
-      return addListener(this, event2, fn, context, false);
-    };
-    EventEmitter2.prototype.once = function once(event2, fn, context) {
-      return addListener(this, event2, fn, context, true);
-    };
-    EventEmitter2.prototype.removeListener = function removeListener(event2, fn, context, once) {
-      var evt = prefix ? prefix + event2 : event2;
-      if (!this._events[evt]) return this;
-      if (!fn) {
-        clearEvent(this, evt);
-        return this;
-      }
-      var listeners = this._events[evt];
-      if (listeners.fn) {
-        if (listeners.fn === fn && (!once || listeners.once) && (!context || listeners.context === context)) {
-          clearEvent(this, evt);
-        }
-      } else {
-        for (var i = 0, events = [], length = listeners.length; i < length; i++) {
-          if (listeners[i].fn !== fn || once && !listeners[i].once || context && listeners[i].context !== context) {
-            events.push(listeners[i]);
-          }
-        }
-        if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
-        else clearEvent(this, evt);
-      }
-      return this;
-    };
-    EventEmitter2.prototype.removeAllListeners = function removeAllListeners(event2) {
-      var evt;
-      if (event2) {
-        evt = prefix ? prefix + event2 : event2;
-        if (this._events[evt]) clearEvent(this, evt);
-      } else {
-        this._events = new Events();
-        this._eventsCount = 0;
-      }
-      return this;
-    };
-    EventEmitter2.prototype.off = EventEmitter2.prototype.removeListener;
-    EventEmitter2.prototype.addListener = EventEmitter2.prototype.on;
-    EventEmitter2.prefixed = prefix;
-    EventEmitter2.EventEmitter = EventEmitter2;
-    {
-      module.exports = EventEmitter2;
-    }
-  })(eventemitter3);
-  var eventemitter3Exports = eventemitter3.exports;
-  const EventEmitter = /* @__PURE__ */ getDefaultExportFromCjs(eventemitter3Exports);
-  class TimeoutError extends Error {
-    constructor(message) {
-      super(message);
-      this.name = "TimeoutError";
-    }
-  }
-  class AbortError extends Error {
-    constructor(message) {
-      super();
-      this.name = "AbortError";
-      this.message = message;
-    }
-  }
-  const getDOMException = (errorMessage) => globalThis.DOMException === undefined ? new AbortError(errorMessage) : new DOMException(errorMessage);
-  const getAbortedReason = (signal) => {
-    const reason = signal.reason === undefined ? getDOMException("This operation was aborted.") : signal.reason;
-    return reason instanceof Error ? reason : getDOMException(reason);
-  };
-  function pTimeout(promise, options) {
-    const {
-      milliseconds,
-      fallback,
-      message,
-      customTimers = { setTimeout, clearTimeout }
-    } = options;
-    let timer;
-    let abortHandler;
-    const wrappedPromise = new Promise((resolve, reject) => {
-      if (typeof milliseconds !== "number" || Math.sign(milliseconds) !== 1) {
-        throw new TypeError(`Expected \`milliseconds\` to be a positive number, got \`${milliseconds}\``);
-      }
-      if (options.signal) {
-        const { signal } = options;
-        if (signal.aborted) {
-          reject(getAbortedReason(signal));
-        }
-        abortHandler = () => {
-          reject(getAbortedReason(signal));
-        };
-        signal.addEventListener("abort", abortHandler, { once: true });
-      }
-      if (milliseconds === Number.POSITIVE_INFINITY) {
-        promise.then(resolve, reject);
-        return;
-      }
-      const timeoutError = new TimeoutError();
-      timer = customTimers.setTimeout.call(undefined, () => {
-        if (fallback) {
-          try {
-            resolve(fallback());
-          } catch (error) {
-            reject(error);
-          }
-          return;
-        }
-        if (typeof promise.cancel === "function") {
-          promise.cancel();
-        }
-        if (message === false) {
-          resolve();
-        } else if (message instanceof Error) {
-          reject(message);
-        } else {
-          timeoutError.message = message ?? `Promise timed out after ${milliseconds} milliseconds`;
-          reject(timeoutError);
-        }
-      }, milliseconds);
-      (async () => {
-        try {
-          resolve(await promise);
-        } catch (error) {
-          reject(error);
-        }
-      })();
-    });
-    const cancelablePromise = wrappedPromise.finally(() => {
-      cancelablePromise.clear();
-      if (abortHandler && options.signal) {
-        options.signal.removeEventListener("abort", abortHandler);
-      }
-    });
-    cancelablePromise.clear = () => {
-      customTimers.clearTimeout.call(undefined, timer);
-      timer = undefined;
-    };
-    return cancelablePromise;
-  }
-  function lowerBound(array, value, comparator) {
-    let first = 0;
-    let count = array.length;
-    while (count > 0) {
-      const step = Math.trunc(count / 2);
-      let it = first + step;
-      if (comparator(array[it], value) <= 0) {
-        first = ++it;
-        count -= step + 1;
-      } else {
-        count = step;
-      }
-    }
-    return first;
-  }
-  class PriorityQueue {
-    constructor() {
-      __privateAdd(this, _queue, []);
-    }
-    enqueue(run2, options) {
-      options = {
-        priority: 0,
-        ...options
+  class ChannelEvent {
+    constructor(channelName) {
+      __privateAdd(this, _channel);
+      __privateAdd(this, _event);
+      __privateSet(this, _channel, new BroadcastChannel(channelName));
+      __privateSet(this, _event, {});
+      __privateGet(this, _channel).onmessage = (event2) => {
+        const { eventName, args } = event2.data;
+        if (!__privateGet(this, _event)[eventName]) return;
+        __privateGet(this, _event)[eventName].forEach((callback) => callback(...args));
       };
-      const element = {
-        priority: options.priority,
-        run: run2
+    }
+    on(eventName, callback) {
+      var _a;
+      (_a = __privateGet(this, _event))[eventName] ?? (_a[eventName] = /* @__PURE__ */ new Set());
+      __privateGet(this, _event)[eventName].add(callback);
+    }
+    off(eventName, callback) {
+      if (!__privateGet(this, _event)[eventName]) return;
+      __privateGet(this, _event)[eventName].delete(callback);
+    }
+    emit(eventName, ...args) {
+      const data = { eventName, args };
+      __privateGet(this, _channel).postMessage(data);
+    }
+    once(eventName, callback) {
+      const onceCallback = (...args) => {
+        callback(...args);
+        this.off(eventName, onceCallback);
       };
-      if (this.size && __privateGet(this, _queue)[this.size - 1].priority >= options.priority) {
-        __privateGet(this, _queue).push(element);
-        return;
-      }
-      const index2 = lowerBound(__privateGet(this, _queue), element, (a, b) => b.priority - a.priority);
-      __privateGet(this, _queue).splice(index2, 0, element);
-    }
-    dequeue() {
-      const item = __privateGet(this, _queue).shift();
-      return item == null ? undefined : item.run;
-    }
-    filter(options) {
-      return __privateGet(this, _queue).filter((element) => element.priority === options.priority).map((element) => element.run);
-    }
-    get size() {
-      return __privateGet(this, _queue).length;
+      this.on(eventName, onceCallback);
     }
   }
-  _queue = new WeakMap();
-  class PQueue extends EventEmitter {
-    // TODO: The `throwOnTimeout` option should affect the return types of `add()` and `addAll()`
-    constructor(options) {
-      var _a2, _b;
-      super();
-      __privateAdd(this, _PQueue_instances);
-      __privateAdd(this, _carryoverConcurrencyCount);
-      __privateAdd(this, _isIntervalIgnored);
-      __privateAdd(this, _intervalCount, 0);
-      __privateAdd(this, _intervalCap);
-      __privateAdd(this, _interval);
-      __privateAdd(this, _intervalEnd, 0);
-      __privateAdd(this, _intervalId);
-      __privateAdd(this, _timeoutId);
-      __privateAdd(this, _queue2);
-      __privateAdd(this, _queueClass);
-      __privateAdd(this, _pending, 0);
-      // The `!` is needed because of https://github.com/microsoft/TypeScript/issues/32194
-      __privateAdd(this, _concurrency);
-      __privateAdd(this, _isPaused);
-      __privateAdd(this, _throwOnTimeout);
-      /**
-          Per-operation timeout in milliseconds. Operations fulfill once `timeout` elapses if they haven't already.
-      
-          Applies to each future operation.
-          */
-      __publicField(this, "timeout");
-      options = {
-        carryoverConcurrencyCount: false,
-        intervalCap: Number.POSITIVE_INFINITY,
-        interval: 0,
-        concurrency: Number.POSITIVE_INFINITY,
-        autoStart: true,
-        queueClass: PriorityQueue,
-        ...options
-      };
-      if (!(typeof options.intervalCap === "number" && options.intervalCap >= 1)) {
-        throw new TypeError(`Expected \`intervalCap\` to be a number from 1 and up, got \`${((_a2 = options.intervalCap) == null ? undefined : _a2.toString()) ?? ""}\` (${typeof options.intervalCap})`);
-      }
-      if (options.interval === undefined || !(Number.isFinite(options.interval) && options.interval >= 0)) {
-        throw new TypeError(`Expected \`interval\` to be a finite number >= 0, got \`${((_b = options.interval) == null ? undefined : _b.toString()) ?? ""}\` (${typeof options.interval})`);
-      }
-      __privateSet(this, _carryoverConcurrencyCount, options.carryoverConcurrencyCount);
-      __privateSet(this, _isIntervalIgnored, options.intervalCap === Number.POSITIVE_INFINITY || options.interval === 0);
-      __privateSet(this, _intervalCap, options.intervalCap);
-      __privateSet(this, _interval, options.interval);
-      __privateSet(this, _queue2, new options.queueClass());
-      __privateSet(this, _queueClass, options.queueClass);
-      this.concurrency = options.concurrency;
-      this.timeout = options.timeout;
-      __privateSet(this, _throwOnTimeout, options.throwOnTimeout === true);
-      __privateSet(this, _isPaused, options.autoStart === false);
-    }
-    get concurrency() {
-      return __privateGet(this, _concurrency);
-    }
-    set concurrency(newConcurrency) {
-      if (!(typeof newConcurrency === "number" && newConcurrency >= 1)) {
-        throw new TypeError(`Expected \`concurrency\` to be a number from 1 and up, got \`${newConcurrency}\` (${typeof newConcurrency})`);
-      }
-      __privateSet(this, _concurrency, newConcurrency);
-      __privateMethod(this, _PQueue_instances, processQueue_fn).call(this);
-    }
-    async add(function_, options = {}) {
-      options = {
-        timeout: this.timeout,
-        throwOnTimeout: __privateGet(this, _throwOnTimeout),
-        ...options
-      };
-      return new Promise((resolve, reject) => {
-        __privateGet(this, _queue2).enqueue(async () => {
-          var _a2;
-          __privateWrapper(this, _pending)._++;
-          __privateWrapper(this, _intervalCount)._++;
-          try {
-            (_a2 = options.signal) == null ? void 0 : _a2.throwIfAborted();
-            let operation = function_({ signal: options.signal });
-            if (options.timeout) {
-              operation = pTimeout(Promise.resolve(operation), { milliseconds: options.timeout });
-            }
-            if (options.signal) {
-              operation = Promise.race([operation, __privateMethod(this, _PQueue_instances, throwOnAbort_fn).call(this, options.signal)]);
-            }
-            const result = await operation;
-            resolve(result);
-            this.emit("completed", result);
-          } catch (error) {
-            if (error instanceof TimeoutError && !options.throwOnTimeout) {
-              resolve();
-              return;
-            }
-            reject(error);
-            this.emit("error", error);
-          } finally {
-            __privateMethod(this, _PQueue_instances, next_fn).call(this);
-          }
-        }, options);
-        this.emit("add");
-        __privateMethod(this, _PQueue_instances, tryToStartAnother_fn).call(this);
-      });
-    }
-    async addAll(functions, options) {
-      return Promise.all(functions.map(async (function_) => this.add(function_, options)));
-    }
-    /**
-    Start (or resume) executing enqueued tasks within concurrency limit. No need to call this if queue is not paused (via `options.autoStart = false` or by `.pause()` method.)
-    */
-    start() {
-      if (!__privateGet(this, _isPaused)) {
-        return this;
-      }
-      __privateSet(this, _isPaused, false);
-      __privateMethod(this, _PQueue_instances, processQueue_fn).call(this);
-      return this;
-    }
-    /**
-    Put queue execution on hold.
-    */
-    pause() {
-      __privateSet(this, _isPaused, true);
-    }
-    /**
-    Clear the queue.
-    */
-    clear() {
-      __privateSet(this, _queue2, new (__privateGet(this, _queueClass))());
-    }
-    /**
-        Can be called multiple times. Useful if you for example add additional items at a later time.
-    
-        @returns A promise that settles when the queue becomes empty.
-        */
-    async onEmpty() {
-      if (__privateGet(this, _queue2).size === 0) {
-        return;
-      }
-      await __privateMethod(this, _PQueue_instances, onEvent_fn).call(this, "empty");
-    }
-    /**
-        @returns A promise that settles when the queue size is less than the given limit: `queue.size < limit`.
-    
-        If you want to avoid having the queue grow beyond a certain size you can `await queue.onSizeLessThan()` before adding a new item.
-    
-        Note that this only limits the number of items waiting to start. There could still be up to `concurrency` jobs already running that this call does not include in its calculation.
-        */
-    async onSizeLessThan(limit) {
-      if (__privateGet(this, _queue2).size < limit) {
-        return;
-      }
-      await __privateMethod(this, _PQueue_instances, onEvent_fn).call(this, "next", () => __privateGet(this, _queue2).size < limit);
-    }
-    /**
-        The difference with `.onEmpty` is that `.onIdle` guarantees that all work from the queue has finished. `.onEmpty` merely signals that the queue is empty, but it could mean that some promises haven't completed yet.
-    
-        @returns A promise that settles when the queue becomes empty, and all promises have completed; `queue.size === 0 && queue.pending === 0`.
-        */
-    async onIdle() {
-      if (__privateGet(this, _pending) === 0 && __privateGet(this, _queue2).size === 0) {
-        return;
-      }
-      await __privateMethod(this, _PQueue_instances, onEvent_fn).call(this, "idle");
-    }
-    /**
-    Size of the queue, the number of queued items waiting to run.
-    */
-    get size() {
-      return __privateGet(this, _queue2).size;
-    }
-    /**
-        Size of the queue, filtered by the given options.
-    
-        For example, this can be used to find the number of items remaining in the queue with a specific priority level.
-        */
-    sizeBy(options) {
-      return __privateGet(this, _queue2).filter(options).length;
-    }
-    /**
-    Number of running items (no longer in the queue).
-    */
-    get pending() {
-      return __privateGet(this, _pending);
-    }
-    /**
-    Whether the queue is currently paused.
-    */
-    get isPaused() {
-      return __privateGet(this, _isPaused);
-    }
-  }
-  _carryoverConcurrencyCount = new WeakMap();
-  _isIntervalIgnored = new WeakMap();
-  _intervalCount = new WeakMap();
-  _intervalCap = new WeakMap();
-  _interval = new WeakMap();
-  _intervalEnd = new WeakMap();
-  _intervalId = new WeakMap();
-  _timeoutId = new WeakMap();
-  _queue2 = new WeakMap();
-  _queueClass = new WeakMap();
-  _pending = new WeakMap();
-  _concurrency = new WeakMap();
-  _isPaused = new WeakMap();
-  _throwOnTimeout = new WeakMap();
-  _PQueue_instances = new WeakSet();
-  doesIntervalAllowAnother_get = function() {
-    return __privateGet(this, _isIntervalIgnored) || __privateGet(this, _intervalCount) < __privateGet(this, _intervalCap);
-  };
-  doesConcurrentAllowAnother_get = function() {
-    return __privateGet(this, _pending) < __privateGet(this, _concurrency);
-  };
-  next_fn = function() {
-    __privateWrapper(this, _pending)._--;
-    __privateMethod(this, _PQueue_instances, tryToStartAnother_fn).call(this);
-    this.emit("next");
-  };
-  onResumeInterval_fn = function() {
-    __privateMethod(this, _PQueue_instances, onInterval_fn).call(this);
-    __privateMethod(this, _PQueue_instances, initializeIntervalIfNeeded_fn).call(this);
-    __privateSet(this, _timeoutId, undefined);
-  };
-  isIntervalPaused_get = function() {
-    const now2 = Date.now();
-    if (__privateGet(this, _intervalId) === undefined) {
-      const delay = __privateGet(this, _intervalEnd) - now2;
-      if (delay < 0) {
-        __privateSet(this, _intervalCount, __privateGet(this, _carryoverConcurrencyCount) ? __privateGet(this, _pending) : 0);
-      } else {
-        if (__privateGet(this, _timeoutId) === undefined) {
-          __privateSet(this, _timeoutId, setTimeout(() => {
-            __privateMethod(this, _PQueue_instances, onResumeInterval_fn).call(this);
-          }, delay));
-        }
-        return true;
-      }
-    }
-    return false;
-  };
-  tryToStartAnother_fn = function() {
-    if (__privateGet(this, _queue2).size === 0) {
-      if (__privateGet(this, _intervalId)) {
-        clearInterval(__privateGet(this, _intervalId));
-      }
-      __privateSet(this, _intervalId, undefined);
-      this.emit("empty");
-      if (__privateGet(this, _pending) === 0) {
-        this.emit("idle");
-      }
-      return false;
-    }
-    if (!__privateGet(this, _isPaused)) {
-      const canInitializeInterval = !__privateGet(this, _PQueue_instances, isIntervalPaused_get);
-      if (__privateGet(this, _PQueue_instances, doesIntervalAllowAnother_get) && __privateGet(this, _PQueue_instances, doesConcurrentAllowAnother_get)) {
-        const job = __privateGet(this, _queue2).dequeue();
-        if (!job) {
-          return false;
-        }
-        this.emit("active");
-        job();
-        if (canInitializeInterval) {
-          __privateMethod(this, _PQueue_instances, initializeIntervalIfNeeded_fn).call(this);
-        }
-        return true;
-      }
-    }
-    return false;
-  };
-  initializeIntervalIfNeeded_fn = function() {
-    if (__privateGet(this, _isIntervalIgnored) || __privateGet(this, _intervalId) !== undefined) {
-      return;
-    }
-    __privateSet(this, _intervalId, setInterval(() => {
-      __privateMethod(this, _PQueue_instances, onInterval_fn).call(this);
-    }, __privateGet(this, _interval)));
-    __privateSet(this, _intervalEnd, Date.now() + __privateGet(this, _interval));
-  };
-  onInterval_fn = function() {
-    if (__privateGet(this, _intervalCount) === 0 && __privateGet(this, _pending) === 0 && __privateGet(this, _intervalId)) {
-      clearInterval(__privateGet(this, _intervalId));
-      __privateSet(this, _intervalId, undefined);
-    }
-    __privateSet(this, _intervalCount, __privateGet(this, _carryoverConcurrencyCount) ? __privateGet(this, _pending) : 0);
-    __privateMethod(this, _PQueue_instances, processQueue_fn).call(this);
-  };
-  /**
-  Executes all queued functions until it reaches the limit.
-  */
-  processQueue_fn = function() {
-    while (__privateMethod(this, _PQueue_instances, tryToStartAnother_fn).call(this)) {
-    }
-  };
-  throwOnAbort_fn = async function(signal) {
-    return new Promise((_resolve, reject) => {
-      signal.addEventListener("abort", () => {
-        reject(signal.reason);
-      }, { once: true });
-    });
-  };
-  onEvent_fn = async function(event2, filter) {
-    return new Promise((resolve) => {
-      const listener = () => {
-        if (filter && !filter()) {
-          return;
-        }
-        this.off(event2, listener);
-        resolve();
-      };
-      this.on(event2, listener);
-    });
-  };
-  let Downloader$1 = (_a = class {
-    constructor() {
-      __privateAdd(this, _Downloader_instances);
-      __privateAdd(this, _DOWNLOAD_RETRY, 3);
-      __privateAdd(this, _downloadQueue, new PQueue({ concurrency: 5, interval: 1e3, intervalCap: 4 }));
-    }
-    get fileSystemAccessEnabled() {
-      return fileSaveAdapters.isFileSystemAccessEnable();
-    }
-    /**
-     * 下载触发后应该先弹窗选择文件保存位置，避免下载/转换用时过长导致错误
-     * Must be handling a user gesture to show a file picker.
-     * https://bugs.chromium.org/p/chromium/issues/detail?id=1193489
-     */
-    dirHandleCheck() {
-      fileSaveAdapters.dirHandleCheck();
-    }
-    updateDirHandle() {
-      return fileSaveAdapters.updateDirHandle();
-    }
-    getCurrentFsaDirName() {
-      return fileSaveAdapters.getFsaDirName();
-    }
-    async download(configs, option = {}) {
-      const { signal, priority } = option;
-      signal == null ? undefined : signal.throwIfAborted();
-      logger.info("Downloader add:", configs);
-      if (!Array.isArray(configs)) configs = [configs];
-      if (configs.length < 1) return;
-      const downloads = configs.map((config2) => {
-        return __privateMethod(this, _Downloader_instances, dispatchDownload_fn).call(this, config2, priority, signal);
-      });
-      const downloadResult = await Promise.allSettled(downloads);
-      for (const result of downloadResult) {
-        if (result.status === "rejected") throw result.reason;
-      }
-    }
-  }, _DOWNLOAD_RETRY = new WeakMap(), _downloadQueue = new WeakMap(), _Downloader_instances = new WeakSet(), xhr_fn = function(config2, signal) {
-    if (signal == null ? undefined : signal.aborted) return Promise.resolve([signal.reason, null]);
-    const { src, onProgress, timeout, taskId, headers } = config2;
-    return new Promise((resolve) => {
-      const abortObj = _GM_xmlhttpRequest({
-        url: src,
-        method: "GET",
-        responseType: "blob",
-        timeout,
-        headers,
-        ontimeout() {
-          resolve([new TimoutError(`${taskId} | ${src}`), null]);
-        },
-        onerror(error) {
-          let err;
-          if (error.status === 429) {
-            err = new RequestError(config2.src, error.status);
-          } else {
-            err = new Error(`Download failed. ID: ${taskId}.`);
-          }
-          resolve([err, null]);
-        },
-        onprogress(res) {
-          if (res.loaded > 0 && res.total > 0) {
-            const progress = Math.floor(res.loaded / res.total * 100);
-            onProgress == null ? undefined : onProgress(progress, config2);
-          }
-        },
-        onload(res) {
-          const { status, statusText, finalUrl } = res;
-          if (status < 200 || status > 299) {
-            resolve([new RequestError(statusText + " " + finalUrl, status), null]);
-            return;
-          }
-          resolve([null, res.response]);
-        }
-      });
-      signal == null ? undefined : signal.addEventListener(
-        "abort",
-        () => {
-          abortObj.abort();
-          resolve([signal.reason, null]);
-        },
-        { once: true }
-      );
-    });
-  }, dispatchDownload_fn = async function(config2, priority = 0, signal) {
-    var _a2, _b, _c, _d;
-    try {
-      const { src, taskId, path } = config2;
-      const result = await __privateGet(this, _downloadQueue).add(
-        async ({ signal: signal2 }) => {
-          signal2 == null ? void 0 : signal2.throwIfAborted();
-          logger.info("Download start:", src);
-          let result2;
-          let retryCount = 0;
-          do {
-            const xhrResult = await __privateMethod(this, _Downloader_instances, xhr_fn).call(this, config2, signal2);
-            signal2 == null ? void 0 : signal2.throwIfAborted();
-            if (xhrResult[0] === null) {
-              result2 = xhrResult[1];
-              break;
-            } else {
-              const err = xhrResult[0];
-              if (!(err instanceof TimoutError) || ++retryCount > __privateGet(this, _DOWNLOAD_RETRY)) {
-                throw err;
-              } else {
-                logger.error(`Download will be retried. Count: ${retryCount}.`, err);
-              }
-            }
-          } while (retryCount <= __privateGet(this, _DOWNLOAD_RETRY));
-          return result2;
-        },
-        { signal, priority }
-      );
-      if (!result) throw new TimoutError(`${taskId} | ${src}`);
-      logger.info("Xhr complete:", src);
-      (_a2 = config2.onXhrLoaded) == null ? void 0 : _a2.call(config2, config2);
-      const saveFile2 = fileSaveAdapters.getAdapter();
-      if (typeof config2.beforeFileSave === "function") {
-        const modifiedResult = await config2.beforeFileSave(result, config2);
-        signal == null ? void 0 : signal.throwIfAborted();
-        if (!modifiedResult) return;
-        await saveFile2(modifiedResult, path, signal);
-      } else {
-        await saveFile2(result, path, signal);
-      }
-      (_b = config2.onFileSaved) == null ? void 0 : _b.call(config2, config2);
-      logger.info("Download complete:", path);
-    } catch (error) {
-      if (error instanceof CancelError) {
-        (_c = config2.onAbort) == null ? undefined : _c.call(config2, config2);
-      } else {
-        (_d = config2.onError) == null ? undefined : _d.call(config2, error, config2);
-      }
-      throw error;
-    }
-  }, _a);
-  const downloader = new Downloader$1();
+  _channel = new WeakMap();
+  _event = new WeakMap();
+  const channelEvent = new ChannelEvent("pixiv-downloader");
   class HistoryDb extends Dexie {
     constructor() {
       super("PdlHistory");
@@ -1755,233 +527,6 @@
     }
   }
   const historyDb = new ReadableHistoryDb();
-  class ApiBase {
-    async getHtml(url) {
-      logger.info("Fetch url:", url);
-      const res = await fetch(url);
-      if (!res.ok) throw new RequestError(res.url, res.status);
-      return await res.text();
-    }
-    async getDoc(url) {
-      const html2 = await this.getHtml(url);
-      return new DOMParser().parseFromString(html2, "text/html");
-    }
-    async getJSON(url, init2) {
-      logger.info("Fetch url:", url);
-      const res = await fetch(url, init2);
-      if (!res.ok) throw new RequestError(res.url, res.status);
-      return await res.json();
-    }
-  }
-  class Rule34Api extends ApiBase {
-    async getPosts(params) {
-      let url = "https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1";
-      Object.entries(params).forEach(([key, val]) => {
-        if (typeof val === "number") {
-          val = String(val);
-        } else if (Array.isArray(val)) {
-          val = val.join("+");
-        }
-        url += `&${key}=${val}`;
-      });
-      const res = await fetch(url);
-      try {
-        return await res.json();
-      } catch (error) {
-        if (error instanceof SyntaxError) {
-          return [];
-        } else {
-          throw error;
-        }
-      }
-    }
-  }
-  const rule34Api = new Rule34Api();
-  const rule34Parser = {
-    async parse(id) {
-      var _a2, _b, _c, _d, _e, _f;
-      const res = await fetch("index.php?page=post&s=view&id=" + id);
-      if (!res.ok) throw new RequestError(res.url, res.status);
-      const html2 = await res.text();
-      const doc = new DOMParser().parseFromString(html2, "text/html");
-      const src = ((_a2 = doc.querySelector("#gelcomVideoPlayer > source")) == null ? undefined : _a2.src) || doc.querySelector('meta[property="og:image"]').getAttribute("content");
-      const imageNameMatch = new RegExp("(?<=\\/)\\w+\\.\\w+(?=\\?)").exec(src);
-      if (!imageNameMatch) throw new Error("Can not parse image name from src.");
-      const imageName = imageNameMatch[0];
-      const [title, extendName] = imageName.split(".");
-      const artists = [];
-      const characters = [];
-      const tags = [];
-      let source2 = "";
-      const tagEls = doc.querySelectorAll('li[class*="tag-type"]');
-      tagEls.forEach((tagEl) => {
-        var _a3;
-        const tagTypeMatch = new RegExp("(?<=tag-type-)\\w+").exec(tagEl.className);
-        if (!tagTypeMatch) throw new Error("Unknown tag: " + tagEl.className);
-        const tagType = tagTypeMatch[0];
-        const tag = (((_a3 = tagEl.querySelector('a[href*="page=post"]')) == null ? undefined : _a3.textContent) || "").replaceAll(" ", "_");
-        if (tagType === "artist") {
-          artists.push(tag);
-        } else if (tagType === "character") {
-          characters.push(tag);
-        }
-        tags.push(tagType + ":" + tag);
-      });
-      const uploaderEl = doc.querySelector('a[href*="page=account&s=profile"]');
-      const postDateStr = (_c = (_b = uploaderEl == null ? undefined : uploaderEl.parentElement) == null ? undefined : _b.firstChild) == null ? undefined : _c.nodeValue;
-      const postDate = postDateStr ? postDateStr.split(": ")[1] : "";
-      const sourceEl = (_e = (_d = uploaderEl == null ? undefined : uploaderEl.parentElement) == null ? undefined : _d.nextElementSibling) == null ? undefined : _e.nextElementSibling;
-      if (sourceEl && /^source:/i.test(sourceEl.textContent ?? "")) {
-        const sourceLink = sourceEl.querySelector("a");
-        if (sourceLink) {
-          source2 = sourceLink.href;
-        } else {
-          source2 = ((_f = sourceEl.textContent) == null ? undefined : _f.replace(/^source: ?/i, "")) ?? "";
-        }
-      }
-      const rating = /Rating: ?(Explicit|Questionable|Safe)/.exec(doc.documentElement.innerHTML)[1].toLowerCase();
-      return {
-        id,
-        src,
-        extendName,
-        artist: artists.join(",") || "UnknownArtist",
-        character: characters.join(",") || "UnknownCharacter",
-        title,
-        tags,
-        createDate: postDate,
-        source: source2,
-        rating
-      };
-    },
-    async parseFavorite(userId, pid = 0) {
-      const doc = await rule34Api.getDoc(`/index.php?page=favorites&s=view&id=${userId}&pid=${pid}`);
-      const favDataScripts = doc.querySelectorAll(".image-list > span + script");
-      const favData = Array.from(favDataScripts).map((el) => {
-        const content = el.textContent;
-        const [id] = new RegExp("(?<=posts\\[)[0-9]+?(?=\\])").exec(content);
-        const [tags] = new RegExp(`(?<=tags: ["']).*?(?=["']\\.)`).exec(content);
-        const [rating] = new RegExp(`(?<=rating: ["']).*?(?=["'],)`).exec(content);
-        const [score] = new RegExp(`(?<=score: ["'])[0-9]+(?=["'],)`).exec(content);
-        const [user] = new RegExp(`(?<=user: ["']).*?(?=["']\\s+})`).exec(content);
-        return {
-          id,
-          tags: tags.split(" "),
-          rating,
-          score: +score,
-          user
-        };
-      });
-      return favData;
-    },
-    _parsePostData(doc) {
-      const imageItems = Array.from(doc.querySelectorAll(".image-list > span.thumb"));
-      const postData = imageItems.map((el) => {
-        const image = el.querySelector("img");
-        const fullTags = image.title.trim().replaceAll(/ +/g, " ").split(" ");
-        const id = el.id.slice(1);
-        const tags = [];
-        let rating = "";
-        let score = 0;
-        let user = "";
-        for (let i = 0; i < fullTags.length; i++) {
-          const tag = fullTags[i];
-          if (tag.startsWith("rating:")) {
-            rating = tag.slice(7);
-          } else if (tag.startsWith("score:")) {
-            score = +tag.slice(6);
-          } else if (tag.startsWith("user:")) {
-            user = tag.slice(5);
-          } else {
-            tags.push(tag);
-          }
-        }
-        return {
-          id,
-          tags,
-          rating,
-          score: +score,
-          user
-        };
-      });
-      logger.info(`Parse posts in ${doc.URL}:`, postData);
-      return postData;
-    },
-    async parsePool(poolId) {
-      const doc = await rule34Api.getDoc(`/index.php?page=pool&s=show&id=${poolId}`);
-      return this._parsePostData(doc);
-    },
-    // Does not include blacklisted tags, making it more suitable for batch downloads that need to handle page ranges.
-    async parsePost(pid = 0, tags = "all") {
-      if (Array.isArray(tags)) tags = tags.join("+");
-      const doc = await rule34Api.getDoc(`/index.php?page=post&s=list&tags=${tags}&pid=${pid}`);
-      return this._parsePostData(doc);
-    },
-    async *_paginationGenerator(pageRange, checkValidity, thumbsPerPage, getPostDataCallback) {
-      const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
-      let page = pageStart;
-      let postData = await getPostDataCallback(page);
-      let total = postData.length;
-      let fetchError = null;
-      if (total === 0) throw new Error(`There is no post in page ${page}.`);
-      do {
-        let nextPageData = null;
-        if (page !== pageEnd && postData.length >= thumbsPerPage) {
-          try {
-            nextPageData = await getPostDataCallback(page + 1);
-            if (nextPageData.length) {
-              total += nextPageData.length;
-            } else {
-              nextPageData = null;
-            }
-          } catch (error) {
-            fetchError = error;
-            nextPageData = null;
-          }
-        }
-        const avaliable = [];
-        const invalid = [];
-        const unavaliable = [];
-        for (let i = 0; i < postData.length; i++) {
-          const { id, tags } = postData[i];
-          const validityCheckMeta = {
-            id,
-            tags
-          };
-          const isValid = await checkValidity(validityCheckMeta);
-          isValid ? avaliable.push(id) : invalid.push(id);
-        }
-        yield {
-          total,
-          page,
-          avaliable,
-          invalid,
-          unavaliable
-        };
-        page++;
-        postData = nextPageData;
-      } while (postData);
-      if (fetchError) throw fetchError;
-    },
-    async *favoriteGenerator(pageRange, checkValidity, userId) {
-      const THUMBS_PER_PAGE = 50;
-      const getFavoriteByPage = (page) => {
-        const pid = (page - 1) * THUMBS_PER_PAGE;
-        return this.parseFavorite(userId, pid);
-      };
-      yield* this._paginationGenerator(pageRange, checkValidity, THUMBS_PER_PAGE, getFavoriteByPage);
-    },
-    async *poolGenerator(_, checkValidity, poolId) {
-      yield* this._paginationGenerator([1, 1], checkValidity, Infinity, () => this.parsePool(poolId));
-    },
-    async *postGenerator(pageRange, checkValidity, tags) {
-      const THUMBS_PER_PAGE = 42;
-      const getPostsByPage = (page) => {
-        const pid = (page - 1) * THUMBS_PER_PAGE;
-        return this.parsePost(pid, tags);
-      };
-      yield* this._paginationGenerator(pageRange, checkValidity, THUMBS_PER_PAGE, getPostsByPage);
-    }
-  };
   const btnStyle = ".pdl-thumbnail{position:absolute;display:flex;justify-content:center;align-items:center;margin:0;padding:0;height:32px;width:32px;top:calc((100% - 32px) * var(--pdl-btn-top) / 100);left:calc((100% - 32px) * var(--pdl-btn-left) / 100);border:none;border-radius:4px;overflow:hidden;white-space:nowrap;-webkit-user-select:none;-moz-user-select:none;user-select:none;font-family:system-ui;font-size:13px;font-weight:700;color:#262626;background-color:#ffffff80;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:1;cursor:pointer}.pdl-thumbnail:disabled{cursor:not-allowed}.pdl-thumbnail>svg{position:absolute;width:85%;height:85%;fill:currentColor;stroke:currentColor}.pdl-thumbnail>span{opacity:0;transition:opacity .2s}.pdl-thumbnail>span.show{opacity:1}:host([data-type=gallery]) .pdl-thumbnail{position:sticky;top:40px;left:0}:host([data-type=pixiv-my-bookmark]) .pdl-thumbnail{top:calc((100% - 32px) * var(--pdl-btn-self-bookmark-top) / 100);left:calc((100% - 32px) * var(--pdl-btn-self-bookmark-left) / 100)}:host([data-type=pixiv-history]) .pdl-thumbnail{z-index:auto}:host([data-type=pixiv-presentation]) .pdl-thumbnail{position:fixed;top:50px;right:20px;left:auto}:host([data-type=pixiv-toolbar]) .pdl-thumbnail{position:relative;top:auto;left:auto;color:inherit;background-color:transparent}:host([data-type=pixiv-manga-viewer]) .pdl-thumbnail{top:80%;right:4px;left:auto}:host([data-type=yande-browse]) .pdl-thumbnail{top:320px;right:4px;left:auto}:host([data-status]) .pdl-thumbnail{color:#16a34a}:host([data-status=error]) .pdl-thumbnail{color:#ef4444}";
   const svgGroup = `<svg xmlns="http://www.w3.org/2000/svg" style="display: none">
   <symbol id="pdl-download" viewBox="0 0 512 512">
@@ -2289,9 +834,9 @@
       this.shouldObserveDb && (this.unsubscriber = this.observeDb());
     }
     disconnectedCallback() {
-      var _a2, _b;
+      var _a, _b;
       this.connectedFlag = false;
-      (_a2 = this.btn) == null ? undefined : _a2.removeEventListener("click", this.dispatchDownload);
+      (_a = this.btn) == null ? undefined : _a.removeEventListener("click", this.dispatchDownload);
       (_b = this.unsubscriber) == null ? undefined : _b.call(this);
     }
     clacProgressRadial(progress) {
@@ -2356,103 +901,34 @@
     }
   }
   customElements.define(ThumbnailButton.tagNameLowerCase, ThumbnailButton);
-  class DownloadConfigBuilder {
-    constructor(meta) {
-      this.meta = meta;
+  const wrapperStyle = ".button-wrapper{position:absolute;right:8px;top:0;bottom:0;margin-top:40px}.button-wrapper.gelbooru{bottom:calc(1em + 22px)}.button-wrapper.moebooru_image{right:calc(5em + 8px)}.button-wrapper.native_video{bottom:70px}.button-wrapper.vjs_video{bottom:32px}.button-wrapper.fluid_video{bottom:56px}";
+  class ArtworkButton extends HTMLElement {
+    constructor(props) {
+      super();
+      __publicField(this, "props");
+      this.props = props;
     }
-    normalizeString(str) {
-      return replaceInvalidChar(unescapeHtml(str));
+    static get tagNameLowerCase() {
+      return "pdl-artwork-button";
     }
-    getFolderPattern() {
-      return config.get("folderPattern");
+    render() {
+      if (this.shadowRoot) return;
+      const shadowRoot = this.attachShadow({ mode: "open" });
+      const btnProps = { ...this.props };
+      shadowRoot.innerHTML = `<style>${wrapperStyle}</style><div class="button-wrapper${btnProps.site ? " " + btnProps.site : ""}"></div>`;
+      delete btnProps.site;
+      const thumbnailButton = new ThumbnailButton({
+        type: ThumbnailBtnType.Gallery,
+        ...btnProps
+      });
+      const wrapper = shadowRoot.querySelector(".button-wrapper");
+      wrapper.appendChild(thumbnailButton);
     }
-    getFilenamePattern() {
-      return config.get("filenamePattern");
-    }
-    getFullpathPattern() {
-      const folder = this.getFolderPattern();
-      const filename = this.getFilenamePattern() + "." + this.meta.extendName;
-      return folder ? folder + "/" + filename : filename;
-    }
-    isBrowserApi() {
-      return env.isBrowserDownloadMode();
-    }
-    isFsaEnable() {
-      return downloader.fileSystemAccessEnabled;
-    }
-    supportSubpath() {
-      return this.isBrowserApi() || this.isFsaEnable();
-    }
-    isImage() {
-      return /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(this.meta.extendName);
-    }
-    buildFilePath() {
-      const path = this.getFullpathPattern();
-      const { id, createDate } = this.meta;
-      let { artist, title, tags } = this.meta;
-      artist = this.normalizeString(artist);
-      title = this.normalizeString(title);
-      tags = tags.map((tag) => this.normalizeString(tag));
-      const replaceDate = (_, p1) => {
-        const format = p1 || "YYYY-MM-DD";
-        return dayjs(createDate).format(format);
-      };
-      return path.replaceAll(/\{date\((.*?)\)\}|\{date\}/g, replaceDate).replaceAll("{artist}", artist).replaceAll("{title}", title).replaceAll("{tags}", tags.join("_")).replaceAll("{id}", id);
-    }
-    generateTaskId() {
-      return this.meta.id + "_" + Math.random().toString(36).slice(2);
+    connectedCallback() {
+      this.render();
     }
   }
-  function artworkProgressFactory$2(btn2) {
-    if (!btn2) return;
-    return function onArtworkProgress(progress) {
-      btn2.setProgress(progress);
-    };
-  }
-  class Rule34DownloadConfig extends DownloadConfigBuilder {
-    constructor(meta) {
-      super(meta);
-      __publicField(this, "headers", config.get("token") ? {
-        cookie: `cf_clearance=${config.get("token")}`
-      } : undefined);
-      this.meta = meta;
-    }
-    getDownloadConfig(btn2) {
-      return {
-        headers: this.headers,
-        taskId: this.generateTaskId(),
-        src: this.meta.src,
-        path: this.buildFilePath(),
-        source: this.meta,
-        timeout: this.isImage() ? 6e4 : undefined,
-        onProgress: artworkProgressFactory$2(btn2)
-      };
-    }
-    buildFilePath() {
-      const path = super.buildFilePath();
-      return path.replaceAll("{character}", this.normalizeString(this.meta.character));
-    }
-  }
-  function addBookmark$2(id) {
-    _unsafeWindow.addFav(id);
-  }
-  async function downloadArtwork$1(btn2) {
-    downloader.dirHandleCheck();
-    const id = btn2.dataset.id;
-    const mediaMeta = await rule34Parser.parse(id);
-    const { tags, artist, title, source: source2, rating } = mediaMeta;
-    const downloadConfigs = new Rule34DownloadConfig(mediaMeta).getDownloadConfig(btn2);
-    config.get("addBookmark") && addBookmark$2(id);
-    await downloader.download(downloadConfigs, { priority: 1 });
-    historyDb.add({
-      pid: Number(id),
-      user: artist,
-      title,
-      tags,
-      source: source2,
-      rating
-    });
-  }
+  customElements.define(ArtworkButton.tagNameLowerCase, ArtworkButton);
   const zh = {
     setting: {
       save_to: {
@@ -2541,6 +1017,9 @@
           horizon_position: "水平位置",
           vertical_position: "垂直位置"
         }
+      },
+      authorization: {
+        title: "网站认证"
       },
       others: {
         title: "其它",
@@ -2713,6 +1192,9 @@
           vertical_position: "Vertical Position"
         }
       },
+      authorization: {
+        title: "Auth"
+      },
       others: {
         title: "Others",
         options: {
@@ -2812,6 +1294,124 @@
       last = value;
     }
     return last;
+  }
+  var _GM_download = /* @__PURE__ */ (() => typeof GM_download != "undefined" ? GM_download : undefined)();
+  var _GM_info = /* @__PURE__ */ (() => typeof GM_info != "undefined" ? GM_info : undefined)();
+  var _GM_registerMenuCommand = /* @__PURE__ */ (() => typeof GM_registerMenuCommand != "undefined" ? GM_registerMenuCommand : undefined)();
+  var _GM_xmlhttpRequest = /* @__PURE__ */ (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : undefined)();
+  var _unsafeWindow = /* @__PURE__ */ (() => typeof unsafeWindow != "undefined" ? unsafeWindow : undefined)();
+  var UgoiraFormat = /* @__PURE__ */ ((UgoiraFormat2) => {
+    UgoiraFormat2["ZIP"] = "zip";
+    UgoiraFormat2["GIF"] = "gif";
+    UgoiraFormat2["WEBP"] = "webp";
+    UgoiraFormat2["PNG"] = "png";
+    UgoiraFormat2["WEBM"] = "webm";
+    UgoiraFormat2["MP4"] = "mp4";
+    return UgoiraFormat2;
+  })(UgoiraFormat || {});
+  var FilenameConfigAction = /* @__PURE__ */ ((FilenameConfigAction2) => {
+    FilenameConfigAction2["UNIQUIFY"] = "uniquify";
+    FilenameConfigAction2["OVERWRITE"] = "overwrite";
+    FilenameConfigAction2["PROMPT"] = "prompt";
+    return FilenameConfigAction2;
+  })(FilenameConfigAction || {});
+  var TagLanguage = /* @__PURE__ */ ((TagLanguage2) => {
+    TagLanguage2["JAPANESE"] = "ja";
+    TagLanguage2["CHINESE"] = "zh";
+    TagLanguage2["TRADITIONAL_CHINESE"] = "zh_tw";
+    TagLanguage2["ENGLISH"] = "en";
+    return TagLanguage2;
+  })(TagLanguage || {});
+  var HistoryBackupInterval = /* @__PURE__ */ ((HistoryBackupInterval2) => {
+    HistoryBackupInterval2[HistoryBackupInterval2["NEVER"] = 0] = "NEVER";
+    HistoryBackupInterval2[HistoryBackupInterval2["EVERY_DAY"] = 86400] = "EVERY_DAY";
+    HistoryBackupInterval2[HistoryBackupInterval2["EVERY_7_DAY"] = 604800] = "EVERY_7_DAY";
+    HistoryBackupInterval2[HistoryBackupInterval2["EVERY_30_DAY"] = 2592e3] = "EVERY_30_DAY";
+    return HistoryBackupInterval2;
+  })(HistoryBackupInterval || {});
+  let config;
+  function loadConfig(customConfig = {}) {
+    if (config) throw new Error("`config` has already been defined.");
+    const defaultConfig = Object.freeze({
+      version: "1.7.0",
+      ugoiraFormat: "zip",
+      folderPattern: "",
+      filenamePattern: "{id}",
+      tagLang: "ja",
+      showMsg: true,
+      mixEffect: false,
+      bundleIllusts: false,
+      bundleManga: false,
+      addBookmark: false,
+      addBookmarkWithTags: false,
+      privateR18: false,
+      likeIllust: false,
+      useFileSystemAccess: false,
+      fileSystemFilenameConflictAction: "uniquify",
+      showPopupButton: true,
+      gifQuality: 10,
+      webmBitrate: 20,
+      mp4Bitrate: 20,
+      losslessWebp: false,
+      webpQuality: 95,
+      webpMehtod: 4,
+      pngColor: 256,
+      historyBackupInterval: 0,
+      lastHistoryBackup: 0,
+      auth: null,
+      "pdl-btn-self-bookmark-left": 100,
+      "pdl-btn-self-bookmark-top": 76,
+      "pdl-btn-left": 0,
+      "pdl-btn-top": 100,
+      ...customConfig
+    });
+    let configData;
+    if (!localStorage.pdlSetting) {
+      configData = Object.assign({}, defaultConfig);
+    } else {
+      try {
+        configData = JSON.parse(localStorage.pdlSetting);
+      } catch (error) {
+        logger.error("Use default config because: ", error);
+        configData = Object.assign({}, defaultConfig);
+      }
+    }
+    if (configData.version !== defaultConfig.version) {
+      configData = {
+        ...defaultConfig,
+        ...configData,
+        version: defaultConfig.version,
+        showMsg: true
+      };
+      localStorage.pdlSetting = JSON.stringify(configData);
+    }
+    const subscribers = /* @__PURE__ */ new Set();
+    const set2 = (newConfig) => {
+      configData = newConfig;
+      localStorage.pdlSetting = JSON.stringify(configData);
+      for (const subscriber of subscribers) {
+        subscriber(configData);
+      }
+    };
+    const update2 = (fn) => {
+      set2(fn(configData));
+    };
+    const subscribe = (fn) => {
+      subscribers.add(fn);
+      fn(configData);
+      return () => {
+        subscribers.delete(fn);
+      };
+    };
+    config = {
+      get(key) {
+        return configData[key];
+      },
+      set: set2,
+      update: update2,
+      subscribe
+    };
+    return config;
   }
   const PUBLIC_VERSION = "5";
   if (typeof window !== "undefined")
@@ -3024,13 +1624,13 @@
   }
   // @__NO_SIDE_EFFECTS__
   function mutable_source(initial_value, immutable = false) {
-    var _a2;
+    var _a;
     const s = source(initial_value);
     if (!immutable) {
       s.equals = safe_equals;
     }
     if (legacy_mode_flag && component_context !== null && component_context.l !== null) {
-      ((_a2 = component_context.l).s ?? (_a2.s = [])).push(s);
+      ((_a = component_context.l).s ?? (_a.s = [])).push(s);
     }
     return s;
   }
@@ -3223,13 +1823,13 @@
           return true;
         },
         get(target, prop2, receiver) {
-          var _a2;
+          var _a;
           if (prop2 === STATE_SYMBOL) {
             return value;
           }
           var s = sources.get(prop2);
           var exists = prop2 in target;
-          if (s === undefined && (!exists || ((_a2 = get_descriptor(target, prop2)) == null ? undefined : _a2.writable))) {
+          if (s === undefined && (!exists || ((_a = get_descriptor(target, prop2)) == null ? undefined : _a.writable))) {
             s = source(proxy(exists ? target[prop2] : UNINITIALIZED, metadata));
             sources.set(prop2, s);
           }
@@ -3259,13 +1859,13 @@
           return descriptor;
         },
         has(target, prop2) {
-          var _a2;
+          var _a;
           if (prop2 === STATE_SYMBOL) {
             return true;
           }
           var s = sources.get(prop2);
           var has = s !== undefined && s.v !== UNINITIALIZED || Reflect.has(target, prop2);
-          if (s !== undefined || active_effect !== null && (!has || ((_a2 = get_descriptor(target, prop2)) == null ? undefined : _a2.writable))) {
+          if (s !== undefined || active_effect !== null && (!has || ((_a = get_descriptor(target, prop2)) == null ? undefined : _a.writable))) {
             if (s === undefined) {
               s = source(has ? proxy(target[prop2], metadata) : UNINITIALIZED);
               sources.set(prop2, s);
@@ -3278,7 +1878,7 @@
           return has;
         },
         set(target, prop2, value2, receiver) {
-          var _a2;
+          var _a;
           var s = sources.get(prop2);
           var has = prop2 in target;
           if (is_proxied_array && prop2 === "length") {
@@ -3294,7 +1894,7 @@
             }
           }
           if (s === undefined) {
-            if (!has || ((_a2 = get_descriptor(target, prop2)) == null ? undefined : _a2.writable)) {
+            if (!has || ((_a = get_descriptor(target, prop2)) == null ? undefined : _a.writable)) {
               s = source(undefined);
               set(s, proxy(value2, metadata));
               sources.set(prop2, s);
@@ -3963,7 +2563,7 @@
     return !legacy_mode_flag || component_context !== null && component_context.l === null;
   }
   function check_dirtiness(reaction) {
-    var _a2;
+    var _a;
     var flags = reaction.f;
     if ((flags & DIRTY) !== 0) {
       return true;
@@ -3980,7 +2580,7 @@
         if (is_disconnected || is_unowned_connected) {
           for (i = 0; i < length; i++) {
             dependency = dependencies[i];
-            if (is_disconnected || !((_a2 = dependency == null ? undefined : dependency.reactions) == null ? undefined : _a2.includes(reaction))) {
+            if (is_disconnected || !((_a = dependency == null ? undefined : dependency.reactions) == null ? undefined : _a.includes(reaction))) {
               (dependency.reactions ?? (dependency.reactions = [])).push(reaction);
             }
           }
@@ -4073,7 +2673,7 @@
     }
   }
   function update_reaction(reaction) {
-    var _a2;
+    var _a;
     var previous_deps = new_deps;
     var previous_skipped_deps = skipped_deps;
     var previous_untracked_writes = untracked_writes;
@@ -4110,7 +2710,7 @@
         }
         if (!skip_reaction) {
           for (i = skipped_deps; i < deps.length; i++) {
-            ((_a2 = deps[i]).reactions ?? (_a2.reactions = [])).push(reaction);
+            ((_a = deps[i]).reactions ?? (_a.reactions = [])).push(reaction);
           }
         }
       } else if (deps !== null && skipped_deps < deps.length) {
@@ -4382,7 +2982,7 @@
     flush_sync();
   }
   function get$1(signal) {
-    var _a2;
+    var _a;
     var flags = signal.f;
     var is_derived = (flags & DERIVED) !== 0;
     if (is_derived && (flags & DESTROYED) !== 0) {
@@ -4435,7 +3035,7 @@
             /** @type {Effect} */
             parent
           );
-          if (!((_a2 = parent_effect.deriveds) == null ? undefined : _a2.includes(target))) {
+          if (!((_a = parent_effect.deriveds) == null ? undefined : _a.includes(target))) {
             (parent_effect.deriveds ?? (parent_effect.deriveds = [])).push(target);
           }
           break;
@@ -4645,14 +3245,14 @@
         "reset",
         (evt) => {
           Promise.resolve().then(() => {
-            var _a2;
+            var _a;
             if (!evt.defaultPrevented) {
               for (
                 const e of
                 /**@type {HTMLFormElement} */
                 evt.target.elements
               ) {
-                (_a2 = e.__on_r) == null ? undefined : _a2.call(e);
+                (_a = e.__on_r) == null ? undefined : _a.call(e);
               }
             }
           });
@@ -4740,14 +3340,14 @@
     }
   }
   function handle_event_propagation(event2) {
-    var _a2;
+    var _a;
     var handler_element = this;
     var owner_document = (
       /** @type {Node} */
       handler_element.ownerDocument
     );
     var event_name = event2.type;
-    var path = ((_a2 = event2.composedPath) == null ? undefined : _a2.call(event2)) || [];
+    var path = ((_a = event2.composedPath) == null ? undefined : _a.call(event2)) || [];
     var current_target = (
       /** @type {null | Element} */
       path[0] || event2.target
@@ -5069,7 +3669,7 @@
         }
       });
       return () => {
-        var _a2;
+        var _a;
         for (var event_name of registered_events) {
           target.removeEventListener(event_name, handle_event_propagation);
           var n = (
@@ -5085,7 +3685,7 @@
         }
         root_event_handles.delete(event_handle);
         if (anchor_node !== anchor) {
-          (_a2 = anchor_node.parentNode) == null ? undefined : _a2.removeChild(anchor_node);
+          (_a = anchor_node.parentNode) == null ? undefined : _a.removeChild(anchor_node);
         }
       };
     });
@@ -5425,7 +4025,7 @@
     }
   }
   function reconcile(array, state2, anchor, render_fn, flags, is_inert, get_key, get_collection) {
-    var _a2, _b, _c, _d;
+    var _a, _b, _c, _d;
     var is_animated = (flags & EACH_IS_ANIMATED) !== 0;
     var should_update = (flags & (EACH_ITEM_REACTIVE | EACH_INDEX_REACTIVE)) !== 0;
     var length = array.length;
@@ -5447,7 +4047,7 @@
         key = get_key(value, i);
         item = items.get(key);
         if (item !== undefined) {
-          (_a2 = item.a) == null ? undefined : _a2.measure();
+          (_a = item.a) == null ? undefined : _a.measure();
           (to_animate ?? (to_animate = /* @__PURE__ */ new Set())).add(item);
         }
       }
@@ -5562,10 +4162,10 @@
     }
     if (is_animated) {
       queue_micro_task(() => {
-        var _a3;
+        var _a2;
         if (to_animate === undefined) return;
         for (item of to_animate) {
-          (_a3 = item.a) == null ? undefined : _a3.apply();
+          (_a2 = item.a) == null ? undefined : _a2.apply();
         }
       });
     }
@@ -5706,11 +4306,11 @@
     });
   }
   function slot(anchor, $$props, name, slot_props, fallback_fn) {
-    var _a2;
+    var _a;
     if (hydrating) {
       hydrate_next();
     }
-    var slot_fn = (_a2 = $$props.$$slots) == null ? undefined : _a2[name];
+    var slot_fn = (_a = $$props.$$slots) == null ? undefined : _a[name];
     var is_interop = false;
     if (slot_fn === true) {
       slot_fn = $$props[name === "default" ? "children" : name];
@@ -6211,11 +4811,11 @@
     var transition2 = {
       is_global,
       in() {
-        var _a2;
+        var _a;
         element.inert = inert;
         if (!is_intro) {
           outro == null ? undefined : outro.abort();
-          (_a2 = outro == null ? undefined : outro.reset) == null ? undefined : _a2.call(outro);
+          (_a = outro == null ? undefined : outro.reset) == null ? undefined : _a.call(outro);
           return;
         }
         if (!is_outro) {
@@ -6705,10 +5305,10 @@
     props();
   }
   function bubble_event($$props, event2) {
-    var _a2;
+    var _a;
     var events = (
       /** @type {Record<string, Function[] | Function>} */
-      (_a2 = $$props.$$events) == null ? undefined : _a2[event2.type]
+      (_a = $$props.$$events) == null ? undefined : _a[event2.type]
     );
     var callbacks = is_array(events) ? events.slice() : events == null ? [] : [events];
     for (var fn of callbacks) {
@@ -6740,10 +5340,10 @@
       lifecycle_outside_component();
     }
     return (type, detail, options) => {
-      var _a2;
+      var _a;
       const events = (
         /** @type {Record<string, Function | Function[]>} */
-        (_a2 = active_component_context.s.$$events) == null ? undefined : _a2[
+        (_a = active_component_context.s.$$events) == null ? undefined : _a[
           /** @type {any} */
           type
         ]
@@ -7096,7 +5696,7 @@
     }
   }
   function prop(props, key, flags, fallback) {
-    var _a2;
+    var _a;
     var immutable = (flags & PROPS_IS_IMMUTABLE) !== 0;
     var runes = !legacy_mode_flag || (flags & PROPS_IS_RUNES) !== 0;
     var bindable = (flags & PROPS_IS_BINDABLE) !== 0;
@@ -7113,7 +5713,7 @@
       props[key];
     }
     var is_entry_props = STATE_SYMBOL in props || LEGACY_PROPS in props;
-    var setter = bindable && (((_a2 = get_descriptor(props, key)) == null ? undefined : _a2.set) ?? (is_entry_props && key in props && ((v) => props[key] = v))) || undefined;
+    var setter = bindable && (((_a = get_descriptor(props, key)) == null ? undefined : _a.set) ?? (is_entry_props && key in props && ((v) => props[key] = v))) || undefined;
     var fallback_value = (
       /** @type {V} */
       fallback
@@ -7238,7 +5838,7 @@
       __privateAdd(this, _events);
       /** @type {Record<string, any>} */
       __privateAdd(this, _instance);
-      var _a2;
+      var _a;
       var sources = /* @__PURE__ */ new Map();
       var add_source = (key, value) => {
         var s = /* @__PURE__ */ mutable_source(value);
@@ -7270,7 +5870,7 @@
         intro: options.intro ?? false,
         recover: options.recover
       }));
-      if (!((_a2 = options == null ? undefined : options.props) == null ? undefined : _a2.$$host) || options.sync === false) {
+      if (!((_a = options == null ? undefined : options.props) == null ? undefined : _a.$$host) || options.sync === false) {
         flush_sync();
       }
       __privateSet(this, _events, props.$$events);
@@ -7435,10 +6035,10 @@
           });
           this.$$me = effect_root(() => {
             render_effect(() => {
-              var _a2;
+              var _a;
               this.$$r = true;
               for (const key of object_keys(this.$$c)) {
-                if (!((_a2 = this.$$p_d[key]) == null ? undefined : _a2.reflect)) continue;
+                if (!((_a = this.$$p_d[key]) == null ? undefined : _a.reflect)) continue;
                 this.$$d[key] = this.$$c[key];
                 const attribute_value = get_custom_element_value(
                   key,
@@ -7472,11 +6072,11 @@
        * @param {string} newValue
        */
       attributeChangedCallback(attr, _oldValue, newValue) {
-        var _a2;
+        var _a;
         if (this.$$r) return;
         attr = this.$$g_p(attr);
         this.$$d[attr] = get_custom_element_value(attr, newValue, this.$$p_d, "toProp");
-        (_a2 = this.$$c) == null ? undefined : _a2.$set({ [attr]: this.$$d[attr] });
+        (_a = this.$$c) == null ? undefined : _a.$set({ [attr]: this.$$d[attr] });
       }
       disconnectedCallback() {
         this.$$cn = false;
@@ -7499,8 +6099,8 @@
     };
   }
   function get_custom_element_value(prop2, value, props_definition, transform) {
-    var _a2;
-    const type = (_a2 = props_definition[prop2]) == null ? undefined : _a2.type;
+    var _a;
+    const type = (_a = props_definition[prop2]) == null ? undefined : _a.type;
     value = type === "Boolean" && typeof value !== "boolean" ? value != null : value;
     if (!transform || !props_definition[prop2]) {
       return value;
@@ -7558,12 +6158,12 @@
           return this.$$c && prop2 in this.$$c ? this.$$c[prop2] : this.$$d[prop2];
         },
         set(value) {
-          var _a2;
+          var _a;
           value = get_custom_element_value(prop2, value, props_definition);
           this.$$d[prop2] = value;
           var component2 = this.$$c;
           if (component2) {
-            var setter = (_a2 = get_descriptor(component2, prop2)) == null ? undefined : _a2.get;
+            var setter = (_a = get_descriptor(component2, prop2)) == null ? undefined : _a.get;
             if (setter) {
               component2[prop2] = value;
             } else {
@@ -7576,8 +6176,8 @@
     exports.forEach((property) => {
       define_property(Class.prototype, property, {
         get() {
-          var _a2;
-          return (_a2 = this.$$c) == null ? undefined : _a2[property];
+          var _a;
+          return (_a = this.$$c) == null ? undefined : _a[property];
         }
       });
     });
@@ -7941,9 +6541,9 @@
     return { duration: 0 };
   }
   var root_1$g = /* @__PURE__ */ template(`<div><!></div>`);
-  var root_2$8 = /* @__PURE__ */ template(`<div><!></div>`);
+  var root_2$9 = /* @__PURE__ */ template(`<div><!></div>`);
   var root_3$a = /* @__PURE__ */ template(`<div><!></div>`);
-  var root$j = /* @__PURE__ */ template(`<div data-testid="app-bar" role="toolbar"><div><!> <div><!></div> <!></div> <!></div>`);
+  var root$k = /* @__PURE__ */ template(`<div data-testid="app-bar" role="toolbar"><div><!> <div><!></div> <!></div> <!></div>`);
   function AppBar($$anchor, $$props) {
     const $$slots = sanitize_slots($$props);
     const $$sanitized_props = legacy_rest_props($$props, [
@@ -8005,7 +6605,7 @@
     });
     legacy_pre_effect_reset();
     init();
-    var div = root$j();
+    var div = root$k();
     var div_1 = child(div);
     var node = child(div_1);
     {
@@ -8028,7 +6628,7 @@
     var node_3 = sibling(div_3, 2);
     {
       var consequent_1 = ($$anchor2) => {
-        var div_4 = root_2$8();
+        var div_4 = root_2$9();
         var node_4 = child(div_4);
         slot(node_4, $$props, "trail", {}, null);
         reset(div_4);
@@ -8065,7 +6665,7 @@
     append($$anchor, div);
     pop();
   }
-  var root$i = /* @__PURE__ */ template(`<div data-testid="file-button"><div class="w-0 h-0 overflow-hidden"><input></div> <button type="button"><!></button></div>`);
+  var root$j = /* @__PURE__ */ template(`<div data-testid="file-button"><div class="w-0 h-0 overflow-hidden"><input></div> <button type="button"><!></button></div>`);
   function FileButton($$anchor, $$props) {
     const $$sanitized_props = legacy_rest_props($$props, [
       "children",
@@ -8106,7 +6706,7 @@
     );
     legacy_pre_effect_reset();
     init();
-    var div = root$i();
+    var div = root$j();
     var div_1 = child(div);
     var input = child(div_1);
     remove_input_defaults(input);
@@ -8202,10 +6802,10 @@
   }
   var root_1$f = /* @__PURE__ */ template(`<option> </option>`);
   var root_3$9 = /* @__PURE__ */ template(`<div><button type="button"><span> </span> <span>✕</span></button></div>`);
-  var root_2$7 = /* @__PURE__ */ template(`<div></div>`);
-  var root$h = /* @__PURE__ */ template(`<div><div class="h-0 overflow-hidden"><select multiple tabindex="-1"></select></div> <div><input> <!></div></div>`);
+  var root_2$8 = /* @__PURE__ */ template(`<div></div>`);
+  var root$i = /* @__PURE__ */ template(`<div><div class="h-0 overflow-hidden"><select multiple tabindex="-1"></select></div> <div><input> <!></div></div>`);
   function InputChip($$anchor, $$props) {
-    var _a2;
+    var _a;
     const $$sanitized_props = legacy_rest_props($$props, [
       "children",
       "$$slots",
@@ -8288,7 +6888,7 @@
     const cChipList = "flex flex-wrap gap-2";
     const cInputField = "unstyled bg-transparent border-0 !ring-0 p-0 w-full";
     let inputValid = mutable_state(true);
-    let chipValues = mutable_state(((_a2 = value()) == null ? undefined : _a2.map((val) => {
+    let chipValues = mutable_state(((_a = value()) == null ? undefined : _a.map((val) => {
       return { val, id: Math.random() };
     })) || []);
     function resetFormHandler() {
@@ -8403,17 +7003,17 @@
     legacy_pre_effect(
       () => (get$1(chipValues), deep_read_state(value())),
       () => {
-        var _a3;
-        set(chipValues, ((_a3 = value()) == null ? undefined : _a3.map((val, i) => {
-          var _a4;
-          if (((_a4 = get$1(chipValues)[i]) == null ? undefined : _a4.val) === val) return get$1(chipValues)[i];
+        var _a2;
+        set(chipValues, ((_a2 = value()) == null ? undefined : _a2.map((val, i) => {
+          var _a3;
+          if (((_a3 = get$1(chipValues)[i]) == null ? undefined : _a3.val) === val) return get$1(chipValues)[i];
           return { id: Math.random(), val };
         })) || []);
       }
     );
     legacy_pre_effect_reset();
     init();
-    var div = root$h();
+    var div = root$i();
     var div_1 = child(div);
     var select = child(div_1);
     template_effect(() => {
@@ -8449,7 +7049,7 @@
     var node = sibling(input_1, 2);
     {
       var consequent = ($$anchor2) => {
-        var div_3 = root_2$7();
+        var div_3 = root_2$8();
         each(div_3, 15, () => get$1(chipValues), ({ id, val }) => id, ($$anchor3, $$item, i) => {
           let val = () => get$1($$item).val;
           var div_4 = root_3$9();
@@ -8544,7 +7144,7 @@
     $$cleanup();
     return $$pop;
   }
-  var root$g = /* @__PURE__ */ template(`<div role="listbox" data-testid="listbox"><!></div>`);
+  var root$h = /* @__PURE__ */ template(`<div role="listbox" data-testid="listbox"><!></div>`);
   function ListBox($$anchor, $$props) {
     const $$sanitized_props = legacy_rest_props($$props, [
       "children",
@@ -8583,7 +7183,7 @@
     );
     legacy_pre_effect_reset();
     init();
-    var div = root$g();
+    var div = root$h();
     var node = child(div);
     slot(node, $$props, "default", {}, null);
     reset(div);
@@ -8595,10 +7195,10 @@
     pop();
   }
   var root_1$e = /* @__PURE__ */ template(`<input type="checkbox" tabindex="-1">`);
-  var root_2$6 = /* @__PURE__ */ template(`<input type="radio" tabindex="-1">`);
+  var root_2$7 = /* @__PURE__ */ template(`<input type="radio" tabindex="-1">`);
   var root_3$8 = /* @__PURE__ */ template(`<div><!></div>`);
-  var root_4$5 = /* @__PURE__ */ template(`<div><!></div>`);
-  var root$f = /* @__PURE__ */ template(`<label><div data-testid="listbox-item" role="option" tabindex="0"><div class="h-0 w-0 overflow-hidden"><!></div> <div><!> <div><!></div> <!></div></div></label>`);
+  var root_4$4 = /* @__PURE__ */ template(`<div><!></div>`);
+  var root$g = /* @__PURE__ */ template(`<label><div data-testid="listbox-item" role="option" tabindex="0"><div class="h-0 w-0 overflow-hidden"><!></div> <div><!> <div><!></div> <!></div></div></label>`);
   function ListBoxItem($$anchor, $$props) {
     const $$slots = sanitize_slots($$props);
     const $$sanitized_props = legacy_rest_props($$props, [
@@ -8721,7 +7321,7 @@
     });
     legacy_pre_effect_reset();
     init();
-    var label = root$f();
+    var label = root$g();
     var div = child(label);
     var div_1 = child(div);
     var node = child(div_1);
@@ -8748,7 +7348,7 @@
         append($$anchor2, input);
       };
       var alternate = ($$anchor2) => {
-        var input_1 = root_2$6();
+        var input_1 = root_2$7();
         remove_input_defaults(input_1);
         var input_1_value;
         bind_this(input_1, ($$value) => set(elemInput, $$value), () => get$1(elemInput));
@@ -8805,7 +7405,7 @@
     var node_4 = sibling(div_4, 2);
     {
       var consequent_2 = ($$anchor2) => {
-        var div_5 = root_4$5();
+        var div_5 = root_4$4();
         var node_5 = child(div_5);
         slot(node_5, $$props, "trail", {}, null);
         reset(div_5);
@@ -8838,7 +7438,7 @@
     append($$anchor, label);
     pop();
   }
-  var root$e = /* @__PURE__ */ template(`<div data-testid="progress-bar" role="progressbar"><div></div></div>`);
+  var root$f = /* @__PURE__ */ template(`<div data-testid="progress-bar" role="progressbar"><div></div></div>`);
   function ProgressBar($$anchor, $$props) {
     const $$sanitized_props = legacy_rest_props($$props, [
       "children",
@@ -8893,7 +7493,7 @@
     );
     legacy_pre_effect_reset();
     init();
-    var div = root$e();
+    var div = root$f();
     var div_1 = child(div);
     reset(div);
     template_effect(() => {
@@ -8909,7 +7509,7 @@
     pop();
   }
   var root_1$d = /* @__PURE__ */ ns_template(`<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-weight="bold"><!></text>`);
-  var root$d = /* @__PURE__ */ template(`<figure data-testid="progress-radial" role="meter"><svg class="rounded-full"><circle cx="50%" cy="50%"></circle><circle cx="50%" cy="50%"></circle><!></svg></figure>`);
+  var root$e = /* @__PURE__ */ template(`<figure data-testid="progress-radial" role="meter"><svg class="rounded-full"><circle cx="50%" cy="50%"></circle><circle cx="50%" cy="50%"></circle><!></svg></figure>`);
   function ProgressRadial($$anchor, $$props) {
     const $$slots = sanitize_slots($$props);
     const $$sanitized_props = legacy_rest_props($$props, [
@@ -8953,7 +7553,7 @@
     );
     legacy_pre_effect_reset();
     init();
-    var figure = root$d();
+    var figure = root$e();
     set_attribute(figure, "aria-valuemin", 0);
     set_attribute(figure, "aria-valuemax", 100);
     var svg = child(figure);
@@ -8999,7 +7599,7 @@
     append($$anchor, figure);
     pop();
   }
-  var root$c = /* @__PURE__ */ template(`<div data-testid="radio-group" role="radiogroup"><!></div>`);
+  var root$d = /* @__PURE__ */ template(`<div data-testid="radio-group" role="radiogroup"><!></div>`);
   function RadioGroup($$anchor, $$props) {
     const $$sanitized_props = legacy_rest_props($$props, [
       "children",
@@ -9038,7 +7638,7 @@
     );
     legacy_pre_effect_reset();
     init();
-    var div = root$c();
+    var div = root$d();
     var node = child(div);
     slot(node, $$props, "default", {}, null);
     reset(div);
@@ -9049,7 +7649,7 @@
     append($$anchor, div);
     pop();
   }
-  var root$b = /* @__PURE__ */ template(`<label><div data-testid="radio-item" role="radio" tabindex="0"><div class="h-0 w-0 overflow-hidden"><input></div> <!></div></label>`);
+  var root$c = /* @__PURE__ */ template(`<label><div data-testid="radio-item" role="radio" tabindex="0"><div class="h-0 w-0 overflow-hidden"><input></div> <!></div></label>`);
   function RadioItem($$anchor, $$props) {
     const $$sanitized_props = legacy_rest_props($$props, [
       "children",
@@ -9131,7 +7731,7 @@
     );
     legacy_pre_effect_reset();
     init();
-    var label_1 = root$b();
+    var label_1 = root$c();
     var div = child(label_1);
     var div_1 = child(div);
     var input = child(div_1);
@@ -9189,9 +7789,9 @@
   }
   var root_1$c = /* @__PURE__ */ template(`<label><!></label>`);
   var root_3$7 = /* @__PURE__ */ template(`<option></option>`);
-  var root_2$5 = /* @__PURE__ */ template(`<datalist class="range-slider-ticks"></datalist>`);
-  var root_4$4 = /* @__PURE__ */ template(`<div class="range-slider-trail"><!></div>`);
-  var root$a = /* @__PURE__ */ template(`<div data-testid="range-slider"><!> <div><input> <!></div> <!></div>`);
+  var root_2$6 = /* @__PURE__ */ template(`<datalist class="range-slider-ticks"></datalist>`);
+  var root_4$3 = /* @__PURE__ */ template(`<div class="range-slider-trail"><!></div>`);
+  var root$b = /* @__PURE__ */ template(`<div data-testid="range-slider"><!> <div><input> <!></div> <!></div>`);
   function RangeSlider($$anchor, $$props) {
     const $$slots = sanitize_slots($$props);
     const $$sanitized_props = legacy_rest_props($$props, [
@@ -9248,7 +7848,7 @@
     });
     legacy_pre_effect_reset();
     init();
-    var div = root$a();
+    var div = root$b();
     var node = child(div);
     {
       var consequent = ($$anchor2) => {
@@ -9273,7 +7873,7 @@
     var node_2 = sibling(input, 2);
     {
       var consequent_1 = ($$anchor2) => {
-        var datalist = root_2$5();
+        var datalist = root_2$6();
         each(datalist, 5, () => get$1(tickmarks), index, ($$anchor3, tm) => {
           var option = root_3$7();
           var option_value = {};
@@ -9297,7 +7897,7 @@
     var node_3 = sibling(div_1, 2);
     {
       var consequent_2 = ($$anchor2) => {
-        var div_2 = root_4$4();
+        var div_2 = root_4$3();
         var node_4 = child(div_2);
         slot(node_4, $$props, "trail", {}, null);
         reset(div_2);
@@ -9337,7 +7937,7 @@
     pop();
   }
   var root_1$b = /* @__PURE__ */ template(`<div class="slide-toggle-text ml-3"><!></div>`);
-  var root$9 = /* @__PURE__ */ template(`<div data-testid="slide-toggle" role="switch" tabindex="0"><label><input> <div><div></div></div> <!></label></div>`);
+  var root$a = /* @__PURE__ */ template(`<div data-testid="slide-toggle" role="switch" tabindex="0"><label><input> <div><div></div></div> <!></label></div>`);
   function SlideToggle($$anchor, $$props) {
     const $$slots = sanitize_slots($$props);
     const $$sanitized_props = legacy_rest_props($$props, [
@@ -9440,7 +8040,7 @@
     );
     legacy_pre_effect_reset();
     init();
-    var div = root$9();
+    var div = root$a();
     var label_1 = child(div);
     var input = child(label_1);
     remove_input_defaults(input);
@@ -9512,7 +8112,7 @@
     pop();
   }
   var root_1$a = /* @__PURE__ */ template(`<div role="tabpanel" tabindex="0"><!></div>`);
-  var root$8 = /* @__PURE__ */ template(`<div data-testid="tab-group"><div role="tablist"><!></div> <!></div>`);
+  var root$9 = /* @__PURE__ */ template(`<div data-testid="tab-group"><div role="tablist"><!></div> <!></div>`);
   function TabGroup($$anchor, $$props) {
     const $$slots = sanitize_slots($$props);
     const $$sanitized_props = legacy_rest_props($$props, [
@@ -9560,7 +8160,7 @@
     });
     legacy_pre_effect_reset();
     init();
-    var div = root$8();
+    var div = root$9();
     var div_1 = child(div);
     var node = child(div_1);
     slot(node, $$props, "default", {}, null);
@@ -9592,7 +8192,7 @@
     pop();
   }
   var root_1$9 = /* @__PURE__ */ template(`<div class="tab-lead"><!></div>`);
-  var root$7 = /* @__PURE__ */ template(`<label><div data-testid="tab" role="tab"><div class="h-0 w-0 overflow-hidden"><input></div> <div><!> <div class="tab-label"><!></div></div></div></label>`);
+  var root$8 = /* @__PURE__ */ template(`<label><div data-testid="tab" role="tab"><div class="h-0 w-0 overflow-hidden"><input></div> <div><!> <div class="tab-label"><!></div></div></div></label>`);
   function Tab($$anchor, $$props) {
     const $$slots = sanitize_slots($$props);
     const $$sanitized_props = legacy_rest_props($$props, [
@@ -9701,7 +8301,7 @@
     });
     legacy_pre_effect_reset();
     init();
-    var label = root$7();
+    var label = root$8();
     var div = child(label);
     var div_1 = child(div);
     var input = child(div_1);
@@ -9776,7 +8376,7 @@
     append($$anchor, label);
     pop();
   }
-  var root_4$3 = /* @__PURE__ */ template(`<header><!></header>`);
+  var root_4$2 = /* @__PURE__ */ template(`<header><!></header>`);
   var root_5$2 = /* @__PURE__ */ template(`<article><!></article>`);
   var root_6$1 = /* @__PURE__ */ template(`<img alt="Modal">`);
   var root_7 = /* @__PURE__ */ template(`<footer><button type="button"> </button></footer>`);
@@ -9784,7 +8384,7 @@
   var root_11$2 = /* @__PURE__ */ template(`<form class="space-y-4"><input> <footer><button type="button"> </button> <button type="submit"> </button></footer></form>`);
   var root_3$6 = /* @__PURE__ */ template(`<div data-testid="modal" role="dialog" aria-modal="true"><!> <!> <!> <!></div>`);
   var root_12$1 = /* @__PURE__ */ template(`<div data-testid="modal-component" role="dialog" aria-modal="true"><!></div>`);
-  var root_2$4 = /* @__PURE__ */ template(`<div data-testid="modal-backdrop"><div><!></div></div>`);
+  var root_2$5 = /* @__PURE__ */ template(`<div data-testid="modal-backdrop"><div><!></div></div>`);
   function Modal($$anchor, $$props) {
     const $$sanitized_props = legacy_rest_props($$props, [
       "children",
@@ -9850,9 +8450,9 @@
       set(currentComponent, typeof modals[0].component === "string" ? components()[modals[0].component] : modals[0].component);
     }
     function onModalHeightChange(modal) {
-      var _a2;
+      var _a;
       let modalHeight = modal == null ? undefined : modal.clientHeight;
-      if (!modalHeight) modalHeight = (_a2 = modal == null ? undefined : modal.firstChild) == null ? undefined : _a2.clientHeight;
+      if (!modalHeight) modalHeight = (_a = modal == null ? undefined : modal.firstChild) == null ? undefined : _a.clientHeight;
       if (!modalHeight) return;
       if (modalHeight > get$1(windowHeight)) {
         set(backdropOverflow, "overflow-y-auto");
@@ -9906,15 +8506,15 @@
     legacy_pre_effect(
       () => ($modalStore(), deep_read_state(position())),
       () => {
-        var _a2;
-        set(cPosition, ((_a2 = $modalStore()[0]) == null ? undefined : _a2.position) ?? position());
+        var _a;
+        set(cPosition, ((_a = $modalStore()[0]) == null ? undefined : _a.position) ?? position());
       }
     );
     legacy_pre_effect(
       () => (deep_read_state(regionBackdrop()), deep_read_state(zIndex()), deep_read_state($$sanitized_props), $modalStore()),
       () => {
-        var _a2;
-        set(classesBackdrop, `${cBackdrop} ${regionBackdrop()} ${zIndex()} ${$$sanitized_props.class ?? ""} ${((_a2 = $modalStore()[0]) == null ? undefined : _a2.backdropClasses) ?? ""}`);
+        var _a;
+        set(classesBackdrop, `${cBackdrop} ${regionBackdrop()} ${zIndex()} ${$$sanitized_props.class ?? ""} ${((_a = $modalStore()[0]) == null ? undefined : _a.backdropClasses) ?? ""}`);
       }
     );
     legacy_pre_effect(() => get$1(cPosition), () => {
@@ -9923,8 +8523,8 @@
     legacy_pre_effect(
       () => (deep_read_state(background()), deep_read_state(width()), deep_read_state(height()), deep_read_state(padding()), deep_read_state(spacing()), deep_read_state(rounded()), deep_read_state(shadow()), $modalStore()),
       () => {
-        var _a2;
-        set(classesModal, `${cModal} ${background()} ${width()} ${height()} ${padding()} ${spacing()} ${rounded()} ${shadow()} ${((_a2 = $modalStore()[0]) == null ? undefined : _a2.modalClasses) ?? ""}`);
+        var _a;
+        set(classesModal, `${cModal} ${background()} ${width()} ${height()} ${padding()} ${spacing()} ${rounded()} ${shadow()} ${((_a = $modalStore()[0]) == null ? undefined : _a.modalClasses) ?? ""}`);
       }
     );
     legacy_pre_effect(
@@ -9966,7 +8566,7 @@
         var fragment_1 = comment();
         var node_1 = first_child(fragment_1);
         key_block(node_1, $modalStore, ($$anchor3) => {
-          var div = root_2$4();
+          var div = root_2$5();
           var div_1 = child(div);
           var node_2 = child(div_1);
           {
@@ -9975,7 +8575,7 @@
               var node_3 = child(div_2);
               {
                 var consequent = ($$anchor5) => {
-                  var header = root_4$3();
+                  var header = root_4$2();
                   var node_4 = child(header);
                   html(node_4, () => $modalStore()[0].title);
                   reset(header);
@@ -9983,8 +8583,8 @@
                   append($$anchor5, header);
                 };
                 if_block(node_3, ($$render) => {
-                  var _a2;
-                  if ((_a2 = $modalStore()[0]) == null ? undefined : _a2.title) $$render(consequent);
+                  var _a;
+                  if ((_a = $modalStore()[0]) == null ? undefined : _a.title) $$render(consequent);
                 });
               }
               var node_5 = sibling(node_3, 2);
@@ -9998,8 +8598,8 @@
                   append($$anchor5, article);
                 };
                 if_block(node_5, ($$render) => {
-                  var _a2;
-                  if ((_a2 = $modalStore()[0]) == null ? undefined : _a2.body) $$render(consequent_1);
+                  var _a;
+                  if ((_a = $modalStore()[0]) == null ? undefined : _a.body) $$render(consequent_1);
                 });
               }
               var node_7 = sibling(node_5, 2);
@@ -10008,14 +8608,14 @@
                   var img = root_6$1();
                   set_class(img, `modal-image ${cModalImage}`);
                   template_effect(() => {
-                    var _a2;
-                    return set_attribute(img, "src", (_a2 = $modalStore()[0]) == null ? undefined : _a2.image);
+                    var _a;
+                    return set_attribute(img, "src", (_a = $modalStore()[0]) == null ? undefined : _a.image);
                   });
                   append($$anchor5, img);
                 };
                 if_block(node_7, ($$render) => {
-                  var _a2, _b;
-                  if (((_a2 = $modalStore()[0]) == null ? undefined : _a2.image) && typeof ((_b = $modalStore()[0]) == null ? undefined : _b.image) === "string") $$render(consequent_2);
+                  var _a, _b;
+                  if (((_a = $modalStore()[0]) == null ? undefined : _a.image) && typeof ((_b = $modalStore()[0]) == null ? undefined : _b.image) === "string") $$render(consequent_2);
                 });
               }
               var node_8 = sibling(node_7, 2);
@@ -10136,12 +8736,12 @@
                   var fragment_4 = comment();
                   var node_12 = first_child(fragment_4);
                   component(node_12, () => {
-                    var _a2;
-                    return (_a2 = get$1(currentComponent)) == null ? undefined : _a2.ref;
+                    var _a;
+                    return (_a = get$1(currentComponent)) == null ? undefined : _a.ref;
                   }, ($$anchor6, $$component) => {
                     $$component($$anchor6, spread_props(() => {
-                      var _a2;
-                      return (_a2 = get$1(currentComponent)) == null ? undefined : _a2.props;
+                      var _a;
+                      return (_a = get$1(currentComponent)) == null ? undefined : _a.props;
                     }, {
                       get parent() {
                         return get$1(parent);
@@ -10150,8 +8750,8 @@
                         var fragment_5 = comment();
                         var node_13 = first_child(fragment_5);
                         html(node_13, () => {
-                          var _a2;
-                          return (_a2 = get$1(currentComponent)) == null ? undefined : _a2.slot;
+                          var _a;
+                          return (_a = get$1(currentComponent)) == null ? undefined : _a.slot;
                         });
                         append($$anchor7, fragment_5);
                       },
@@ -10164,12 +8764,12 @@
                   var fragment_6 = comment();
                   var node_14 = first_child(fragment_6);
                   component(node_14, () => {
-                    var _a2;
-                    return (_a2 = get$1(currentComponent)) == null ? undefined : _a2.ref;
+                    var _a;
+                    return (_a = get$1(currentComponent)) == null ? undefined : _a.ref;
                   }, ($$anchor6, $$component) => {
                     $$component($$anchor6, spread_props(() => {
-                      var _a2;
-                      return (_a2 = get$1(currentComponent)) == null ? undefined : _a2.props;
+                      var _a;
+                      return (_a = get$1(currentComponent)) == null ? undefined : _a.props;
                     }, {
                       get parent() {
                         return get$1(parent);
@@ -10179,16 +8779,16 @@
                   append($$anchor5, fragment_6);
                 };
                 if_block(node_11, ($$render) => {
-                  var _a2;
-                  if ((_a2 = get$1(currentComponent)) == null ? undefined : _a2.slot) $$render(consequent_7);
+                  var _a;
+                  if ((_a = get$1(currentComponent)) == null ? undefined : _a.slot) $$render(consequent_7);
                   else $$render(alternate_2, false);
                 });
               }
               reset(div_3);
               bind_this(div_3, ($$value) => set(modalElement, $$value), () => get$1(modalElement));
               template_effect(() => {
-                var _a2;
-                set_class(div_3, `modal contents ${((_a2 = $modalStore()[0]) == null ? undefined : _a2.modalClasses) ?? "" ?? ""}`);
+                var _a;
+                set_class(div_3, `modal contents ${((_a = $modalStore()[0]) == null ? undefined : _a.modalClasses) ?? "" ?? ""}`);
                 set_attribute(div_3, "aria-label", $modalStore()[0].title ?? "");
               });
               append($$anchor4, div_3);
@@ -10253,13 +8853,6 @@
     pop();
     $$cleanup();
   }
-  const configStore = writable();
-  function initConfigStore() {
-    const data = config.getAll();
-    configStore.set(data);
-    configStore.subscribe(config.update);
-    return configStore;
-  }
   const creditCode = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAAA8AXHiAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxMAAAsTAQCanBgAADzWSURBVHhe7Z0HnBRF9sdrMyxZoiCegKCCOZ3xzKcCgp56CoqKohj+6pmznBGMGM+cQDALBgwneuZ4nieGU5KKIoqAIrCEDf1/3zddQ29vd09P2oD++BQzW93TXV316uWqLvhZUCowv8P8+OOP5uOPPzY9evQwvXr1MoWFhe6RYDiOY2bPnm2+/vprs+WWW5p27dq5R37bWCEwNTU1K6WDfvNYvny5M2LECKd58+bOjjvu6Hz77bfukXB88803zuabb+60aNHCueqqq5xVq1a5R+JB+t79tmZBnms5U7IqQWdrHhYvXmymTZvm/hWNlStXmpkzZxohMOVCcK9UKCkpMT/88INZtmyZqa6uNgUFBe6RaHzxxRdm6dKl7l9rJKqieX0Txi+//GKGDh1qhKOYs846y1RVRc+fsrIy0759eyWOyspK2Ll7JBxrr722ef31182ECRPMyJEjTXFxsXskHOeee67p27ev+b//+79Y92iqWGMJCy4yb9481YNeeOGFlBwINbNbt26qV8G94g567969lYDXWmsttyYatIM2iWqLGuLWrnlYYwmrdevWyoHATz/9ZL777jv9HgYIqmPHjqaoqEg5FmIUAsg1xo4dax588EFz/fXXm/Lycrd2zUOTIiy4CDqNKMluTThatmxpNt54YxVPiMXvv/8+JaF07dpVCYvrw1nywVHatm1rDjvsMLU64+hk6G60Jc4zNyY0GcJCPI0ePdoMGjTIiAWmXCUKDNr+++9vNthgA7PeeuupmEs1kB06dFDCgqDgcg0tqrj/zTffbAYPHmzGjRuXUk9sVJDGL5OZ3OghHMfZZpttYDmO6DXOl19+6R4JhwyEI7PdmTNnjn5PhX/9619Oq1at9B4nn3yyuiDiQvrR/ZY7VFRUOMJFtT177723s2TJEvdI44b0xZImw7FQjvv166cc5auvvjJTp05VMREFzu3UqZPp3r27fk8FxJQ9LxXH4t633Xab2XrrrVVfSsVBM0GzZs3MlVdeaf70pz+Z4cOHm+bNm7tHmgCaCscC77//vtOmTRudwZtuuqkjg+8eiQYz/7PPPnNk8N2aYMyePdvp3LmzXn+PPfZwfv31V/dIXcyfP9/Zbrvt9Ny+ffsqV4xC3DYEAU4lhOz+1fjRpDiWtNdstdVWZt9999W/P/30UzNlyhT9ngrXXHON2XHHHdWHFAUh2mRYZtGiRZEcCwcnliOAy6XyYV133XXahlGjRrk18dGiRYuU4aVGh8bAscTaiz0jZ8yYoSEUabrqWmLxuUfCIaJEzxcCcObNm+fW1gXtsHrcH/7wh0iO+MUXXzg9evTQc//4xz86QojukbrgulZXEmPCrQ0HoaFrr73WkYngiBUcW3+jD9PRC/OFRsGx3nvvPXPUUUeZ++67L5aesv7665tjjjlGvwuRmXvuuUe/R0EGXj/Ri15++WX9HgS87zvttJN+h3NFcSFcHzhhgYjPSP1HjAJ1kwARsfoZhaefflq565gxY8xTTz0Vyy1BKOqGG25QVwb6Z4OjoTnWgQce6EjHafD3zTffdGuj8c477ziiaMfiFkBEpiNEo+eLEhzKHeEMIt6cCy+8UC3EKC767rvvOq1bt9ZrCqG7tcE47rjj9DzKs88+69YGg/tvttlmei5t5j5xMHPmTGejjTbSvtxnn30y0uVyhUbBsbB40FGYccOGDdMwTCrgm8IaYyb/73//M//+97/dI8HgfOl09XSjR4VxAOrx2F922WVm1113jeQUePJFIdfv1sMfBvxjOGy32GILs+2227q1wXj44YfNl19+qd+HDBlixEjR76lAG0jd6dmzp+qhcazgvKKhORbWkrDv5Iw++OCDI60xi0cffVR1LazEl156ya0NBj6s//znP8ot0tFZoiDErHqTEIxytygsXLjQefHFF9UqTKVL3nXXXcq9hRidV155Ja22LliwQP176HQNCThWAYQlM7NBg1b//e9/zX777adcoFWrVkaIxuy99956LIxr4IV+5plnVNfBw17fPh70tY8++kitVThFrjgEz/PEE08ohxswYECsjInGBumTpQ3OsZiRzOKLLrrIKSkpUa5Fot3PP//snpFbYOkxo9PhBL8jPcCxGlzHgiPhozn99NONKPJah2ed2GBcEGT+8MMPk7E0eTb99IPcKeJuf//732OnxdQnPvnkkzUnAbChOZYX0qnO3/72N+eBBx5QX04criImv3PEEUeolYjfB+4X9jtSj+WRndLSUmfatGlubV288MILzvHHH+98+umnbk1dfPzxx3rOk08+6dZkDtorBoM+A5xbJpV7JByiPqi1+fLLL6fU2+obcKx6JSzcAjgWGRQGdvr06UlXgZ8Y+NtfFwQcntapKRaRI1aie6QurrvuOj2Pcs0117i1tcEg9evXT88R68qtrYujjz5az0HRZkJkA4wL3CZcb+DAgSmDzfRfly5d9Pw999yzjrGDGuHtZxR6FPv6Qr0RFlzl/vvvVw/4euutp51CWX/99bVu/Pjxah1mAjgbXE6UXC1XXHFF6KIGvPbWn7XTTju5tbUBMW+88cZ6Dt73MO7x8MMPKzFw7ziZE6mAxSgi2nn77bcjORA6IgQv6oOW8847L9lGnnvixIka5yQqYPuZCcfz3n333VlPgjioF8KCqE488UQ1yxmsoIKjcezYsaEEkQrMTBuchtuEKf4MWJ8+ffQ8wjuk4gRh11131XNoc1AICOLDAYkzkxAKf+cCccT/PffcoxOI9jEx4UwAg+Tss89OOm2DCu6ZSy+9NJaozQb1QljEvNBpmF277LKLM2HCBEcUbc1UuOOOO3TWYw3SWRCXv2MhTEQmeVVRIH/KdiDXCcMJJ5yQPI+2BAHvPMchrKBlYLkiJIAYw7cWR0/6/PPP1b9F2+C89957r3vEce68804VyxzDqkZPxdf2wQcf6HnUWW6NHpdPz3zeCeutt97SGSSWn3POOedoqokfyP4zzzxTCYuO8TobETFXX321cpn99tsvMjUFztKtWzftOJTgr7/+2j1SGyjbEDrnocwHEQmDwbH77rsvp0TkB4P717/+VScXYaooMLG22morbTflggsuSIpgOHb79u21HukQxGXh4qNGjdJnp6+feeYZ90jukXfC2n///fVhIYoovxQEs+WWW+q5WHh2MGHvgwYN0npEFwp31ExD3+BcyujRo93a2hCT3llnnXX0HJT+oDgj3AOdLxe6UxQgcjg5bbnkkkvc2mCghNv46IABA2q121q7iPCojAw44/bbb6/nDh48OG8iMa+EhQhBcYT9ouhaYqFDCFs8+OCDSUWSY6eddprOJBL46ACLJ554wmnXrp12BmIgKigL6+/YsaOeS/JdkBjj2tYC6969u5rtuQTPgni76aabnIsvvtj57rvv3CO1AQFsuOGG2g7SoVHao4D+dfvtt2vA25uWzb1IxaHvUC3sZCCdCIMJkYiVafsfAkb1IGAdxtWzhdwrf4SFlcMMo7z66qturePceuutTrNmzVTZJhZmgV4EEdLZX331lVubEBdXXnmlDgAF300YUKSJO8IFYPnoUH7dhQEaMmRIMqMCrmE7PR0Q+8O1EfRbYpLoZ3BZxGmQ/mSfl2fCH5Yqj8rex3+tuXPn6gTmfvjfLCAqng+F3VuP8k99r169Yq0byAQQVt487zbGJ/eBePU7YMMNmV0aE/RuoiEzzf1WG5x7xhlnmIMOOkhz0v/85z+7R+qCHHEbNxQCMo899phmTXjBsvjttttOc684hrc77N5heOihh7Q95JHZLFIvyEiQCaLrFMmqEEJ3jyRApECIT6ML9ANtpu1BIDfrueeeS7bRfy3bz/SxEJ1+B6xMsv3sXUyb7rNmDGlQxhwLvQmrLQhE9FG6mbU4Jr26EfqC15GJrB82bJhyGnSAIH2MGY0Ca2duGGjPzjvvrJyA602ePNk9shrc34pXIdRY2RReYFDAdfEVhek0tCNsYxE4NeKP+2OtBel5cNbLL79cuRoqQFiuGn2HaIcD+732WJFED+gzCmOAcs+YbLHFFrVUDgvOoz+ycajKNTIXhVgiuA8OPfTQ0Ie2IgxHY5QO8c9//jO5iIFdW3i4bADRwu65HjqbX8xgFDCgHIfArC8oLvBfCTdUq9fqNOlg6NChem+K12XgBVaiTWfu1KlTpG6JbsV5iET6Mgy011rOGDpBbcdyx92CQzVu4qUfWREWpisNhCvgUkCx9DeUAcSJx3kQznvvveceWQ3ypNZdd12dcXRgutwjDFhO3Jfr4o32gyxRe/y2225za+MD4s9kAjAhbRYHHC/MMkNXpG2c95e//CVSB+Ma1qpGd33ttdfcI6vB5EHJ55pw2zDnMD5G67o49dRT3dr0kBVhwWZRtLFGaASNxfloRZztdIKkmPc8EIo8pjFugzFjxqgSDavnGGIzlWWUDlCurbd/9913rxN/gwMgEuzABSGKG2XCqRBvpGJzT4jr8ccfd4/UhSUULNco6832M8+DQk5fMtFF/1PuT0HNKC8v1+sxib3KvB+I9iOPPFJVklS+tTBkRVhg1qxZGiuzDkcKK2fGjRuXtF6Q6zg9Ca7C3ex53oJPhZkSZD1lAjobcxuuRUfjR/MTFoNswzvMUL+uRGQAfQQrystVaCOW3imnnJK2CBVFPKlbsbI5ijvDdYh7wtHjgHZBCGJUJCe7vxBj5JxU/YwbKM7qpzBkRVgMHgUWjb6BGLMPwEJOq4Db8xhYTHs8zdtuu62zww476KyaNGmSPgjn5Ar2WiwwIPCK+yLo+taxSPHOYgiJFGk4GlyZkJIFDlbEOoOHcg2BesHAMeH89+OaPDuEznW9ky8I/N5/7ShwPoW+xKuONGAc6OfDDz9cU7m9/qx8Qu6RHcfygswBvOTIcYKhYbpDYwLOQ8tF4by20xkAVrpQj0IM97J46qmnkusa0UHQIy2YONQj+ukPLyBIxBDHcd6y6npNBYSVMz8W6/3YEQWfCxmaIh61njVud955p5HB0r8bAiKOjYgUXYfoxSabbKJ7OwAhnqRPCh8XPighOv2tTBKtB8uWLUtmqLL6hnOA6Fzm1ltv1e8iVutkggrRJffoEp3OiKWs3+sTCxcuNP/4xz/Uh5Z35Ipj2dnuBWwZ5RPFHo97QwGzGW6BCEM8WmAZ2cAuFhoGCeBZTj/9dBV3KL1wKft8N998sz4Pv7nhhhuSSjz6ls08QPx4fXH49KzrAA7pbUN9ggwI2o5Rw8a8+UJOOZboDu631aBOxIYWy8HSBVxERJaZOHFich1fupBO1PWKcBUv58Tzzzo82sl36XSt52/pfOVG1Nl6AAezx+E6lmNNmzZNPd88p+hSetxCLDYjirpywvPOO083XWsIcH/WVvKsoue5tflB3pd/CRfQDTZYrAmBEUZ59dVXVQSxbIpBigJiVPQfHdzJkyfrAtd0wY54hEZE/9Ml9JYYAEvPWGQh5nWtZVxz5swxzz//vIpElqLRdgCBIu7FpDeih2nIBPCMr7zyihIQCza8i1h5ZlQCjrGki9BUQ4BJxZI1Fu1uttlmbm3uIUwr3vKvVOZpOsCRinkv+k2sICieZEx0RBnOxUwR5ndCxIUdoz7o2cPqo67FsVz2Y0PBa6yEQZ41tShkI1Z2BmbZuVeJzRTsBcoMRrn1K7hB2GuvvXRp10svvaTB3UwRxvrhmGHHqPdyN4uw+qhrcSzoN00BGCMywZVzY6RhAAj9uEdDkIpj4c+R0yI3ImM2xgWBz4ceekgDsXGoPwjc77dUGhKkPBET9ubS9+/fP9LHJm1O7cciRIMjU/SNJJvHYUhiHp7hTKLgiIRMO4zf8fvfUmlIEKYTTpskKpyuXr9eECCsSOVdzqmjXFN34oknmrvuukutIPKNjjjiCM0pItcKq8j/m7hAuUXZR/ENe0kS96f8lhAmQul/Xs8iUkDfduE1GDIBfi728kL1wcfHfTFszj//fLUoMaLYyYY8ryjI+GS2dwMhHGKCXMMWUmPI7iQ9OFOwrg6Wy7VZphQketc0jhXnecLAWgF8ZkQCiAJwrTgIO48FL/ju8O15Y4Xki5EqBOLcQ87JzI8Fd3rzzTd11znMboCviN312LFu7ty5WpcuRNQq18JDfvnll5vDDz9clf01DdL37rfa39MFv8WFQDQgHcMKicJvRcetdf+uXbvqGODn8nJJ/rbjHFsaCXVl7HmHeslKIDYIl8FLjXfbG7TFAw21x6F0YnRwPa+iiEwn9cbmI3GdoFm9JpcwcIwsCBZuBGWDekG/UcjiQCE/5JBDNCrCekw7Nnzi3onzSr0oyHVyG4QmDZjovm0oYQNyobAsUy04tWDZFYl5drtECnlchE+4LsXf8WtyCfOLxYEdB0BYiUxTxsOuGqeQiMl9cgm5b+4Iyw66Fyz7ovFYFXGT+LgGnQmns2sKKaxRpJ7j/s7PZeEeQfUNUWhLNoQFcOmMGzdOtx4gXVtEmfYnn7vttlvGyXxRkDHK745+ONZ4Lx8ymh2ACWWgCxBWwAIhrIBcD7N6iBPy9gfOP+WUU3SfdGl3VnpJKnDt2HpEPYD20D/ptgldVcSkZlywU7QQqF6DscDJecIJJ2hMk9hhriFtzv+OfswYrzONhDoi/cweXnvLnlbkKsGJwkAWqkW6HCtzDiS/q1klpTLgWP2WqL4Jw4033phMzabwna2Xpk6dqmIxn5D21rUKpdLMnz/f/St74P9gLZ8Ff2PJENYhAMwbGwjbXHLJJWrdAGmbflqk8ptEISvuY4elnuB/7mxAaAkuxSf7u+KPuuWWW4zoWLFf2ulHUPuQPGR81IEQUpJjsfSH/HCsO5TnkSNHqnwmryqXIJzDEiiyM2Xg7fApJwtaB+hFuhwru8K96u9+Ydw1DFjK+JuCOBpGEH3JHveZ7j0WBO7JIhCW+rM2EQuexReso7SAY9UiLHLD7W52tuAwI7aXa9BAQgM4Re0eBhQWMEShfgmrcRQ/ICYWZrCmkxhuPhRwwBiRwOhVRQjtwXi8NMKCWetABXUIi4dgcQPuAbuAlJJqH/VsgP6FW+L888/XZUreFdJwNlH+nTfeeMOt+Z2wRKSpNUcqEdY240O2az7A/hIiNtUjb4HfUsSr3pdjLGfzv8WjDmF5gVh87rnnMl4NmwvYvUVpvMVvnbDsNpYU0VdVZWGFcz7AUjLuwzI5LyAumE2YbxLCKho1atQFoues1q5dkDFJMHLdddd1a+ofdvHBWWedpQHu+gDKfqYlX/BeG2WcV+rheqFfLr74Yg1A5+P+bCxCYJut0vlusfbaa2tKt82qDcCqenszxbfffmtEXus7cPClACFu/QzrFHxeIir1Aayvi9/Y32UK+2vvXblmJv4iP6Q/3W+5g9fPhwVG/JQ+pF/CEgu94NlEnVCfIT6suOB33A+rPp1+kd8trRfCEr1JXQoEp8l1J/cc5xyvhyOXPc1Ga4kDrht0rpiiUmTAalYf41wyVVmmhSPXO2Ac81/L2w7Meghq+PDhOptzTVxewvKC+8fpO17/izuHxR/k66dDXJlA2rU0uMU5Bg9vBwofGbPniiuu0L2pbMcsWLDAvP322xlnRgTBSwheFDAgvmO0A9FL+8hx+uyzz8z06dM1a4M2UViUAbfgO2/P4DhiyZ5HpCGX8BJvEGzf0Sbe++hdgeSFPY9P+z3fqBeOxQxGDLIRGoslCdEgEh9//HGzzjrraIeMGDHCvPjii7qChNxqVuPwySoZL1J1dqagwy2h3HTTTZpSUlpSagqLCk1hgZRCGRQpYjvo89AGUaz1O8mNJD+i93Tr1i1nHMs+pxXR/G0Jg1VB9BeFkA0hHPqQCetdrgZ4lhdeeEH7mpVIYRwwV5B21o8o9IJOZ3azitgunWLGsWTK/95BiIz3+9FhiE5A59oOzyUYMJZ2jRs3TnfsIwpguaxTzf3kvgWO1BXrM9iBBhDWcccdZ0aOHKmRhVwRloWXEPCe83Ywoha//PKLW5vALrvsom9Es/3aUICw6kUUekEnYeF5Hx69i2X5EBAWjg0BEYRmdQ5rAusDtA2FGEsIwiGURCkpKzGlzcrke4mGQyAerXfbybNQ5yW2fIFkStZlWqKiDeisRx99tK6kykdQORPUO8cKA7McKxCxyMphcq9ZAAo3YJb+0X2vcz45FiutH3roYfPIow+br0WHKi0tc48m2oeIsZmacDPqsFoRfyeddJI54IADIsWMbTf3Sgfea7IqnMxdOD5xP3LQt9lmGyWodA2hfAGOpYQlnKH8wgsvVKUUC4IFEoAAI0vH6RAsJWYlM4TBZmbzcPl8EKwt7m05A+BvO0C5BgM4ZcpzZuzY682cb78xRYWY2QlCIGi+1VZbqdKOmKTO1tNfo0aNUr0xCrbd6faZn1jRr0gVziY4nwq01bYTyYFhw8TjO/dFV7Ppyh988IG59NJL1beF5BFaSaTNkPpLiEAupPtJ4e0lIMrWPgQZOcb+6WzPw65xbMPDjm9kevo9w4AwDd5gPPd4aYVg1WOeCnHPsR7pXBeuzersQYMGO336bKDP2r37OhrL5JlZvY2neyP5m33S+/btp3t6EoTlGUHQdbMpjEOcfkkF0pdYqkcCZdj1OM7e9GzvJJxZ60hAYMdDxp4QDuk3ZKCSDm1jiKSmC7E5a6+9ti6mkesnQjqswmBzLgKadscVHoj9x4XlM80CC7sTB2U+EOPjJrYRNIo1iF6Qo024iMal03GcGzQAuShcm8Ar+6uutVZ7JZ6BA/dTwiI9muwLCIy3aXXp3MVp224tp43UswEbgeGga+aiZAN2BCT2y9oB0cU0yYB9vILAjkAiHXQLBLs9JWEb/vaPPVt9WsIiCG430oOWIKxIHQufDoozPh18NBSheGX/cj3N6kTh9rNqdobBWYj+YYHoxA/Ep9xT91qHhY4ePVp1BsC1zznnHDX7cTNgFaIsH3roocp6Afel5AOwfgrPjIXYv/8AEcPF5pJLLhXrdBszc+YsscgeN7379DEbbriBaVHeQp2OGB/sP+91qoaBtlsRExfe/sVtgO6J8o5IZIwIt+Bm6N69u3vWatAuDCAvcOWQXeoHm6CQWUoYD1eQ3TsMp/H999+fHA+2OmCPLxtB8UOeMX4GKRyMvB5YKWyfV3kwwyl+2MR99ulk91/y1WGvdvbxG1ItpMOU8i14vQnt8hdmnAW/9c/oXBauz7ORUcGMRKwjIsjLYoXLpElP6r5anEtfIO6pz2e7vPCnNdkiBo57Rm3Qv0Igym0JYLM6x/umEC+4F/vCs0rHP66IRmjAC/85FlKfu8UUftAI5DoJYIhLf6NYbEmaLMdsA8moYBWJcLVanebdtI1z/R2f68I9yBVj52UL2g/BkdYDwTHJSKJjEzXOz2e7vDj22GNr9Q3qBmLIvzWlBWPAtpSoHkwExsO2N1+Qa+d3MUVcSFuS4kE6Utk7bgdEJ+IFJ6m1gDiXkm8gfnDYYgnh6uCeDzwwzgwdOkSPsfWkjfJ7258PeEUhHnYWC+M769Kli4on1IZ07p/v9sr169/zni3oFEoYctlpDCjuBfZGwJWAzgjBE/bBKUm2QD4HyMJLWE0BayRh5RLch0HFyBArSTmY6Clmzz33VG5VX+34nbBiQHQVLcx+0VWSn3i0bYHd45wV/UstUbZXJNQD6pOwLMfCInrkkUe0TbRj6NCh5sADD8x4tUu68BIWFiEE3rlzZxWHhJ9wVOJExvNundh84tSuD47qR84JC4Ih/QXPNCID/YTBgDggFnQmvmMm48H1EhMuDM6H0IjG84m+RcHdQGAY1Cdh4WYhc4ClU7SfZyNhEZcJbcLVEie3ifZmM8BewmKRL9EQdE8KBARBEQ0hrMMr9ajjk3DPmWeemdRP6XtcOUQQvBkQjBt9znPlghCThCXfy1NdMFXnQCxnn322+kzgNBAEv5HrJ9NL7Cf1lLi45pprtINAur/NBDznO++8o23Ff0a7AUSF4swxJsbAgQPNzjvvrMTFuUH9Y9uazYB5CYsdeCZMmOD+FQ2IDX2QFHPAPmZPPfWUxjUJ3QEmMz5H6zvEF0Z6DRyR52Iz4HQD2/LMCcKSL+XsEmw38YJImJ1QOE5Lsj+HDBlSi8r9INGMLYzgVn7QqcwuZg7FsmquR6P5zmwh9oiVA3u3qbcoydzfxgvzTVi0FQIitYedlO1sDwJcmb05xdxXCy1f7fISFuNBFqiVAvxtvzNu9L/l+JtvvrmKcUQm4HnQF8lzmzJlitaRgsNLPYPAfSFGlukzTkiWcePGaUYw3JoYKf2FtIF24JI4a6UuQViffPJJOWkX/IAf2xlqgUlNQzbccEO3pi4gyAsuuECzQvHYQiA8ELMAIkHeU4c+YIkKwuFvGkRhhkGA3o70I5+EZbkKxIKLgfYG3cuexycDChfbbbfd9Lks+J09L134fxvVHwBuafVWOBAF4iIqQL9aoJuRZLnrrrsmuRjjduqpp5qPP/44SZzQgAWrqImktGzZUrkfHBqvP4s4GG/G7I477lAOSJYH2RfC6RKed2J7BJrlOoGFhZE416Ig11HnGzEzmcn6nbibNFIdikKssZ1yUedxjGvlo3DtefPm6Tq5uPcBeLL5XdDxTIoQiRb7t0Xc/guDfSY/GCvGl4iKcDR9EwfbphPfxfFq7yuEp0vx8OITcbDXsjsBeoPQyrHkIcqR21A04oiCOQ17t7JWfp/xDEwXzD5mDso+XBRRg9wHtIOSD/B8KOtwUmKZce4DN0HJ5zeIAelP90jmsPe1/W05FvUo7l9++aXp16+fSgPUBrh8fQKOhQSiPbSRlJq7775b9TN0QOFi9e9uSAX0luuvv15zuWUGKatGzrOZLuBh4gx4phg/frym+CJG4tyHQaed6GSIz3xMPq8oRE/C68+EZ7IdfPDBmm/vFcMNDem3+k9NToVZs2bpBvVYXhgU6A1ePSFfgCCw9CBsBi0dwDHgriIa3Jr8gb6gTzAw6CN2NIZjeAGhc05Dot4IC2sFpTIVYO2kZcBW4QBXXXWVZidmg7gcDhYPkaRDyFwbyxGCRAzmg2N5wUZ0p512mvqiSG+BuyKWAAo71nufPn00BMUCj4cffjjQUs838ioK4QDobTgY+cRkJXUV/SAMDBQzEB0LPc8fYOV4XEJJB9yDJWoUcte99wi6n7dNDByWJA5JrN1cty/IKsTFgJqABU4fcQ7EjW7IXvkW9DmWGvlT9jo2Lw5LLx+Q58/Pjn7PPvus7p9ExiLWJlmJ3E8erNY7/jKBtDdpLeWycF32SSUtJl3wW3aBsa/sDbp+NiUuuDdWGTlXZLzS56J76V6wtl2kILEnP3u5X3LJJWoBC6dzr5C95QnkGrlPm2EpN1zJC2YKMwSF+MYbb1Sfj3fG+yFtc7/V5gyAY97juQJtnPTkk+app59WHw/3QCxyf45R+C69ZqTrTZVTY5xqKfwtBb2G/VZ5owN/5xLcG9Am2sD1bV0YSD1ipRN+Jl5/h3iHs7I+EwerF1izOLeJydpzgb2f/YwLOX9p6G4zFuledNKkSeqF5zc4VskEOOqoozSNmbRXYl12kMLAMQpeYgiRB0f3yivkfhXLl5v5IiYYDPQm66y17bFt5rOQIsdsQWzjPIyKTsSFv8+998UdIlxfnZhMAO4dBCYymRh4x23UgmfCIY3IpBB6A+iWOE4J96CmWFUFAwDXBvflemlgVSxRiJMTJ+B0z4sBwoCz7d5779WEfTJCyRDFQZoJeOsUjjc2ZbWQ9tYRFbkqlSKiEQs8byYlX23zYtttt9UFLjLQzuDBg9Wh6T8nCqghQlS6eyNikRU4pC4LMWjhhQQWvKZYJrTuBX/SSSfpixzijKX0Q+3UZDpGFG71wHr1IGS0zETVl0hzzTW4ryiUqqMwQBZ0XIcOHXQZmkW+Bs8W//X52xZvfapjuSxeDBw4UPUmSwiinCtxsHUkfWjbkw7EEHBIw2ZFjxd42e19KBD0+PHj3aMJiAFRZ6WW3L82YYkl5owYMUIVu0cffdStdXQzU3KrcdnbZUG5BB3CggmUfdY1WpDUzxIxOJ9FPgeRyRRU39DFC/Lu77vvPkdUjFqve2N8WOI1evTorF9ZYgE3ZEnXpptuqoyFezzyyCPuUUdz/uGgbKlO+M6iDmFhEYk+ow0dMmSI1jGQFRUVujUgaw75O9dgA1XW6nFf1jdGIZ+E1ViLH0wA4nZMeAZddKAkgYl+qGsfWSic7VjZsSf+i/WImPRakMSQuScLe2FKFvK72ltFEhbAmkBpJeJt37aO8oci7vcpZQIi6Dj5ePk2KTH4UlAMpT2qoLP9ITHK37Ea/j5HYWesyGY97LDDNGcMZRwl3Gbd4mAmxspYZgruy9hjkGBAYdVjAFiQ80/KNpYmhovn2OqtIhlYYNOEbQ5PrsHiR2J/WBy8b5pYFw/A/WV21mp4EDjPtvW3gjDLzwsIi9QX8qvI2uWllVtssUXWjCAMjAHXxoUBkXvHTY7VfxAaz/agQYN0ZrHiONVGGn40NsKyHZwO0v1NHMKygCkwQeEy3CPoPpm0OR3I9es/CE2yIHt9UtIlqsaKdAk900HFz4QD9thjj03uAuQH3IMwDsQYdR8kBqEz4ovptj8OckpYiNE4jUTM4lBcExDGFfIBUonI4iT3Ca7Pe4jQWdMF7RXLUrND2b4qL0AUCjFkDRyivDHhjDPOCLRkcgUsFWsteb83tKsgn/e3IJuTHXBk2LTgzyImi1M6XfTv31+vgaPVe49cQMYlu70bcGby4vF99tkn+bAUNpbIBOxNxbt0uGaYhzcXxNSYCDJO8YINSXBcQhC2v/E74nNKB7zejxeN3nPPPW6No+nVV111lboW6JdMkTVhsSEGr8OwD4iX/IQTTtCQQSYgbMB18M3gOwmClygaY8kHofpBfjoSgk3gbN/jU6Jv4oJz8Ul5f8M7ebgWu9KkWuMQBblm/LfYy/nut9XAB0V+PCBjgb2bSCumPgpcK+h6LEvCl8UqEpTQ3xEMEvv2339/8+ijj2pWAjor+2Clo+txLn3s/Q3LxQBrHGzgOlOkdDfIDNQ0WJyjQQSDQ5WEM6w9sgLiAKLCGmHPd3wuhxxySHITL/6mo8KuFUaUDQ3bJjtQfOaqnVHuBtwLJFTaTdKyBYtXWMZFFoQfrGEkAZPjUVkc8typE/2IgKMw8to3bzwoWxByIHJOO3jNbDqAfTe24hVdYfX+Y0El6LzGAFQTm7zJsrAoHUzanFoUwm6hYkxdZke2kPvqJ9yPBaGAUEE6gBs0tgJXsSWs3n8sqASdFwekFlaLupX4lH6m0gfq7HE+00lHhFPxShrys1B5kGRRSCkKyVVnn1A2wSAXPFXIJQy8fYIYFkRkCYpl2YQEWDyRLeQ5VCQgRjNtY2MGkQry6nnO/v37qxPUC1EQEp+Vy82qioVm1YpfTOWyn0xNNe9rdkxRSUtT2rKDKW3W1hRLKShupr8REtbfpQIOVfxn7FNKuAjdLgzCPOKFdHB8MlhxZ48XNAiud/PNN2vAkpUjOOVyqZzDBdlfgA1Zhw8froFZL3Ghz/GKEN6I4V/ahY6I0xGPNnqkBdz5/fffV+OELEwL6lnXhw7iXxTCwlUIgBid1RFpG/02Y8YM3eOA32QSGGZBMesHuRbxVl4e4MWqigXmp88nm4q575jlC6YbZ+UvcnN4E0LJ5V8Fxaa4RWdTttb6plXPvUz73nuZ4tL0FlTw/KnGDsKKZRVmSlSA1OKTTz5ZB4lBZDdiZl0csHSJVGcIOwoQ77XXXqs7AU+ePLmOyIZw2M8KTzOeaiuOAS9k4hhhEq8Xm5Ut1BMk9656oT1wbgoEZkG2BlYt9exhZe9BvxEfJUUbTsNayUxgNx0hH71lqwQx2FWMi2a9Yr58/Ejz/WuXmyVfv2mcFUuED5WYgsIyEavFUkq0SGNM5dIfzOJZU82cF880s6acZpb+9IWSHYINDpbgfKv7xwvuH5chxCKsdIlKlE/lEOxiwtZGpHMwS1kDx5q4OOv2kOeskeMabLoRBR6W+/DqD5Y5+R+eTSsQxeTQs8DAPg8ZAeTn0z6OzZw5U+sBxIAVBKeBsCyhsOLZ1vMbO0m4PvVMHF6U5CVuFpYSl2PBBZtneAk7LhA977z9jnle9BsbY61e9qOZPfUCM2PS0WbVohmmtEUHU9SstSkoEm4pBAWHqqpxzMqqai1VMi4FUl/SvI0pLW9rfv1qqvl84gFm3gd3moJVdu2hFap1kQ4dxCKsdEGHQxCwbMDCyquvvlo3T4taU+gFsUQWXtCJ5P2kwvHHH69KJcToFTWIJ3bjA+SUsce5BVs1MdgA0WYXbKCYwr0gGnLFEIe2U2mXFbMQkiUsBt6KUjiWl/vRF4haQKoQ7wrKBP027mc2ZzFKQaFZsWSucJxTzC+fPiL6luiVQlAgQbSJUlW5zJS27Wm6/+l8s96frzRt199XdC72KBMCk39l5e1N85JCM+/ta8yc10ebmiomA8+ZHiMJQl4Ii8FEMech2V8AgmKVTtzAM78jsYwVKWyfxMreVMCSYutGv9geM2aMcibAu429m94jmuE0AOK3viAIC0OAdthENwsIzV4fw8MSFsRvX3LAJmb0gQUGBaIWoO8hZjPhWoBfVS5faGZPOdlUfPu+KS5ra5zCZkoo/EMZr5GzqqtXiKgsNt33uMx02vSvpkOfAWa93S4wrXvsaqqEO+lbZrleYbkpKW1tFnw03nzz2hVSw++zR04IC7bP4NnOQuQhkthzi1egkcnIgHMOBIf7goJYsYPu7Wg7cHAQ69nPBIgg+0o6xCQ7oXgBZ4WAADvXWRGNTod4pE2IVa8FBvFCxIBzLGHRZvQrQB2rv71A/4IDcy0v4acLp3ql+fbN64Wo3jMl5WvJjWsPIb3I1WsqV5hW62xjWnfpZ37874Pm8ydHCrdaaTpscqj8pLm00aO3FhSJGG1nFvz7djP/v+NMgXC0bJE1YeGOgIAYNPQqBoOQACyfHWJIb0bn4u2qpLDaRZEsR+c7BIhC7PeLeDvfPxCcm8oIgNjZXAQrDQsNa9QfOfC+CgTl2oLfYsEBfuvV2XCVWMLCt+NtA8q5nQgYEd7JgkVKqgrqwUUXXZQWcSlnSXw1i4Wgfv7iGVPaMvFOxdVHErBXdZwaIbz2xhECWv7jf8yCjx80i6Y/b5p37Guate8hs2eFnGt/K5ar6F7NW3U0c9/9h1m+aLZb6796fGRFWKyoxb+F9YbCyiy1HY34YAAYJNwLI0aMUB0IpRjLCG6FuMCa4hjbB0Ew3sEIA0SK7sW+pGHnoyxjidIe8r/RrfxmvrXQEGPepEMmgrVE+Y03bublOP4kOTis3d3Z7mNlwXVwQ8C54uiMXnifcP7HE02BU2lqCspEZAUTJ+o377wuKipTAnOkD0plclQvX2AKy1qK+GxjatQVsRrco1rEorNqsfl55vNKkNkgY8JC/yEQyrZDDB6ciY6zs9mCWYrLAWWW3WPwN+EW4PfsJINegkhhw1V0jzgzGQJFN2J/TfScIEDoWG4An49dGOIFjj7ENi4HL/F4OZaa9x5OB0ey23AT1/RzTd4LDahHiQ8C4p+Vx8Rg48D2yK/zPjSLv3rVFJag8wnxJKp9gERExxLCKm3dVURnlalZ9av0a6EQS5VwJplcxeWmGiuxcqXUJQiMa2kpKjE/f/mcqVqxOFmXCVIusQ8D3Am2DmfCEhs7dqzOei9hocMMHz5cOxJfFk5SBhnvO6KBQSATEuLgXAaCzAY4TBT4PVYcyjhWpp8Y8WsdeeSRKqpoH2LZq6tZLoOlRgAcz7/3GhAZ+7tjMSLiyRywz8X14KxMKByxPIOXE/KdfqENXAdR7+eUqAhwaYgfP5nfix4EWvzjh3eYiu8+EI7TWgacfxC1o9ZctViANdWr5PsKU7VymSnvurVZZ4dTVdea/5/7jVNVYYqEU7Xtubtp3W1r0w7naMsupmL+Z/qbQghOrojFWbl0vilbq6cp75Sw4DMgrtWrdNyK2GBWw2Gw9EiZCcp8QKdCbMH+2SA1bMN9PPJwP1aZoK8ROojiXBCGHTg/hwRwSPxlnAeBwTWjrucHv0PMwUlps1fH4hhiEg6Mtef3meELQ3fEMoRgibH6l7OhGvAaOODdajwMENVKEWPTHx1qqhfPMUWldgWVcB2x8ApL25jmbbooR0KZb9ahr+m8zfGmebse5vuPJph5b44xJcVFprKmwHTa+gTTfoOBpqxNV1Mo5y+Y8az5+oVzTVmpcMHCRLRg1bIFpnXvP5veg+7Qe6cr1qSPMl9MQYeiEOPNDiIqRNVbb72lyu+wYcOSm4NhhUFkzGq7ERscCJHEzGaRBTHFKEAk3D+IqOAyiFgIAPcBg+gnKtqAbgeXDPLqcz4ikEnjJxyO8UxwQP8xgJ5ldSivn8wLDAWblkKohvOiQOsrF8811UvnSh+tTieCQzXr+kfT+6CJZoMhk80GQ5/Rsu6eo01hcXOxBseZH96+NsExC4pNUYFjfnjrWjN9Yn/zxcRBpmLRLNNxwwNEod9IRPdq46mwuMRULf5Kro+CnxkyJqxUYPAgHNg8+TuWCFD08ekgChhYwGBBXLgk4IRxdv7zA0Ki8JZ3dB9wzDHHqH/KC85BbBOuQcx5wzW5AFYjnIpnwU8GF/brYezGh74JmIBej38YVi37yTiiExV4JhNKeefNDjEt2vcyi2b80/z40QMi9u4zc1670syYNMLMff0qUyzEVFhULM9dJdytwrTrtYtp1WUTs+z7j8yyH7DiRbFvs45cbLUyX4jHvmKRqVq+yK1JH3kjLAsG0gvEAoSErhLE6TIF14TTodgjJhFhiGAbDLZAn8O/hShD1FklPVdgAkE4iGl0MZR02uMFInTkyJHqbIUrxnIcJ/vR8hA+xfIrFq4pX38UPeqbqRebb4WoFk0bb1b+MlvaUmCcQmmHcOUVi380HfodaNr3PcAs/1msYRR4wjhCWMWlLTzXF0hfJqKGtccuHeSNsAhvIBYYSILA1k81ePBgdZpCANZTjTjiHD6Z8Tatht/ce++9mjLL3lreMEkQEKOY+QAL1abaeoFCjw8M0Ea7zXeuwETCALHPQJwziAPDMXnZAr40uHVK1BljKshSTXDDwpLmpqRZay2kyJS139CUdugnivxSU1DWzvQYcJMQ1UHmuzeuFm40XwiyNGEh6jXIwNDLJJG4XSMkLHQQRA3EgTLtFTlYj15LjEAwSi4iA8XX6mN0PLsDIk5wTyBaooDVad0PKO92cL1ARFudho3L0t0h2QJxCyHbCWPBM2HV8vJOgGESJtqxjL2pOlEguFwoCrglpNVI9CH3JUyjnyLWSsrbmV4DbzI9B99lNjjwPrEIW5lZz55sKpctNMUlhICE27WQe4uyj9jzOi/4Pek0q42E9JFXUcgGH3AETHPCHXAlP9Av0LfgIhAC/ixLcKNGjUpuNc3udOhqYcBQsJ50fFaIwSAgduBkED7iyOu/Sge4Ogg833LLLW7NatB+tsmmvbzIyRufzATwjZIWHeS/lkm/U11In2m3FahOtfjr183MZ/9m2v5hB1Mx/1Mz+7nTTM2qJeoDSwi5QlNW3onGCrHNl4/VpFBTXWWKytsLcdXNe4+LvO/dQBAZFwLchsHErwWnwLsNR8LHhIhjluPwxM8FFyAcw443gAF64403dIaHAX8UCYVYaoRTCBuFAQ6C3mM5Y7pAdGAUQPToUxghdjJ4wX1Q4i3xBp0TBxAWsb3Zz55olsx8WdSjRBYGvqv1Btxo2vXc00yfdIxZ8t17ci/inRAOBLPQtOy2uan8VSxK0acKSsqlvsY4K381JW16mt5/ud9Urlxs/vfQX00ZUrEQK9cRQ2Gh6bTdiab7jmfpvdPlPtI/+d+7AecifilCKogg/DZwCrIhIR6ICmIiAwLdBLBjCi8BArgMMMmjiAoQZEanY79TXBdRwFLNlKgABGIzIbDqwkQd98F44PwoorIGDiEm/GdBIFGv7fp7m6qaKiUOMhjcI/o/3MhZschUr1go5WdTI9+LigrNsu/e1+Q+p3q5qVm+wFRjXRaVm7V3OMUUCxec/+G9ouRWqJIPOdaI9VjcqrPpsMEgZYCZTYV64Fh0GoVgMHlRcBXEHtYTSiued+KNWEjUsQc53mosN3532WWXmXPOOSelyMJNAQdBZwlaupRrMAkITdFm9KhU0YJUuP3221Wf5FnZfdn7vJaEqqsqzKcPDFACKSJnXYipx363mTY9djPfvD7aLP/hE9HDiA/S5wmvvCUM5WFCPM3ar286bnygad6ut1k04znz1T/PEQJM+AQ5t7JypWn1hx1Nr33HihGQGVnI/RvmXTpYf8xgxIQfODfPO+887Rx8PXjusx20dMG9QRSX4ZVqcFzENMYHEyNToBbwrBgD6GRwb68rhtZQ4E3ff3iP+f6ta01JaQvjVC0z7Tc/yqy9zfEarllNROFwCPmsWGyWzP1AXRNO5ZIEkeoz18jYrDK99rvFtFtvF/mL/K700WCEFQb0Md63jHhEV8IStEHd+gSZFliicA4SDv1gELAKMUYwTkgTyhZwaJzHcHC4oT++aLFSRNmMycea6oWfmQKx3ETNNq26bqOcKEEcQl7JCSGfLpVRhbW3aslcs2LBdP0slIOFbhiHE6ukrnW/Q0yPva7MmFuBRkVYiBP0MBvxv/zyy9WyAlGcIy4QlXfeeafqPYSY/I5TC9wRiGjcFhAWXno/GMA4bUoMdCLDA2OBuGVYvj/n0kbahVgKAyJt0eyXzcwnjjKlzRPLuKoqlwsnWmUcaRLpMom7EqTWHySBO6KosEh+wz0SmbaJs0TRX77QOCWtzSZHTjGlrbomfpshIKy8K+9xgPebmB5xNR6WiD8pLfrgMQYwDnAL4P4499xzNTkxDOSIQVxYpnwGIW6bOA8LlbRsAs24Qyyx+cG5NocNfTTMIEBrWkuswJ4Db9I3ZJCwV1ZSZsqatzTNm7U0zZq3ksJba/mUv8vlU0oZn/J3aVlz4Ybe9O0asRiXmpK2PUyfg+5XovJ7yjJBoyAsMkhJIRbuqdwCIstGZ/EDSws/lw2thA0uwMqziPKbxQX6E4AD0oagoLcXED3qAItDrA/PCxybkFfHjf5ieg64yRQ0byNGnVh6Ul0jYrFGh7RIzqAUu5+I1UThu8vLDKnKlUu+N2UdN5Jr3Whad95UjwQL4fTQ4IRFh+NasLnvOEtxhuYSrKbBlIegcDNEbaDh9e7HCrWkABEGK3bRo8LcCRbkaBHuIgOEpWpMtrpA3NWYdmIN9trvH6a02w5m+a/zVSRCesKOEp8BJcGpakSB/9WsWlFhWvUbYnrvf5dp0amvHOZYbtDghEX+N555wNvqsQijdAzA4OCURGxZjhAFjAFihABlOyroi1UGMWA0RDlZ44IoAIsoAOnYqTgWDlf0QJ4LhzGTwovE0CeIpLqg0LTovJnpd8gjwnFuMM1If6mGaJaqeMOB6lRWmBopfKeucuVS5Wwt19vZbHjQA6b3vteY4uZrCaHmjqgUKO8ykxsM7FwiFpBuM8n7XeKAjfOF6zjdu3d33n//fbc2HMINdbecPfbYw+HVHmGQvtBP0fV0dzv7d7bgdXX77ruvM2bMmFob8AdB9E1n+PDhKu+Ki4udCRMmuEeiUSP/VlUsdJb+MM354ZOJzjf/GuXMnHKCM+PpEVpmP3+KM+eNK52F059zlv30P6dqZWab48WB9Ft2O/rlAnQkb70QURV7IHfYYYeEoiFl6tSpbm00uI9wLt0iqL7Bc0HcYvW5NdFgr1EmG8/32GOPubXR4Klq5H96sKamyqmuWuFUV1Y41auWJYp8r6mS+0tb9Bz33HwAwmpUfqw4YGUQGRAA0YnvK9NAcrawS+rJkCCclEuQWoT4RjSHuUa8gAot+B4m2PzHciwAFUJb+XnDar6wYMGC5L6bLVu2dN599133SDTGjx+v4qgqiw1b/UCknXzyyc66667rDBs2LON9V4MQl3M3VsCxGoW7IS7Ym8ku6SItJs4+ECQKEvQmP9+mLOcCGAS4BrA22YuBGGeusNrHlAAuEH/eV2NHkyEsnIbE0HCm4uMiiTCVrwsLDG87zkb2SQ1zOmYCnJn2/vjHaFeuITNfExYJGRFDtX64poAmQ1gQCcQlnFY5VZwYIu4Iy+FI7gtbfpYJ0HtI4IO7MOCEY3INuBS+L4iW5WRNiWs1GcLCscmsxStPVgFJg36R4QdZB5ZLkQ4Nl8kVMBggLHxuEFYqx2cm4B7kopFJSygqzr5ijQVNhrAgou22207zs3AipiIqHIzsuAeng7vAsVJZj+hNbBHOmsNUhAJBYQnyybn8Ni6wJmkX3DcVcLCSp8V2lameuTGhSSnv6YDBs555uBvp0KkGhjAKcTrep8jOOamAaIWwEIO4HdCJUsFuNYnul0q0NSVC8mONJSxEoOUicZZ5McjsTkPs0pZUIFMVwoJ4SbuOQ1iIczJPCdfk0phobFhjCQsuxSoaRCB5VamWWaEnseAV8USSIfG6VEDvg6vwG/9eWWFgFRLrKVlX2JR0prQhndFkHKTpQjiCviFfntGtCcfixYud3XffXZ2vOD2nTZvmHgnH66+/7gjX0t/wginCRnGAozdueKcpQvq7aTlI0wUcgRSZOLoKy95JC4ZTbb/99roRbiqwKJVd/BCJrDSKE3oBKP1xz22qaHKxwnwDJRyxGbTQIwzkcEXleP3WIExraYEorVVFYZn7v+N3ZABoCo7FZlS58xz+jt9hTMX/A/eR72+RaQ9jAAAAAElFTkSuQmCC";
   const githubMark = `<svg viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg>`;
   var root_1$8 = /* @__PURE__ */ template(`<div data-theme="skeleton"><section class="overflow-hidden h-full"><!></section> <div class="absolute top-2 right-2 z-1 select-none flex items-center gap-1"><a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader" class="w-5 fill-current"><!></a> <button class="btn-icon btn-icon-sm bg-transparent font-bold hover:text-xl">✕</button></div></div>`);
@@ -10286,8 +8879,8 @@
         reset(a);
         var button = sibling(a, 2);
         button.__click = function(...$$args) {
-          var _a2;
-          (_a2 = $$props.parent.onClose) == null ? undefined : _a2.apply(this, $$args);
+          var _a;
+          (_a = $$props.parent.onClose) == null ? undefined : _a.apply(this, $$args);
         };
         reset(div_1);
         reset(div);
@@ -10304,11 +8897,7 @@
   }
   delegate(["click"]);
   var on_click$2 = (_, showCreditCode) => set(showCreditCode, !get$1(showCreditCode));
-  var root_1$7 = /* @__PURE__ */ template(
-    `<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><ul class="list-disc list-inside leading-loose"><p><strong>注意：</strong>由于Firefox已于ver.130支持WebCodecs
-        API，此次更新更换了Webm依赖库。需要转换Pixiv动图到Webm，Mp4格式的Firefox用户请更新浏览器。</p> <li>新增：现在支持<a class="anchor" href="https://konachan.net/" target="_blank">Konachan</a>（.com/.net）。 <br> 附注：在konachan.net进行批量下载时，请在下载器中添加标签黑名单"rating:q", "rating:e"，否则批量下载仍将下载NSFW图片。</li> <li>新增：现在支持<a class="anchor" href="https://www.sakugabooru.com/" target="_blank">Sakugabooru</a>。</li> <li>新增：Yande.re现在支持批量下载“人气（按日/周/月）”。</li> <li>新增：Yande.re现在支持下载时将图片加入收藏。</li> <li>修复：Danbooru视频不显示下载按钮的问题。</li> <li>其它：一些重构，迁移到Svelte5。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`,
-    1
-  );
+  var root_1$7 = /* @__PURE__ */ template(`<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><p>适配性癖不匹配的网站时数度想要申请工伤赔偿。w(ﾟДﾟ)w</p> <h4 class=" text-xl mt-2">新增</h4> <ul class="list-disc list-inside leading-loose"><li>支持Safebooru。</li> <li>支持Gelbooru。</li> <li>支持E621, E926, E6ai（必须在“网站验证”中填写username和apiKey）。</li> <li>新设置项<strong>网站验证</strong>: 下载失败时可尝试在此填写网站对应的cookies和apikey。</li></ul> <h4 class=" text-xl mt-2">修复</h4> <ul class="list-disc list-inside leading-loose"><li>视频控制栏被下载按钮遮挡的问题。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`, 1);
   function Changelog($$anchor, $$props) {
     push($$props, true);
     const anchorFocus = `focus:!outline-none focus:decoration-wavy`;
@@ -10322,7 +8911,7 @@
       children: ($$anchor2, $$slotProps) => {
         var fragment_1 = root_1$7();
         var header = first_child(fragment_1);
-        header.textContent = `Pixiv Downloader ${"1.6.2"}`;
+        header.textContent = `Pixiv Downloader ${"1.7.0"}`;
         var footer = sibling(header, 4);
         var div = child(footer);
         var button = child(div);
@@ -10360,449 +8949,6 @@
       $$slots: { default: true }
     });
     pop();
-  }
-  delegate(["click"]);
-  const check = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>check</title><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>`;
-  const folderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" /></svg>`;
-  const fileSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6Z" /></svg>`;
-  function updateDirectory(_, directory, $store) {
-    const newDirectory = get$1(directory).split("/").map(replaceInvalidChar).filter((path) => !!path).join("/");
-    store_mutate(configStore, untrack($store).folderPattern = set(directory, proxy(newDirectory)), untrack($store));
-  }
-  function updateFilename(__1, filename, $store) {
-    const newFilename = replaceInvalidChar(get$1(filename));
-    if (newFilename === "") {
-      set(filename, proxy($store().filenamePattern));
-    } else {
-      store_mutate(configStore, untrack($store).filenamePattern = set(filename, proxy(newFilename)), untrack($store));
-    }
-  }
-  async function updatefsaDir(__2, fsaDirectory) {
-    set(fsaDirectory, proxy(await downloader.updateDirHandle()));
-  }
-  var root_1$6 = /* @__PURE__ */ template(`<input type="text">`);
-  var root_2$3 = /* @__PURE__ */ template(`<input type="text" disabled>`);
-  var root_3$5 = /* @__PURE__ */ template(`<button class="chip variant-soft hover:variant-filled"><span> </span></button>`);
-  var root_5$1 = /* @__PURE__ */ template(`<!> <!> <!>`, 1);
-  var root_4$2 = /* @__PURE__ */ template(`<li><p class="flex-auto"> </p> <span class="text-sm italic"> </span> <button class="btn btn-sm variant-filled"> </button></li> <li><p class="flex-auto"> </p> <!></li>`, 1);
-  var root_9$2 = /* @__PURE__ */ template(`<button class="chip variant-soft hover:variant-filled"><span> </span></button>`);
-  var root_11$1 = /* @__PURE__ */ template(`<!> <!> <!> <!>`, 1);
-  var root_10$1 = /* @__PURE__ */ template(`<li><div class="flex-auto"><p> </p> <p> </p></div> <!></li>`);
-  var root$6 = /* @__PURE__ */ template(`<div><section><p> </p> <ul><li class=" flex-col gap-3"><div class="input-group input-group-divider grid-cols-[auto_1fr_auto_auto]"><button type="button" class="[&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button> <!> <button type="button" class="variant-soft-surface [&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button></div> <div class=" self-start space-x-2"></div></li> <li><p class="flex-auto"> </p> <!></li> <!></ul></section> <section><p> </p> <ul><li class=" flex-col gap-3"><div class="input-group input-group-divider grid-cols-[auto_1fr_auto]"><button type="button" class="[&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button> <input type="text" required> <button type="button" class="variant-soft-surface dark:variant-fill-surface [&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button></div> <div class=" self-start space-x-2"></div></li> <!></ul></section></div>`);
-  function SaveTo($$anchor, $$props) {
-    push($$props, true);
-    const [$$stores, $$cleanup] = setup_stores();
-    const $store = () => store_get(configStore, "$store", $$stores);
-    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, ""), templates = prop($$props, "templates", 19, () => getContext("filenameTemplate")), descritionText = prop($$props, "descritionText", 3, "text-sm text-surface-400");
-    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
-    let directoryRef;
-    let filenameRef;
-    let directory = state(proxy($store().folderPattern));
-    let filename = state(proxy($store().filenamePattern));
-    let fsaDirectory = state(proxy(downloader.getCurrentFsaDirName()));
-    async function resetFolder() {
-      set(directory, proxy($store().folderPattern));
-      await tick();
-      const pos = get$1(directory).length;
-      directoryRef.focus();
-      directoryRef.setSelectionRange(pos, pos);
-    }
-    async function resetFilename() {
-      set(filename, proxy($store().filenamePattern));
-      await tick();
-      const pos = get$1(filename).length;
-      filenameRef.focus();
-      filenameRef.setSelectionRange(pos, pos);
-    }
-    function insertDirTemplateAtCursor(template2) {
-      return async () => {
-        const start = directoryRef.selectionStart;
-        const end = directoryRef.selectionEnd;
-        set(directory, get$1(directory).slice(0, start) + template2 + get$1(directory).slice(end));
-        await tick();
-        const newStart = start + template2.length;
-        directoryRef.focus();
-        directoryRef.setSelectionRange(newStart, newStart);
-      };
-    }
-    function insertFilenameTemplateAtCursor(template2) {
-      return async () => {
-        const start = filenameRef.selectionStart;
-        const end = filenameRef.selectionEnd;
-        set(filename, get$1(filename).slice(0, start) + template2 + get$1(filename).slice(end));
-        await tick();
-        const newStart = start + template2.length;
-        filenameRef.focus();
-        filenameRef.setSelectionRange(newStart, newStart);
-      };
-    }
-    const subDirectoryAvailable = /* @__PURE__ */ derived$1(() => $store().useFileSystemAccess || env.isSupportSubpath());
-    const folderBtnDisabled = /* @__PURE__ */ derived$1(() => get$1(directory) === $store().folderPattern);
-    const filenameBtnDisabled = /* @__PURE__ */ derived$1(() => get$1(filename) === $store().filenamePattern);
-    const directoryPlaceholder = /* @__PURE__ */ derived$1(() => get$1(subDirectoryAvailable) ? t("setting.save_to.placeholder.sub_directory_unused") : env.isViolentmonkey() ? t("setting.save_to.placeholder.vm_not_supported") : t("setting.save_to.placeholder.need_browser_api"));
-    var div = root$6();
-    var section = child(div);
-    var p = child(section);
-    var text$1 = child(p, true);
-    template_effect(() => set_text(text$1, t("setting.save_to.label.directory")));
-    reset(p);
-    var ul = sibling(p, 2);
-    var li = child(ul);
-    var div_1 = child(li);
-    var button = child(div_1);
-    button.__click = resetFolder;
-    var i = child(button);
-    var node = child(i);
-    html(node, () => folderSvg);
-    reset(i);
-    reset(button);
-    var node_1 = sibling(button, 2);
-    {
-      var consequent = ($$anchor2) => {
-        var input = root_1$6();
-        remove_input_defaults(input);
-        bind_this(input, ($$value) => directoryRef = $$value, () => directoryRef);
-        template_effect(() => set_attribute(input, "placeholder", get$1(directoryPlaceholder)));
-        bind_value(input, () => get$1(directory), ($$value) => set(directory, $$value));
-        append($$anchor2, input);
-      };
-      var alternate = ($$anchor2) => {
-        var input_1 = root_2$3();
-        template_effect(() => set_attribute(input_1, "placeholder", get$1(directoryPlaceholder)));
-        append($$anchor2, input_1);
-      };
-      if_block(node_1, ($$render) => {
-        if (get$1(subDirectoryAvailable)) $$render(consequent);
-        else $$render(alternate, false);
-      });
-    }
-    var button_1 = sibling(node_1, 2);
-    button_1.__click = [updateDirectory, directory, $store];
-    var i_1 = child(button_1);
-    var node_2 = child(i_1);
-    html(node_2, () => check);
-    reset(i_1);
-    reset(button_1);
-    reset(div_1);
-    var div_2 = sibling(div_1, 2);
-    each(div_2, 21, templates, index, ($$anchor2, template2) => {
-      var button_2 = root_3$5();
-      var event_handler = /* @__PURE__ */ derived$1(() => insertDirTemplateAtCursor(get$1(template2)));
-      button_2.__click = function(...$$args) {
-        var _a2;
-        (_a2 = get$1(event_handler)) == null ? undefined : _a2.apply(this, $$args);
-      };
-      var span = child(button_2);
-      var text_1 = child(span, true);
-      reset(span);
-      reset(button_2);
-      template_effect(() => {
-        button_2.disabled = !get$1(subDirectoryAvailable);
-        set_text(text_1, get$1(template2));
-      });
-      append($$anchor2, button_2);
-    });
-    reset(div_2);
-    reset(li);
-    var li_1 = sibling(li, 2);
-    var p_1 = child(li_1);
-    var text_2 = child(p_1, true);
-    template_effect(() => set_text(text_2, t("setting.save_to.options.use_fsa")));
-    reset(p_1);
-    var node_3 = sibling(p_1, 2);
-    var disabled = /* @__PURE__ */ derived$1(() => !env.isFileSystemAccessAvaliable());
-    SlideToggle(node_3, {
-      size: "sm",
-      name: "fsa-enable",
-      get disabled() {
-        return get$1(disabled);
-      },
-      get checked() {
-        return $store().useFileSystemAccess;
-      },
-      set checked($$value) {
-        store_mutate(configStore, untrack($store).useFileSystemAccess = $$value, untrack($store));
-      }
-    });
-    reset(li_1);
-    var node_4 = sibling(li_1, 2);
-    {
-      var consequent_1 = ($$anchor2) => {
-        var fragment = root_4$2();
-        var li_2 = first_child(fragment);
-        var p_2 = child(li_2);
-        var text_3 = child(p_2, true);
-        template_effect(() => set_text(text_3, t("setting.save_to.options.fsa_directory")));
-        reset(p_2);
-        var span_1 = sibling(p_2, 2);
-        var text_4 = child(span_1, true);
-        reset(span_1);
-        var button_3 = sibling(span_1, 2);
-        button_3.__click = [updatefsaDir, fsaDirectory];
-        var text_5 = child(button_3, true);
-        template_effect(() => set_text(text_5, t("setting.save_to.button.choose_fsa_directory")));
-        reset(button_3);
-        reset(li_2);
-        var li_3 = sibling(li_2, 2);
-        var p_3 = child(li_3);
-        var text_6 = child(p_3, true);
-        template_effect(() => set_text(text_6, t("setting.save_to.options.fsa_filename_conflict")));
-        reset(p_3);
-        var node_5 = sibling(p_3, 2);
-        RadioGroup(node_5, {
-          class: "shrink-0",
-          children: ($$anchor3, $$slotProps) => {
-            var fragment_1 = root_5$1();
-            var node_6 = first_child(fragment_1);
-            RadioItem(node_6, {
-              name: "filenameConfigAction",
-              class: "text-sm",
-              get value() {
-                return FilenameConfigAction.UNIQUIFY;
-              },
-              get group() {
-                return $store().fileSystemFilenameConflictAction;
-              },
-              set group($$value) {
-                store_mutate(configStore, untrack($store).fileSystemFilenameConflictAction = $$value, untrack($store));
-              },
-              children: ($$anchor4, $$slotProps2) => {
-                next();
-                var text_7 = text();
-                template_effect(() => set_text(text_7, t("setting.save_to.radio.filename_conflict_option_uniquify")));
-                append($$anchor4, text_7);
-              },
-              $$slots: { default: true }
-            });
-            var node_7 = sibling(node_6, 2);
-            RadioItem(node_7, {
-              name: "filenameConfigAction",
-              class: "text-sm",
-              get value() {
-                return FilenameConfigAction.OVERWRITE;
-              },
-              get group() {
-                return $store().fileSystemFilenameConflictAction;
-              },
-              set group($$value) {
-                store_mutate(configStore, untrack($store).fileSystemFilenameConflictAction = $$value, untrack($store));
-              },
-              children: ($$anchor4, $$slotProps2) => {
-                next();
-                var text_8 = text();
-                template_effect(() => set_text(text_8, t("setting.save_to.radio.filename_conflict_option_overwrite")));
-                append($$anchor4, text_8);
-              },
-              $$slots: { default: true }
-            });
-            var node_8 = sibling(node_7, 2);
-            RadioItem(node_8, {
-              name: "filenameConfigAction",
-              class: "text-sm",
-              get value() {
-                return FilenameConfigAction.PROMPT;
-              },
-              get group() {
-                return $store().fileSystemFilenameConflictAction;
-              },
-              set group($$value) {
-                store_mutate(configStore, untrack($store).fileSystemFilenameConflictAction = $$value, untrack($store));
-              },
-              children: ($$anchor4, $$slotProps2) => {
-                next();
-                var text_9 = text();
-                template_effect(() => set_text(text_9, t("setting.save_to.radio.filename_conflict_option_prompt")));
-                append($$anchor4, text_9);
-              },
-              $$slots: { default: true }
-            });
-            append($$anchor3, fragment_1);
-          },
-          $$slots: { default: true }
-        });
-        reset(li_3);
-        template_effect(() => set_text(text_4, get$1(fsaDirectory)));
-        append($$anchor2, fragment);
-      };
-      if_block(node_4, ($$render) => {
-        if ($store().useFileSystemAccess) $$render(consequent_1);
-      });
-    }
-    reset(ul);
-    reset(section);
-    var section_1 = sibling(section, 2);
-    var p_4 = child(section_1);
-    var text_10 = child(p_4, true);
-    template_effect(() => set_text(text_10, t("setting.save_to.label.filename")));
-    reset(p_4);
-    var ul_1 = sibling(p_4, 2);
-    var li_4 = child(ul_1);
-    var div_3 = child(li_4);
-    var button_4 = child(div_3);
-    button_4.__click = resetFilename;
-    var i_2 = child(button_4);
-    var node_9 = child(i_2);
-    html(node_9, () => fileSvg);
-    reset(i_2);
-    reset(button_4);
-    var input_2 = sibling(button_4, 2);
-    remove_input_defaults(input_2);
-    template_effect(() => set_attribute(input_2, "placeholder", t("setting.save_to.placeholder.filename_requried")));
-    bind_this(input_2, ($$value) => filenameRef = $$value, () => filenameRef);
-    var button_5 = sibling(input_2, 2);
-    button_5.__click = [updateFilename, filename, $store];
-    var i_3 = child(button_5);
-    var node_10 = child(i_3);
-    html(node_10, () => check);
-    reset(i_3);
-    reset(button_5);
-    reset(div_3);
-    var div_4 = sibling(div_3, 2);
-    each(div_4, 21, templates, index, ($$anchor2, template2) => {
-      var button_6 = root_9$2();
-      var event_handler_1 = /* @__PURE__ */ derived$1(() => insertFilenameTemplateAtCursor(get$1(template2)));
-      button_6.__click = function(...$$args) {
-        var _a2;
-        (_a2 = get$1(event_handler_1)) == null ? undefined : _a2.apply(this, $$args);
-      };
-      var span_2 = child(button_6);
-      var text_11 = child(span_2, true);
-      reset(span_2);
-      reset(button_6);
-      template_effect(() => set_text(text_11, get$1(template2)));
-      append($$anchor2, button_6);
-    });
-    reset(div_4);
-    reset(li_4);
-    var node_11 = sibling(li_4, 2);
-    {
-      var consequent_2 = ($$anchor2) => {
-        var li_5 = root_10$1();
-        var div_5 = child(li_5);
-        var p_5 = child(div_5);
-        var text_12 = child(p_5, true);
-        template_effect(() => set_text(text_12, t("setting.save_to.options.tag_language")));
-        reset(p_5);
-        var p_6 = sibling(p_5, 2);
-        var text_13 = child(p_6, true);
-        template_effect(() => set_text(text_13, t("setting.save_to.options.tag_language_tips")));
-        reset(p_6);
-        reset(div_5);
-        var node_12 = sibling(div_5, 2);
-        RadioGroup(node_12, {
-          class: " shrink-0",
-          children: ($$anchor3, $$slotProps) => {
-            var fragment_5 = root_11$1();
-            var node_13 = first_child(fragment_5);
-            RadioItem(node_13, {
-              name: "tagLang",
-              class: "text-sm",
-              get value() {
-                return TagLanguage.JAPANESE;
-              },
-              get group() {
-                return $store().tagLang;
-              },
-              set group($$value) {
-                store_mutate(configStore, untrack($store).tagLang = $$value, untrack($store));
-              },
-              children: ($$anchor4, $$slotProps2) => {
-                next();
-                var text_14 = text("日本語");
-                append($$anchor4, text_14);
-              },
-              $$slots: { default: true }
-            });
-            var node_14 = sibling(node_13, 2);
-            RadioItem(node_14, {
-              name: "tagLang",
-              class: "text-sm",
-              get value() {
-                return TagLanguage.CHINESE;
-              },
-              get group() {
-                return $store().tagLang;
-              },
-              set group($$value) {
-                store_mutate(configStore, untrack($store).tagLang = $$value, untrack($store));
-              },
-              children: ($$anchor4, $$slotProps2) => {
-                next();
-                var text_15 = text("简中");
-                append($$anchor4, text_15);
-              },
-              $$slots: { default: true }
-            });
-            var node_15 = sibling(node_14, 2);
-            RadioItem(node_15, {
-              name: "tagLang",
-              class: "text-sm",
-              get value() {
-                return TagLanguage.TRADITIONAL_CHINESE;
-              },
-              get group() {
-                return $store().tagLang;
-              },
-              set group($$value) {
-                store_mutate(configStore, untrack($store).tagLang = $$value, untrack($store));
-              },
-              children: ($$anchor4, $$slotProps2) => {
-                next();
-                var text_16 = text("繁中");
-                append($$anchor4, text_16);
-              },
-              $$slots: { default: true }
-            });
-            var node_16 = sibling(node_15, 2);
-            RadioItem(node_16, {
-              name: "tagLang",
-              class: "text-sm",
-              get value() {
-                return TagLanguage.ENGLISH;
-              },
-              get group() {
-                return $store().tagLang;
-              },
-              set group($$value) {
-                store_mutate(configStore, untrack($store).tagLang = $$value, untrack($store));
-              },
-              children: ($$anchor4, $$slotProps2) => {
-                next();
-                var text_17 = text("En");
-                append($$anchor4, text_17);
-              },
-              $$slots: { default: true }
-            });
-            append($$anchor3, fragment_5);
-          },
-          $$slots: { default: true }
-        });
-        reset(li_5);
-        template_effect(() => set_class(p_6, clsx(descritionText())));
-        append($$anchor2, li_5);
-      };
-      if_block(node_11, ($$render) => {
-        if (env.isPixiv()) $$render(consequent_2);
-      });
-    }
-    reset(ul_1);
-    reset(section_1);
-    reset(div);
-    template_effect(() => {
-      set_class(div, clsx(sectionSpace()));
-      set_class(p, clsx(sectionTitle()));
-      set_class(ul, clsx(get$1(ulClasses)));
-      button.disabled = get$1(folderBtnDisabled);
-      button_1.disabled = get$1(folderBtnDisabled);
-      set_class(p_4, clsx(sectionTitle()));
-      set_class(ul_1, clsx(get$1(ulClasses)));
-      button_4.disabled = get$1(filenameBtnDisabled);
-      button_5.disabled = get$1(filenameBtnDisabled);
-    });
-    bind_value(input_2, () => get$1(filename), ($$value) => set(filename, $$value));
-    append($$anchor, div);
-    pop();
-    $$cleanup();
   }
   delegate(["click"]);
   const nonNegativeInt = (node, params) => {
@@ -10861,1313 +9007,6 @@
     });
     return {};
   };
-  var root_1$5 = /* @__PURE__ */ template(`<!> <!> <!> <!> <!> <!>`, 1);
-  var root_8 = /* @__PURE__ */ template(`<option> </option>`);
-  var root_9$1 = /* @__PURE__ */ template(`<option> </option>`);
-  var root$5 = /* @__PURE__ */ template(`<div><section><p> </p> <ul><li><p class="flex-auto"> </p> <!></li></ul></section> <section><p> </p> <ul><li><div class="flex-auto"><p>Webm</p> <p>Bitrate (Mbps)</p></div> <input type="number" min="1" max="120" step="1"></li> <li><div class="flex-auto"><p>Mp4</p> <p>Bitrate (Mbps)</p></div> <input type="number" min="1" max="99" step="1"></li> <li class="flex-col !items-stretch"><p>Webp</p> <ul><li class="items-center"><p class="flex-auto"> </p> <!></li> <li class="items-center"><div class="flex-auto"><p> </p> <p> </p></div> <input type="number" min="0" max="100" step="1"></li> <li class="items-center"><div class="flex-auto"><p> </p> <p> </p></div> <select></select></li></ul></li> <li><div class="flex-auto"><p>Gif</p> <p> </p></div> <select></select></li> <li><div class="flex-auto"><p>Png</p> <p> </p></div> <input type="number" min="0" max="256" step="1"></li></ul></section></div>`);
-  function UgoiraConvert($$anchor, $$props) {
-    push($$props, true);
-    const [$$stores, $$cleanup] = setup_stores();
-    const $store = () => store_get(configStore, "$store", $$stores);
-    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, ""), descriptionText = prop($$props, "descriptionText", 3, "text-sm text-surface-400"), inputRounded = prop($$props, "inputRounded", 3, "rounded-full"), inputWidth = prop($$props, "inputWidth", 3, "w-32");
-    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
-    const inputClasses = /* @__PURE__ */ derived$1(() => `${inputWidth()} ${inputRounded()} shrink-0`);
-    var div = root$5();
-    var section = child(div);
-    var p = child(section);
-    var text$1 = child(p, true);
-    template_effect(() => set_text(text$1, t("setting.ugoira.label.format")));
-    reset(p);
-    var ul = sibling(p, 2);
-    var li = child(ul);
-    var p_1 = child(li);
-    var text_1 = child(p_1, true);
-    template_effect(() => set_text(text_1, t("setting.ugoira.options.select_format")));
-    reset(p_1);
-    var node = sibling(p_1, 2);
-    RadioGroup(node, {
-      class: "shrink-0",
-      children: ($$anchor2, $$slotProps) => {
-        var fragment = root_1$5();
-        var node_1 = first_child(fragment);
-        RadioItem(node_1, {
-          name: "ugoiraFormat",
-          class: "text-sm",
-          get value() {
-            return UgoiraFormat.ZIP;
-          },
-          get group() {
-            return $store().ugoiraFormat;
-          },
-          set group($$value) {
-            store_mutate(configStore, untrack($store).ugoiraFormat = $$value, untrack($store));
-          },
-          children: ($$anchor3, $$slotProps2) => {
-            next();
-            var text_2 = text("Zip");
-            append($$anchor3, text_2);
-          },
-          $$slots: { default: true }
-        });
-        var node_2 = sibling(node_1, 2);
-        RadioItem(node_2, {
-          name: "ugoiraFormat",
-          class: "text-sm",
-          get value() {
-            return UgoiraFormat.WEBM;
-          },
-          get group() {
-            return $store().ugoiraFormat;
-          },
-          set group($$value) {
-            store_mutate(configStore, untrack($store).ugoiraFormat = $$value, untrack($store));
-          },
-          children: ($$anchor3, $$slotProps2) => {
-            next();
-            var text_3 = text("Webm");
-            append($$anchor3, text_3);
-          },
-          $$slots: { default: true }
-        });
-        var node_3 = sibling(node_2, 2);
-        var disabled = /* @__PURE__ */ derived$1(() => !env.videoFrameSupported());
-        RadioItem(node_3, {
-          get disabled() {
-            return get$1(disabled);
-          },
-          class: "text-sm",
-          name: "ugoiraFormat",
-          get value() {
-            return UgoiraFormat.MP4;
-          },
-          get group() {
-            return $store().ugoiraFormat;
-          },
-          set group($$value) {
-            store_mutate(configStore, untrack($store).ugoiraFormat = $$value, untrack($store));
-          },
-          children: ($$anchor3, $$slotProps2) => {
-            next();
-            var text_4 = text("Mp4");
-            append($$anchor3, text_4);
-          },
-          $$slots: { default: true }
-        });
-        var node_4 = sibling(node_3, 2);
-        RadioItem(node_4, {
-          name: "ugoiraFormat",
-          class: "text-sm",
-          get value() {
-            return UgoiraFormat.WEBP;
-          },
-          get group() {
-            return $store().ugoiraFormat;
-          },
-          set group($$value) {
-            store_mutate(configStore, untrack($store).ugoiraFormat = $$value, untrack($store));
-          },
-          children: ($$anchor3, $$slotProps2) => {
-            next();
-            var text_5 = text("Webp");
-            append($$anchor3, text_5);
-          },
-          $$slots: { default: true }
-        });
-        var node_5 = sibling(node_4, 2);
-        RadioItem(node_5, {
-          name: "ugoiraFormat",
-          class: "text-sm",
-          get value() {
-            return UgoiraFormat.GIF;
-          },
-          get group() {
-            return $store().ugoiraFormat;
-          },
-          set group($$value) {
-            store_mutate(configStore, untrack($store).ugoiraFormat = $$value, untrack($store));
-          },
-          children: ($$anchor3, $$slotProps2) => {
-            next();
-            var text_6 = text("Gif");
-            append($$anchor3, text_6);
-          },
-          $$slots: { default: true }
-        });
-        var node_6 = sibling(node_5, 2);
-        RadioItem(node_6, {
-          name: "ugoiraFormat",
-          class: "text-sm",
-          get value() {
-            return UgoiraFormat.PNG;
-          },
-          get group() {
-            return $store().ugoiraFormat;
-          },
-          set group($$value) {
-            store_mutate(configStore, untrack($store).ugoiraFormat = $$value, untrack($store));
-          },
-          children: ($$anchor3, $$slotProps2) => {
-            next();
-            var text_7 = text("Png");
-            append($$anchor3, text_7);
-          },
-          $$slots: { default: true }
-        });
-        append($$anchor2, fragment);
-      },
-      $$slots: { default: true }
-    });
-    reset(li);
-    reset(ul);
-    reset(section);
-    var section_1 = sibling(section, 2);
-    var p_2 = child(section_1);
-    var text_8 = child(p_2, true);
-    template_effect(() => set_text(text_8, t("setting.ugoira.label.quality")));
-    reset(p_2);
-    var ul_1 = sibling(p_2, 2);
-    var li_1 = child(ul_1);
-    var div_1 = child(li_1);
-    var p_3 = sibling(child(div_1), 2);
-    reset(div_1);
-    var input = sibling(div_1, 2);
-    remove_input_defaults(input);
-    action(input, ($$node, $$action_arg) => nonNegativeInt == null ? undefined : nonNegativeInt($$node, $$action_arg), () => ({ store: configStore, key: "webmBitrate" }));
-    effect(() => bind_value(input, () => $store().webmBitrate, ($$value) => store_mutate(configStore, untrack($store).webmBitrate = $$value, untrack($store))));
-    reset(li_1);
-    var li_2 = sibling(li_1, 2);
-    var div_2 = child(li_2);
-    var p_4 = sibling(child(div_2), 2);
-    reset(div_2);
-    var input_1 = sibling(div_2, 2);
-    remove_input_defaults(input_1);
-    action(input_1, ($$node, $$action_arg) => nonNegativeInt == null ? undefined : nonNegativeInt($$node, $$action_arg), () => ({ store: configStore, key: "mp4Bitrate" }));
-    effect(() => bind_value(input_1, () => $store().mp4Bitrate, ($$value) => store_mutate(configStore, untrack($store).mp4Bitrate = $$value, untrack($store))));
-    reset(li_2);
-    var li_3 = sibling(li_2, 2);
-    var ul_2 = sibling(child(li_3), 2);
-    var li_4 = child(ul_2);
-    var p_5 = child(li_4);
-    var text_9 = child(p_5, true);
-    template_effect(() => set_text(text_9, t("setting.ugoira.options.webp_lossy")));
-    reset(p_5);
-    var node_7 = sibling(p_5, 2);
-    SlideToggle(node_7, {
-      name: "lossless-webp",
-      size: "sm",
-      get checked() {
-        return $store().losslessWebp;
-      },
-      set checked($$value) {
-        store_mutate(configStore, untrack($store).losslessWebp = $$value, untrack($store));
-      }
-    });
-    reset(li_4);
-    var li_5 = sibling(li_4, 2);
-    var div_3 = child(li_5);
-    var p_6 = child(div_3);
-    var text_10 = child(p_6, true);
-    template_effect(() => set_text(text_10, t("setting.ugoira.options.webp_quality")));
-    reset(p_6);
-    var p_7 = sibling(p_6, 2);
-    var text_11 = child(p_7, true);
-    template_effect(() => set_text(text_11, t("setting.ugoira.options.webp_quality_tips")));
-    reset(p_7);
-    reset(div_3);
-    var input_2 = sibling(div_3, 2);
-    remove_input_defaults(input_2);
-    action(input_2, ($$node, $$action_arg) => nonNegativeInt == null ? undefined : nonNegativeInt($$node, $$action_arg), () => ({ store: configStore, key: "webpQuality" }));
-    effect(() => bind_value(input_2, () => $store().webpQuality, ($$value) => store_mutate(configStore, untrack($store).webpQuality = $$value, untrack($store))));
-    reset(li_5);
-    var li_6 = sibling(li_5, 2);
-    var div_4 = child(li_6);
-    var p_8 = child(div_4);
-    var text_12 = child(p_8, true);
-    template_effect(() => set_text(text_12, t("setting.ugoira.options.webp_method")));
-    reset(p_8);
-    var p_9 = sibling(p_8, 2);
-    var text_13 = child(p_9, true);
-    template_effect(() => set_text(text_13, t("setting.ugoira.options.webp_method_tips")));
-    reset(p_9);
-    reset(div_4);
-    var select = sibling(div_4, 2);
-    each(select, 20, () => Array.from({ length: 7 }, (_, idx) => idx), index, ($$anchor2, quality) => {
-      var option = root_8();
-      var option_value = {};
-      var text_14 = child(option, true);
-      reset(option);
-      template_effect(() => {
-        if (option_value !== (option_value = quality)) {
-          option.value = null == (option.__value = quality) ? "" : quality;
-        }
-        set_text(text_14, quality);
-      });
-      append($$anchor2, option);
-    });
-    reset(select);
-    reset(li_6);
-    reset(ul_2);
-    reset(li_3);
-    var li_7 = sibling(li_3, 2);
-    var div_5 = child(li_7);
-    var p_10 = sibling(child(div_5), 2);
-    var text_15 = child(p_10, true);
-    template_effect(() => set_text(text_15, t("setting.ugoira.options.gif_tips")));
-    reset(p_10);
-    reset(div_5);
-    var select_1 = sibling(div_5, 2);
-    each(select_1, 20, () => Array.from({ length: 20 }, (_, idx) => idx), index, ($$anchor2, quality) => {
-      var option_1 = root_9$1();
-      var option_1_value = {};
-      var text_16 = child(option_1, true);
-      reset(option_1);
-      template_effect(() => {
-        if (option_1_value !== (option_1_value = quality + 1)) {
-          option_1.value = null == (option_1.__value = quality + 1) ? "" : quality + 1;
-        }
-        set_text(text_16, quality + 1);
-      });
-      append($$anchor2, option_1);
-    });
-    reset(select_1);
-    reset(li_7);
-    var li_8 = sibling(li_7, 2);
-    var div_6 = child(li_8);
-    var p_11 = sibling(child(div_6), 2);
-    var text_17 = child(p_11, true);
-    template_effect(() => set_text(text_17, t("setting.ugoira.options.png_tips")));
-    reset(p_11);
-    reset(div_6);
-    var input_3 = sibling(div_6, 2);
-    remove_input_defaults(input_3);
-    action(input_3, ($$node, $$action_arg) => nonNegativeInt == null ? undefined : nonNegativeInt($$node, $$action_arg), () => ({ store: configStore, key: "pngColor" }));
-    effect(() => bind_value(input_3, () => $store().pngColor, ($$value) => store_mutate(configStore, untrack($store).pngColor = $$value, untrack($store))));
-    reset(li_8);
-    reset(ul_1);
-    reset(section_1);
-    reset(div);
-    template_effect(() => {
-      set_class(div, clsx(sectionSpace()));
-      set_class(p, clsx(sectionTitle()));
-      set_class(ul, clsx(get$1(ulClasses)));
-      set_class(p_2, clsx(sectionTitle()));
-      set_class(ul_1, clsx(get$1(ulClasses)));
-      set_class(p_3, clsx(descriptionText()));
-      set_class(input, `input ${get$1(inputClasses) ?? ""}`);
-      set_class(p_4, clsx(descriptionText()));
-      set_class(input_1, `input ${get$1(inputClasses) ?? ""}`);
-      set_class(ul_2, `list ${border() ?? ""} ${rounded() ?? ""} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4`);
-      set_class(p_7, clsx(descriptionText()));
-      set_class(input_2, `input ${get$1(inputClasses) ?? ""}`);
-      set_class(p_9, clsx(descriptionText()));
-      set_class(select, `select ${get$1(inputClasses) ?? ""}`);
-      set_class(p_10, clsx(descriptionText()));
-      set_class(select_1, `select ${get$1(inputClasses) ?? ""}`);
-      set_class(p_11, clsx(descriptionText()));
-      set_class(input_3, `input ${get$1(inputClasses) ?? ""}`);
-    });
-    bind_select_value(select, () => $store().webpMehtod, ($$value) => store_mutate(configStore, untrack($store).webpMehtod = $$value, untrack($store)));
-    bind_select_value(select_1, () => $store().gifQuality, ($$value) => store_mutate(configStore, untrack($store).gifQuality = $$value, untrack($store)));
-    append($$anchor, div);
-    pop();
-    $$cleanup();
-  }
-  function readHistoryFile(type, file) {
-    return new Promise((resolve) => {
-      if (file.type !== type) throw new Error("Invalid file");
-      const reader = new FileReader();
-      reader.readAsText(file);
-      reader.onload = (readEvt) => {
-        var _a2;
-        const text2 = (_a2 = readEvt.target) == null ? undefined : _a2.result;
-        if (typeof text2 !== "string") throw new Error("Invalid file");
-        const history2 = JSON.parse(text2);
-        if (!(history2 instanceof Array)) throw new Error("Invalid file");
-        resolve(history2);
-      };
-    });
-  }
-  function importJSON(file) {
-    return readHistoryFile("application/json", file).then((data) => historyDb.import(data));
-  }
-  function exportAsJSON() {
-    return historyDb.getAll().then((datas) => {
-      const str = JSON.stringify(datas);
-      const blob = new Blob([str], { type: "application/json" });
-      const filename = `Pixiv Downloader_${location.hostname}_${(/* @__PURE__ */ new Date()).toLocaleString()}.json`;
-      aDownload(blob, filename);
-    });
-  }
-  function exportAsCSV() {
-    return historyDb.generateCsv().then((csv) => {
-      const filename = `Pixiv Downloader_${location.hostname}_${(/* @__PURE__ */ new Date()).toLocaleString()}.csv`;
-      aDownload(csv, filename);
-    });
-  }
-  function scheduleBackup() {
-    const interval = config.get("historyBackupInterval");
-    if (interval === HistoryBackupInterval.NEVER) return;
-    const lastTimestamp = config.get("lastHistoryBackup");
-    const timestamp = (/* @__PURE__ */ new Date()).getTime();
-    if (!lastTimestamp || lastTimestamp + interval * 1e3 < timestamp) {
-      exportAsJSON();
-      config.set("lastHistoryBackup", timestamp);
-    }
-  }
-  function useHistoryBackup() {
-    return {
-      importJSON,
-      exportAsJSON,
-      exportAsCSV,
-      scheduleBackup
-    };
-  }
-  var root_3$4 = /* @__PURE__ */ template(`<!> <span> </span>`, 1);
-  var root$4 = /* @__PURE__ */ template(`<div><section><p> </p> <ul><li><p class="flex-auto"> </p> <select><option> </option><option> </option><option> </option><option> </option></select></li></ul></section> <section><p> </p> <ul><li><p class="flex-auto"> </p> <button class="btn variant-filled"><!> <span> </span></button></li> <li><p class="flex-auto"> </p> <button class="btn variant-filled"><!> <span> </span></button></li></ul></section> <section><p> </p> <ul><li><p class="flex-auto"> </p> <!></li></ul></section> <section><p> </p> <ul><li><p class="flex-auto"> </p> <button class="btn variant-filled"><!> <span> </span></button></li></ul></section></div>`);
-  function DownloadHistory($$anchor, $$props) {
-    push($$props, true);
-    const [$$stores, $$cleanup] = setup_stores();
-    const $configStore = () => store_get(configStore, "$configStore", $$stores);
-    const $exportJsonPending = () => store_get(exportJsonPending, "$exportJsonPending", $$stores);
-    const $exportCsvPending = () => store_get(exportCsvPending, "$exportCsvPending", $$stores);
-    const $importPending = () => store_get(importPending, "$importPending", $$stores);
-    const $clearPending = () => store_get(clearPending, "$clearPending", $$stores);
-    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), inputRounded = prop($$props, "inputRounded", 3, "rounded-full"), inputWidth = prop($$props, "inputWidth", 3, "w-32"), UlClass = prop($$props, "class", 3, "");
-    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
-    const inputClasses = /* @__PURE__ */ derived$1(() => `${inputWidth()} ${inputRounded()} shrink-0`);
-    function usePendingButton(fn) {
-      const store = writable(false);
-      return {
-        store,
-        async wrapFn(...args) {
-          store.set(true);
-          const result = await fn(...args);
-          store.set(false);
-          return result;
-        }
-      };
-    }
-    async function importFromJSON(evt) {
-      var _a2;
-      const file = (_a2 = evt.currentTarget.files) == null ? undefined : _a2[0];
-      if (!file) return;
-      try {
-        await importJSON2(file);
-      } catch (error) {
-        logger.error(error);
-        alert(error);
-      }
-    }
-    function clearDb() {
-      const isConfirm = confirm(t("setting.history.text.confirm_clear_history"));
-      if (!isConfirm) return;
-      return historyDb.clear();
-    }
-    const { importJSON: importJSON2, exportAsJSON: exportAsJSON2, exportAsCSV: exportAsCSV2 } = useHistoryBackup();
-    const {
-      store: importPending,
-      wrapFn: wrapImportFromJSON
-    } = usePendingButton(importFromJSON);
-    const { store: clearPending, wrapFn: wrapClearDb } = usePendingButton(clearDb);
-    const {
-      store: exportJsonPending,
-      wrapFn: wrapExportAsJSON
-    } = usePendingButton(exportAsJSON2);
-    const {
-      store: exportCsvPending,
-      wrapFn: wrapExportAsCSV
-    } = usePendingButton(exportAsCSV2);
-    var div = root$4();
-    var section = child(div);
-    var p = child(section);
-    var text2 = child(p, true);
-    template_effect(() => set_text(text2, t("setting.history.label.scheduled_backups")));
-    reset(p);
-    var ul = sibling(p, 2);
-    var li = child(ul);
-    var p_1 = child(li);
-    var text_1 = child(p_1, true);
-    template_effect(() => set_text(text_1, t("setting.history.options.scheduled_backups")));
-    reset(p_1);
-    var select = sibling(p_1, 2);
-    var option = child(select);
-    var option_value = {};
-    var text_2 = child(option, true);
-    template_effect(() => set_text(text_2, t("setting.history.select.backup_interval_never")));
-    reset(option);
-    var option_1 = sibling(option);
-    var option_1_value = {};
-    var text_3 = child(option_1, true);
-    template_effect(() => set_text(text_3, t("setting.history.select.backup_interval_every_day")));
-    reset(option_1);
-    var option_2 = sibling(option_1);
-    var option_2_value = {};
-    var text_4 = child(option_2, true);
-    template_effect(() => set_text(text_4, t("setting.history.select.backup_interval_every_7_day")));
-    reset(option_2);
-    var option_3 = sibling(option_2);
-    var option_3_value = {};
-    var text_5 = child(option_3, true);
-    template_effect(() => set_text(text_5, t("setting.history.select.backup_interval_every_30_day")));
-    reset(option_3);
-    reset(select);
-    reset(li);
-    reset(ul);
-    reset(section);
-    var section_1 = sibling(section, 2);
-    var p_2 = child(section_1);
-    var text_6 = child(p_2, true);
-    template_effect(() => set_text(text_6, t("setting.history.label.export")));
-    reset(p_2);
-    var ul_1 = sibling(p_2, 2);
-    var li_1 = child(ul_1);
-    var p_3 = child(li_1);
-    var text_7 = child(p_3, true);
-    template_effect(() => set_text(text_7, t("setting.history.options.export_as_json")));
-    reset(p_3);
-    var button = sibling(p_3, 2);
-    button.__click = wrapExportAsJSON;
-    var node = child(button);
-    {
-      var consequent = ($$anchor2) => {
-        ProgressRadial($$anchor2, {
-          stroke: 80,
-          width: "w-5",
-          meter: "stroke-primary-500",
-          track: "stroke-primary-500/30"
-        });
-      };
-      if_block(node, ($$render) => {
-        if ($exportJsonPending()) $$render(consequent);
-      });
-    }
-    var span = sibling(node, 2);
-    var text_8 = child(span, true);
-    template_effect(() => set_text(text_8, t("setting.history.button.export")));
-    reset(span);
-    reset(button);
-    reset(li_1);
-    var li_2 = sibling(li_1, 2);
-    var p_4 = child(li_2);
-    var text_9 = child(p_4, true);
-    template_effect(() => set_text(text_9, t("setting.history.options.export_as_csv")));
-    reset(p_4);
-    var button_1 = sibling(p_4, 2);
-    button_1.__click = wrapExportAsCSV;
-    var node_1 = child(button_1);
-    {
-      var consequent_1 = ($$anchor2) => {
-        ProgressRadial($$anchor2, {
-          stroke: 80,
-          width: "w-5",
-          meter: "stroke-primary-500",
-          track: "stroke-primary-500/30"
-        });
-      };
-      if_block(node_1, ($$render) => {
-        if ($exportCsvPending()) $$render(consequent_1);
-      });
-    }
-    var span_1 = sibling(node_1, 2);
-    var text_10 = child(span_1, true);
-    template_effect(() => set_text(text_10, t("setting.history.button.export")));
-    reset(span_1);
-    reset(button_1);
-    reset(li_2);
-    reset(ul_1);
-    reset(section_1);
-    var section_2 = sibling(section_1, 2);
-    var p_5 = child(section_2);
-    var text_11 = child(p_5, true);
-    template_effect(() => set_text(text_11, t("setting.history.label.import")));
-    reset(p_5);
-    var ul_2 = sibling(p_5, 2);
-    var li_3 = child(ul_2);
-    var p_6 = child(li_3);
-    var text_12 = child(p_6, true);
-    template_effect(() => set_text(text_12, t("setting.history.options.import_json")));
-    reset(p_6);
-    var node_2 = sibling(p_6, 2);
-    FileButton(node_2, {
-      name: "import-file",
-      accept: ".json",
-      get disabled() {
-        mark_store_binding();
-        return $importPending();
-      },
-      set disabled($$value) {
-        store_set(importPending, proxy($$value));
-      },
-      $$events: { change: wrapImportFromJSON },
-      children: ($$anchor2, $$slotProps) => {
-        var fragment_2 = root_3$4();
-        var node_3 = first_child(fragment_2);
-        {
-          var consequent_2 = ($$anchor3) => {
-            ProgressRadial($$anchor3, {
-              stroke: 80,
-              width: "w-5",
-              meter: "stroke-primary-500",
-              track: "stroke-primary-500/30"
-            });
-          };
-          if_block(node_3, ($$render) => {
-            if ($importPending()) $$render(consequent_2);
-          });
-        }
-        var span_2 = sibling(node_3, 2);
-        var text_13 = child(span_2, true);
-        template_effect(() => set_text(text_13, t("setting.history.button.import")));
-        reset(span_2);
-        append($$anchor2, fragment_2);
-      },
-      $$slots: { default: true }
-    });
-    reset(li_3);
-    reset(ul_2);
-    reset(section_2);
-    var section_3 = sibling(section_2, 2);
-    var p_7 = child(section_3);
-    var text_14 = child(p_7, true);
-    template_effect(() => set_text(text_14, t("setting.history.label.clear")));
-    reset(p_7);
-    var ul_3 = sibling(p_7, 2);
-    var li_4 = child(ul_3);
-    var p_8 = child(li_4);
-    var text_15 = child(p_8, true);
-    template_effect(() => set_text(text_15, t("setting.history.options.clear_history")));
-    reset(p_8);
-    var button_2 = sibling(p_8, 2);
-    button_2.__click = wrapClearDb;
-    var node_4 = child(button_2);
-    {
-      var consequent_3 = ($$anchor2) => {
-        ProgressRadial($$anchor2, {
-          stroke: 80,
-          width: "w-5",
-          meter: "stroke-primary-500",
-          track: "stroke-primary-500/30"
-        });
-      };
-      if_block(node_4, ($$render) => {
-        if ($clearPending()) $$render(consequent_3);
-      });
-    }
-    var span_3 = sibling(node_4, 2);
-    var text_16 = child(span_3, true);
-    template_effect(() => set_text(text_16, t("setting.history.button.clear")));
-    reset(span_3);
-    reset(button_2);
-    reset(li_4);
-    reset(ul_3);
-    reset(section_3);
-    reset(div);
-    template_effect(() => {
-      set_class(div, clsx(sectionSpace()));
-      set_class(p, clsx(sectionTitle()));
-      set_class(ul, clsx(get$1(ulClasses)));
-      set_class(select, `select ${get$1(inputClasses) ?? ""}`);
-      if (option_value !== (option_value = HistoryBackupInterval.NEVER)) {
-        option.value = null == (option.__value = HistoryBackupInterval.NEVER) ? "" : HistoryBackupInterval.NEVER;
-      }
-      if (option_1_value !== (option_1_value = HistoryBackupInterval.EVERY_DAY)) {
-        option_1.value = null == (option_1.__value = HistoryBackupInterval.EVERY_DAY) ? "" : HistoryBackupInterval.EVERY_DAY;
-      }
-      if (option_2_value !== (option_2_value = HistoryBackupInterval.EVERY_7_DAY)) {
-        option_2.value = null == (option_2.__value = HistoryBackupInterval.EVERY_7_DAY) ? "" : HistoryBackupInterval.EVERY_7_DAY;
-      }
-      if (option_3_value !== (option_3_value = HistoryBackupInterval.EVERY_30_DAY)) {
-        option_3.value = null == (option_3.__value = HistoryBackupInterval.EVERY_30_DAY) ? "" : HistoryBackupInterval.EVERY_30_DAY;
-      }
-      set_class(p_2, clsx(sectionTitle()));
-      set_class(ul_1, clsx(get$1(ulClasses)));
-      button.disabled = $exportJsonPending();
-      button_1.disabled = $exportCsvPending();
-      set_class(p_5, clsx(sectionTitle()));
-      set_class(ul_2, clsx(get$1(ulClasses)));
-      set_class(p_7, clsx(sectionTitle()));
-      set_class(ul_3, clsx(get$1(ulClasses)));
-      button_2.disabled = $clearPending();
-    });
-    bind_select_value(select, () => $configStore().historyBackupInterval, ($$value) => store_mutate(configStore, untrack($configStore).historyBackupInterval = $$value, untrack($configStore)));
-    append($$anchor, div);
-    pop();
-    $$cleanup();
-  }
-  delegate(["click"]);
-  var root_1$4 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
-  var root_2$2 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
-  var root_4$1 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
-  var root_5 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
-  var root_3$3 = /* @__PURE__ */ template(`<section><p> </p> <ul><li class="flex-col !items-stretch md:flex-row md:!items-baseline gap-4 *:!m-0"><!> <!></li></ul></section>`);
-  var root$3 = /* @__PURE__ */ template(`<div><div class="flex items-center justify-center"><div></div></div> <section><p> </p> <ul><li class="flex-col !items-stretch md:flex-row md:!items-baseline gap-4 *:!m-0"><!> <!></li></ul></section> <!></div>`);
-  function BtnPosition($$anchor, $$props) {
-    push($$props, true);
-    const [$$stores, $$cleanup] = setup_stores();
-    const $store = () => store_get(configStore, "$store", $$stores);
-    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, "");
-    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
-    const max = 100;
-    const step = 4;
-    let btnLeft = state(proxy($store()["pdl-btn-left"]));
-    let btnTop = state(proxy($store()["pdl-btn-top"]));
-    let bookmarkBtnLeft = state(proxy($store()["pdl-btn-self-bookmark-left"]));
-    let bookmarkBtnTop = state(proxy($store()["pdl-btn-self-bookmark-top"]));
-    user_effect(() => changeCssProp("--pdl-btn-left", get$1(btnLeft)));
-    user_effect(() => changeCssProp("--pdl-btn-top", get$1(btnTop)));
-    user_effect(() => changeCssProp("--pdl-btn-self-bookmark-left", get$1(bookmarkBtnLeft)));
-    user_effect(() => changeCssProp("--pdl-btn-self-bookmark-top", get$1(bookmarkBtnTop)));
-    let buttonContainer;
-    onMount(() => {
-      const sampleBtn = new ThumbnailButton({
-        id: "0",
-        shouldObserveDb: false,
-        onClick: () => undefined
-      });
-      sampleBtn.setAttribute("disabled", "");
-      buttonContainer.appendChild(sampleBtn);
-      if (!env.isPixiv()) return;
-      const sampleBookmarkBtn = new ThumbnailButton({
-        id: "0",
-        type: ThumbnailBtnType.PixivMyBookmark,
-        shouldObserveDb: false,
-        onClick: () => undefined
-      });
-      sampleBookmarkBtn.setAttribute("disabled", "");
-      sampleBookmarkBtn.setStatus(ThumbnailBtnStatus.Complete);
-      buttonContainer.appendChild(sampleBookmarkBtn);
-    });
-    function updateBtnPosConfig(key, val) {
-      store_mutate(configStore, untrack($store)[key] = val, untrack($store));
-    }
-    function changeCssProp(key, value) {
-      document.documentElement.style.setProperty(key, String(value));
-    }
-    var div = root$3();
-    var div_1 = child(div);
-    var div_2 = child(div_1);
-    bind_this(div_2, ($$value) => buttonContainer = $$value, () => buttonContainer);
-    reset(div_1);
-    var section = sibling(div_1, 2);
-    var p = child(section);
-    var text2 = child(p, true);
-    template_effect(() => set_text(text2, t("setting.button_position.label.common")));
-    reset(p);
-    var ul = sibling(p, 2);
-    var li = child(ul);
-    var node = child(li);
-    RangeSlider(node, {
-      name: "pdl-btn-left",
-      step,
-      max,
-      ticked: true,
-      class: "flex-grow",
-      get value() {
-        return get$1(btnLeft);
-      },
-      set value($$value) {
-        set(btnLeft, proxy($$value));
-      },
-      $$events: {
-        change: () => updateBtnPosConfig("pdl-btn-left", get$1(btnLeft))
-      },
-      children: ($$anchor2, $$slotProps) => {
-        var div_3 = root_1$4();
-        var p_1 = child(div_3);
-        var text_1 = child(p_1, true);
-        template_effect(() => set_text(text_1, t("setting.button_position.options.horizon_position")));
-        reset(p_1);
-        var div_4 = sibling(p_1, 2);
-        var text_2 = child(div_4);
-        reset(div_4);
-        reset(div_3);
-        template_effect(() => set_text(text_2, `${get$1(btnLeft) ?? ""} / ${max}`));
-        append($$anchor2, div_3);
-      },
-      $$slots: { default: true }
-    });
-    var node_1 = sibling(node, 2);
-    RangeSlider(node_1, {
-      name: "pdl-btn-top",
-      step,
-      max,
-      ticked: true,
-      class: "flex-grow",
-      get value() {
-        return get$1(btnTop);
-      },
-      set value($$value) {
-        set(btnTop, proxy($$value));
-      },
-      $$events: {
-        change: () => updateBtnPosConfig("pdl-btn-top", get$1(btnTop))
-      },
-      children: ($$anchor2, $$slotProps) => {
-        var div_5 = root_2$2();
-        var p_2 = child(div_5);
-        var text_3 = child(p_2, true);
-        template_effect(() => set_text(text_3, t("setting.button_position.options.vertical_position")));
-        reset(p_2);
-        var div_6 = sibling(p_2, 2);
-        var text_4 = child(div_6);
-        reset(div_6);
-        reset(div_5);
-        template_effect(() => set_text(text_4, `${get$1(btnTop) ?? ""} / ${max}`));
-        append($$anchor2, div_5);
-      },
-      $$slots: { default: true }
-    });
-    reset(li);
-    reset(ul);
-    reset(section);
-    var node_2 = sibling(section, 2);
-    {
-      var consequent = ($$anchor2) => {
-        var section_1 = root_3$3();
-        var p_3 = child(section_1);
-        var text_5 = child(p_3, true);
-        template_effect(() => set_text(text_5, t("setting.button_position.label.my_bookmark")));
-        reset(p_3);
-        var ul_1 = sibling(p_3, 2);
-        var li_1 = child(ul_1);
-        var node_3 = child(li_1);
-        RangeSlider(node_3, {
-          name: "pdl-bookmark-btn-left",
-          step,
-          max,
-          ticked: true,
-          class: "flex-grow",
-          get value() {
-            return get$1(bookmarkBtnLeft);
-          },
-          set value($$value) {
-            set(bookmarkBtnLeft, proxy($$value));
-          },
-          $$events: {
-            change: () => updateBtnPosConfig("pdl-btn-self-bookmark-left", get$1(bookmarkBtnLeft))
-          },
-          children: ($$anchor3, $$slotProps) => {
-            var div_7 = root_4$1();
-            var p_4 = child(div_7);
-            var text_6 = child(p_4, true);
-            template_effect(() => set_text(text_6, t("setting.button_position.options.horizon_position")));
-            reset(p_4);
-            var div_8 = sibling(p_4, 2);
-            var text_7 = child(div_8);
-            reset(div_8);
-            reset(div_7);
-            template_effect(() => set_text(text_7, `${get$1(bookmarkBtnLeft) ?? ""} / ${max}`));
-            append($$anchor3, div_7);
-          },
-          $$slots: { default: true }
-        });
-        var node_4 = sibling(node_3, 2);
-        RangeSlider(node_4, {
-          name: "pdl-bookmark-btn-top",
-          step,
-          max,
-          ticked: true,
-          class: "flex-grow",
-          get value() {
-            return get$1(bookmarkBtnTop);
-          },
-          set value($$value) {
-            set(bookmarkBtnTop, proxy($$value));
-          },
-          $$events: {
-            change: () => updateBtnPosConfig("pdl-btn-self-bookmark-top", get$1(bookmarkBtnTop))
-          },
-          children: ($$anchor3, $$slotProps) => {
-            var div_9 = root_5();
-            var p_5 = child(div_9);
-            var text_8 = child(p_5, true);
-            template_effect(() => set_text(text_8, t("setting.button_position.options.vertical_position")));
-            reset(p_5);
-            var div_10 = sibling(p_5, 2);
-            var text_9 = child(div_10);
-            reset(div_10);
-            reset(div_9);
-            template_effect(() => set_text(text_9, `${get$1(bookmarkBtnTop) ?? ""} / ${max}`));
-            append($$anchor3, div_9);
-          },
-          $$slots: { default: true }
-        });
-        reset(li_1);
-        reset(ul_1);
-        reset(section_1);
-        template_effect(() => {
-          set_class(p_3, clsx(sectionTitle()));
-          set_class(ul_1, clsx(get$1(ulClasses)));
-        });
-        append($$anchor2, section_1);
-      };
-      if_block(node_2, ($$render) => {
-        if (env.isPixiv()) $$render(consequent);
-      });
-    }
-    reset(div);
-    template_effect(() => {
-      set_class(div, clsx(sectionSpace()));
-      set_class(div_2, `w-48 h-48 backdrop-blur-sm rounded-lg relative ${bg() ?? ""}`);
-      set_class(p, clsx(sectionTitle()));
-      set_class(ul, clsx(get$1(ulClasses)));
-    });
-    append($$anchor, div);
-    pop();
-    $$cleanup();
-  }
-  var root_1$3 = /* @__PURE__ */ template(`<li><p class="flex-auto"> </p> <!></li> <li><p class="flex-auto"> </p> <!></li> <li><div class="flex-auto"><p> </p> <p> </p></div> <!></li>`, 1);
-  var root_2$1 = /* @__PURE__ */ template(`<ul><li><label class="label flex flex-grow items-center justify-center"><p class="flex-auto"> </p> <!></label></li> <li><label class="label flex flex-grow items-center justify-center"><p class="flex-auto"> </p> <!></label></li></ul>`);
-  var root_3$2 = /* @__PURE__ */ template(`<section><p>实验性功能</p> <ul><li><div class="flex-auto"><p>为单页插图增加 #pixivGlow2024 效果</p> <p>* 转换至动图格式。如果插图尺寸过大，可能占用大量内存 / 转换失败</p></div> <!></li></ul></section>`);
-  var root_4 = /* @__PURE__ */ template(`<section><p>cf_clearance</p> <ul><li class="flex-col !items-start gap-2"><input type="text" class="input" name="cf_clearance"> <p>如果无法正常下载，可尝试填入cf_clearance cookie</p></li></ul></section>`);
-  var root$2 = /* @__PURE__ */ template(`<div><ul><li><p class="flex-auto"> </p> <!></li> <!> <li class="flex-col !items-stretch"><div class="flex items-center"><div class="flex-auto"><p> </p> <p> </p></div> <!></div> <!></li></ul> <!> <!></div>`);
-  function Others($$anchor, $$props) {
-    push($$props, true);
-    const [$$stores, $$cleanup] = setup_stores();
-    const $store = () => store_get(configStore, "$store", $$stores);
-    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), descritionText = prop($$props, "descritionText", 3, "text-sm text-surface-400"), UlClass = prop($$props, "class", 3, "");
-    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
-    var div = root$2();
-    var ul = child(div);
-    var li = child(ul);
-    var p = child(li);
-    var text2 = child(p, true);
-    template_effect(() => set_text(text2, t("setting.others.options.show_setting_button")));
-    reset(p);
-    var node = sibling(p, 2);
-    SlideToggle(node, {
-      name: "show-popup-button",
-      size: "sm",
-      get checked() {
-        return $store().showPopupButton;
-      },
-      set checked($$value) {
-        store_mutate(configStore, untrack($store).showPopupButton = $$value, untrack($store));
-      }
-    });
-    reset(li);
-    var node_1 = sibling(li, 2);
-    {
-      var consequent = ($$anchor2) => {
-        var fragment = root_1$3();
-        var li_1 = first_child(fragment);
-        var p_1 = child(li_1);
-        var text_1 = child(p_1, true);
-        template_effect(() => set_text(text_1, t("setting.others.options.bundle_multipage_illust")));
-        reset(p_1);
-        var node_2 = sibling(p_1, 2);
-        SlideToggle(node_2, {
-          name: "bundle-illusts",
-          size: "sm",
-          get checked() {
-            return $store().bundleIllusts;
-          },
-          set checked($$value) {
-            store_mutate(configStore, untrack($store).bundleIllusts = $$value, untrack($store));
-          }
-        });
-        reset(li_1);
-        var li_2 = sibling(li_1, 2);
-        var p_2 = child(li_2);
-        var text_2 = child(p_2, true);
-        template_effect(() => set_text(text_2, t("setting.others.options.bundle_manga")));
-        reset(p_2);
-        var node_3 = sibling(p_2, 2);
-        SlideToggle(node_3, {
-          name: "bundle-manga",
-          size: "sm",
-          get checked() {
-            return $store().bundleManga;
-          },
-          set checked($$value) {
-            store_mutate(configStore, untrack($store).bundleManga = $$value, untrack($store));
-          }
-        });
-        reset(li_2);
-        var li_3 = sibling(li_2, 2);
-        var div_1 = child(li_3);
-        var p_3 = child(div_1);
-        var text_3 = child(p_3, true);
-        template_effect(() => set_text(text_3, t("setting.others.options.like_illust_when_downloading")));
-        reset(p_3);
-        var p_4 = sibling(p_3, 2);
-        var text_4 = child(p_4, true);
-        template_effect(() => set_text(text_4, t("setting.others.options.option_does_not_apply_to_batch_download")));
-        reset(p_4);
-        reset(div_1);
-        var node_4 = sibling(div_1, 2);
-        SlideToggle(node_4, {
-          name: "bundle-manga",
-          size: "sm",
-          get checked() {
-            return $store().likeIllust;
-          },
-          set checked($$value) {
-            store_mutate(configStore, untrack($store).likeIllust = $$value, untrack($store));
-          }
-        });
-        reset(li_3);
-        template_effect(() => set_class(p_4, clsx(descritionText())));
-        append($$anchor2, fragment);
-      };
-      if_block(node_1, ($$render) => {
-        if (env.isPixiv()) $$render(consequent);
-      });
-    }
-    var li_4 = sibling(node_1, 2);
-    var div_2 = child(li_4);
-    var div_3 = child(div_2);
-    var p_5 = child(div_3);
-    var text_5 = child(p_5, true);
-    template_effect(() => set_text(text_5, t("setting.others.options.add_bookmark_when_downloading")));
-    reset(p_5);
-    var p_6 = sibling(p_5, 2);
-    var text_6 = child(p_6, true);
-    template_effect(() => set_text(text_6, t("setting.others.options.option_does_not_apply_to_batch_download")));
-    reset(p_6);
-    reset(div_3);
-    var node_5 = sibling(div_3, 2);
-    SlideToggle(node_5, {
-      name: "fsa-enable",
-      size: "sm",
-      get checked() {
-        return $store().addBookmark;
-      },
-      set checked($$value) {
-        store_mutate(configStore, untrack($store).addBookmark = $$value, untrack($store));
-      }
-    });
-    reset(div_2);
-    var node_6 = sibling(div_2, 2);
-    {
-      var consequent_1 = ($$anchor2) => {
-        var ul_1 = root_2$1();
-        var li_5 = child(ul_1);
-        var label = child(li_5);
-        var p_7 = child(label);
-        var text_7 = child(p_7, true);
-        template_effect(() => set_text(text_7, t("setting.others.options.add_bookmark_with_tags")));
-        reset(p_7);
-        var node_7 = sibling(p_7, 2);
-        SlideToggle(node_7, {
-          name: "fsa-enable",
-          size: "sm",
-          get checked() {
-            return $store().addBookmarkWithTags;
-          },
-          set checked($$value) {
-            store_mutate(configStore, untrack($store).addBookmarkWithTags = $$value, untrack($store));
-          }
-        });
-        reset(label);
-        reset(li_5);
-        var li_6 = sibling(li_5, 2);
-        var label_1 = child(li_6);
-        var p_8 = child(label_1);
-        var text_8 = child(p_8, true);
-        template_effect(() => set_text(text_8, t("setting.others.options.add_bookmark_private_r18")));
-        reset(p_8);
-        var node_8 = sibling(p_8, 2);
-        SlideToggle(node_8, {
-          name: "fsa-enable",
-          size: "sm",
-          get checked() {
-            return $store().privateR18;
-          },
-          set checked($$value) {
-            store_mutate(configStore, untrack($store).privateR18 = $$value, untrack($store));
-          }
-        });
-        reset(label_1);
-        reset(li_6);
-        reset(ul_1);
-        template_effect(() => set_class(ul_1, `list ${border() ?? ""} ${rounded() ?? ""} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4`));
-        append($$anchor2, ul_1);
-      };
-      if_block(node_6, ($$render) => {
-        if ($store().addBookmark && env.isPixiv()) $$render(consequent_1);
-      });
-    }
-    reset(li_4);
-    reset(ul);
-    var node_9 = sibling(ul, 2);
-    {
-      var consequent_2 = ($$anchor2) => {
-        var section = root_3$2();
-        var p_9 = child(section);
-        var ul_2 = sibling(p_9, 2);
-        var li_7 = child(ul_2);
-        var div_4 = child(li_7);
-        var p_10 = sibling(child(div_4), 2);
-        reset(div_4);
-        var node_10 = sibling(div_4, 2);
-        SlideToggle(node_10, {
-          name: "mix-effect",
-          size: "sm",
-          get checked() {
-            return $store().mixEffect;
-          },
-          set checked($$value) {
-            store_mutate(configStore, untrack($store).mixEffect = $$value, untrack($store));
-          }
-        });
-        reset(li_7);
-        reset(ul_2);
-        reset(section);
-        template_effect(() => {
-          set_class(p_9, clsx(sectionTitle()));
-          set_class(ul_2, clsx(get$1(ulClasses)));
-          set_class(p_10, `${descritionText() ?? ""} !text-error-500`);
-        });
-        append($$anchor2, section);
-      };
-      if_block(node_9, ($$render) => {
-        if (env.isPixiv()) $$render(consequent_2);
-      });
-    }
-    var node_11 = sibling(node_9, 2);
-    {
-      var consequent_3 = ($$anchor2) => {
-        var section_1 = root_4();
-        var p_11 = child(section_1);
-        var ul_3 = sibling(p_11, 2);
-        var li_8 = child(ul_3);
-        var input = child(li_8);
-        remove_input_defaults(input);
-        var p_12 = sibling(input, 2);
-        reset(li_8);
-        reset(ul_3);
-        reset(section_1);
-        template_effect(() => {
-          set_class(p_11, clsx(sectionTitle()));
-          set_class(ul_3, clsx(get$1(ulClasses)));
-          set_class(p_12, clsx(descritionText()));
-        });
-        bind_value(input, () => $store().token, ($$value) => store_mutate(configStore, untrack($store).token = $$value, untrack($store)));
-        append($$anchor2, section_1);
-      };
-      if_block(node_11, ($$render) => {
-        if (env.isRule34()) $$render(consequent_3);
-      });
-    }
-    reset(div);
-    template_effect(() => {
-      set_class(div, clsx(sectionSpace()));
-      set_class(ul, clsx(get$1(ulClasses)));
-      set_class(p_6, clsx(descritionText()));
-    });
-    append($$anchor, div);
-    pop();
-    $$cleanup();
-  }
-  var root$1 = /* @__PURE__ */ template(`<div><section><p> </p> <ul><li><span><!></span></li></ul></section> <section><p> </p> <ul><li><p><!></p></li> <li class=" justify-center"><figure><img alt="credit" class=" rounded-full m-auto"> <figcaption class="mt-4"> </figcaption></figure></li></ul></section></div>`);
-  function FeedBack($$anchor, $$props) {
-    push($$props, true);
-    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, "");
-    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
-    var div = root$1();
-    var section = child(div);
-    var p = child(section);
-    var text2 = child(p, true);
-    template_effect(() => set_text(text2, t("setting.feedback.label.feedback")));
-    reset(p);
-    var ul = sibling(p, 2);
-    var li = child(ul);
-    var span = child(li);
-    var node = child(span);
-    html(node, () => t("setting.feedback.text.feedback_desc"));
-    reset(span);
-    reset(li);
-    reset(ul);
-    reset(section);
-    var section_1 = sibling(section, 2);
-    var p_1 = child(section_1);
-    var text_1 = child(p_1, true);
-    template_effect(() => set_text(text_1, t("setting.feedback.label.donate")));
-    reset(p_1);
-    var ul_1 = sibling(p_1, 2);
-    var li_1 = child(ul_1);
-    var p_2 = child(li_1);
-    var node_1 = child(p_2);
-    html(node_1, () => t("setting.feedback.text.give_me_a_star"));
-    reset(p_2);
-    reset(li_1);
-    var li_2 = sibling(li_1, 2);
-    var figure = child(li_2);
-    var img = child(figure);
-    set_attribute(img, "src", creditCode);
-    var figcaption = sibling(img, 2);
-    var text_2 = child(figcaption, true);
-    template_effect(() => set_text(text_2, t("setting.feedback.text.donate_desc")));
-    reset(figcaption);
-    reset(figure);
-    reset(li_2);
-    reset(ul_1);
-    reset(section_1);
-    reset(div);
-    template_effect(() => {
-      set_class(div, clsx(sectionSpace()));
-      set_class(p, clsx(sectionTitle()));
-      set_class(ul, clsx(get$1(ulClasses)));
-      set_class(p_1, clsx(sectionTitle()));
-      set_class(ul_1, clsx(get$1(ulClasses)));
-    });
-    append($$anchor, div);
-    pop();
-  }
-  const menuOpen = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21,15.61L19.59,17L14.58,12L19.59,7L21,8.39L17.44,12L21,15.61M3,6H16V8H3V6M3,13V11H13V13H3M3,18V16H16V18H3Z" /></svg>`;
-  const menuClose = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6H13V8H3V6M3 16H13V18H3V16M3 11H15V13H3V11M16 7L14.58 8.39L18.14 12L14.58 15.61L16 17L21 12L16 7Z" /></svg>`;
-  var on_click$1 = (_, showListbox) => set(showListbox, !get$1(showListbox));
-  var root_6 = /* @__PURE__ */ template(`<button type="button" class="btn-icon hover:variant-soft-surface ml-1"><i class="w-8 fill-current"><!></i></button>`);
-  var root_9 = /* @__PURE__ */ template(`<h3 class="h3"> </h3>`);
-  var root_1$2 = /* @__PURE__ */ template(`<div><!> <!> <div class="mt-4 pr-4 scrollbar-track-transparent scrollbar-thumb-slate-400/50 scrollbar-corner-transparent scrollbar-thin overflow-y-auto" style="scrollbar-gutter: stable"><!></div></div>`);
-  function Config($$anchor, $$props) {
-    push($$props, true);
-    const optionList = [
-      {
-        name: t("setting.save_to.title"),
-        component: SaveTo
-      },
-      {
-        name: t("setting.ugoira.title"),
-        component: UgoiraConvert,
-        show: env.isPixiv()
-      },
-      {
-        name: t("setting.history.title"),
-        component: DownloadHistory
-      },
-      {
-        name: t("setting.button_position.title"),
-        component: BtnPosition
-      },
-      {
-        name: t("setting.others.title"),
-        component: Others
-      },
-      {
-        name: t("setting.feedback.title"),
-        component: FeedBack
-      }
-    ];
-    let slected = state(0);
-    let showListbox = state(true);
-    const OptionComponent = /* @__PURE__ */ derived$1(() => optionList[get$1(slected)].component);
-    const gridCol = /* @__PURE__ */ derived$1(() => get$1(showListbox) ? "grid-cols-[140px_1fr]" : "grid-cols-[0px_1fr]");
-    const transform = /* @__PURE__ */ derived$1(() => get$1(showListbox) ? "translate-x-0" : "-translate-x-full");
-    const sidebarWidth = "w-[140px]";
-    ModalWrapper($$anchor, {
-      get parent() {
-        return $$props.parent;
-      },
-      height: "h-screen md:h-[600px]",
-      width: "w-screen md:max-w-screen-md xl:max-w-screen-lg",
-      padding: "",
-      children: ($$anchor2, $$slotProps) => {
-        var div = root_1$2();
-        var node = child(div);
-        ListBox(node, {
-          get class() {
-            return `pt-4 pr-6 row-start-1 row-span-2 ${sidebarWidth} transition-[transform] ${get$1(transform) ?? ""}`;
-          },
-          children: ($$anchor3, $$slotProps2) => {
-            var fragment_1 = comment();
-            var node_1 = first_child(fragment_1);
-            each(node_1, 17, () => optionList, index, ($$anchor4, option, idx) => {
-              var fragment_2 = comment();
-              var node_2 = first_child(fragment_2);
-              {
-                var consequent = ($$anchor5) => {
-                  ListBoxItem($$anchor5, {
-                    name: "option",
-                    value: idx,
-                    class: "rounded-token",
-                    get group() {
-                      return get$1(slected);
-                    },
-                    set group($$value) {
-                      set(slected, proxy($$value));
-                    },
-                    children: ($$anchor6, $$slotProps3) => {
-                      next();
-                      var text$1 = text();
-                      template_effect(() => set_text(text$1, get$1(option).name));
-                      append($$anchor6, text$1);
-                    },
-                    $$slots: { default: true }
-                  });
-                };
-                if_block(node_2, ($$render) => {
-                  if (!("show" in get$1(option)) || get$1(option).show) $$render(consequent);
-                });
-              }
-              append($$anchor4, fragment_2);
-            });
-            append($$anchor3, fragment_1);
-          },
-          $$slots: { default: true }
-        });
-        var node_3 = sibling(node, 2);
-        {
-          const lead = ($$anchor3) => {
-            var button = root_6();
-            button.__click = [on_click$1, showListbox];
-            var i = child(button);
-            var node_4 = child(i);
-            {
-              var consequent_1 = ($$anchor4) => {
-                var fragment_5 = comment();
-                var node_5 = first_child(fragment_5);
-                html(node_5, () => menuClose);
-                append($$anchor4, fragment_5);
-              };
-              var alternate = ($$anchor4) => {
-                var fragment_6 = comment();
-                var node_6 = first_child(fragment_6);
-                html(node_6, () => menuOpen);
-                append($$anchor4, fragment_6);
-              };
-              if_block(node_4, ($$render) => {
-                if (get$1(showListbox)) $$render(consequent_1);
-                else $$render(alternate, false);
-              });
-            }
-            reset(i);
-            reset(button);
-            append($$anchor3, button);
-          };
-          AppBar(node_3, {
-            padding: "py-2",
-            background: "bg-transparent",
-            class: "mr-6 border-b border-surface-800-100-token",
-            lead,
-            children: ($$anchor3, $$slotProps2) => {
-              var h3 = root_9();
-              var text_1 = child(h3, true);
-              reset(h3);
-              template_effect(() => set_text(text_1, optionList[get$1(slected)].name || "设置"));
-              append($$anchor3, h3);
-            },
-            $$slots: { lead: true, default: true }
-          });
-        }
-        var div_1 = sibling(node_3, 2);
-        var node_7 = child(div_1);
-        component(node_7, () => get$1(OptionComponent), ($$anchor3, $$component) => {
-          $$component($$anchor3, {
-            bg: "bg-white/30 dark:bg-surface-500/20 backdrop-blur-sm"
-          });
-        });
-        reset(div_1);
-        reset(div);
-        template_effect(() => set_class(div, `h-full pt-4 pb-6 pl-6 grid grid-rows-[auto_1fr] transition-[grid-template-columns] ${get$1(gridCol) ?? ""}`));
-        append($$anchor2, div);
-      },
-      $$slots: { default: true }
-    });
-    pop();
-  }
-  delegate(["click"]);
   const defaultData = {
     selectedFilters: null,
     blacklistTag: [],
@@ -12208,22 +9047,22 @@
   const playSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M10,16.5L16,12L10,7.5V16.5Z" /></svg>`;
   const stopOutLineSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4M9,9V15H15V9" /></svg>`;
   const downloadMultipleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9,1V7H5L12,14L19,7H15V1H9M5,16V18H19V16H5M5,20V22H19V20H5Z" /></svg>`;
-  var root_3$1 = /* @__PURE__ */ template(`<!> <!> <!>`, 1);
+  var root_3$5 = /* @__PURE__ */ template(`<!> <!> <!>`, 1);
   var root_12 = /* @__PURE__ */ template(`<label class="btn !py-2 rounded-none !transform-none cursor-pointer variant-soft-surface has-[:checked]:!variant-filled-primary text-sm w-full"><div class="w-0 h-0 overflow-hidden hidden"><input type="checkbox"></div> <div class="!m-0"> </div></label>`);
-  var root_11 = /* @__PURE__ */ template(`<div class="flex justify-end items-center my-4"><div class="btn-group w-full"></div></div>`);
+  var root_11$1 = /* @__PURE__ */ template(`<div class="flex justify-end items-center my-4"><div class="btn-group w-full"></div></div>`);
   var root_13 = /* @__PURE__ */ template(`<!> <!>`, 1);
-  var root_10 = /* @__PURE__ */ template(`<!> <div class="flex justify-between items-center my-4 gap-4"><div class="flex-grow w-full"><!></div> <div class="flex justify-between items-center gap-4 w-full"><label class="input-group input-group-divider flex [&amp;>input]:!min-w-0 [&amp;>input]:!border-transparent border-surface-400/20 dark:border-surface-500/20 bg-surface-400/20 dark:bg-surface-500/20"><div class="input-group-shim !px-1 flex-none"><i class="w-6 fill-current"><!></i></div> <input class="w-20 pr-0 text-surface-700-200-token text-sm" type="number" min="1" step="1"></label> <label class="input-group input-group-divider flex [&amp;>input]:!min-w-0 [&amp;>input]:!border-transparent border-surface-400/20 dark:border-surface-500/20 bg-surface-400/20 dark:bg-surface-500/20"><div class="input-group-shim !px-1 flex-none"><i class="w-6 fill-current"><!></i></div> <input class="w-20 pr-0 text-surface-700-200-token text-sm" type="number" min="1" step="1"></label></div></div>`, 1);
+  var root_10$1 = /* @__PURE__ */ template(`<!> <div class="flex justify-between items-center my-4 gap-4"><div class="flex-grow w-full"><!></div> <div class="flex justify-between items-center gap-4 w-full"><label class="input-group input-group-divider flex [&amp;>input]:!min-w-0 [&amp;>input]:!border-transparent border-surface-400/20 dark:border-surface-500/20 bg-surface-400/20 dark:bg-surface-500/20"><div class="input-group-shim !px-1 flex-none"><i class="w-6 fill-current"><!></i></div> <input class="w-20 pr-0 text-surface-700-200-token text-sm" type="number" min="1" step="1"></label> <label class="input-group input-group-divider flex [&amp;>input]:!min-w-0 [&amp;>input]:!border-transparent border-surface-400/20 dark:border-surface-500/20 bg-surface-400/20 dark:bg-surface-500/20"><div class="input-group-shim !px-1 flex-none"><i class="w-6 fill-current"><!></i></div> <input class="w-20 pr-0 text-surface-700-200-token text-sm" type="number" min="1" step="1"></label></div></div>`, 1);
   var root_17 = /* @__PURE__ */ template(`<!> <!>`, 1);
   var root_19 = /* @__PURE__ */ template(`<div class="flex justify-between items-center text-base text-surface-700-200-token"><p> </p> <!></div>`);
-  var root_2 = /* @__PURE__ */ template(`<div class="downloader-filter"><!> <hr class="!border-t-1 my-4"></div>`);
-  var on_click = (_, startDownload, id) => {
+  var root_2$4 = /* @__PURE__ */ template(`<div class="downloader-filter"><!> <hr class="!border-t-1 my-4"></div>`);
+  var on_click$1 = (_, startDownload, id) => {
     startDownload(id());
   };
   var root_23 = /* @__PURE__ */ template(`<button class="btn rounded-none !transform-none !variant-filled-primary"><i class="w-5"><!></i> <span> </span></button>`);
   var root_21 = /* @__PURE__ */ template(`<div class=" flex-none btn-group self-start"></div>`);
   var on_click_1 = (__1, startDownload, batchDownloadEntries) => {
-    var _a2;
-    startDownload(((_a2 = get$1(batchDownloadEntries)) == null ? undefined : _a2[0][0]) ?? "");
+    var _a;
+    startDownload(((_a = get$1(batchDownloadEntries)) == null ? undefined : _a[0][0]) ?? "");
   };
   var root_25 = /* @__PURE__ */ template(`<button class="btn variant-filled-primary self-start"><i class="w-5"><!></i> <span> </span></button>`);
   var root_20 = /* @__PURE__ */ template(`<div class="flex justify-end flex-grow w-full gap-4"><div class="flex flex-grow flex-col justify-between overflow-hidden text-surface-700-200-token"><p class="truncate"> </p> <p class="break-words"> </p></div> <!></div>`);
@@ -12231,7 +9070,7 @@
     abort();
   };
   var root_26 = /* @__PURE__ */ template(`<div class="flex flex-grow w-full gap-6 items-center"><div class="flex flex-grow flex-col justify-between h-full overflow-hidden"><!> <div class="flex items-center justify-between gap-4 basis-0 text-surface-700-200-token"><p class="truncate"> </p> <p class=" flex-none"> </p></div></div> <button class="btn variant-filled-primary"><i class="w-5"><!></i> <span> </span></button></div>`);
-  var root_1$1 = /* @__PURE__ */ template(`<div data-theme="skeleton" class="card px-4 fixed right-20 top-36 w-[600px] *:text-sm shadow-xl bg-scroll"><!> <div class="flex relative my-4"><!></div></div>`);
+  var root_1$6 = /* @__PURE__ */ template(`<div data-theme="skeleton" class="card px-4 fixed right-20 top-36 w-[600px] *:text-sm shadow-xl bg-scroll"><!> <div class="flex relative my-4"><!></div></div>`);
   var on_click_3 = (__3, showMenu) => {
     set(showMenu, !get$1(showMenu));
   };
@@ -12240,8 +9079,8 @@
   var root_31 = /* @__PURE__ */ template(`<div class="flex flex-col justify-center items-center px-3 font-bold text-[12px] leading-[14px] overflow-hidden text-surface-700-200-token"><span class=" truncate max-w-full"> </span> <hr class="!border-t-1 my-[1px] self-stretch !border-surface-700 dark:!border-surface-200"> <span class=" truncate max-w-full"> </span></div>`);
   var root_33 = /* @__PURE__ */ template(`<i class="w-6 fill-slate-700 dark:fill-slate-200 mix-blend-hard-light mt-4"><!></i>`);
   var root_27 = /* @__PURE__ */ template(`<div class="size-14 rounded-full fixed right-4 top-36 drop-shadow-xl cursor-pointer hover:brightness-110 backdrop-blur-sm"><div data-theme="skeleton" class="avatar absolute -z-10 size-14 rounded-full overflow-hidden bg-scroll transition-opacity duration-[250ms]"><!></div> <!> <div class="size-14 flex justify-center items-center relative"><!></div></div>`);
-  var root = /* @__PURE__ */ template(`<!> <!>`, 1);
-  function Downloader($$anchor, $$props) {
+  var root$7 = /* @__PURE__ */ template(`<!> <!>`, 1);
+  function Downloader$1($$anchor, $$props) {
     push($$props, true);
     const [$$stores, $$cleanup] = setup_stores();
     const $downloading = () => store_get(downloading, "$downloading", $$stores);
@@ -12399,21 +9238,21 @@
         logger.error(error);
       }
     }
-    var fragment = root();
+    var fragment = root$7();
     var node = first_child(fragment);
     {
       var consequent_10 = ($$anchor2) => {
-        var div = root_1$1();
+        var div = root_1$6();
         var node_1 = child(div);
         {
           var consequent_5 = ($$anchor3) => {
-            var div_1 = root_2();
+            var div_1 = root_2$4();
             var node_2 = child(div_1);
             TabGroup(node_2, {
               regionList: "text-surface-700-200-token",
               class: "text-sm",
               children: ($$anchor4, $$slotProps) => {
-                var fragment_1 = root_3$1();
+                var fragment_1 = root_3$5();
                 var node_3 = first_child(fragment_1);
                 Tab(node_3, {
                   name: "category",
@@ -12484,11 +9323,11 @@
                   var node_6 = first_child(fragment_6);
                   {
                     var consequent_2 = ($$anchor5) => {
-                      var fragment_7 = root_10();
+                      var fragment_7 = root_10$1();
                       var node_7 = first_child(fragment_7);
                       {
                         var consequent_1 = ($$anchor6) => {
-                          var div_2 = root_11();
+                          var div_2 = root_11$1();
                           var div_3 = child(div_2);
                           each(div_3, 21, () => $$props.downloaderConfig.filterOption.filters, index, ($$anchor7, $$item) => {
                             let id = () => get$1($$item).id;
@@ -12750,7 +9589,7 @@
                   {
                     var consequent_6 = ($$anchor6) => {
                       var button = root_23();
-                      button.__click = [on_click, startDownload, id];
+                      button.__click = [on_click$1, startDownload, id];
                       var i_2 = child(button);
                       var node_21 = child(i_2);
                       html(node_21, () => downloadSvg);
@@ -12811,9 +9650,9 @@
             reset(div_13);
             bind_this(div_13, ($$value) => startDownloadEl = $$value, () => startDownloadEl);
             template_effect(() => {
-              var _a2, _b;
+              var _a, _b;
               set_text(text_7, get$1(downloadResult));
-              toggle_class(p_2, "text-error-500", ((_a2 = $log()) == null ? undefined : _a2.type) === "Error");
+              toggle_class(p_2, "text-error-500", ((_a = $log()) == null ? undefined : _a.type) === "Error");
               set_text(text_8, ((_b = $log()) == null ? undefined : _b.message) ?? "");
             });
             event("introstart", div_13, () => (
@@ -12861,8 +9700,8 @@
             reset(div_16);
             bind_this(div_16, ($$value) => stopDownloadEl = $$value, () => stopDownloadEl);
             template_effect(() => {
-              var _a2, _b;
-              toggle_class(p_3, "text-error-500", ((_a2 = $log()) == null ? undefined : _a2.type) === "Error");
+              var _a, _b;
+              toggle_class(p_3, "text-error-500", ((_a = $log()) == null ? undefined : _a.type) === "Error");
               set_text(text_11, ((_b = $log()) == null ? undefined : _b.message) ?? "");
               set_text(text_12, $artworkCount() ? `${get$1(processed)} / ${$artworkCount()}` : "");
             });
@@ -13004,17 +9843,2945 @@
   }
   delegate(["click"]);
   const cog = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" /></svg>`;
+  const env = {
+    isFirefox() {
+      return navigator.userAgent.includes("Firefox");
+    },
+    isViolentmonkey() {
+      return _GM_info.scriptHandler === "Violentmonkey";
+    },
+    isTampermonkey() {
+      return _GM_info.scriptHandler === "Tampermonkey";
+    },
+    isBlobDlAvaliable() {
+      return !this.isFirefox() || this.isFirefox() && this.isTampermonkey() && parseFloat(_GM_info.version ?? "") < 4.18;
+    },
+    // firefox使用tampermonkey，downloadmod为默认时也支持子目录，但GM_info显示为原生的“native”，而“原生”不支持子目录
+    isSupportSubpath() {
+      return this.isBrowserDownloadMode();
+    },
+    isBrowserDownloadMode() {
+      return _GM_info.downloadMode === "browser";
+    },
+    isConflictActionEnable() {
+      return this.isTampermonkey() && parseFloat(_GM_info.version ?? "") >= 4.18 && this.isBrowserDownloadMode();
+    },
+    isConflictActionPromptEnable() {
+      return !this.isFirefox() && this.isConflictActionEnable();
+    },
+    isFileSystemAccessAvaliable() {
+      return typeof _unsafeWindow.showDirectoryPicker === "function" && typeof _unsafeWindow.showSaveFilePicker === "function";
+    },
+    videoFrameSupported() {
+      return typeof _unsafeWindow.VideoFrame === "function";
+    },
+    isPixiv() {
+      return location.hostname === "www.pixiv.net";
+    },
+    isYande() {
+      return location.hostname === "yande.re";
+    },
+    isRule34() {
+      return location.hostname === "rule34.xxx";
+    }
+  };
+  const check = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>check</title><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>`;
+  const folderSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" /></svg>`;
+  const fileSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6Z" /></svg>`;
+  class RequestError extends Error {
+    constructor(url, status) {
+      super(status + " " + url);
+      __publicField(this, "url");
+      __publicField(this, "status");
+      this.name = "RequestError";
+      this.url = url;
+      this.status = status;
+    }
+  }
+  class CancelError extends Error {
+    constructor() {
+      super("User aborted.");
+      this.name = "CancelError";
+    }
+  }
+  class JsonDataError extends Error {
+    constructor(msg) {
+      super(msg);
+      this.name = "JsonDataError";
+    }
+  }
+  class TimoutError extends Error {
+    constructor(msg) {
+      super(msg);
+      this.name = "TimoutError";
+    }
+  }
+  class FileSystemAccessHandler {
+    constructor() {
+      __privateAdd(this, _FileSystemAccessHandler_instances);
+      __publicField(this, "filenameConflictAction", "uniquify");
+      __publicField(this, "dirHandle");
+      __publicField(this, "dirHandleStatus", "dirHandle.unpick");
+      __publicField(this, "cachedTasks", []);
+      __publicField(this, "duplicateFilenameCached", {});
+      __privateMethod(this, _FileSystemAccessHandler_instances, addChannelEventListeners_fn).call(this);
+      channelEvent.emit(
+        "dirHandle.request"
+        /* REQUEST */
+      );
+    }
+    async getDirHandleRecursive(dirs) {
+      if (!this.dirHandle) throw new Error("未选择保存文件夹");
+      let handler = this.dirHandle;
+      if (typeof dirs === "string") {
+        if (dirs.indexOf("/") === -1) return await handler.getDirectoryHandle(dirs, { create: true });
+        dirs = dirs.split("/").filter((dir) => !!dir);
+      }
+      for await (const dir of dirs) {
+        handler = await handler.getDirectoryHandle(dir, { create: true });
+      }
+      return handler;
+    }
+    processCachedTasks() {
+      const { length } = this.cachedTasks;
+      for (let i = 0; i < length; i++) {
+        const [blob, path, signal, onSaveFullfilled, onSaveRejected] = this.cachedTasks[i];
+        this.saveFile(blob, path, signal).then(onSaveFullfilled, onSaveRejected);
+      }
+      logger.info(`执行${length}个缓存任务`);
+      if (this.cachedTasks.length > length) {
+        this.cachedTasks = this.cachedTasks.slice(length);
+      } else {
+        this.cachedTasks.length = 0;
+      }
+    }
+    rejectCachedTasks() {
+      this.cachedTasks.forEach(([, , , , onSaveRejected]) => onSaveRejected(new CancelError()));
+      this.cachedTasks.length = 0;
+      logger.info(`取消${this.cachedTasks.length}个缓存任务`);
+    }
+    async getFilenameHandle(dirHandle, filename) {
+      if (this.filenameConflictAction === "overwrite")
+        return await dirHandle.getFileHandle(filename, { create: true });
+      if (!(filename in this.duplicateFilenameCached)) {
+        this.duplicateFilenameCached[filename] = [];
+        try {
+          await dirHandle.getFileHandle(filename);
+          logger.warn("存在同名文件", filename);
+        } catch (error) {
+          return await dirHandle.getFileHandle(filename, { create: true });
+        }
+      }
+      const extIndex = filename.lastIndexOf(".");
+      const ext = filename.slice(extIndex + 1);
+      const name = filename.slice(0, extIndex);
+      if (this.filenameConflictAction === "prompt") {
+        return await _unsafeWindow.showSaveFilePicker({
+          suggestedName: filename,
+          // @ts-expect-error accept MIMEType & FileExtension
+          types: [{ description: "Image file", accept: { ["image/" + ext]: "." + ext } }]
+        });
+      } else {
+        for (let suffix = 1; suffix < 1e3; suffix++) {
+          const newName = `${name} (${suffix}).${ext}`;
+          try {
+            await dirHandle.getFileHandle(newName);
+          } catch (error) {
+            if (this.duplicateFilenameCached[filename].includes(newName)) {
+              continue;
+            } else {
+              this.duplicateFilenameCached[filename].push(newName);
+            }
+            logger.info("使用文件名:", newName);
+            return await dirHandle.getFileHandle(newName, { create: true });
+          }
+        }
+        throw new RangeError("Oops, you have too many duplicate files.");
+      }
+    }
+    clearFilenameCached(duplicateName, actualName) {
+      if (!(duplicateName in this.duplicateFilenameCached)) return;
+      const usedNameArr = this.duplicateFilenameCached[duplicateName];
+      logger.info("清理重名文件名", usedNameArr, actualName);
+      if (usedNameArr.length === 0) {
+        delete this.duplicateFilenameCached[duplicateName];
+        return;
+      }
+      const index2 = usedNameArr.indexOf(actualName);
+      if (index2 === -1) return;
+      usedNameArr.splice(index2, 1);
+      if (usedNameArr.length === 0) delete this.duplicateFilenameCached[duplicateName];
+    }
+    async updateDirHandle() {
+      try {
+        this.dirHandleStatus = "dirHandle.picking";
+        channelEvent.emit(
+          "dirHandle.picking"
+          /* PICKING */
+        );
+        this.dirHandle = await _unsafeWindow.showDirectoryPicker({ id: "pdl", mode: "readwrite" });
+        logger.info("更新dirHandle", this.dirHandle);
+        this.dirHandleStatus = "dirHandle.picked";
+        channelEvent.emit(
+          "dirHandle.picked",
+          this.dirHandle
+        );
+        this.processCachedTasks();
+        return true;
+      } catch (error) {
+        logger.warn(error);
+        channelEvent.emit(
+          "dirHandle.unpick"
+          /* UNPICK */
+        );
+        if (this.dirHandle) {
+          this.dirHandleStatus = "dirHandle.picked";
+          this.processCachedTasks();
+        } else {
+          this.dirHandleStatus = "dirHandle.unpick";
+          this.rejectCachedTasks();
+        }
+        return false;
+      }
+    }
+    getCurrentDirName() {
+      var _a;
+      return ((_a = this.dirHandle) == null ? undefined : _a.name) ?? "";
+    }
+    isDirHandleNotSet() {
+      return this.dirHandleStatus === "dirHandle.unpick";
+    }
+    setFilenameConflictAction(action2) {
+      this.filenameConflictAction = action2;
+    }
+    async saveFile(blob, path, signal) {
+      signal == null ? undefined : signal.throwIfAborted();
+      if (this.dirHandleStatus === "dirHandle.picking") {
+        let onSaveFullfilled;
+        let onSaveRejected;
+        const promiseExcutor = new Promise((resolve, reject) => {
+          onSaveFullfilled = resolve;
+          onSaveRejected = reject;
+        });
+        this.cachedTasks.push([blob, path, signal, onSaveFullfilled, onSaveRejected]);
+        return promiseExcutor;
+      }
+      if (this.dirHandleStatus === "dirHandle.unpick") {
+        const isSuccess = await this.updateDirHandle();
+        if (!isSuccess) throw new TypeError("Failed to get dir handle.");
+      }
+      let currenDirHandle;
+      let filename;
+      const index2 = path.lastIndexOf("/");
+      if (index2 === -1) {
+        filename = path;
+        currenDirHandle = this.dirHandle;
+      } else {
+        filename = path.slice(index2 + 1);
+        currenDirHandle = await this.getDirHandleRecursive(path.slice(0, index2));
+      }
+      signal == null ? undefined : signal.throwIfAborted();
+      const fileHandle = await this.getFilenameHandle(currenDirHandle, filename);
+      const writableStream = await fileHandle.createWritable();
+      await writableStream.write(blob);
+      await writableStream.close();
+      this.clearFilenameCached(filename, fileHandle.name);
+    }
+  }
+  _FileSystemAccessHandler_instances = new WeakSet();
+  addChannelEventListeners_fn = function() {
+    channelEvent.on("dirHandle.request", () => {
+      if (!this.dirHandle) return;
+      channelEvent.emit(
+        "dirHandle.response",
+        this.dirHandle
+      );
+      logger.info("响应请求dirHandle");
+    });
+    channelEvent.on(
+      "dirHandle.response",
+      (handler) => {
+        if (this.dirHandle) return;
+        if (this.dirHandleStatus === "dirHandle.unpick")
+          this.dirHandleStatus = "dirHandle.picked";
+        this.dirHandle = handler;
+        logger.info("首次获取dirHandle", this.dirHandle);
+      }
+    );
+    channelEvent.on("dirHandle.picking", () => {
+      this.dirHandleStatus = "dirHandle.picking";
+      logger.info("正在选择目录");
+    });
+    channelEvent.on("dirHandle.unpick", () => {
+      logger.warn("取消更新dirHandle");
+      if (this.dirHandle) {
+        this.dirHandleStatus = "dirHandle.picked";
+        this.processCachedTasks();
+      } else {
+        this.dirHandleStatus = "dirHandle.unpick";
+        this.rejectCachedTasks();
+      }
+    });
+    channelEvent.on(
+      "dirHandle.picked",
+      (handler) => {
+        this.dirHandleStatus = "dirHandle.picked";
+        this.dirHandle = handler;
+        logger.info("更新dirHandle", this.dirHandle);
+        this.processCachedTasks();
+      }
+    );
+  };
+  const fsaHandler = new FileSystemAccessHandler();
+  function gmDownload(blob, path, signal) {
+    return new Promise((resolve, reject) => {
+      signal == null ? undefined : signal.throwIfAborted();
+      const imgUrl = URL.createObjectURL(blob);
+      const abortObj = _GM_download({
+        url: URL.createObjectURL(blob),
+        name: path,
+        onerror: (error) => {
+          URL.revokeObjectURL(imgUrl);
+          if (signal == null ? undefined : signal.aborted) {
+            resolve();
+          } else {
+            logger.error(error);
+            reject(new Error(`FileSave error: ${path}`));
+          }
+        },
+        onload: () => {
+          URL.revokeObjectURL(imgUrl);
+          resolve();
+        }
+      });
+      signal == null ? undefined : signal.addEventListener("abort", () => abortObj.abort(), { once: true });
+    });
+  }
+  function aDownload(blob, path) {
+    const separaterIndex = path.lastIndexOf("/");
+    if (separaterIndex !== -1) path = path.slice(separaterIndex + 1);
+    const dlEle = document.createElement("a");
+    dlEle.href = URL.createObjectURL(blob);
+    dlEle.download = path;
+    dlEle.click();
+    URL.revokeObjectURL(dlEle.href);
+  }
+  function gmDownloadDataUrl(blob, path, signal) {
+    return readBlobAsDataUrl(blob).then((dataUrl) => {
+      signal == null ? undefined : signal.throwIfAborted();
+      return new Promise((resolve, reject) => {
+        const abortObj = _GM_download({
+          url: dataUrl,
+          name: path,
+          onerror: (error) => {
+            if (signal == null ? undefined : signal.aborted) {
+              resolve();
+            } else {
+              logger.error(error);
+              reject(new Error(`FileSave error: ${path}`));
+            }
+          },
+          onload: () => {
+            resolve();
+          }
+        });
+        signal == null ? undefined : signal.addEventListener("abort", () => abortObj.abort(), { once: true });
+      });
+    });
+  }
+  let saveFile;
+  const blobAvaliable = env.isBlobDlAvaliable();
+  const subPathAvaliable = env.isSupportSubpath();
+  if (subPathAvaliable) {
+    if (!blobAvaliable) {
+      saveFile = gmDownloadDataUrl;
+    } else {
+      saveFile = gmDownload;
+    }
+  } else {
+    saveFile = aDownload;
+    logger.warn("Download function is not fully supported:", _GM_info.scriptHandler, _GM_info.version);
+  }
+  const fileSaveAdapters = {
+    getAdapter() {
+      if (this.isFileSystemAccessEnable()) {
+        fsaHandler.setFilenameConflictAction(config.get("fileSystemFilenameConflictAction"));
+        return fsaHandler.saveFile.bind(fsaHandler);
+      } else {
+        return saveFile;
+      }
+    },
+    isFileSystemAccessEnable() {
+      return env.isFileSystemAccessAvaliable() && config.get("useFileSystemAccess");
+    },
+    dirHandleCheck() {
+      if (this.isFileSystemAccessEnable() && fsaHandler.isDirHandleNotSet())
+        fsaHandler.updateDirHandle();
+    },
+    async updateDirHandle() {
+      if (this.isFileSystemAccessEnable()) {
+        await fsaHandler.updateDirHandle();
+        return fsaHandler.getCurrentDirName();
+      }
+      return "";
+    },
+    getFsaDirName() {
+      if (this.isFileSystemAccessEnable()) {
+        return fsaHandler.getCurrentDirName();
+      } else {
+        return "";
+      }
+    }
+  };
+  function getDefaultExportFromCjs(x) {
+    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+  }
+  var eventemitter3 = { exports: {} };
+  (function(module) {
+    var has = Object.prototype.hasOwnProperty, prefix = "~";
+    function Events() {
+    }
+    if (Object.create) {
+      Events.prototype = /* @__PURE__ */ Object.create(null);
+      if (!new Events().__proto__) prefix = false;
+    }
+    function EE(fn, context, once) {
+      this.fn = fn;
+      this.context = context;
+      this.once = once || false;
+    }
+    function addListener(emitter, event2, fn, context, once) {
+      if (typeof fn !== "function") {
+        throw new TypeError("The listener must be a function");
+      }
+      var listener = new EE(fn, context || emitter, once), evt = prefix ? prefix + event2 : event2;
+      if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
+      else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
+      else emitter._events[evt] = [emitter._events[evt], listener];
+      return emitter;
+    }
+    function clearEvent(emitter, evt) {
+      if (--emitter._eventsCount === 0) emitter._events = new Events();
+      else delete emitter._events[evt];
+    }
+    function EventEmitter2() {
+      this._events = new Events();
+      this._eventsCount = 0;
+    }
+    EventEmitter2.prototype.eventNames = function eventNames() {
+      var names = [], events, name;
+      if (this._eventsCount === 0) return names;
+      for (name in events = this._events) {
+        if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
+      }
+      if (Object.getOwnPropertySymbols) {
+        return names.concat(Object.getOwnPropertySymbols(events));
+      }
+      return names;
+    };
+    EventEmitter2.prototype.listeners = function listeners(event2) {
+      var evt = prefix ? prefix + event2 : event2, handlers = this._events[evt];
+      if (!handlers) return [];
+      if (handlers.fn) return [handlers.fn];
+      for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
+        ee[i] = handlers[i].fn;
+      }
+      return ee;
+    };
+    EventEmitter2.prototype.listenerCount = function listenerCount(event2) {
+      var evt = prefix ? prefix + event2 : event2, listeners = this._events[evt];
+      if (!listeners) return 0;
+      if (listeners.fn) return 1;
+      return listeners.length;
+    };
+    EventEmitter2.prototype.emit = function emit(event2, a1, a2, a3, a4, a5) {
+      var evt = prefix ? prefix + event2 : event2;
+      if (!this._events[evt]) return false;
+      var listeners = this._events[evt], len = arguments.length, args, i;
+      if (listeners.fn) {
+        if (listeners.once) this.removeListener(event2, listeners.fn, undefined, true);
+        switch (len) {
+          case 1:
+            return listeners.fn.call(listeners.context), true;
+          case 2:
+            return listeners.fn.call(listeners.context, a1), true;
+          case 3:
+            return listeners.fn.call(listeners.context, a1, a2), true;
+          case 4:
+            return listeners.fn.call(listeners.context, a1, a2, a3), true;
+          case 5:
+            return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+          case 6:
+            return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+        }
+        for (i = 1, args = new Array(len - 1); i < len; i++) {
+          args[i - 1] = arguments[i];
+        }
+        listeners.fn.apply(listeners.context, args);
+      } else {
+        var length = listeners.length, j;
+        for (i = 0; i < length; i++) {
+          if (listeners[i].once) this.removeListener(event2, listeners[i].fn, undefined, true);
+          switch (len) {
+            case 1:
+              listeners[i].fn.call(listeners[i].context);
+              break;
+            case 2:
+              listeners[i].fn.call(listeners[i].context, a1);
+              break;
+            case 3:
+              listeners[i].fn.call(listeners[i].context, a1, a2);
+              break;
+            case 4:
+              listeners[i].fn.call(listeners[i].context, a1, a2, a3);
+              break;
+            default:
+              if (!args) for (j = 1, args = new Array(len - 1); j < len; j++) {
+                args[j - 1] = arguments[j];
+              }
+              listeners[i].fn.apply(listeners[i].context, args);
+          }
+        }
+      }
+      return true;
+    };
+    EventEmitter2.prototype.on = function on(event2, fn, context) {
+      return addListener(this, event2, fn, context, false);
+    };
+    EventEmitter2.prototype.once = function once(event2, fn, context) {
+      return addListener(this, event2, fn, context, true);
+    };
+    EventEmitter2.prototype.removeListener = function removeListener(event2, fn, context, once) {
+      var evt = prefix ? prefix + event2 : event2;
+      if (!this._events[evt]) return this;
+      if (!fn) {
+        clearEvent(this, evt);
+        return this;
+      }
+      var listeners = this._events[evt];
+      if (listeners.fn) {
+        if (listeners.fn === fn && (!once || listeners.once) && (!context || listeners.context === context)) {
+          clearEvent(this, evt);
+        }
+      } else {
+        for (var i = 0, events = [], length = listeners.length; i < length; i++) {
+          if (listeners[i].fn !== fn || once && !listeners[i].once || context && listeners[i].context !== context) {
+            events.push(listeners[i]);
+          }
+        }
+        if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
+        else clearEvent(this, evt);
+      }
+      return this;
+    };
+    EventEmitter2.prototype.removeAllListeners = function removeAllListeners(event2) {
+      var evt;
+      if (event2) {
+        evt = prefix ? prefix + event2 : event2;
+        if (this._events[evt]) clearEvent(this, evt);
+      } else {
+        this._events = new Events();
+        this._eventsCount = 0;
+      }
+      return this;
+    };
+    EventEmitter2.prototype.off = EventEmitter2.prototype.removeListener;
+    EventEmitter2.prototype.addListener = EventEmitter2.prototype.on;
+    EventEmitter2.prefixed = prefix;
+    EventEmitter2.EventEmitter = EventEmitter2;
+    {
+      module.exports = EventEmitter2;
+    }
+  })(eventemitter3);
+  var eventemitter3Exports = eventemitter3.exports;
+  const EventEmitter = /* @__PURE__ */ getDefaultExportFromCjs(eventemitter3Exports);
+  class TimeoutError extends Error {
+    constructor(message) {
+      super(message);
+      this.name = "TimeoutError";
+    }
+  }
+  class AbortError extends Error {
+    constructor(message) {
+      super();
+      this.name = "AbortError";
+      this.message = message;
+    }
+  }
+  const getDOMException = (errorMessage) => globalThis.DOMException === undefined ? new AbortError(errorMessage) : new DOMException(errorMessage);
+  const getAbortedReason = (signal) => {
+    const reason = signal.reason === undefined ? getDOMException("This operation was aborted.") : signal.reason;
+    return reason instanceof Error ? reason : getDOMException(reason);
+  };
+  function pTimeout(promise, options) {
+    const {
+      milliseconds,
+      fallback,
+      message,
+      customTimers = { setTimeout, clearTimeout }
+    } = options;
+    let timer;
+    let abortHandler;
+    const wrappedPromise = new Promise((resolve, reject) => {
+      if (typeof milliseconds !== "number" || Math.sign(milliseconds) !== 1) {
+        throw new TypeError(`Expected \`milliseconds\` to be a positive number, got \`${milliseconds}\``);
+      }
+      if (options.signal) {
+        const { signal } = options;
+        if (signal.aborted) {
+          reject(getAbortedReason(signal));
+        }
+        abortHandler = () => {
+          reject(getAbortedReason(signal));
+        };
+        signal.addEventListener("abort", abortHandler, { once: true });
+      }
+      if (milliseconds === Number.POSITIVE_INFINITY) {
+        promise.then(resolve, reject);
+        return;
+      }
+      const timeoutError = new TimeoutError();
+      timer = customTimers.setTimeout.call(undefined, () => {
+        if (fallback) {
+          try {
+            resolve(fallback());
+          } catch (error) {
+            reject(error);
+          }
+          return;
+        }
+        if (typeof promise.cancel === "function") {
+          promise.cancel();
+        }
+        if (message === false) {
+          resolve();
+        } else if (message instanceof Error) {
+          reject(message);
+        } else {
+          timeoutError.message = message ?? `Promise timed out after ${milliseconds} milliseconds`;
+          reject(timeoutError);
+        }
+      }, milliseconds);
+      (async () => {
+        try {
+          resolve(await promise);
+        } catch (error) {
+          reject(error);
+        }
+      })();
+    });
+    const cancelablePromise = wrappedPromise.finally(() => {
+      cancelablePromise.clear();
+      if (abortHandler && options.signal) {
+        options.signal.removeEventListener("abort", abortHandler);
+      }
+    });
+    cancelablePromise.clear = () => {
+      customTimers.clearTimeout.call(undefined, timer);
+      timer = undefined;
+    };
+    return cancelablePromise;
+  }
+  function lowerBound(array, value, comparator) {
+    let first = 0;
+    let count = array.length;
+    while (count > 0) {
+      const step = Math.trunc(count / 2);
+      let it = first + step;
+      if (comparator(array[it], value) <= 0) {
+        first = ++it;
+        count -= step + 1;
+      } else {
+        count = step;
+      }
+    }
+    return first;
+  }
+  class PriorityQueue {
+    constructor() {
+      __privateAdd(this, _queue, []);
+    }
+    enqueue(run2, options) {
+      options = {
+        priority: 0,
+        ...options
+      };
+      const element = {
+        priority: options.priority,
+        run: run2
+      };
+      if (this.size && __privateGet(this, _queue)[this.size - 1].priority >= options.priority) {
+        __privateGet(this, _queue).push(element);
+        return;
+      }
+      const index2 = lowerBound(__privateGet(this, _queue), element, (a, b) => b.priority - a.priority);
+      __privateGet(this, _queue).splice(index2, 0, element);
+    }
+    dequeue() {
+      const item = __privateGet(this, _queue).shift();
+      return item == null ? undefined : item.run;
+    }
+    filter(options) {
+      return __privateGet(this, _queue).filter((element) => element.priority === options.priority).map((element) => element.run);
+    }
+    get size() {
+      return __privateGet(this, _queue).length;
+    }
+  }
+  _queue = new WeakMap();
+  class PQueue extends EventEmitter {
+    // TODO: The `throwOnTimeout` option should affect the return types of `add()` and `addAll()`
+    constructor(options) {
+      var _a, _b;
+      super();
+      __privateAdd(this, _PQueue_instances);
+      __privateAdd(this, _carryoverConcurrencyCount);
+      __privateAdd(this, _isIntervalIgnored);
+      __privateAdd(this, _intervalCount, 0);
+      __privateAdd(this, _intervalCap);
+      __privateAdd(this, _interval);
+      __privateAdd(this, _intervalEnd, 0);
+      __privateAdd(this, _intervalId);
+      __privateAdd(this, _timeoutId);
+      __privateAdd(this, _queue2);
+      __privateAdd(this, _queueClass);
+      __privateAdd(this, _pending, 0);
+      // The `!` is needed because of https://github.com/microsoft/TypeScript/issues/32194
+      __privateAdd(this, _concurrency);
+      __privateAdd(this, _isPaused);
+      __privateAdd(this, _throwOnTimeout);
+      /**
+          Per-operation timeout in milliseconds. Operations fulfill once `timeout` elapses if they haven't already.
+      
+          Applies to each future operation.
+          */
+      __publicField(this, "timeout");
+      options = {
+        carryoverConcurrencyCount: false,
+        intervalCap: Number.POSITIVE_INFINITY,
+        interval: 0,
+        concurrency: Number.POSITIVE_INFINITY,
+        autoStart: true,
+        queueClass: PriorityQueue,
+        ...options
+      };
+      if (!(typeof options.intervalCap === "number" && options.intervalCap >= 1)) {
+        throw new TypeError(`Expected \`intervalCap\` to be a number from 1 and up, got \`${((_a = options.intervalCap) == null ? undefined : _a.toString()) ?? ""}\` (${typeof options.intervalCap})`);
+      }
+      if (options.interval === undefined || !(Number.isFinite(options.interval) && options.interval >= 0)) {
+        throw new TypeError(`Expected \`interval\` to be a finite number >= 0, got \`${((_b = options.interval) == null ? undefined : _b.toString()) ?? ""}\` (${typeof options.interval})`);
+      }
+      __privateSet(this, _carryoverConcurrencyCount, options.carryoverConcurrencyCount);
+      __privateSet(this, _isIntervalIgnored, options.intervalCap === Number.POSITIVE_INFINITY || options.interval === 0);
+      __privateSet(this, _intervalCap, options.intervalCap);
+      __privateSet(this, _interval, options.interval);
+      __privateSet(this, _queue2, new options.queueClass());
+      __privateSet(this, _queueClass, options.queueClass);
+      this.concurrency = options.concurrency;
+      this.timeout = options.timeout;
+      __privateSet(this, _throwOnTimeout, options.throwOnTimeout === true);
+      __privateSet(this, _isPaused, options.autoStart === false);
+    }
+    get concurrency() {
+      return __privateGet(this, _concurrency);
+    }
+    set concurrency(newConcurrency) {
+      if (!(typeof newConcurrency === "number" && newConcurrency >= 1)) {
+        throw new TypeError(`Expected \`concurrency\` to be a number from 1 and up, got \`${newConcurrency}\` (${typeof newConcurrency})`);
+      }
+      __privateSet(this, _concurrency, newConcurrency);
+      __privateMethod(this, _PQueue_instances, processQueue_fn).call(this);
+    }
+    async add(function_, options = {}) {
+      options = {
+        timeout: this.timeout,
+        throwOnTimeout: __privateGet(this, _throwOnTimeout),
+        ...options
+      };
+      return new Promise((resolve, reject) => {
+        __privateGet(this, _queue2).enqueue(async () => {
+          var _a;
+          __privateWrapper(this, _pending)._++;
+          __privateWrapper(this, _intervalCount)._++;
+          try {
+            (_a = options.signal) == null ? void 0 : _a.throwIfAborted();
+            let operation = function_({ signal: options.signal });
+            if (options.timeout) {
+              operation = pTimeout(Promise.resolve(operation), { milliseconds: options.timeout });
+            }
+            if (options.signal) {
+              operation = Promise.race([operation, __privateMethod(this, _PQueue_instances, throwOnAbort_fn).call(this, options.signal)]);
+            }
+            const result = await operation;
+            resolve(result);
+            this.emit("completed", result);
+          } catch (error) {
+            if (error instanceof TimeoutError && !options.throwOnTimeout) {
+              resolve();
+              return;
+            }
+            reject(error);
+            this.emit("error", error);
+          } finally {
+            __privateMethod(this, _PQueue_instances, next_fn).call(this);
+          }
+        }, options);
+        this.emit("add");
+        __privateMethod(this, _PQueue_instances, tryToStartAnother_fn).call(this);
+      });
+    }
+    async addAll(functions, options) {
+      return Promise.all(functions.map(async (function_) => this.add(function_, options)));
+    }
+    /**
+    Start (or resume) executing enqueued tasks within concurrency limit. No need to call this if queue is not paused (via `options.autoStart = false` or by `.pause()` method.)
+    */
+    start() {
+      if (!__privateGet(this, _isPaused)) {
+        return this;
+      }
+      __privateSet(this, _isPaused, false);
+      __privateMethod(this, _PQueue_instances, processQueue_fn).call(this);
+      return this;
+    }
+    /**
+    Put queue execution on hold.
+    */
+    pause() {
+      __privateSet(this, _isPaused, true);
+    }
+    /**
+    Clear the queue.
+    */
+    clear() {
+      __privateSet(this, _queue2, new (__privateGet(this, _queueClass))());
+    }
+    /**
+        Can be called multiple times. Useful if you for example add additional items at a later time.
+    
+        @returns A promise that settles when the queue becomes empty.
+        */
+    async onEmpty() {
+      if (__privateGet(this, _queue2).size === 0) {
+        return;
+      }
+      await __privateMethod(this, _PQueue_instances, onEvent_fn).call(this, "empty");
+    }
+    /**
+        @returns A promise that settles when the queue size is less than the given limit: `queue.size < limit`.
+    
+        If you want to avoid having the queue grow beyond a certain size you can `await queue.onSizeLessThan()` before adding a new item.
+    
+        Note that this only limits the number of items waiting to start. There could still be up to `concurrency` jobs already running that this call does not include in its calculation.
+        */
+    async onSizeLessThan(limit) {
+      if (__privateGet(this, _queue2).size < limit) {
+        return;
+      }
+      await __privateMethod(this, _PQueue_instances, onEvent_fn).call(this, "next", () => __privateGet(this, _queue2).size < limit);
+    }
+    /**
+        The difference with `.onEmpty` is that `.onIdle` guarantees that all work from the queue has finished. `.onEmpty` merely signals that the queue is empty, but it could mean that some promises haven't completed yet.
+    
+        @returns A promise that settles when the queue becomes empty, and all promises have completed; `queue.size === 0 && queue.pending === 0`.
+        */
+    async onIdle() {
+      if (__privateGet(this, _pending) === 0 && __privateGet(this, _queue2).size === 0) {
+        return;
+      }
+      await __privateMethod(this, _PQueue_instances, onEvent_fn).call(this, "idle");
+    }
+    /**
+    Size of the queue, the number of queued items waiting to run.
+    */
+    get size() {
+      return __privateGet(this, _queue2).size;
+    }
+    /**
+        Size of the queue, filtered by the given options.
+    
+        For example, this can be used to find the number of items remaining in the queue with a specific priority level.
+        */
+    sizeBy(options) {
+      return __privateGet(this, _queue2).filter(options).length;
+    }
+    /**
+    Number of running items (no longer in the queue).
+    */
+    get pending() {
+      return __privateGet(this, _pending);
+    }
+    /**
+    Whether the queue is currently paused.
+    */
+    get isPaused() {
+      return __privateGet(this, _isPaused);
+    }
+  }
+  _carryoverConcurrencyCount = new WeakMap();
+  _isIntervalIgnored = new WeakMap();
+  _intervalCount = new WeakMap();
+  _intervalCap = new WeakMap();
+  _interval = new WeakMap();
+  _intervalEnd = new WeakMap();
+  _intervalId = new WeakMap();
+  _timeoutId = new WeakMap();
+  _queue2 = new WeakMap();
+  _queueClass = new WeakMap();
+  _pending = new WeakMap();
+  _concurrency = new WeakMap();
+  _isPaused = new WeakMap();
+  _throwOnTimeout = new WeakMap();
+  _PQueue_instances = new WeakSet();
+  doesIntervalAllowAnother_get = function() {
+    return __privateGet(this, _isIntervalIgnored) || __privateGet(this, _intervalCount) < __privateGet(this, _intervalCap);
+  };
+  doesConcurrentAllowAnother_get = function() {
+    return __privateGet(this, _pending) < __privateGet(this, _concurrency);
+  };
+  next_fn = function() {
+    __privateWrapper(this, _pending)._--;
+    __privateMethod(this, _PQueue_instances, tryToStartAnother_fn).call(this);
+    this.emit("next");
+  };
+  onResumeInterval_fn = function() {
+    __privateMethod(this, _PQueue_instances, onInterval_fn).call(this);
+    __privateMethod(this, _PQueue_instances, initializeIntervalIfNeeded_fn).call(this);
+    __privateSet(this, _timeoutId, undefined);
+  };
+  isIntervalPaused_get = function() {
+    const now2 = Date.now();
+    if (__privateGet(this, _intervalId) === undefined) {
+      const delay = __privateGet(this, _intervalEnd) - now2;
+      if (delay < 0) {
+        __privateSet(this, _intervalCount, __privateGet(this, _carryoverConcurrencyCount) ? __privateGet(this, _pending) : 0);
+      } else {
+        if (__privateGet(this, _timeoutId) === undefined) {
+          __privateSet(this, _timeoutId, setTimeout(() => {
+            __privateMethod(this, _PQueue_instances, onResumeInterval_fn).call(this);
+          }, delay));
+        }
+        return true;
+      }
+    }
+    return false;
+  };
+  tryToStartAnother_fn = function() {
+    if (__privateGet(this, _queue2).size === 0) {
+      if (__privateGet(this, _intervalId)) {
+        clearInterval(__privateGet(this, _intervalId));
+      }
+      __privateSet(this, _intervalId, undefined);
+      this.emit("empty");
+      if (__privateGet(this, _pending) === 0) {
+        this.emit("idle");
+      }
+      return false;
+    }
+    if (!__privateGet(this, _isPaused)) {
+      const canInitializeInterval = !__privateGet(this, _PQueue_instances, isIntervalPaused_get);
+      if (__privateGet(this, _PQueue_instances, doesIntervalAllowAnother_get) && __privateGet(this, _PQueue_instances, doesConcurrentAllowAnother_get)) {
+        const job = __privateGet(this, _queue2).dequeue();
+        if (!job) {
+          return false;
+        }
+        this.emit("active");
+        job();
+        if (canInitializeInterval) {
+          __privateMethod(this, _PQueue_instances, initializeIntervalIfNeeded_fn).call(this);
+        }
+        return true;
+      }
+    }
+    return false;
+  };
+  initializeIntervalIfNeeded_fn = function() {
+    if (__privateGet(this, _isIntervalIgnored) || __privateGet(this, _intervalId) !== undefined) {
+      return;
+    }
+    __privateSet(this, _intervalId, setInterval(() => {
+      __privateMethod(this, _PQueue_instances, onInterval_fn).call(this);
+    }, __privateGet(this, _interval)));
+    __privateSet(this, _intervalEnd, Date.now() + __privateGet(this, _interval));
+  };
+  onInterval_fn = function() {
+    if (__privateGet(this, _intervalCount) === 0 && __privateGet(this, _pending) === 0 && __privateGet(this, _intervalId)) {
+      clearInterval(__privateGet(this, _intervalId));
+      __privateSet(this, _intervalId, undefined);
+    }
+    __privateSet(this, _intervalCount, __privateGet(this, _carryoverConcurrencyCount) ? __privateGet(this, _pending) : 0);
+    __privateMethod(this, _PQueue_instances, processQueue_fn).call(this);
+  };
+  /**
+  Executes all queued functions until it reaches the limit.
+  */
+  processQueue_fn = function() {
+    while (__privateMethod(this, _PQueue_instances, tryToStartAnother_fn).call(this)) {
+    }
+  };
+  throwOnAbort_fn = async function(signal) {
+    return new Promise((_resolve, reject) => {
+      signal.addEventListener("abort", () => {
+        reject(signal.reason);
+      }, { once: true });
+    });
+  };
+  onEvent_fn = async function(event2, filter) {
+    return new Promise((resolve) => {
+      const listener = () => {
+        if (filter && !filter()) {
+          return;
+        }
+        this.off(event2, listener);
+        resolve();
+      };
+      this.on(event2, listener);
+    });
+  };
+  class Downloader {
+    constructor() {
+      __privateAdd(this, _Downloader_instances);
+      __privateAdd(this, _DOWNLOAD_RETRY, 3);
+      __privateAdd(this, _downloadQueue, new PQueue({ concurrency: 5, interval: 1e3, intervalCap: 4 }));
+    }
+    get fileSystemAccessEnabled() {
+      return fileSaveAdapters.isFileSystemAccessEnable();
+    }
+    /**
+     * 下载触发后应该先弹窗选择文件保存位置，避免下载/转换用时过长导致错误
+     * Must be handling a user gesture to show a file picker.
+     * https://bugs.chromium.org/p/chromium/issues/detail?id=1193489
+     */
+    dirHandleCheck() {
+      fileSaveAdapters.dirHandleCheck();
+    }
+    updateDirHandle() {
+      return fileSaveAdapters.updateDirHandle();
+    }
+    getCurrentFsaDirName() {
+      return fileSaveAdapters.getFsaDirName();
+    }
+    async download(configs, option = {}) {
+      const { signal, priority } = option;
+      signal == null ? undefined : signal.throwIfAborted();
+      logger.info("Downloader add:", configs);
+      if (!Array.isArray(configs)) configs = [configs];
+      if (configs.length < 1) return;
+      const downloads = configs.map((config2) => {
+        return __privateMethod(this, _Downloader_instances, dispatchDownload_fn).call(this, config2, priority, signal);
+      });
+      const downloadResult = await Promise.allSettled(downloads);
+      for (const result of downloadResult) {
+        if (result.status === "rejected") throw result.reason;
+      }
+    }
+  }
+  _DOWNLOAD_RETRY = new WeakMap();
+  _downloadQueue = new WeakMap();
+  _Downloader_instances = new WeakSet();
+  xhr_fn = function(config2, signal) {
+    if (signal == null ? undefined : signal.aborted) return Promise.resolve([signal.reason, null]);
+    const { src, onProgress, timeout, taskId, headers } = config2;
+    return new Promise((resolve) => {
+      const abortObj = _GM_xmlhttpRequest({
+        url: src,
+        method: "GET",
+        responseType: "blob",
+        timeout,
+        headers,
+        ontimeout() {
+          resolve([new TimoutError(`${taskId} | ${src}`), null]);
+        },
+        onerror(error) {
+          let err;
+          if (error.status === 429) {
+            err = new RequestError(config2.src, error.status);
+          } else {
+            err = new Error(`Download failed. ID: ${taskId}.`);
+          }
+          resolve([err, null]);
+        },
+        onprogress(res) {
+          if (res.loaded > 0 && res.total > 0) {
+            const progress = Math.floor(res.loaded / res.total * 100);
+            onProgress == null ? undefined : onProgress(progress, config2);
+          }
+        },
+        onload(res) {
+          const { status, statusText, finalUrl } = res;
+          if (status < 200 || status > 299) {
+            resolve([new RequestError(statusText + " " + finalUrl, status), null]);
+            return;
+          }
+          resolve([null, res.response]);
+        }
+      });
+      signal == null ? undefined : signal.addEventListener(
+        "abort",
+        () => {
+          abortObj.abort();
+          resolve([signal.reason, null]);
+        },
+        { once: true }
+      );
+    });
+  };
+  dispatchDownload_fn = async function(config2, priority = 0, signal) {
+    var _a, _b, _c, _d;
+    try {
+      const { src, taskId, path } = config2;
+      const result = await __privateGet(this, _downloadQueue).add(
+        async ({ signal: signal2 }) => {
+          signal2 == null ? void 0 : signal2.throwIfAborted();
+          logger.info("Download start:", src);
+          let result2;
+          let retryCount = 0;
+          do {
+            const xhrResult = await __privateMethod(this, _Downloader_instances, xhr_fn).call(this, config2, signal2);
+            signal2 == null ? void 0 : signal2.throwIfAborted();
+            if (xhrResult[0] === null) {
+              result2 = xhrResult[1];
+              break;
+            } else {
+              const err = xhrResult[0];
+              if (!(err instanceof TimoutError) || ++retryCount > __privateGet(this, _DOWNLOAD_RETRY)) {
+                throw err;
+              } else {
+                logger.error(`Download will be retried. Count: ${retryCount}.`, err);
+              }
+            }
+          } while (retryCount <= __privateGet(this, _DOWNLOAD_RETRY));
+          return result2;
+        },
+        { signal, priority }
+      );
+      if (!result) throw new TimoutError(`${taskId} | ${src}`);
+      logger.info("Xhr complete:", src);
+      (_a = config2.onXhrLoaded) == null ? void 0 : _a.call(config2, config2);
+      const saveFile2 = fileSaveAdapters.getAdapter();
+      if (typeof config2.beforeFileSave === "function") {
+        const modifiedResult = await config2.beforeFileSave(result, config2);
+        signal == null ? void 0 : signal.throwIfAborted();
+        if (!modifiedResult) return;
+        await saveFile2(modifiedResult, path, signal);
+      } else {
+        await saveFile2(result, path, signal);
+      }
+      (_b = config2.onFileSaved) == null ? void 0 : _b.call(config2, config2);
+      logger.info("Download complete:", path);
+    } catch (error) {
+      if (error instanceof CancelError) {
+        (_c = config2.onAbort) == null ? undefined : _c.call(config2, config2);
+      } else {
+        (_d = config2.onError) == null ? undefined : _d.call(config2, error, config2);
+      }
+      throw error;
+    }
+  };
+  const downloader = new Downloader();
+  function updateDirectory(_, directory, $configStore, configStore) {
+    const newDirectory = get$1(directory).split("/").map(replaceInvalidChar).filter((path) => !!path).join("/");
+    store_mutate(configStore, untrack($configStore).folderPattern = set(directory, proxy(newDirectory)), untrack($configStore));
+  }
+  function updateFilename(__1, filename, $configStore, configStore) {
+    const newFilename = replaceInvalidChar(get$1(filename));
+    if (newFilename === "") {
+      set(filename, proxy($configStore().filenamePattern));
+    } else {
+      store_mutate(configStore, untrack($configStore).filenamePattern = set(filename, proxy(newFilename)), untrack($configStore));
+    }
+  }
+  async function updatefsaDir(__2, fsaDirectory) {
+    set(fsaDirectory, proxy(await downloader.updateDirHandle()));
+  }
+  var root_1$5 = /* @__PURE__ */ template(`<input type="text">`);
+  var root_2$3 = /* @__PURE__ */ template(`<input type="text" disabled>`);
+  var root_3$4 = /* @__PURE__ */ template(`<button class="chip variant-soft hover:variant-filled"><span> </span></button>`);
+  var root_5$1 = /* @__PURE__ */ template(`<!> <!> <!>`, 1);
+  var root_4$1 = /* @__PURE__ */ template(`<li><p class="flex-auto"> </p> <span class="text-sm italic"> </span> <button class="btn btn-sm variant-filled"> </button></li> <li><p class="flex-auto"> </p> <!></li>`, 1);
+  var root_9$2 = /* @__PURE__ */ template(`<button class="chip variant-soft hover:variant-filled"><span> </span></button>`);
+  var root_11 = /* @__PURE__ */ template(`<!> <!> <!> <!>`, 1);
+  var root_10 = /* @__PURE__ */ template(`<li><div class="flex-auto"><p> </p> <p> </p></div> <!></li>`);
+  var root$6 = /* @__PURE__ */ template(`<div><section><p> </p> <ul><li class=" flex-col gap-3"><div class="input-group input-group-divider grid-cols-[auto_1fr_auto_auto]"><button type="button" class="[&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button> <!> <button type="button" class="variant-soft-surface [&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button></div> <div class=" self-start space-x-2"></div></li> <li><p class="flex-auto"> </p> <!></li> <!></ul></section> <section><p> </p> <ul><li class=" flex-col gap-3"><div class="input-group input-group-divider grid-cols-[auto_1fr_auto]"><button type="button" class="[&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button> <input type="text" required> <button type="button" class="variant-soft-surface dark:variant-fill-surface [&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button></div> <div class=" self-start space-x-2"></div></li> <!></ul></section></div>`);
+  function SaveTo($$anchor, $$props) {
+    push($$props, true);
+    const [$$stores, $$cleanup] = setup_stores();
+    const $configStore = () => store_get(configStore, "$configStore", $$stores);
+    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, ""), templates = prop($$props, "templates", 19, () => getContext("filenameTemplate")), descritionText = prop($$props, "descritionText", 3, "text-sm text-surface-400");
+    const configStore = getContext("store");
+    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
+    let directoryRef;
+    let filenameRef;
+    let directory = state(proxy($configStore().folderPattern));
+    let filename = state(proxy($configStore().filenamePattern));
+    let fsaDirectory = state(proxy(downloader.getCurrentFsaDirName()));
+    async function resetFolder() {
+      set(directory, proxy($configStore().folderPattern));
+      await tick();
+      const pos = get$1(directory).length;
+      directoryRef.focus();
+      directoryRef.setSelectionRange(pos, pos);
+    }
+    async function resetFilename() {
+      set(filename, proxy($configStore().filenamePattern));
+      await tick();
+      const pos = get$1(filename).length;
+      filenameRef.focus();
+      filenameRef.setSelectionRange(pos, pos);
+    }
+    function insertDirTemplateAtCursor(template2) {
+      return async () => {
+        const start = directoryRef.selectionStart;
+        const end = directoryRef.selectionEnd;
+        set(directory, get$1(directory).slice(0, start) + template2 + get$1(directory).slice(end));
+        await tick();
+        const newStart = start + template2.length;
+        directoryRef.focus();
+        directoryRef.setSelectionRange(newStart, newStart);
+      };
+    }
+    function insertFilenameTemplateAtCursor(template2) {
+      return async () => {
+        const start = filenameRef.selectionStart;
+        const end = filenameRef.selectionEnd;
+        set(filename, get$1(filename).slice(0, start) + template2 + get$1(filename).slice(end));
+        await tick();
+        const newStart = start + template2.length;
+        filenameRef.focus();
+        filenameRef.setSelectionRange(newStart, newStart);
+      };
+    }
+    const subDirectoryAvailable = /* @__PURE__ */ derived$1(() => $configStore().useFileSystemAccess || env.isSupportSubpath());
+    const folderBtnDisabled = /* @__PURE__ */ derived$1(() => get$1(directory) === $configStore().folderPattern);
+    const filenameBtnDisabled = /* @__PURE__ */ derived$1(() => get$1(filename) === $configStore().filenamePattern);
+    const directoryPlaceholder = /* @__PURE__ */ derived$1(() => get$1(subDirectoryAvailable) ? t("setting.save_to.placeholder.sub_directory_unused") : env.isViolentmonkey() ? t("setting.save_to.placeholder.vm_not_supported") : t("setting.save_to.placeholder.need_browser_api"));
+    var div = root$6();
+    var section = child(div);
+    var p = child(section);
+    var text$1 = child(p, true);
+    template_effect(() => set_text(text$1, t("setting.save_to.label.directory")));
+    reset(p);
+    var ul = sibling(p, 2);
+    var li = child(ul);
+    var div_1 = child(li);
+    var button = child(div_1);
+    button.__click = resetFolder;
+    var i = child(button);
+    var node = child(i);
+    html(node, () => folderSvg);
+    reset(i);
+    reset(button);
+    var node_1 = sibling(button, 2);
+    {
+      var consequent = ($$anchor2) => {
+        var input = root_1$5();
+        remove_input_defaults(input);
+        bind_this(input, ($$value) => directoryRef = $$value, () => directoryRef);
+        template_effect(() => set_attribute(input, "placeholder", get$1(directoryPlaceholder)));
+        bind_value(input, () => get$1(directory), ($$value) => set(directory, $$value));
+        append($$anchor2, input);
+      };
+      var alternate = ($$anchor2) => {
+        var input_1 = root_2$3();
+        template_effect(() => set_attribute(input_1, "placeholder", get$1(directoryPlaceholder)));
+        append($$anchor2, input_1);
+      };
+      if_block(node_1, ($$render) => {
+        if (get$1(subDirectoryAvailable)) $$render(consequent);
+        else $$render(alternate, false);
+      });
+    }
+    var button_1 = sibling(node_1, 2);
+    button_1.__click = [
+      updateDirectory,
+      directory,
+      $configStore,
+      configStore
+    ];
+    var i_1 = child(button_1);
+    var node_2 = child(i_1);
+    html(node_2, () => check);
+    reset(i_1);
+    reset(button_1);
+    reset(div_1);
+    var div_2 = sibling(div_1, 2);
+    each(div_2, 21, templates, index, ($$anchor2, template2) => {
+      var button_2 = root_3$4();
+      var event_handler = /* @__PURE__ */ derived$1(() => insertDirTemplateAtCursor(get$1(template2)));
+      button_2.__click = function(...$$args) {
+        var _a;
+        (_a = get$1(event_handler)) == null ? undefined : _a.apply(this, $$args);
+      };
+      var span = child(button_2);
+      var text_1 = child(span, true);
+      reset(span);
+      reset(button_2);
+      template_effect(() => {
+        button_2.disabled = !get$1(subDirectoryAvailable);
+        set_text(text_1, get$1(template2));
+      });
+      append($$anchor2, button_2);
+    });
+    reset(div_2);
+    reset(li);
+    var li_1 = sibling(li, 2);
+    var p_1 = child(li_1);
+    var text_2 = child(p_1, true);
+    template_effect(() => set_text(text_2, t("setting.save_to.options.use_fsa")));
+    reset(p_1);
+    var node_3 = sibling(p_1, 2);
+    var disabled = /* @__PURE__ */ derived$1(() => !env.isFileSystemAccessAvaliable());
+    SlideToggle(node_3, {
+      size: "sm",
+      name: "fsa-enable",
+      get disabled() {
+        return get$1(disabled);
+      },
+      get checked() {
+        return $configStore().useFileSystemAccess;
+      },
+      set checked($$value) {
+        store_mutate(configStore, untrack($configStore).useFileSystemAccess = $$value, untrack($configStore));
+      }
+    });
+    reset(li_1);
+    var node_4 = sibling(li_1, 2);
+    {
+      var consequent_1 = ($$anchor2) => {
+        var fragment = root_4$1();
+        var li_2 = first_child(fragment);
+        var p_2 = child(li_2);
+        var text_3 = child(p_2, true);
+        template_effect(() => set_text(text_3, t("setting.save_to.options.fsa_directory")));
+        reset(p_2);
+        var span_1 = sibling(p_2, 2);
+        var text_4 = child(span_1, true);
+        reset(span_1);
+        var button_3 = sibling(span_1, 2);
+        button_3.__click = [updatefsaDir, fsaDirectory];
+        var text_5 = child(button_3, true);
+        template_effect(() => set_text(text_5, t("setting.save_to.button.choose_fsa_directory")));
+        reset(button_3);
+        reset(li_2);
+        var li_3 = sibling(li_2, 2);
+        var p_3 = child(li_3);
+        var text_6 = child(p_3, true);
+        template_effect(() => set_text(text_6, t("setting.save_to.options.fsa_filename_conflict")));
+        reset(p_3);
+        var node_5 = sibling(p_3, 2);
+        RadioGroup(node_5, {
+          class: "shrink-0",
+          children: ($$anchor3, $$slotProps) => {
+            var fragment_1 = root_5$1();
+            var node_6 = first_child(fragment_1);
+            RadioItem(node_6, {
+              name: "filenameConfigAction",
+              class: "text-sm",
+              get value() {
+                return FilenameConfigAction.UNIQUIFY;
+              },
+              get group() {
+                return $configStore().fileSystemFilenameConflictAction;
+              },
+              set group($$value) {
+                store_mutate(configStore, untrack($configStore).fileSystemFilenameConflictAction = $$value, untrack($configStore));
+              },
+              children: ($$anchor4, $$slotProps2) => {
+                next();
+                var text_7 = text();
+                template_effect(() => set_text(text_7, t("setting.save_to.radio.filename_conflict_option_uniquify")));
+                append($$anchor4, text_7);
+              },
+              $$slots: { default: true }
+            });
+            var node_7 = sibling(node_6, 2);
+            RadioItem(node_7, {
+              name: "filenameConfigAction",
+              class: "text-sm",
+              get value() {
+                return FilenameConfigAction.OVERWRITE;
+              },
+              get group() {
+                return $configStore().fileSystemFilenameConflictAction;
+              },
+              set group($$value) {
+                store_mutate(configStore, untrack($configStore).fileSystemFilenameConflictAction = $$value, untrack($configStore));
+              },
+              children: ($$anchor4, $$slotProps2) => {
+                next();
+                var text_8 = text();
+                template_effect(() => set_text(text_8, t("setting.save_to.radio.filename_conflict_option_overwrite")));
+                append($$anchor4, text_8);
+              },
+              $$slots: { default: true }
+            });
+            var node_8 = sibling(node_7, 2);
+            RadioItem(node_8, {
+              name: "filenameConfigAction",
+              class: "text-sm",
+              get value() {
+                return FilenameConfigAction.PROMPT;
+              },
+              get group() {
+                return $configStore().fileSystemFilenameConflictAction;
+              },
+              set group($$value) {
+                store_mutate(configStore, untrack($configStore).fileSystemFilenameConflictAction = $$value, untrack($configStore));
+              },
+              children: ($$anchor4, $$slotProps2) => {
+                next();
+                var text_9 = text();
+                template_effect(() => set_text(text_9, t("setting.save_to.radio.filename_conflict_option_prompt")));
+                append($$anchor4, text_9);
+              },
+              $$slots: { default: true }
+            });
+            append($$anchor3, fragment_1);
+          },
+          $$slots: { default: true }
+        });
+        reset(li_3);
+        template_effect(() => set_text(text_4, get$1(fsaDirectory)));
+        append($$anchor2, fragment);
+      };
+      if_block(node_4, ($$render) => {
+        if ($configStore().useFileSystemAccess) $$render(consequent_1);
+      });
+    }
+    reset(ul);
+    reset(section);
+    var section_1 = sibling(section, 2);
+    var p_4 = child(section_1);
+    var text_10 = child(p_4, true);
+    template_effect(() => set_text(text_10, t("setting.save_to.label.filename")));
+    reset(p_4);
+    var ul_1 = sibling(p_4, 2);
+    var li_4 = child(ul_1);
+    var div_3 = child(li_4);
+    var button_4 = child(div_3);
+    button_4.__click = resetFilename;
+    var i_2 = child(button_4);
+    var node_9 = child(i_2);
+    html(node_9, () => fileSvg);
+    reset(i_2);
+    reset(button_4);
+    var input_2 = sibling(button_4, 2);
+    remove_input_defaults(input_2);
+    template_effect(() => set_attribute(input_2, "placeholder", t("setting.save_to.placeholder.filename_requried")));
+    bind_this(input_2, ($$value) => filenameRef = $$value, () => filenameRef);
+    var button_5 = sibling(input_2, 2);
+    button_5.__click = [
+      updateFilename,
+      filename,
+      $configStore,
+      configStore
+    ];
+    var i_3 = child(button_5);
+    var node_10 = child(i_3);
+    html(node_10, () => check);
+    reset(i_3);
+    reset(button_5);
+    reset(div_3);
+    var div_4 = sibling(div_3, 2);
+    each(div_4, 21, templates, index, ($$anchor2, template2) => {
+      var button_6 = root_9$2();
+      var event_handler_1 = /* @__PURE__ */ derived$1(() => insertFilenameTemplateAtCursor(get$1(template2)));
+      button_6.__click = function(...$$args) {
+        var _a;
+        (_a = get$1(event_handler_1)) == null ? undefined : _a.apply(this, $$args);
+      };
+      var span_2 = child(button_6);
+      var text_11 = child(span_2, true);
+      reset(span_2);
+      reset(button_6);
+      template_effect(() => set_text(text_11, get$1(template2)));
+      append($$anchor2, button_6);
+    });
+    reset(div_4);
+    reset(li_4);
+    var node_11 = sibling(li_4, 2);
+    {
+      var consequent_2 = ($$anchor2) => {
+        var li_5 = root_10();
+        var div_5 = child(li_5);
+        var p_5 = child(div_5);
+        var text_12 = child(p_5, true);
+        template_effect(() => set_text(text_12, t("setting.save_to.options.tag_language")));
+        reset(p_5);
+        var p_6 = sibling(p_5, 2);
+        var text_13 = child(p_6, true);
+        template_effect(() => set_text(text_13, t("setting.save_to.options.tag_language_tips")));
+        reset(p_6);
+        reset(div_5);
+        var node_12 = sibling(div_5, 2);
+        RadioGroup(node_12, {
+          class: " shrink-0",
+          children: ($$anchor3, $$slotProps) => {
+            var fragment_5 = root_11();
+            var node_13 = first_child(fragment_5);
+            RadioItem(node_13, {
+              name: "tagLang",
+              class: "text-sm",
+              get value() {
+                return TagLanguage.JAPANESE;
+              },
+              get group() {
+                return $configStore().tagLang;
+              },
+              set group($$value) {
+                store_mutate(configStore, untrack($configStore).tagLang = $$value, untrack($configStore));
+              },
+              children: ($$anchor4, $$slotProps2) => {
+                next();
+                var text_14 = text("日本語");
+                append($$anchor4, text_14);
+              },
+              $$slots: { default: true }
+            });
+            var node_14 = sibling(node_13, 2);
+            RadioItem(node_14, {
+              name: "tagLang",
+              class: "text-sm",
+              get value() {
+                return TagLanguage.CHINESE;
+              },
+              get group() {
+                return $configStore().tagLang;
+              },
+              set group($$value) {
+                store_mutate(configStore, untrack($configStore).tagLang = $$value, untrack($configStore));
+              },
+              children: ($$anchor4, $$slotProps2) => {
+                next();
+                var text_15 = text("简中");
+                append($$anchor4, text_15);
+              },
+              $$slots: { default: true }
+            });
+            var node_15 = sibling(node_14, 2);
+            RadioItem(node_15, {
+              name: "tagLang",
+              class: "text-sm",
+              get value() {
+                return TagLanguage.TRADITIONAL_CHINESE;
+              },
+              get group() {
+                return $configStore().tagLang;
+              },
+              set group($$value) {
+                store_mutate(configStore, untrack($configStore).tagLang = $$value, untrack($configStore));
+              },
+              children: ($$anchor4, $$slotProps2) => {
+                next();
+                var text_16 = text("繁中");
+                append($$anchor4, text_16);
+              },
+              $$slots: { default: true }
+            });
+            var node_16 = sibling(node_15, 2);
+            RadioItem(node_16, {
+              name: "tagLang",
+              class: "text-sm",
+              get value() {
+                return TagLanguage.ENGLISH;
+              },
+              get group() {
+                return $configStore().tagLang;
+              },
+              set group($$value) {
+                store_mutate(configStore, untrack($configStore).tagLang = $$value, untrack($configStore));
+              },
+              children: ($$anchor4, $$slotProps2) => {
+                next();
+                var text_17 = text("En");
+                append($$anchor4, text_17);
+              },
+              $$slots: { default: true }
+            });
+            append($$anchor3, fragment_5);
+          },
+          $$slots: { default: true }
+        });
+        reset(li_5);
+        template_effect(() => set_class(p_6, clsx(descritionText())));
+        append($$anchor2, li_5);
+      };
+      if_block(node_11, ($$render) => {
+        if (env.isPixiv()) $$render(consequent_2);
+      });
+    }
+    reset(ul_1);
+    reset(section_1);
+    reset(div);
+    template_effect(() => {
+      set_class(div, clsx(sectionSpace()));
+      set_class(p, clsx(sectionTitle()));
+      set_class(ul, clsx(get$1(ulClasses)));
+      button.disabled = get$1(folderBtnDisabled);
+      button_1.disabled = get$1(folderBtnDisabled);
+      set_class(p_4, clsx(sectionTitle()));
+      set_class(ul_1, clsx(get$1(ulClasses)));
+      button_4.disabled = get$1(filenameBtnDisabled);
+      button_5.disabled = get$1(filenameBtnDisabled);
+    });
+    bind_value(input_2, () => get$1(filename), ($$value) => set(filename, $$value));
+    append($$anchor, div);
+    pop();
+    $$cleanup();
+  }
+  delegate(["click"]);
+  var root_1$4 = /* @__PURE__ */ template(`<!> <!> <!> <!> <!> <!>`, 1);
+  var root_8 = /* @__PURE__ */ template(`<option> </option>`);
+  var root_9$1 = /* @__PURE__ */ template(`<option> </option>`);
+  var root$5 = /* @__PURE__ */ template(`<div><section><p> </p> <ul><li><p class="flex-auto"> </p> <!></li></ul></section> <section><p> </p> <ul><li><div class="flex-auto"><p>Webm</p> <p>Bitrate (Mbps)</p></div> <input type="number" min="1" max="120" step="1"></li> <li><div class="flex-auto"><p>Mp4</p> <p>Bitrate (Mbps)</p></div> <input type="number" min="1" max="99" step="1"></li> <li class="flex-col !items-stretch"><p>Webp</p> <ul><li class="items-center"><p class="flex-auto"> </p> <!></li> <li class="items-center"><div class="flex-auto"><p> </p> <p> </p></div> <input type="number" min="0" max="100" step="1"></li> <li class="items-center"><div class="flex-auto"><p> </p> <p> </p></div> <select></select></li></ul></li> <li><div class="flex-auto"><p>Gif</p> <p> </p></div> <select></select></li> <li><div class="flex-auto"><p>Png</p> <p> </p></div> <input type="number" min="0" max="256" step="1"></li></ul></section></div>`);
+  function UgoiraConvert($$anchor, $$props) {
+    push($$props, true);
+    const [$$stores, $$cleanup] = setup_stores();
+    const $configStore = () => store_get(configStore, "$configStore", $$stores);
+    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, ""), descriptionText = prop($$props, "descriptionText", 3, "text-sm text-surface-400"), inputRounded = prop($$props, "inputRounded", 3, "rounded-full"), inputWidth = prop($$props, "inputWidth", 3, "w-32");
+    const configStore = getContext("store");
+    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
+    const inputClasses = /* @__PURE__ */ derived$1(() => `${inputWidth()} ${inputRounded()} shrink-0`);
+    var div = root$5();
+    var section = child(div);
+    var p = child(section);
+    var text$1 = child(p, true);
+    template_effect(() => set_text(text$1, t("setting.ugoira.label.format")));
+    reset(p);
+    var ul = sibling(p, 2);
+    var li = child(ul);
+    var p_1 = child(li);
+    var text_1 = child(p_1, true);
+    template_effect(() => set_text(text_1, t("setting.ugoira.options.select_format")));
+    reset(p_1);
+    var node = sibling(p_1, 2);
+    RadioGroup(node, {
+      class: "shrink-0",
+      children: ($$anchor2, $$slotProps) => {
+        var fragment = root_1$4();
+        var node_1 = first_child(fragment);
+        RadioItem(node_1, {
+          name: "ugoiraFormat",
+          class: "text-sm",
+          get value() {
+            return UgoiraFormat.ZIP;
+          },
+          get group() {
+            return $configStore().ugoiraFormat;
+          },
+          set group($$value) {
+            store_mutate(configStore, untrack($configStore).ugoiraFormat = $$value, untrack($configStore));
+          },
+          children: ($$anchor3, $$slotProps2) => {
+            next();
+            var text_2 = text("Zip");
+            append($$anchor3, text_2);
+          },
+          $$slots: { default: true }
+        });
+        var node_2 = sibling(node_1, 2);
+        RadioItem(node_2, {
+          name: "ugoiraFormat",
+          class: "text-sm",
+          get value() {
+            return UgoiraFormat.WEBM;
+          },
+          get group() {
+            return $configStore().ugoiraFormat;
+          },
+          set group($$value) {
+            store_mutate(configStore, untrack($configStore).ugoiraFormat = $$value, untrack($configStore));
+          },
+          children: ($$anchor3, $$slotProps2) => {
+            next();
+            var text_3 = text("Webm");
+            append($$anchor3, text_3);
+          },
+          $$slots: { default: true }
+        });
+        var node_3 = sibling(node_2, 2);
+        var disabled = /* @__PURE__ */ derived$1(() => !env.videoFrameSupported());
+        RadioItem(node_3, {
+          get disabled() {
+            return get$1(disabled);
+          },
+          class: "text-sm",
+          name: "ugoiraFormat",
+          get value() {
+            return UgoiraFormat.MP4;
+          },
+          get group() {
+            return $configStore().ugoiraFormat;
+          },
+          set group($$value) {
+            store_mutate(configStore, untrack($configStore).ugoiraFormat = $$value, untrack($configStore));
+          },
+          children: ($$anchor3, $$slotProps2) => {
+            next();
+            var text_4 = text("Mp4");
+            append($$anchor3, text_4);
+          },
+          $$slots: { default: true }
+        });
+        var node_4 = sibling(node_3, 2);
+        RadioItem(node_4, {
+          name: "ugoiraFormat",
+          class: "text-sm",
+          get value() {
+            return UgoiraFormat.WEBP;
+          },
+          get group() {
+            return $configStore().ugoiraFormat;
+          },
+          set group($$value) {
+            store_mutate(configStore, untrack($configStore).ugoiraFormat = $$value, untrack($configStore));
+          },
+          children: ($$anchor3, $$slotProps2) => {
+            next();
+            var text_5 = text("Webp");
+            append($$anchor3, text_5);
+          },
+          $$slots: { default: true }
+        });
+        var node_5 = sibling(node_4, 2);
+        RadioItem(node_5, {
+          name: "ugoiraFormat",
+          class: "text-sm",
+          get value() {
+            return UgoiraFormat.GIF;
+          },
+          get group() {
+            return $configStore().ugoiraFormat;
+          },
+          set group($$value) {
+            store_mutate(configStore, untrack($configStore).ugoiraFormat = $$value, untrack($configStore));
+          },
+          children: ($$anchor3, $$slotProps2) => {
+            next();
+            var text_6 = text("Gif");
+            append($$anchor3, text_6);
+          },
+          $$slots: { default: true }
+        });
+        var node_6 = sibling(node_5, 2);
+        RadioItem(node_6, {
+          name: "ugoiraFormat",
+          class: "text-sm",
+          get value() {
+            return UgoiraFormat.PNG;
+          },
+          get group() {
+            return $configStore().ugoiraFormat;
+          },
+          set group($$value) {
+            store_mutate(configStore, untrack($configStore).ugoiraFormat = $$value, untrack($configStore));
+          },
+          children: ($$anchor3, $$slotProps2) => {
+            next();
+            var text_7 = text("Png");
+            append($$anchor3, text_7);
+          },
+          $$slots: { default: true }
+        });
+        append($$anchor2, fragment);
+      },
+      $$slots: { default: true }
+    });
+    reset(li);
+    reset(ul);
+    reset(section);
+    var section_1 = sibling(section, 2);
+    var p_2 = child(section_1);
+    var text_8 = child(p_2, true);
+    template_effect(() => set_text(text_8, t("setting.ugoira.label.quality")));
+    reset(p_2);
+    var ul_1 = sibling(p_2, 2);
+    var li_1 = child(ul_1);
+    var div_1 = child(li_1);
+    var p_3 = sibling(child(div_1), 2);
+    reset(div_1);
+    var input = sibling(div_1, 2);
+    remove_input_defaults(input);
+    action(input, ($$node, $$action_arg) => nonNegativeInt == null ? undefined : nonNegativeInt($$node, $$action_arg), () => ({ store: configStore, key: "webmBitrate" }));
+    effect(() => bind_value(input, () => $configStore().webmBitrate, ($$value) => store_mutate(configStore, untrack($configStore).webmBitrate = $$value, untrack($configStore))));
+    reset(li_1);
+    var li_2 = sibling(li_1, 2);
+    var div_2 = child(li_2);
+    var p_4 = sibling(child(div_2), 2);
+    reset(div_2);
+    var input_1 = sibling(div_2, 2);
+    remove_input_defaults(input_1);
+    action(input_1, ($$node, $$action_arg) => nonNegativeInt == null ? undefined : nonNegativeInt($$node, $$action_arg), () => ({ store: configStore, key: "mp4Bitrate" }));
+    effect(() => bind_value(input_1, () => $configStore().mp4Bitrate, ($$value) => store_mutate(configStore, untrack($configStore).mp4Bitrate = $$value, untrack($configStore))));
+    reset(li_2);
+    var li_3 = sibling(li_2, 2);
+    var ul_2 = sibling(child(li_3), 2);
+    var li_4 = child(ul_2);
+    var p_5 = child(li_4);
+    var text_9 = child(p_5, true);
+    template_effect(() => set_text(text_9, t("setting.ugoira.options.webp_lossy")));
+    reset(p_5);
+    var node_7 = sibling(p_5, 2);
+    SlideToggle(node_7, {
+      name: "lossless-webp",
+      size: "sm",
+      get checked() {
+        return $configStore().losslessWebp;
+      },
+      set checked($$value) {
+        store_mutate(configStore, untrack($configStore).losslessWebp = $$value, untrack($configStore));
+      }
+    });
+    reset(li_4);
+    var li_5 = sibling(li_4, 2);
+    var div_3 = child(li_5);
+    var p_6 = child(div_3);
+    var text_10 = child(p_6, true);
+    template_effect(() => set_text(text_10, t("setting.ugoira.options.webp_quality")));
+    reset(p_6);
+    var p_7 = sibling(p_6, 2);
+    var text_11 = child(p_7, true);
+    template_effect(() => set_text(text_11, t("setting.ugoira.options.webp_quality_tips")));
+    reset(p_7);
+    reset(div_3);
+    var input_2 = sibling(div_3, 2);
+    remove_input_defaults(input_2);
+    action(input_2, ($$node, $$action_arg) => nonNegativeInt == null ? undefined : nonNegativeInt($$node, $$action_arg), () => ({ store: configStore, key: "webpQuality" }));
+    effect(() => bind_value(input_2, () => $configStore().webpQuality, ($$value) => store_mutate(configStore, untrack($configStore).webpQuality = $$value, untrack($configStore))));
+    reset(li_5);
+    var li_6 = sibling(li_5, 2);
+    var div_4 = child(li_6);
+    var p_8 = child(div_4);
+    var text_12 = child(p_8, true);
+    template_effect(() => set_text(text_12, t("setting.ugoira.options.webp_method")));
+    reset(p_8);
+    var p_9 = sibling(p_8, 2);
+    var text_13 = child(p_9, true);
+    template_effect(() => set_text(text_13, t("setting.ugoira.options.webp_method_tips")));
+    reset(p_9);
+    reset(div_4);
+    var select = sibling(div_4, 2);
+    each(select, 20, () => Array.from({ length: 7 }, (_, idx) => idx), index, ($$anchor2, quality) => {
+      var option = root_8();
+      var option_value = {};
+      var text_14 = child(option, true);
+      reset(option);
+      template_effect(() => {
+        if (option_value !== (option_value = quality)) {
+          option.value = null == (option.__value = quality) ? "" : quality;
+        }
+        set_text(text_14, quality);
+      });
+      append($$anchor2, option);
+    });
+    reset(select);
+    reset(li_6);
+    reset(ul_2);
+    reset(li_3);
+    var li_7 = sibling(li_3, 2);
+    var div_5 = child(li_7);
+    var p_10 = sibling(child(div_5), 2);
+    var text_15 = child(p_10, true);
+    template_effect(() => set_text(text_15, t("setting.ugoira.options.gif_tips")));
+    reset(p_10);
+    reset(div_5);
+    var select_1 = sibling(div_5, 2);
+    each(select_1, 20, () => Array.from({ length: 20 }, (_, idx) => idx), index, ($$anchor2, quality) => {
+      var option_1 = root_9$1();
+      var option_1_value = {};
+      var text_16 = child(option_1, true);
+      reset(option_1);
+      template_effect(() => {
+        if (option_1_value !== (option_1_value = quality + 1)) {
+          option_1.value = null == (option_1.__value = quality + 1) ? "" : quality + 1;
+        }
+        set_text(text_16, quality + 1);
+      });
+      append($$anchor2, option_1);
+    });
+    reset(select_1);
+    reset(li_7);
+    var li_8 = sibling(li_7, 2);
+    var div_6 = child(li_8);
+    var p_11 = sibling(child(div_6), 2);
+    var text_17 = child(p_11, true);
+    template_effect(() => set_text(text_17, t("setting.ugoira.options.png_tips")));
+    reset(p_11);
+    reset(div_6);
+    var input_3 = sibling(div_6, 2);
+    remove_input_defaults(input_3);
+    action(input_3, ($$node, $$action_arg) => nonNegativeInt == null ? undefined : nonNegativeInt($$node, $$action_arg), () => ({ store: configStore, key: "pngColor" }));
+    effect(() => bind_value(input_3, () => $configStore().pngColor, ($$value) => store_mutate(configStore, untrack($configStore).pngColor = $$value, untrack($configStore))));
+    reset(li_8);
+    reset(ul_1);
+    reset(section_1);
+    reset(div);
+    template_effect(() => {
+      set_class(div, clsx(sectionSpace()));
+      set_class(p, clsx(sectionTitle()));
+      set_class(ul, clsx(get$1(ulClasses)));
+      set_class(p_2, clsx(sectionTitle()));
+      set_class(ul_1, clsx(get$1(ulClasses)));
+      set_class(p_3, clsx(descriptionText()));
+      set_class(input, `input ${get$1(inputClasses) ?? ""}`);
+      set_class(p_4, clsx(descriptionText()));
+      set_class(input_1, `input ${get$1(inputClasses) ?? ""}`);
+      set_class(ul_2, `list ${border() ?? ""} ${rounded() ?? ""} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4`);
+      set_class(p_7, clsx(descriptionText()));
+      set_class(input_2, `input ${get$1(inputClasses) ?? ""}`);
+      set_class(p_9, clsx(descriptionText()));
+      set_class(select, `select ${get$1(inputClasses) ?? ""}`);
+      set_class(p_10, clsx(descriptionText()));
+      set_class(select_1, `select ${get$1(inputClasses) ?? ""}`);
+      set_class(p_11, clsx(descriptionText()));
+      set_class(input_3, `input ${get$1(inputClasses) ?? ""}`);
+    });
+    bind_select_value(select, () => $configStore().webpMehtod, ($$value) => store_mutate(configStore, untrack($configStore).webpMehtod = $$value, untrack($configStore)));
+    bind_select_value(select_1, () => $configStore().gifQuality, ($$value) => store_mutate(configStore, untrack($configStore).gifQuality = $$value, untrack($configStore)));
+    append($$anchor, div);
+    pop();
+    $$cleanup();
+  }
+  function readHistoryFile(type, file) {
+    return new Promise((resolve) => {
+      if (file.type !== type) throw new Error("Invalid file");
+      const reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = (readEvt) => {
+        var _a;
+        const text2 = (_a = readEvt.target) == null ? undefined : _a.result;
+        if (typeof text2 !== "string") throw new Error("Invalid file");
+        const history2 = JSON.parse(text2);
+        if (!(history2 instanceof Array)) throw new Error("Invalid file");
+        resolve(history2);
+      };
+    });
+  }
+  function importJSON(file) {
+    return readHistoryFile("application/json", file).then((data) => historyDb.import(data));
+  }
+  function exportAsJSON() {
+    return historyDb.getAll().then((datas) => {
+      const str = JSON.stringify(datas);
+      const blob = new Blob([str], { type: "application/json" });
+      const filename = `Pixiv Downloader_${location.hostname}_${(/* @__PURE__ */ new Date()).toLocaleString()}.json`;
+      aDownload$1(blob, filename);
+    });
+  }
+  function exportAsCSV() {
+    return historyDb.generateCsv().then((csv) => {
+      const filename = `Pixiv Downloader_${location.hostname}_${(/* @__PURE__ */ new Date()).toLocaleString()}.csv`;
+      aDownload$1(csv, filename);
+    });
+  }
+  function scheduleBackup() {
+    const interval = config.get("historyBackupInterval");
+    if (interval === HistoryBackupInterval.NEVER) return;
+    const lastTimestamp = config.get("lastHistoryBackup");
+    const timestamp = (/* @__PURE__ */ new Date()).getTime();
+    if (!lastTimestamp || lastTimestamp + interval * 1e3 < timestamp) {
+      exportAsJSON();
+      config.update((val) => ({ ...val, lastHistoryBackup: timestamp }));
+    }
+  }
+  function useHistoryBackup() {
+    return {
+      importJSON,
+      exportAsJSON,
+      exportAsCSV,
+      scheduleBackup
+    };
+  }
+  var root_3$3 = /* @__PURE__ */ template(`<!> <span> </span>`, 1);
+  var root$4 = /* @__PURE__ */ template(`<div><section><p> </p> <ul><li><p class="flex-auto"> </p> <select><option> </option><option> </option><option> </option><option> </option></select></li></ul></section> <section><p> </p> <ul><li><p class="flex-auto"> </p> <button class="btn variant-filled"><!> <span> </span></button></li> <li><p class="flex-auto"> </p> <button class="btn variant-filled"><!> <span> </span></button></li></ul></section> <section><p> </p> <ul><li><p class="flex-auto"> </p> <!></li></ul></section> <section><p> </p> <ul><li><p class="flex-auto"> </p> <button class="btn variant-filled"><!> <span> </span></button></li></ul></section></div>`);
+  function DownloadHistory($$anchor, $$props) {
+    push($$props, true);
+    const [$$stores, $$cleanup] = setup_stores();
+    const $configStore = () => store_get(configStore, "$configStore", $$stores);
+    const $exportJsonPending = () => store_get(exportJsonPending, "$exportJsonPending", $$stores);
+    const $exportCsvPending = () => store_get(exportCsvPending, "$exportCsvPending", $$stores);
+    const $importPending = () => store_get(importPending, "$importPending", $$stores);
+    const $clearPending = () => store_get(clearPending, "$clearPending", $$stores);
+    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), inputRounded = prop($$props, "inputRounded", 3, "rounded-full"), inputWidth = prop($$props, "inputWidth", 3, "w-32"), UlClass = prop($$props, "class", 3, "");
+    const configStore = getContext("store");
+    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
+    const inputClasses = /* @__PURE__ */ derived$1(() => `${inputWidth()} ${inputRounded()} shrink-0`);
+    function usePendingButton(fn) {
+      const store = writable(false);
+      return {
+        store,
+        async wrapFn(...args) {
+          store.set(true);
+          const result = await fn(...args);
+          store.set(false);
+          return result;
+        }
+      };
+    }
+    async function importFromJSON(evt) {
+      var _a;
+      const file = (_a = evt.currentTarget.files) == null ? undefined : _a[0];
+      if (!file) return;
+      try {
+        await importJSON2(file);
+      } catch (error) {
+        logger.error(error);
+        alert(error);
+      }
+    }
+    function clearDb() {
+      const isConfirm = confirm(t("setting.history.text.confirm_clear_history"));
+      if (!isConfirm) return;
+      return historyDb.clear();
+    }
+    const { importJSON: importJSON2, exportAsJSON: exportAsJSON2, exportAsCSV: exportAsCSV2 } = useHistoryBackup();
+    const {
+      store: importPending,
+      wrapFn: wrapImportFromJSON
+    } = usePendingButton(importFromJSON);
+    const { store: clearPending, wrapFn: wrapClearDb } = usePendingButton(clearDb);
+    const {
+      store: exportJsonPending,
+      wrapFn: wrapExportAsJSON
+    } = usePendingButton(exportAsJSON2);
+    const {
+      store: exportCsvPending,
+      wrapFn: wrapExportAsCSV
+    } = usePendingButton(exportAsCSV2);
+    var div = root$4();
+    var section = child(div);
+    var p = child(section);
+    var text2 = child(p, true);
+    template_effect(() => set_text(text2, t("setting.history.label.scheduled_backups")));
+    reset(p);
+    var ul = sibling(p, 2);
+    var li = child(ul);
+    var p_1 = child(li);
+    var text_1 = child(p_1, true);
+    template_effect(() => set_text(text_1, t("setting.history.options.scheduled_backups")));
+    reset(p_1);
+    var select = sibling(p_1, 2);
+    var option = child(select);
+    var option_value = {};
+    var text_2 = child(option, true);
+    template_effect(() => set_text(text_2, t("setting.history.select.backup_interval_never")));
+    reset(option);
+    var option_1 = sibling(option);
+    var option_1_value = {};
+    var text_3 = child(option_1, true);
+    template_effect(() => set_text(text_3, t("setting.history.select.backup_interval_every_day")));
+    reset(option_1);
+    var option_2 = sibling(option_1);
+    var option_2_value = {};
+    var text_4 = child(option_2, true);
+    template_effect(() => set_text(text_4, t("setting.history.select.backup_interval_every_7_day")));
+    reset(option_2);
+    var option_3 = sibling(option_2);
+    var option_3_value = {};
+    var text_5 = child(option_3, true);
+    template_effect(() => set_text(text_5, t("setting.history.select.backup_interval_every_30_day")));
+    reset(option_3);
+    reset(select);
+    reset(li);
+    reset(ul);
+    reset(section);
+    var section_1 = sibling(section, 2);
+    var p_2 = child(section_1);
+    var text_6 = child(p_2, true);
+    template_effect(() => set_text(text_6, t("setting.history.label.export")));
+    reset(p_2);
+    var ul_1 = sibling(p_2, 2);
+    var li_1 = child(ul_1);
+    var p_3 = child(li_1);
+    var text_7 = child(p_3, true);
+    template_effect(() => set_text(text_7, t("setting.history.options.export_as_json")));
+    reset(p_3);
+    var button = sibling(p_3, 2);
+    button.__click = wrapExportAsJSON;
+    var node = child(button);
+    {
+      var consequent = ($$anchor2) => {
+        ProgressRadial($$anchor2, {
+          stroke: 80,
+          width: "w-5",
+          meter: "stroke-primary-500",
+          track: "stroke-primary-500/30"
+        });
+      };
+      if_block(node, ($$render) => {
+        if ($exportJsonPending()) $$render(consequent);
+      });
+    }
+    var span = sibling(node, 2);
+    var text_8 = child(span, true);
+    template_effect(() => set_text(text_8, t("setting.history.button.export")));
+    reset(span);
+    reset(button);
+    reset(li_1);
+    var li_2 = sibling(li_1, 2);
+    var p_4 = child(li_2);
+    var text_9 = child(p_4, true);
+    template_effect(() => set_text(text_9, t("setting.history.options.export_as_csv")));
+    reset(p_4);
+    var button_1 = sibling(p_4, 2);
+    button_1.__click = wrapExportAsCSV;
+    var node_1 = child(button_1);
+    {
+      var consequent_1 = ($$anchor2) => {
+        ProgressRadial($$anchor2, {
+          stroke: 80,
+          width: "w-5",
+          meter: "stroke-primary-500",
+          track: "stroke-primary-500/30"
+        });
+      };
+      if_block(node_1, ($$render) => {
+        if ($exportCsvPending()) $$render(consequent_1);
+      });
+    }
+    var span_1 = sibling(node_1, 2);
+    var text_10 = child(span_1, true);
+    template_effect(() => set_text(text_10, t("setting.history.button.export")));
+    reset(span_1);
+    reset(button_1);
+    reset(li_2);
+    reset(ul_1);
+    reset(section_1);
+    var section_2 = sibling(section_1, 2);
+    var p_5 = child(section_2);
+    var text_11 = child(p_5, true);
+    template_effect(() => set_text(text_11, t("setting.history.label.import")));
+    reset(p_5);
+    var ul_2 = sibling(p_5, 2);
+    var li_3 = child(ul_2);
+    var p_6 = child(li_3);
+    var text_12 = child(p_6, true);
+    template_effect(() => set_text(text_12, t("setting.history.options.import_json")));
+    reset(p_6);
+    var node_2 = sibling(p_6, 2);
+    FileButton(node_2, {
+      name: "import-file",
+      accept: ".json",
+      get disabled() {
+        mark_store_binding();
+        return $importPending();
+      },
+      set disabled($$value) {
+        store_set(importPending, proxy($$value));
+      },
+      $$events: { change: wrapImportFromJSON },
+      children: ($$anchor2, $$slotProps) => {
+        var fragment_2 = root_3$3();
+        var node_3 = first_child(fragment_2);
+        {
+          var consequent_2 = ($$anchor3) => {
+            ProgressRadial($$anchor3, {
+              stroke: 80,
+              width: "w-5",
+              meter: "stroke-primary-500",
+              track: "stroke-primary-500/30"
+            });
+          };
+          if_block(node_3, ($$render) => {
+            if ($importPending()) $$render(consequent_2);
+          });
+        }
+        var span_2 = sibling(node_3, 2);
+        var text_13 = child(span_2, true);
+        template_effect(() => set_text(text_13, t("setting.history.button.import")));
+        reset(span_2);
+        append($$anchor2, fragment_2);
+      },
+      $$slots: { default: true }
+    });
+    reset(li_3);
+    reset(ul_2);
+    reset(section_2);
+    var section_3 = sibling(section_2, 2);
+    var p_7 = child(section_3);
+    var text_14 = child(p_7, true);
+    template_effect(() => set_text(text_14, t("setting.history.label.clear")));
+    reset(p_7);
+    var ul_3 = sibling(p_7, 2);
+    var li_4 = child(ul_3);
+    var p_8 = child(li_4);
+    var text_15 = child(p_8, true);
+    template_effect(() => set_text(text_15, t("setting.history.options.clear_history")));
+    reset(p_8);
+    var button_2 = sibling(p_8, 2);
+    button_2.__click = wrapClearDb;
+    var node_4 = child(button_2);
+    {
+      var consequent_3 = ($$anchor2) => {
+        ProgressRadial($$anchor2, {
+          stroke: 80,
+          width: "w-5",
+          meter: "stroke-primary-500",
+          track: "stroke-primary-500/30"
+        });
+      };
+      if_block(node_4, ($$render) => {
+        if ($clearPending()) $$render(consequent_3);
+      });
+    }
+    var span_3 = sibling(node_4, 2);
+    var text_16 = child(span_3, true);
+    template_effect(() => set_text(text_16, t("setting.history.button.clear")));
+    reset(span_3);
+    reset(button_2);
+    reset(li_4);
+    reset(ul_3);
+    reset(section_3);
+    reset(div);
+    template_effect(() => {
+      set_class(div, clsx(sectionSpace()));
+      set_class(p, clsx(sectionTitle()));
+      set_class(ul, clsx(get$1(ulClasses)));
+      set_class(select, `select ${get$1(inputClasses) ?? ""}`);
+      if (option_value !== (option_value = HistoryBackupInterval.NEVER)) {
+        option.value = null == (option.__value = HistoryBackupInterval.NEVER) ? "" : HistoryBackupInterval.NEVER;
+      }
+      if (option_1_value !== (option_1_value = HistoryBackupInterval.EVERY_DAY)) {
+        option_1.value = null == (option_1.__value = HistoryBackupInterval.EVERY_DAY) ? "" : HistoryBackupInterval.EVERY_DAY;
+      }
+      if (option_2_value !== (option_2_value = HistoryBackupInterval.EVERY_7_DAY)) {
+        option_2.value = null == (option_2.__value = HistoryBackupInterval.EVERY_7_DAY) ? "" : HistoryBackupInterval.EVERY_7_DAY;
+      }
+      if (option_3_value !== (option_3_value = HistoryBackupInterval.EVERY_30_DAY)) {
+        option_3.value = null == (option_3.__value = HistoryBackupInterval.EVERY_30_DAY) ? "" : HistoryBackupInterval.EVERY_30_DAY;
+      }
+      set_class(p_2, clsx(sectionTitle()));
+      set_class(ul_1, clsx(get$1(ulClasses)));
+      button.disabled = $exportJsonPending();
+      button_1.disabled = $exportCsvPending();
+      set_class(p_5, clsx(sectionTitle()));
+      set_class(ul_2, clsx(get$1(ulClasses)));
+      set_class(p_7, clsx(sectionTitle()));
+      set_class(ul_3, clsx(get$1(ulClasses)));
+      button_2.disabled = $clearPending();
+    });
+    bind_select_value(select, () => $configStore().historyBackupInterval, ($$value) => store_mutate(configStore, untrack($configStore).historyBackupInterval = $$value, untrack($configStore)));
+    append($$anchor, div);
+    pop();
+    $$cleanup();
+  }
+  delegate(["click"]);
+  var root_1$3 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
+  var root_2$2 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
+  var root_4 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
+  var root_5 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
+  var root_3$2 = /* @__PURE__ */ template(`<section><p> </p> <ul><li class="flex-col !items-stretch md:flex-row md:!items-baseline gap-4 *:!m-0"><!> <!></li></ul></section>`);
+  var root$3 = /* @__PURE__ */ template(`<div><div class="flex items-center justify-center"><div></div></div> <section><p> </p> <ul><li class="flex-col !items-stretch md:flex-row md:!items-baseline gap-4 *:!m-0"><!> <!></li></ul></section> <!></div>`);
+  function BtnPosition($$anchor, $$props) {
+    push($$props, true);
+    const [$$stores, $$cleanup] = setup_stores();
+    const $configStore = () => store_get(configStore, "$configStore", $$stores);
+    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, "");
+    const configStore = getContext("store");
+    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
+    const max = 100;
+    const step = 4;
+    let btnLeft = state(proxy($configStore()["pdl-btn-left"]));
+    let btnTop = state(proxy($configStore()["pdl-btn-top"]));
+    let bookmarkBtnLeft = state(proxy($configStore()["pdl-btn-self-bookmark-left"]));
+    let bookmarkBtnTop = state(proxy($configStore()["pdl-btn-self-bookmark-top"]));
+    user_effect(() => changeCssProp("--pdl-btn-left", get$1(btnLeft)));
+    user_effect(() => changeCssProp("--pdl-btn-top", get$1(btnTop)));
+    user_effect(() => changeCssProp("--pdl-btn-self-bookmark-left", get$1(bookmarkBtnLeft)));
+    user_effect(() => changeCssProp("--pdl-btn-self-bookmark-top", get$1(bookmarkBtnTop)));
+    let buttonContainer;
+    onMount(() => {
+      const sampleBtn = new ThumbnailButton({
+        id: "0",
+        shouldObserveDb: false,
+        onClick: () => undefined
+      });
+      sampleBtn.setAttribute("disabled", "");
+      buttonContainer.appendChild(sampleBtn);
+      if (!env.isPixiv()) return;
+      const sampleBookmarkBtn = new ThumbnailButton({
+        id: "0",
+        type: ThumbnailBtnType.PixivMyBookmark,
+        shouldObserveDb: false,
+        onClick: () => undefined
+      });
+      sampleBookmarkBtn.setAttribute("disabled", "");
+      sampleBookmarkBtn.setStatus(ThumbnailBtnStatus.Complete);
+      buttonContainer.appendChild(sampleBookmarkBtn);
+    });
+    function updateBtnPosConfig(key, val) {
+      store_mutate(configStore, untrack($configStore)[key] = val, untrack($configStore));
+    }
+    function changeCssProp(key, value) {
+      document.documentElement.style.setProperty(key, String(value));
+    }
+    var div = root$3();
+    var div_1 = child(div);
+    var div_2 = child(div_1);
+    bind_this(div_2, ($$value) => buttonContainer = $$value, () => buttonContainer);
+    reset(div_1);
+    var section = sibling(div_1, 2);
+    var p = child(section);
+    var text2 = child(p, true);
+    template_effect(() => set_text(text2, t("setting.button_position.label.common")));
+    reset(p);
+    var ul = sibling(p, 2);
+    var li = child(ul);
+    var node = child(li);
+    RangeSlider(node, {
+      name: "pdl-btn-left",
+      step,
+      max,
+      ticked: true,
+      class: "flex-grow",
+      get value() {
+        return get$1(btnLeft);
+      },
+      set value($$value) {
+        set(btnLeft, proxy($$value));
+      },
+      $$events: {
+        change: () => updateBtnPosConfig("pdl-btn-left", get$1(btnLeft))
+      },
+      children: ($$anchor2, $$slotProps) => {
+        var div_3 = root_1$3();
+        var p_1 = child(div_3);
+        var text_1 = child(p_1, true);
+        template_effect(() => set_text(text_1, t("setting.button_position.options.horizon_position")));
+        reset(p_1);
+        var div_4 = sibling(p_1, 2);
+        var text_2 = child(div_4);
+        reset(div_4);
+        reset(div_3);
+        template_effect(() => set_text(text_2, `${get$1(btnLeft) ?? ""} / ${max}`));
+        append($$anchor2, div_3);
+      },
+      $$slots: { default: true }
+    });
+    var node_1 = sibling(node, 2);
+    RangeSlider(node_1, {
+      name: "pdl-btn-top",
+      step,
+      max,
+      ticked: true,
+      class: "flex-grow",
+      get value() {
+        return get$1(btnTop);
+      },
+      set value($$value) {
+        set(btnTop, proxy($$value));
+      },
+      $$events: {
+        change: () => updateBtnPosConfig("pdl-btn-top", get$1(btnTop))
+      },
+      children: ($$anchor2, $$slotProps) => {
+        var div_5 = root_2$2();
+        var p_2 = child(div_5);
+        var text_3 = child(p_2, true);
+        template_effect(() => set_text(text_3, t("setting.button_position.options.vertical_position")));
+        reset(p_2);
+        var div_6 = sibling(p_2, 2);
+        var text_4 = child(div_6);
+        reset(div_6);
+        reset(div_5);
+        template_effect(() => set_text(text_4, `${get$1(btnTop) ?? ""} / ${max}`));
+        append($$anchor2, div_5);
+      },
+      $$slots: { default: true }
+    });
+    reset(li);
+    reset(ul);
+    reset(section);
+    var node_2 = sibling(section, 2);
+    {
+      var consequent = ($$anchor2) => {
+        var section_1 = root_3$2();
+        var p_3 = child(section_1);
+        var text_5 = child(p_3, true);
+        template_effect(() => set_text(text_5, t("setting.button_position.label.my_bookmark")));
+        reset(p_3);
+        var ul_1 = sibling(p_3, 2);
+        var li_1 = child(ul_1);
+        var node_3 = child(li_1);
+        RangeSlider(node_3, {
+          name: "pdl-bookmark-btn-left",
+          step,
+          max,
+          ticked: true,
+          class: "flex-grow",
+          get value() {
+            return get$1(bookmarkBtnLeft);
+          },
+          set value($$value) {
+            set(bookmarkBtnLeft, proxy($$value));
+          },
+          $$events: {
+            change: () => updateBtnPosConfig("pdl-btn-self-bookmark-left", get$1(bookmarkBtnLeft))
+          },
+          children: ($$anchor3, $$slotProps) => {
+            var div_7 = root_4();
+            var p_4 = child(div_7);
+            var text_6 = child(p_4, true);
+            template_effect(() => set_text(text_6, t("setting.button_position.options.horizon_position")));
+            reset(p_4);
+            var div_8 = sibling(p_4, 2);
+            var text_7 = child(div_8);
+            reset(div_8);
+            reset(div_7);
+            template_effect(() => set_text(text_7, `${get$1(bookmarkBtnLeft) ?? ""} / ${max}`));
+            append($$anchor3, div_7);
+          },
+          $$slots: { default: true }
+        });
+        var node_4 = sibling(node_3, 2);
+        RangeSlider(node_4, {
+          name: "pdl-bookmark-btn-top",
+          step,
+          max,
+          ticked: true,
+          class: "flex-grow",
+          get value() {
+            return get$1(bookmarkBtnTop);
+          },
+          set value($$value) {
+            set(bookmarkBtnTop, proxy($$value));
+          },
+          $$events: {
+            change: () => updateBtnPosConfig("pdl-btn-self-bookmark-top", get$1(bookmarkBtnTop))
+          },
+          children: ($$anchor3, $$slotProps) => {
+            var div_9 = root_5();
+            var p_5 = child(div_9);
+            var text_8 = child(p_5, true);
+            template_effect(() => set_text(text_8, t("setting.button_position.options.vertical_position")));
+            reset(p_5);
+            var div_10 = sibling(p_5, 2);
+            var text_9 = child(div_10);
+            reset(div_10);
+            reset(div_9);
+            template_effect(() => set_text(text_9, `${get$1(bookmarkBtnTop) ?? ""} / ${max}`));
+            append($$anchor3, div_9);
+          },
+          $$slots: { default: true }
+        });
+        reset(li_1);
+        reset(ul_1);
+        reset(section_1);
+        template_effect(() => {
+          set_class(p_3, clsx(sectionTitle()));
+          set_class(ul_1, clsx(get$1(ulClasses)));
+        });
+        append($$anchor2, section_1);
+      };
+      if_block(node_2, ($$render) => {
+        if (env.isPixiv()) $$render(consequent);
+      });
+    }
+    reset(div);
+    template_effect(() => {
+      set_class(div, clsx(sectionSpace()));
+      set_class(div_2, `w-48 h-48 backdrop-blur-sm rounded-lg relative ${bg() ?? ""}`);
+      set_class(p, clsx(sectionTitle()));
+      set_class(ul, clsx(get$1(ulClasses)));
+    });
+    append($$anchor, div);
+    pop();
+    $$cleanup();
+  }
+  var root_1$2 = /* @__PURE__ */ template(`<li><p class="flex-auto"> </p> <!></li> <li><p class="flex-auto"> </p> <!></li> <li><div class="flex-auto"><p> </p> <p> </p></div> <!></li>`, 1);
+  var root_2$1 = /* @__PURE__ */ template(`<ul><li><label class="label flex flex-grow items-center justify-center"><p class="flex-auto"> </p> <!></label></li> <li><label class="label flex flex-grow items-center justify-center"><p class="flex-auto"> </p> <!></label></li></ul>`);
+  var root_3$1 = /* @__PURE__ */ template(`<section><p>实验性功能</p> <ul><li><div class="flex-auto"><p>为单页插图增加 #pixivGlow2024 效果</p> <p>* 转换至动图格式。如果插图尺寸过大，可能占用大量内存 / 转换失败</p></div> <!></li></ul></section>`);
+  var root$2 = /* @__PURE__ */ template(`<div><ul><li><p class="flex-auto"> </p> <!></li> <!> <li class="flex-col !items-stretch"><div class="flex items-center"><div class="flex-auto"><p> </p> <p> </p></div> <!></div> <!></li></ul> <!></div>`);
+  function Others($$anchor, $$props) {
+    push($$props, true);
+    const [$$stores, $$cleanup] = setup_stores();
+    const $configStore = () => store_get(configStore, "$configStore", $$stores);
+    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), descritionText = prop($$props, "descritionText", 3, "text-sm text-surface-400"), UlClass = prop($$props, "class", 3, "");
+    const configStore = getContext("store");
+    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
+    var div = root$2();
+    var ul = child(div);
+    var li = child(ul);
+    var p = child(li);
+    var text2 = child(p, true);
+    template_effect(() => set_text(text2, t("setting.others.options.show_setting_button")));
+    reset(p);
+    var node = sibling(p, 2);
+    SlideToggle(node, {
+      name: "show-popup-button",
+      size: "sm",
+      get checked() {
+        return $configStore().showPopupButton;
+      },
+      set checked($$value) {
+        store_mutate(configStore, untrack($configStore).showPopupButton = $$value, untrack($configStore));
+      }
+    });
+    reset(li);
+    var node_1 = sibling(li, 2);
+    {
+      var consequent = ($$anchor2) => {
+        var fragment = root_1$2();
+        var li_1 = first_child(fragment);
+        var p_1 = child(li_1);
+        var text_1 = child(p_1, true);
+        template_effect(() => set_text(text_1, t("setting.others.options.bundle_multipage_illust")));
+        reset(p_1);
+        var node_2 = sibling(p_1, 2);
+        SlideToggle(node_2, {
+          name: "bundle-illusts",
+          size: "sm",
+          get checked() {
+            return $configStore().bundleIllusts;
+          },
+          set checked($$value) {
+            store_mutate(configStore, untrack($configStore).bundleIllusts = $$value, untrack($configStore));
+          }
+        });
+        reset(li_1);
+        var li_2 = sibling(li_1, 2);
+        var p_2 = child(li_2);
+        var text_2 = child(p_2, true);
+        template_effect(() => set_text(text_2, t("setting.others.options.bundle_manga")));
+        reset(p_2);
+        var node_3 = sibling(p_2, 2);
+        SlideToggle(node_3, {
+          name: "bundle-manga",
+          size: "sm",
+          get checked() {
+            return $configStore().bundleManga;
+          },
+          set checked($$value) {
+            store_mutate(configStore, untrack($configStore).bundleManga = $$value, untrack($configStore));
+          }
+        });
+        reset(li_2);
+        var li_3 = sibling(li_2, 2);
+        var div_1 = child(li_3);
+        var p_3 = child(div_1);
+        var text_3 = child(p_3, true);
+        template_effect(() => set_text(text_3, t("setting.others.options.like_illust_when_downloading")));
+        reset(p_3);
+        var p_4 = sibling(p_3, 2);
+        var text_4 = child(p_4, true);
+        template_effect(() => set_text(text_4, t("setting.others.options.option_does_not_apply_to_batch_download")));
+        reset(p_4);
+        reset(div_1);
+        var node_4 = sibling(div_1, 2);
+        SlideToggle(node_4, {
+          name: "bundle-manga",
+          size: "sm",
+          get checked() {
+            return $configStore().likeIllust;
+          },
+          set checked($$value) {
+            store_mutate(configStore, untrack($configStore).likeIllust = $$value, untrack($configStore));
+          }
+        });
+        reset(li_3);
+        template_effect(() => set_class(p_4, clsx(descritionText())));
+        append($$anchor2, fragment);
+      };
+      if_block(node_1, ($$render) => {
+        if (env.isPixiv()) $$render(consequent);
+      });
+    }
+    var li_4 = sibling(node_1, 2);
+    var div_2 = child(li_4);
+    var div_3 = child(div_2);
+    var p_5 = child(div_3);
+    var text_5 = child(p_5, true);
+    template_effect(() => set_text(text_5, t("setting.others.options.add_bookmark_when_downloading")));
+    reset(p_5);
+    var p_6 = sibling(p_5, 2);
+    var text_6 = child(p_6, true);
+    template_effect(() => set_text(text_6, t("setting.others.options.option_does_not_apply_to_batch_download")));
+    reset(p_6);
+    reset(div_3);
+    var node_5 = sibling(div_3, 2);
+    SlideToggle(node_5, {
+      name: "fsa-enable",
+      size: "sm",
+      get checked() {
+        return $configStore().addBookmark;
+      },
+      set checked($$value) {
+        store_mutate(configStore, untrack($configStore).addBookmark = $$value, untrack($configStore));
+      }
+    });
+    reset(div_2);
+    var node_6 = sibling(div_2, 2);
+    {
+      var consequent_1 = ($$anchor2) => {
+        var ul_1 = root_2$1();
+        var li_5 = child(ul_1);
+        var label = child(li_5);
+        var p_7 = child(label);
+        var text_7 = child(p_7, true);
+        template_effect(() => set_text(text_7, t("setting.others.options.add_bookmark_with_tags")));
+        reset(p_7);
+        var node_7 = sibling(p_7, 2);
+        SlideToggle(node_7, {
+          name: "fsa-enable",
+          size: "sm",
+          get checked() {
+            return $configStore().addBookmarkWithTags;
+          },
+          set checked($$value) {
+            store_mutate(configStore, untrack($configStore).addBookmarkWithTags = $$value, untrack($configStore));
+          }
+        });
+        reset(label);
+        reset(li_5);
+        var li_6 = sibling(li_5, 2);
+        var label_1 = child(li_6);
+        var p_8 = child(label_1);
+        var text_8 = child(p_8, true);
+        template_effect(() => set_text(text_8, t("setting.others.options.add_bookmark_private_r18")));
+        reset(p_8);
+        var node_8 = sibling(p_8, 2);
+        SlideToggle(node_8, {
+          name: "fsa-enable",
+          size: "sm",
+          get checked() {
+            return $configStore().privateR18;
+          },
+          set checked($$value) {
+            store_mutate(configStore, untrack($configStore).privateR18 = $$value, untrack($configStore));
+          }
+        });
+        reset(label_1);
+        reset(li_6);
+        reset(ul_1);
+        template_effect(() => set_class(ul_1, `list ${border() ?? ""} ${rounded() ?? ""} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4`));
+        append($$anchor2, ul_1);
+      };
+      if_block(node_6, ($$render) => {
+        if ($configStore().addBookmark && env.isPixiv()) $$render(consequent_1);
+      });
+    }
+    reset(li_4);
+    reset(ul);
+    var node_9 = sibling(ul, 2);
+    {
+      var consequent_2 = ($$anchor2) => {
+        var section = root_3$1();
+        var p_9 = child(section);
+        var ul_2 = sibling(p_9, 2);
+        var li_7 = child(ul_2);
+        var div_4 = child(li_7);
+        var p_10 = sibling(child(div_4), 2);
+        reset(div_4);
+        var node_10 = sibling(div_4, 2);
+        SlideToggle(node_10, {
+          name: "mix-effect",
+          size: "sm",
+          get checked() {
+            return $configStore().mixEffect;
+          },
+          set checked($$value) {
+            store_mutate(configStore, untrack($configStore).mixEffect = $$value, untrack($configStore));
+          }
+        });
+        reset(li_7);
+        reset(ul_2);
+        reset(section);
+        template_effect(() => {
+          set_class(p_9, clsx(sectionTitle()));
+          set_class(ul_2, clsx(get$1(ulClasses)));
+          set_class(p_10, `${descritionText() ?? ""} !text-error-500`);
+        });
+        append($$anchor2, section);
+      };
+      if_block(node_9, ($$render) => {
+        if (env.isPixiv()) $$render(consequent_2);
+      });
+    }
+    reset(div);
+    template_effect(() => {
+      set_class(div, clsx(sectionSpace()));
+      set_class(ul, clsx(get$1(ulClasses)));
+      set_class(p_6, clsx(descritionText()));
+    });
+    append($$anchor, div);
+    pop();
+    $$cleanup();
+  }
+  var root$1 = /* @__PURE__ */ template(`<div><section><p> </p> <ul><li><span><!></span></li></ul></section> <section><p> </p> <ul><li><p><!></p></li> <li class=" justify-center"><figure><img alt="credit" class=" rounded-full m-auto"> <figcaption class="mt-4"> </figcaption></figure></li></ul></section></div>`);
+  function FeedBack($$anchor, $$props) {
+    push($$props, true);
+    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, "");
+    const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
+    var div = root$1();
+    var section = child(div);
+    var p = child(section);
+    var text2 = child(p, true);
+    template_effect(() => set_text(text2, t("setting.feedback.label.feedback")));
+    reset(p);
+    var ul = sibling(p, 2);
+    var li = child(ul);
+    var span = child(li);
+    var node = child(span);
+    html(node, () => t("setting.feedback.text.feedback_desc"));
+    reset(span);
+    reset(li);
+    reset(ul);
+    reset(section);
+    var section_1 = sibling(section, 2);
+    var p_1 = child(section_1);
+    var text_1 = child(p_1, true);
+    template_effect(() => set_text(text_1, t("setting.feedback.label.donate")));
+    reset(p_1);
+    var ul_1 = sibling(p_1, 2);
+    var li_1 = child(ul_1);
+    var p_2 = child(li_1);
+    var node_1 = child(p_2);
+    html(node_1, () => t("setting.feedback.text.give_me_a_star"));
+    reset(p_2);
+    reset(li_1);
+    var li_2 = sibling(li_1, 2);
+    var figure = child(li_2);
+    var img = child(figure);
+    set_attribute(img, "src", creditCode);
+    var figcaption = sibling(img, 2);
+    var text_2 = child(figcaption, true);
+    template_effect(() => set_text(text_2, t("setting.feedback.text.donate_desc")));
+    reset(figcaption);
+    reset(figure);
+    reset(li_2);
+    reset(ul_1);
+    reset(section_1);
+    reset(div);
+    template_effect(() => {
+      set_class(div, clsx(sectionSpace()));
+      set_class(p, clsx(sectionTitle()));
+      set_class(ul, clsx(get$1(ulClasses)));
+      set_class(p_1, clsx(sectionTitle()));
+      set_class(ul_1, clsx(get$1(ulClasses)));
+    });
+    append($$anchor, div);
+    pop();
+  }
+  var root_2 = /* @__PURE__ */ template(`<section><p> </p> <div><div><input type="text" class="input" name="key"></div></div></section>`);
+  var root = /* @__PURE__ */ template(`<div><!></div>`);
+  function Auth($$anchor, $$props) {
+    push($$props, true);
+    const [$$stores, $$cleanup] = setup_stores();
+    const $store = () => store_get(store, "$store", $$stores);
+    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, "");
+    const store = getContext("store");
+    const blockClasses = /* @__PURE__ */ derived$1(() => `${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
+    var div = root();
+    var node = child(div);
+    {
+      var consequent = ($$anchor2) => {
+        var fragment = comment();
+        var node_1 = first_child(fragment);
+        each(node_1, 1, () => Object.keys($store().auth), (key) => key, ($$anchor3, key) => {
+          var section = root_2();
+          var p = child(section);
+          var text2 = child(p, true);
+          template_effect(() => set_text(text2, get$1(key).toUpperCase()));
+          reset(p);
+          var div_1 = sibling(p, 2);
+          var div_2 = child(div_1);
+          var input = child(div_2);
+          remove_input_defaults(input);
+          reset(div_2);
+          reset(div_1);
+          reset(section);
+          template_effect(() => {
+            set_class(p, clsx(sectionTitle()));
+            set_class(div_1, clsx(get$1(blockClasses)));
+          });
+          bind_value(input, () => $store().auth[get$1(key)], ($$value) => store_mutate(store, untrack($store).auth[get$1(key)] = $$value, untrack($store)));
+          append($$anchor3, section);
+        });
+        append($$anchor2, fragment);
+      };
+      if_block(node, ($$render) => {
+        if ($store().auth) $$render(consequent);
+      });
+    }
+    reset(div);
+    template_effect(() => set_class(div, clsx(sectionSpace())));
+    append($$anchor, div);
+    pop();
+    $$cleanup();
+  }
+  const menuOpen = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21,15.61L19.59,17L14.58,12L19.59,7L21,8.39L17.44,12L21,15.61M3,6H16V8H3V6M3,13V11H13V13H3M3,18V16H16V18H3Z" /></svg>`;
+  const menuClose = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6H13V8H3V6M3 16H13V18H3V16M3 11H15V13H3V11M16 7L14.58 8.39L18.14 12L14.58 15.61L16 17L21 12L16 7Z" /></svg>`;
+  var on_click = (_, showListbox) => set(showListbox, !get$1(showListbox));
+  var root_6 = /* @__PURE__ */ template(`<button type="button" class="btn-icon hover:variant-soft-surface ml-1"><i class="w-8 fill-current"><!></i></button>`);
+  var root_9 = /* @__PURE__ */ template(`<h3 class="h3"> </h3>`);
+  var root_1$1 = /* @__PURE__ */ template(`<div><!> <!> <div class="mt-4 pr-4 scrollbar-track-transparent scrollbar-thumb-slate-400/50 scrollbar-corner-transparent scrollbar-thin overflow-y-auto" style="scrollbar-gutter: stable"><!></div></div>`);
+  function Config($$anchor, $$props) {
+    push($$props, true);
+    const [$$stores, $$cleanup] = setup_stores();
+    const $configStore = () => store_get(configStore, "$configStore", $$stores);
+    let slected = state(0);
+    let showListbox = state(true);
+    const configStore = getContext("store");
+    const optionList = [
+      {
+        name: t("setting.save_to.title"),
+        component: SaveTo
+      },
+      {
+        name: t("setting.ugoira.title"),
+        component: UgoiraConvert,
+        show: env.isPixiv()
+      },
+      {
+        name: t("setting.history.title"),
+        component: DownloadHistory
+      },
+      {
+        name: t("setting.button_position.title"),
+        component: BtnPosition
+      },
+      {
+        name: t("setting.others.title"),
+        component: Others
+      },
+      {
+        name: t("setting.authorization.title"),
+        component: Auth,
+        show: !!$configStore().auth
+      },
+      {
+        name: t("setting.feedback.title"),
+        component: FeedBack
+      }
+    ];
+    const OptionComponent = /* @__PURE__ */ derived$1(() => optionList[get$1(slected)].component);
+    const gridCol = /* @__PURE__ */ derived$1(() => get$1(showListbox) ? "grid-cols-[140px_1fr]" : "grid-cols-[0px_1fr]");
+    const transform = /* @__PURE__ */ derived$1(() => get$1(showListbox) ? "translate-x-0" : "-translate-x-full");
+    const sidebarWidth = "w-[140px]";
+    ModalWrapper($$anchor, {
+      get parent() {
+        return $$props.parent;
+      },
+      height: "h-screen md:h-[600px]",
+      width: "w-screen md:max-w-screen-md xl:max-w-screen-lg",
+      padding: "",
+      children: ($$anchor2, $$slotProps) => {
+        var div = root_1$1();
+        var node = child(div);
+        ListBox(node, {
+          get class() {
+            return `pt-4 pr-6 row-start-1 row-span-2 ${sidebarWidth} transition-[transform] ${get$1(transform) ?? ""}`;
+          },
+          children: ($$anchor3, $$slotProps2) => {
+            var fragment_1 = comment();
+            var node_1 = first_child(fragment_1);
+            each(node_1, 17, () => optionList, index, ($$anchor4, option, idx) => {
+              var fragment_2 = comment();
+              var node_2 = first_child(fragment_2);
+              {
+                var consequent = ($$anchor5) => {
+                  ListBoxItem($$anchor5, {
+                    name: "option",
+                    value: idx,
+                    class: "rounded-token",
+                    get group() {
+                      return get$1(slected);
+                    },
+                    set group($$value) {
+                      set(slected, proxy($$value));
+                    },
+                    children: ($$anchor6, $$slotProps3) => {
+                      next();
+                      var text$1 = text();
+                      template_effect(() => set_text(text$1, get$1(option).name));
+                      append($$anchor6, text$1);
+                    },
+                    $$slots: { default: true }
+                  });
+                };
+                if_block(node_2, ($$render) => {
+                  if (!("show" in get$1(option)) || get$1(option).show) $$render(consequent);
+                });
+              }
+              append($$anchor4, fragment_2);
+            });
+            append($$anchor3, fragment_1);
+          },
+          $$slots: { default: true }
+        });
+        var node_3 = sibling(node, 2);
+        {
+          const lead = ($$anchor3) => {
+            var button = root_6();
+            button.__click = [on_click, showListbox];
+            var i = child(button);
+            var node_4 = child(i);
+            {
+              var consequent_1 = ($$anchor4) => {
+                var fragment_5 = comment();
+                var node_5 = first_child(fragment_5);
+                html(node_5, () => menuClose);
+                append($$anchor4, fragment_5);
+              };
+              var alternate = ($$anchor4) => {
+                var fragment_6 = comment();
+                var node_6 = first_child(fragment_6);
+                html(node_6, () => menuOpen);
+                append($$anchor4, fragment_6);
+              };
+              if_block(node_4, ($$render) => {
+                if (get$1(showListbox)) $$render(consequent_1);
+                else $$render(alternate, false);
+              });
+            }
+            reset(i);
+            reset(button);
+            append($$anchor3, button);
+          };
+          AppBar(node_3, {
+            padding: "py-2",
+            background: "bg-transparent",
+            class: "mr-6 border-b border-surface-800-100-token",
+            lead,
+            children: ($$anchor3, $$slotProps2) => {
+              var h3 = root_9();
+              var text_1 = child(h3, true);
+              reset(h3);
+              template_effect(() => set_text(text_1, optionList[get$1(slected)].name || "设置"));
+              append($$anchor3, h3);
+            },
+            $$slots: { lead: true, default: true }
+          });
+        }
+        var div_1 = sibling(node_3, 2);
+        var node_7 = child(div_1);
+        component(node_7, () => get$1(OptionComponent), ($$anchor3, $$component) => {
+          $$component($$anchor3, {
+            bg: "bg-white/30 dark:bg-surface-500/20 backdrop-blur-sm"
+          });
+        });
+        reset(div_1);
+        reset(div);
+        template_effect(() => set_class(div, `h-full pt-4 pb-6 pl-6 grid grid-rows-[auto_1fr] transition-[grid-template-columns] ${get$1(gridCol) ?? ""}`));
+        append($$anchor2, div);
+      },
+      $$slots: { default: true }
+    });
+    pop();
+    $$cleanup();
+  }
+  delegate(["click"]);
   var on_keydown = (e) => e.stopImmediatePropagation();
   var root_3 = /* @__PURE__ */ template(`<button type="button" class="btn btn-sm variant-filled fixed bottom-24 rounded-none rounded-s-full opacity-40 hover:opacity-100 right-0 translate-x-[calc(100%-44px)] hover:translate-x-0 delay-100"><i class=" text-sm w-6 fill-current"><!></i> <span class="text-sm"> </span></button>`);
   var root_1 = /* @__PURE__ */ template(`<div data-theme="skeleton" class="contents"><!> <!> <!></div>`);
   function App($$anchor, $$props) {
     push($$props, true);
     const [$$stores, $$cleanup] = setup_stores();
-    const $store = () => store_get(store, "$store", $$stores);
-    let dark = prop($$props, "dark", 3, false), updated = prop($$props, "updated", 3, false), filenameTemplate = prop($$props, "filenameTemplate", 19, () => []);
+    const $config = () => store_get($$props.config, "$config", $$stores);
+    let dark = prop($$props, "dark", 3, false), filenameTemplate = prop($$props, "filenameTemplate", 19, () => []);
     setContext("filenameTemplate", filenameTemplate());
+    setContext("store", $$props.config);
     initializeStores();
-    const store = initConfigStore();
     const modalStore = getModalStore();
     let root2;
     const components = {
@@ -13054,7 +12821,8 @@
       const shadow = root2.getRootNode();
       addStyleToShadow(shadow);
       shadow.host.setAttribute("style", "position:fixed; z-index:99999");
-      if (updated()) {
+      if ($config().showMsg) {
+        store_mutate($$props.config, untrack($config).showMsg = false, untrack($config));
         showChangelog();
       }
     });
@@ -13066,7 +12834,7 @@
     var node_1 = sibling(node, 2);
     {
       var consequent = ($$anchor2) => {
-        Downloader($$anchor2, {
+        Downloader$1($$anchor2, {
           get downloaderConfig() {
             return $$props.downloaderConfig;
           },
@@ -13096,7 +12864,7 @@
         append($$anchor2, button);
       };
       if_block(node_2, ($$render) => {
-        if ($store().showPopupButton) $$render(consequent_1);
+        if ($config().showPopupButton) $$render(consequent_1);
       });
     }
     reset(div);
@@ -13458,13 +13226,13 @@
       signal.addEventListener(
         "abort",
         () => {
-          var _a2;
+          var _a;
           downloadQueue.size !== 0 && downloadQueue.clear();
           taskControllers.forEach((controller2) => controller2.abort(signal.reason));
           taskControllers.clear();
           cancelDownloadRequest(signal.reason);
           rejectDownload == null ? undefined : rejectDownload(signal.reason);
-          (_a2 = downloaderConfig.onDownloadAbort) == null ? undefined : _a2.call(downloaderConfig);
+          (_a = downloaderConfig.onDownloadAbort) == null ? undefined : _a.call(downloaderConfig);
         },
         { once: true }
       );
@@ -13650,15 +13418,6 @@
     function abort() {
       controller && controller.abort(new CancelError());
     }
-    function overwrite(partialConfig) {
-      for (const key in partialConfig) {
-        const val = partialConfig[key];
-        if (val !== undefined) {
-          downloaderConfig[key] = val;
-        }
-      }
-      return batchDownloadDefinition;
-    }
     function batchDownloadDefinition() {
       return batchDownloadStore;
     }
@@ -13670,8 +13429,7 @@
       downloading: readonly(downloading),
       log: readonly(log),
       batchDownload,
-      abort,
-      overwrite
+      abort
     };
     return batchDownloadDefinition;
   }
@@ -13679,7 +13437,7 @@
     App,
     {
       dark: { type: "Boolean" },
-      updated: { type: "Boolean" },
+      config: {},
       filenameTemplate: {},
       downloaderConfig: {},
       useBatchDownload: {}
@@ -13694,13 +13452,13 @@
           //@ts-expect-error no_unsed_var
           __publicField(this, "filenameTemplate");
           //@ts-expect-error no_unsed_var
-          __publicField(this, "updated");
+          __publicField(this, "config");
           //@ts-expect-error no_unsed_var
           __publicField(this, "downloaderConfig");
           //@ts-expect-error no_unsed_var
           __publicField(this, "useBatchDownload");
           this.filenameTemplate = props.filenameTemplate;
-          this.updated = props.updated ?? false;
+          this.config = props.config;
         }
         initBatchDownloader(config2) {
           this.downloaderConfig = config2;
@@ -13722,13 +13480,10 @@
       throw new Error("`hostname` should be overwritten by a subclass.");
     }
     createApp() {
-      const updated = this.config.get("showMsg");
-      updated && this.config.set("showMsg", false);
-      const app = new PdlApp({
-        updated,
+      return new PdlApp({
+        config: this.config,
         filenameTemplate: this.getFilenameTemplate()
       });
-      return app;
     }
     injectStyle() {
       [
@@ -13765,8 +13520,8 @@
       _GM_registerMenuCommand(
         t("button.setting"),
         () => {
-          var _a2;
-          if ((_a2 = this.app.shadowRoot) == null ? undefined : _a2.querySelector(".modal")) {
+          var _a;
+          if ((_a = this.app.shadowRoot) == null ? undefined : _a.querySelector(".modal")) {
             return;
           }
           this.app.showSetting();
@@ -13777,40 +13532,284 @@
       this.runScheduledTask();
     }
   }
-  const wrapperStyle = ".button-wrapper{position:absolute;right:8px;top:0;bottom:0;margin-top:40px}.button-wrapper.rule34{bottom:calc(1em + 22px)}.button-wrapper.moebooru_image{right:calc(5em + 8px)}";
-  class ArtworkButton extends HTMLElement {
-    constructor(props) {
-      super();
-      __publicField(this, "props");
-      this.props = props;
-    }
-    static get tagNameLowerCase() {
-      return "pdl-artwork-button";
-    }
-    render() {
-      if (this.shadowRoot) return;
-      const shadowRoot = this.attachShadow({ mode: "open" });
-      const btnProps = { ...this.props };
-      shadowRoot.innerHTML = `<style>${wrapperStyle}</style><div class="button-wrapper${btnProps.site ? " " + btnProps.site : ""}"></div>`;
-      delete btnProps.site;
-      const thumbnailButton = new ThumbnailButton({
-        type: ThumbnailBtnType.Gallery,
-        ...btnProps
-      });
-      const wrapper = shadowRoot.querySelector(".button-wrapper");
-      wrapper.appendChild(thumbnailButton);
-    }
-    connectedCallback() {
-      this.render();
+  var PostValidState = /* @__PURE__ */ ((PostValidState2) => {
+    PostValidState2[PostValidState2["VALID"] = 0] = "VALID";
+    PostValidState2[PostValidState2["INVALID"] = 1] = "INVALID";
+    PostValidState2[PostValidState2["UNAVAILABLE"] = 2] = "UNAVAILABLE";
+    return PostValidState2;
+  })(PostValidState || {});
+  class ParserBase {
+    async *paginationGenerator(pageRange, postsPerPage, getPostData, isValid, buildMeta) {
+      const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
+      let page = pageStart;
+      let postDatas = await getPostData(page);
+      let total = postDatas.length;
+      let fetchError = null;
+      if (total === 0) throw new Error(`There is no post in page ${page}.`);
+      do {
+        let nextPageData = null;
+        if (page !== pageEnd && postDatas.length >= postsPerPage) {
+          try {
+            nextPageData = await getPostData(page + 1);
+            if (nextPageData.length) {
+              total += nextPageData.length;
+            } else {
+              nextPageData = null;
+            }
+          } catch (error) {
+            fetchError = error;
+            nextPageData = null;
+          }
+        }
+        const avaliable = [];
+        const invalid = [];
+        const unavaliable = [];
+        for (const data of postDatas) {
+          const isPostValid = await isValid(data);
+          const idOrMeta = buildMeta(data);
+          if (isPostValid === 0) {
+            avaliable.push(idOrMeta);
+          } else if (isPostValid === 1) {
+            invalid.push(idOrMeta);
+          } else {
+            unavaliable.push(idOrMeta);
+          }
+        }
+        yield {
+          total,
+          page,
+          avaliable,
+          invalid,
+          unavaliable
+        };
+        page++;
+        postDatas = nextPageData;
+      } while (postDatas);
+      if (fetchError) throw fetchError;
     }
   }
-  customElements.define(ArtworkButton.tagNameLowerCase, ArtworkButton);
-  class Rule34 extends SiteInject {
+  class GelbooruParserV020 extends ParserBase {
+    parseArtworkSrc(doc) {
+      return doc.querySelector('meta[property="og:image"]').getAttribute("content");
+    }
+    parseArtworkNameBySrc(src) {
+      const imageNameMatch = new RegExp("(?<=\\/)\\w+\\.\\w+(?=\\?|$)").exec(src);
+      if (!imageNameMatch) throw new Error("Can not parse image name from src.");
+      const imageName = imageNameMatch[0];
+      return imageName.split(".");
+    }
+    parseTags(doc) {
+      const artist = [];
+      const character = [];
+      const tags = [];
+      const tagEls = doc.querySelectorAll('li[class*="tag-type"]');
+      tagEls.forEach((tagEl) => {
+        var _a;
+        const tagTypeMatch = new RegExp("(?<=tag-type-)\\w+").exec(tagEl.className);
+        if (!tagTypeMatch) throw new Error("Unknown tag: " + tagEl.className);
+        const tagType = tagTypeMatch[0];
+        const tag = (((_a = tagEl.querySelector('a[href*="page=post"]')) == null ? undefined : _a.textContent) || "").replaceAll(" ", "_");
+        if (tagType === "artist") {
+          artist.push(tag);
+        } else if (tagType === "character") {
+          character.push(tag);
+        }
+        tags.push(tagType + ":" + tag);
+      });
+      return {
+        artist,
+        character,
+        tags
+      };
+    }
+    parseStatistics(doc) {
+      var _a, _b, _c, _d, _e;
+      const uploaderEl = doc.querySelector('a[href*="page=account&s=profile"]');
+      const postDateStr = (_b = (_a = uploaderEl == null ? undefined : uploaderEl.parentElement) == null ? undefined : _a.firstChild) == null ? undefined : _b.nodeValue;
+      const postDate = postDateStr ? postDateStr.split(": ")[1] : "";
+      let source2 = "";
+      const sourceEl = (_d = (_c = uploaderEl == null ? undefined : uploaderEl.parentElement) == null ? undefined : _c.nextElementSibling) == null ? undefined : _d.nextElementSibling;
+      if (sourceEl && /^source:/i.test(sourceEl.textContent ?? "")) {
+        const sourceLink = sourceEl.querySelector("a");
+        if (sourceLink) {
+          source2 = sourceLink.href;
+        } else {
+          source2 = ((_e = sourceEl.textContent) == null ? undefined : _e.replace(/^source: ?/i, "")) ?? "";
+        }
+      }
+      const rating = /Rating: ?(General|Explicit|Questionable|Safe|Sensitive)/.exec(doc.documentElement.innerHTML)[1].toLowerCase();
+      return {
+        postDate,
+        source: source2,
+        rating
+      };
+    }
+    buildMeta(id, doc) {
+      const src = this.parseArtworkSrc(doc);
+      const [title, extendName] = this.parseArtworkNameBySrc(src);
+      const { artist, character, tags } = this.parseTags(doc);
+      const { postDate, source: source2, rating } = this.parseStatistics(doc);
+      return {
+        id,
+        src,
+        extendName,
+        artist: artist.join(",") || "UnknownArtist",
+        character: character.join(",") || "UnknownCharacter",
+        title,
+        tags,
+        createDate: postDate,
+        source: source2,
+        rating
+      };
+    }
+    parseBlacklistTags() {
+      const [tagsStr] = new RegExp("(?<=tag_blacklist=).*?(?=;|$)").exec(document.cookie) ?? [];
+      if (!tagsStr) return [];
+      const tags = decodeURIComponent(decodeURIComponent(tagsStr));
+      return tags.split(" ");
+    }
+    parseFavoriteByDoc(doc) {
+      const favDataScripts = doc.querySelectorAll("span + script");
+      const favData = Array.from(favDataScripts).map((el) => {
+        const content = el.textContent;
+        const [id] = new RegExp("(?<=posts\\[)[0-9]+?(?=\\])").exec(content);
+        const [dataStr] = content.match(/{.+}/);
+        const { tags, rating, score, user } = JSON.parse(
+          dataStr.replace(".split(/ /g)", "").replaceAll("'", '"')
+        );
+        return {
+          id,
+          tags: decodeURIComponent(tags).split(/\s/g),
+          rating: rating.toLowerCase(),
+          score: +score,
+          user
+        };
+      });
+      return favData;
+    }
+    parsePostsByDoc(doc) {
+      const imageItems = Array.from(doc.querySelectorAll("span[id], .thumbnail-preview > a[id]"));
+      const postData = imageItems.map((el) => {
+        const image = el.querySelector("img");
+        const fullTags = image.title.trim().replaceAll(/ +/g, " ").split(" ");
+        const id = el.id.slice(1);
+        const tags = [];
+        let rating = "";
+        let score = 0;
+        let user = "";
+        for (let i = 0; i < fullTags.length; i++) {
+          const tag = fullTags[i];
+          if (tag.startsWith("rating:")) {
+            rating = tag.slice(7);
+          } else if (tag.startsWith("score:")) {
+            score = +tag.slice(6);
+          } else if (tag.startsWith("user:")) {
+            user = tag.slice(5);
+          } else {
+            tags.push(tag);
+          }
+        }
+        return {
+          id,
+          tags,
+          rating,
+          score: +score,
+          user
+        };
+      });
+      logger.info(`Parse posts in ${doc.URL}:`, postData);
+      return postData;
+    }
+  }
+  class DownloadConfigBuilder {
+    constructor(meta) {
+      this.meta = meta;
+    }
+    normalizeString(str) {
+      return replaceInvalidChar(unescapeHtml(str));
+    }
+    getFolderPattern() {
+      return config.get("folderPattern");
+    }
+    getFilenamePattern() {
+      return config.get("filenamePattern");
+    }
+    getFullpathPattern() {
+      const folder = this.getFolderPattern();
+      const filename = this.getFilenamePattern() + "." + this.meta.extendName;
+      return folder ? folder + "/" + filename : filename;
+    }
+    isBrowserApi() {
+      return env.isBrowserDownloadMode();
+    }
+    isFsaEnable() {
+      return downloader.fileSystemAccessEnabled;
+    }
+    supportSubpath() {
+      return this.isBrowserApi() || this.isFsaEnable();
+    }
+    isImage() {
+      return /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(this.meta.extendName);
+    }
+    buildFilePath() {
+      const path = this.getFullpathPattern();
+      const { id, createDate } = this.meta;
+      let { artist, title, tags } = this.meta;
+      artist = this.normalizeString(artist);
+      title = this.normalizeString(title);
+      tags = tags.map((tag) => this.normalizeString(tag));
+      const replaceDate = (_, p1) => {
+        const format = p1 || "YYYY-MM-DD";
+        return dayjs(createDate).format(format);
+      };
+      return path.replaceAll(/\{date\((.*?)\)\}|\{date\}/g, replaceDate).replaceAll("{artist}", artist).replaceAll("{title}", title).replaceAll("{tags}", tags.join("_")).replaceAll("{id}", id);
+    }
+    generateTaskId() {
+      return this.meta.id + "_" + Math.random().toString(36).slice(2);
+    }
+  }
+  function artworkProgressFactory$3(btn2) {
+    if (!btn2) return;
+    return function onArtworkProgress(progress) {
+      btn2.setProgress(progress);
+    };
+  }
+  class GelbooruDownloadConfig extends DownloadConfigBuilder {
+    constructor(meta) {
+      var _a;
+      super(meta);
+      __privateAdd(this, _headers);
+      this.meta = meta;
+      const cf_clearance = (_a = config.get("auth")) == null ? undefined : _a.cf_clearance;
+      __privateSet(this, _headers, cf_clearance ? {
+        cookie: `cf_clearance=${cf_clearance}`
+      } : undefined);
+    }
+    getDownloadConfig(btn2) {
+      return {
+        headers: __privateGet(this, _headers),
+        taskId: this.generateTaskId(),
+        src: this.meta.src,
+        path: this.buildFilePath(),
+        source: this.meta,
+        timeout: this.isImage() ? 6e4 : undefined,
+        onProgress: artworkProgressFactory$3(btn2)
+      };
+    }
+    buildFilePath() {
+      const path = super.buildFilePath();
+      return path.replaceAll("{character}", this.normalizeString(this.meta.character));
+    }
+  }
+  _headers = new WeakMap();
+  class GelbooruV020 extends SiteInject {
     constructor() {
       super(...arguments);
+      __privateAdd(this, _GelbooruV020_instances);
+      __publicField(this, "searchParams", new URLSearchParams(location.search));
       __publicField(this, "useBatchDownload", this.app.initBatchDownloader({
         metaType: {},
-        avatar: "/images/r34chibi.png",
+        avatar: this.getAvatar.bind(this),
         filterOption: {
           filters: [
             {
@@ -13831,6 +13830,7 @@
                 return !!meta.tags && !meta.tags.includes("video");
               }
             },
+            // Safebooru doesn't really have videos, although it has about 73 GIFs tagged with 'video'
             {
               id: "allow_video",
               type: "include",
@@ -13850,16 +13850,38 @@
             filterInGenerator: true,
             fn: (pageRange, checkValidity, userId) => {
               userId ?? (userId = new RegExp("(?<=id=)[0-9]+").exec(location.search)[0]);
-              return rule34Parser.favoriteGenerator(pageRange, checkValidity, userId);
+              const THUMBS_PER_PAGE = 50;
+              const getFavoriteByPage = async (page) => {
+                const pid = (page - 1) * THUMBS_PER_PAGE;
+                const doc = await this.api.getFavoriteDoc(userId, pid);
+                return this.parser.parseFavoriteByDoc(doc);
+              };
+              return this.parser.paginationGenerator(
+                pageRange,
+                THUMBS_PER_PAGE,
+                getFavoriteByPage,
+                __privateMethod(this, _GelbooruV020_instances, validityCheckFactory_fn).call(this, checkValidity),
+                (post) => post.id
+              );
             }
           },
           pools: {
             name: "Pools",
             match: /(?=.*page=pool)(?=.*s=show)(?=.*id=[0-9]+)/,
             filterInGenerator: true,
-            fn: (pageRange, checkValidity, poolId) => {
+            fn: (_, checkValidity, poolId) => {
               poolId ?? (poolId = new RegExp("(?<=id=)[0-9]+").exec(location.search)[0]);
-              return rule34Parser.poolGenerator(pageRange, checkValidity, poolId);
+              const getPoolData = async () => {
+                const doc = await this.api.getPoolDoc(poolId);
+                return this.parser.parsePostsByDoc(doc);
+              };
+              return this.parser.paginationGenerator(
+                [1, 1],
+                Number.POSITIVE_INFINITY,
+                getPoolData,
+                __privateMethod(this, _GelbooruV020_instances, validityCheckFactory_fn).call(this, checkValidity),
+                (post) => post.id
+              );
             }
           },
           posts: {
@@ -13868,17 +13890,30 @@
             filterInGenerator: true,
             fn: (pageRange, checkValidity, tags) => {
               tags ?? (tags = new URLSearchParams(location.search).get("tags") ?? "all");
-              return rule34Parser.postGenerator(pageRange, checkValidity, tags);
+              const THUMBS_PER_PAGE = 42;
+              const getPostsByPage = async (page) => {
+                const pid = (page - 1) * THUMBS_PER_PAGE;
+                const doc = await this.api.getPostsDoc(pid, tags);
+                return this.parser.parsePostsByDoc(doc);
+              };
+              return this.parser.paginationGenerator(
+                pageRange,
+                THUMBS_PER_PAGE,
+                getPostsByPage,
+                __privateMethod(this, _GelbooruV020_instances, validityCheckFactory_fn).call(this, checkValidity),
+                (post) => post.id
+              );
             }
           }
         },
-        parseMetaByArtworkId(id) {
-          return rule34Parser.parse(id);
+        parseMetaByArtworkId: async (id) => {
+          const doc = await this.api.getPostDoc(id);
+          return this.parser.buildMeta(id, doc);
         },
         async downloadArtworkByMeta(meta, signal) {
           downloader.dirHandleCheck();
           const { id, tags, artist, title, source: source2, rating } = meta;
-          const downloadConfigs = new Rule34DownloadConfig(meta).getDownloadConfig();
+          const downloadConfigs = new GelbooruDownloadConfig(meta).getDownloadConfig();
           await downloader.download(downloadConfigs, { signal });
           historyDb.add({
             pid: Number(id),
@@ -13891,45 +13926,42 @@
         }
       }));
     }
-    inject() {
-      super.inject();
-      const query = location.search;
-      if (!query) return;
-      const searchParams = new URLSearchParams(query);
-      const page = searchParams.get("page");
-      const s = searchParams.get("s");
-      if (page === "post" && s === "view") {
-        if (!document.querySelector("#image, #gelcomVideoPlayer")) return;
-        const id = searchParams.get("id");
-        this.createArtworkBtn(id);
-      } else {
-        this.createThumbnailBtn();
-      }
+    getAvatar() {
+      return "/favicon.ico";
+    }
+    async downloadArtwork(btn2) {
+      downloader.dirHandleCheck();
+      const id = btn2.dataset.id;
+      const doc = await this.api.getPostDoc(id);
+      const mediaMeta = this.parser.buildMeta(id, doc);
+      const { tags, artist, title, source: source2, rating } = mediaMeta;
+      const downloadConfigs = new GelbooruDownloadConfig(mediaMeta).getDownloadConfig(btn2);
+      this.config.get("addBookmark") && __privateMethod(this, _GelbooruV020_instances, addBookmark_fn).call(this, id);
+      await downloader.download(downloadConfigs, { priority: 1 });
+      historyDb.add({
+        pid: Number(id),
+        user: artist,
+        title,
+        tags,
+        source: source2,
+        rating
+      });
+    }
+    setThumbnailStyle(btnContainer) {
+      btnContainer.style.position = "relative";
     }
     createThumbnailBtn() {
-      const btnContainers = document.querySelectorAll(
-        ".thumb > a:first-child:not(:has(.blacklist-img))"
-      );
+      const btnContainers = document.querySelectorAll(this.getThumbnailSelector());
       if (!btnContainers.length) return;
       btnContainers.forEach((el) => {
-        el.setAttribute(
-          "style",
-          "position: relative; align-self: center; width: auto; height: auto;"
-        );
-        const imgEl = el.querySelector("img");
-        const setContainerHeight = () => {
-          const aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
-          aspectRatio > 1 && (el.style.height = "inherit");
-        };
-        setContainerHeight();
-        imgEl.onload = setContainerHeight;
+        this.setThumbnailStyle(el);
         const idMathch = new RegExp("(?<=&id=)\\d+").exec(el.href);
         if (!idMathch) return;
         const id = idMathch[0];
         el.appendChild(
           new ThumbnailButton({
             id,
-            onClick: downloadArtwork$1
+            onClick: this.downloadArtwork.bind(this)
           })
         );
       });
@@ -13940,126 +13972,208 @@
       btnContainer.appendChild(
         new ArtworkButton({
           id,
-          site: "rule34",
-          onClick: downloadArtwork$1
+          site: "gelbooru",
+          onClick: this.downloadArtwork.bind(this)
         })
       );
-    }
-    getCustomConfig() {
-      return {
-        folderPattern: "rule34/{artist}",
-        filenamePattern: "{id}_{artist}_{character}"
-      };
     }
     getFilenameTemplate() {
       return ["{artist}", "{character}", "{id}", "{date}"];
     }
-    getBlacklistTags() {
-      const [tagsStr] = new RegExp("(?<=tag_blacklist=).*?(?=;|$)").exec(document.cookie) ?? [];
-      if (!tagsStr) return [];
-      const tags = decodeURIComponent(decodeURIComponent(tagsStr));
-      return tags.split(" ");
+    isPostsList() {
+      return this.searchParams.get("page") === "post" && this.searchParams.get("s") === "list";
+    }
+    isPostView() {
+      return this.searchParams.get("page") === "post" && this.searchParams.get("s") === "view";
+    }
+    isPool() {
+      return this.searchParams.get("page") === "pool" && this.searchParams.get("s") === "show";
+    }
+    isMyfavorites() {
+      return this.searchParams.get("page") === "favorites" && this.searchParams.get("s") === "view";
+    }
+    isAccountProfile() {
+      return this.searchParams.get("page") === "account" && this.searchParams.get("s") === "profile";
+    }
+    inject() {
+      super.inject();
+      if (this.searchParams.size === 0) return;
+      if (this.isPostView()) {
+        if (!document.querySelector("#image, #gelcomVideoPlayer")) return;
+        const id = this.searchParams.get("id");
+        this.createArtworkBtn(id);
+      } else {
+        this.createThumbnailBtn();
+      }
+    }
+  }
+  _GelbooruV020_instances = new WeakSet();
+  validityCheckFactory_fn = function(checkValidity) {
+    return async (post) => {
+      const { id, tags } = post;
+      return await checkValidity({ id, tags }) ? PostValidState.VALID : PostValidState.INVALID;
+    };
+  };
+  addBookmark_fn = function(id) {
+    _unsafeWindow.addFav(id);
+  };
+  class ApiBase {
+    constructor(option = { rateLimit: 4 }) {
+      __publicField(this, "queue");
+      __publicField(this, "fetch");
+      const { rateLimit } = option;
+      this.queue = new PQueue({ interval: 1e3, intervalCap: rateLimit });
+      this.fetch = (input, init2) => {
+        return this.queue.add(() => fetch(input, init2), { throwOnTimeout: true });
+      };
+    }
+    async getHtml(url) {
+      logger.info("Fetch url:", url);
+      const res = await this.fetch(url);
+      if (!res.ok) throw new RequestError(res.url, res.status);
+      return await res.text();
+    }
+    async getDoc(url) {
+      const html2 = await this.getHtml(url);
+      return new DOMParser().parseFromString(html2, "text/html");
+    }
+    async getJSON(url, init2) {
+      logger.info("Fetch url:", url);
+      const res = await this.fetch(url, init2);
+      if (!res.ok) throw new RequestError(res.url, res.status);
+      return await res.json();
+    }
+  }
+  class GelbooruApiV020 extends ApiBase {
+    async getPosts(params) {
+      let url = "/index.php?page=dapi&s=post&q=index&json=1";
+      Object.entries(params).forEach(([key, val]) => {
+        if (typeof val === "number") {
+          val = String(val);
+        } else if (Array.isArray(val)) {
+          val = val.join("+");
+        }
+        url += `&${key}=${val}`;
+      });
+      const res = await this.fetch(url);
+      if (!res.ok) throw new RequestError(url, res.status);
+      try {
+        return await res.json();
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          return [];
+        } else {
+          throw error;
+        }
+      }
+    }
+    getPostDoc(id) {
+      return this.getDoc("index.php?page=post&s=view&id=" + id);
+    }
+    // Does not include blacklisted images(unless you search the blacklisted tag), making it
+    // more suitable for batch downloads that need to handle page ranges.
+    getPostsDoc(pid = 0, tags = "all") {
+      if (Array.isArray(tags)) tags = tags.join("+");
+      return this.getDoc(`/index.php?page=post&s=list&tags=${tags}&pid=${pid}`);
+    }
+    getFavoriteDoc(userId, pid = 0) {
+      return this.getDoc(`/index.php?page=favorites&s=view&id=${userId}&pid=${pid}`);
+    }
+    getPoolDoc(poolId) {
+      return this.getDoc(`/index.php?page=pool&s=show&id=${poolId}`);
+    }
+  }
+  class Rule34Parser extends GelbooruParserV020 {
+    parseArtworkSrc(doc) {
+      var _a;
+      return ((_a = doc.querySelector("#gelcomVideoPlayer > source")) == null ? undefined : _a.src) || doc.querySelector('meta[property="og:image"]').getAttribute("content");
+    }
+    parseFavoriteByDoc(doc) {
+      const favDataScripts = doc.querySelectorAll(".image-list > span + script");
+      const favData = Array.from(favDataScripts).map((el) => {
+        const content = el.textContent;
+        const [id] = new RegExp("(?<=posts\\[)[0-9]+?(?=\\])").exec(content);
+        const [tags] = new RegExp(`(?<=tags: ["']).*?(?=["']\\.)`).exec(content);
+        const [rating] = new RegExp(`(?<=rating: ["']).*?(?=["'],)`).exec(content);
+        const [score] = new RegExp(`(?<=score: ["'])[0-9]+(?=["'],)`).exec(content);
+        const [user] = new RegExp(`(?<=user: ["']).*?(?=["']\\s+})`).exec(content);
+        return {
+          id,
+          tags: tags.split(/\s/g),
+          rating: rating.toLowerCase(),
+          score: +score,
+          user
+        };
+      });
+      return favData;
+    }
+  }
+  class Rule34 extends GelbooruV020 {
+    constructor() {
+      super(...arguments);
+      __publicField(this, "api", new GelbooruApiV020());
+      __publicField(this, "parser", new Rule34Parser());
     }
     static get hostname() {
       return "rule34.xxx";
     }
-  }
-  class DanbooruApi extends ApiBase {
-    // Danbooru uses some custom status codes in the 4xx and 5xx range:
-    // 200 OK: Request was successful
-    // 204 No Content: Request was successful (returned by create actions)
-    // 400 Bad Request: The given parameters could not be parsed
-    // 401 Unauthorized: Authentication failed
-    // 403 Forbidden: Access denied (see help:users for permissions information)
-    // 404 Not Found: Not found
-    // 410 Gone: Pagination limit (see help:users for pagination limits)
-    // 420 Invalid Record: Record could not be saved
-    // 422 Locked: The resource is locked and cannot be modified
-    // 423 Already Exists: Resource already exists
-    // 424 Invalid Parameters: The given parameters were invalid
-    // 429 User Throttled: User is throttled, try again later (see help:users for API limits)
-    // 500 Internal Server Error: A database timeout, or some unknown error occurred on the server
-    // 502 Bad Gateway: Server cannot currently handle the request, try again later (returned during heavy load)
-    // 503 Service Unavailable: Server cannot currently handle the request, try again later (returned during downbooru)
-    async getJSON(url, init2) {
-      logger.info("Fetch url:", url);
-      const res = await fetch(url, init2);
-      if (res.status >= 500) throw new RequestError(res.url, res.status);
-      const data = await res.json();
-      if ("success" in data && !data.success) {
-        const { error, message } = data;
-        throw new JsonDataError(error + ", " + message);
-      }
-      return data;
+    getAvatar() {
+      return "/images/r34chibi.png";
     }
-    async getPool(id) {
-      return await this.getJSON(`/pools/${id}.json`);
+    getThumbnailSelector() {
+      return ".thumb > a:first-child:not(:has(.blacklist-img))";
     }
-    async getPost(id) {
-      return await this.getJSON(`/posts/${id}.json`);
-    }
-    async getPostList(param) {
-      const { tags = [], limit = 0, page = 0 } = param ?? {};
-      const searchParam = new URLSearchParams();
-      (tags == null ? undefined : tags.length) && searchParam.append("tags", tags.join(" "));
-      limit && searchParam.append("limit", String(limit));
-      page && searchParam.append("page", String(page));
-      return await this.getJSON(`/posts.json?${searchParam.toString()}`);
-    }
-    async getArtistCommentary(id) {
-      return await this.getJSON(`/posts/${id}/artist_commentary.json`);
-    }
-    async getFavoriteGroups(id) {
-      return await this.getJSON(`/favorite_groups/${id}.json`);
-    }
-    async getProfile() {
-      return await this.getJSON(`/profile.json`);
-    }
-    async addFavorite(id, token) {
-      const res = await fetch(`/favorites?post_id=${id}`, {
-        method: "POST",
-        headers: {
-          "X-Csrf-Token": token
+    getCustomConfig() {
+      return {
+        folderPattern: "rule34/{artist}",
+        filenamePattern: "{id}_{artist}_{character}",
+        auth: {
+          cf_clearance: ""
         }
-      });
-      if (!res.ok) throw new RequestError(res.url, res.status);
-      return await res.text();
+      };
     }
-  }
-  const danbooruApi = new DanbooruApi();
-  const danbooruParser = {
-    async parse(id, params) {
-      const { type } = params;
-      if (type === "html") {
-        return this.parseIdByHtml(id);
+    setThumbnailStyle(btnContainer) {
+      btnContainer.setAttribute(
+        "style",
+        "position: relative; align-self: center; width: auto; height: auto;"
+      );
+      const imgEl = btnContainer.querySelector("img");
+      const setContainerHeight = () => {
+        const aspectRatio = imgEl.naturalHeight / imgEl.naturalWidth;
+        aspectRatio > 1 && (btnContainer.style.height = "inherit");
+      };
+      setContainerHeight();
+      imgEl.onload = setContainerHeight;
+    }
+    createArtworkBtn(id) {
+      var _a;
+      let isImage = false;
+      let btnContainer = document.querySelector("#gelcomVideoContainer");
+      if (!btnContainer) {
+        isImage = true;
+        const image = document.querySelector("#image");
+        btnContainer = document.createElement("div");
+        (_a = image.parentElement) == null ? undefined : _a.insertBefore(btnContainer, image);
+        btnContainer.append(image);
       } else {
-        return this.parseIdByApi(id);
+        btnContainer.style.fontSize = "0px";
       }
-    },
-    /**
-     * https://github.com/danbooru/danbooru/blob/master/app/javascript/src/javascripts/blacklists.js
-     */
-    _parseBlacklistItem(tags) {
-      const tagsArr = tags.split(" ");
-      const require2 = [];
-      const exclude = [];
-      const optional = [];
-      let min_score = null;
-      tagsArr.forEach((tag) => {
-        if (tag.charAt(0) === "-") {
-          exclude.push(tag.slice(1));
-        } else if (tag.charAt(0) === "~") {
-          optional.push(tag.slice(1));
-        } else if (tag.match(/^score:<.+/)) {
-          const score = tag.match(/^score:<(.+)/)[1];
-          min_score = Number.parseInt(score);
-        } else {
-          require2.push(tag);
-        }
-      });
-      return { tags, require: require2, exclude, optional, min_score };
-    },
-    _getMatchTags(data) {
+      btnContainer.style.position = "relative";
+      btnContainer.appendChild(
+        new ArtworkButton({
+          id,
+          site: isImage ? undefined : "fluid_video",
+          onClick: this.downloadArtwork.bind(this)
+        })
+      );
+    }
+  }
+  class DanbooruParser extends ParserBase {
+    constructor() {
+      super(...arguments);
+      __privateAdd(this, _DanbooruParser_instances);
+    }
+    getBlacklistValidationTags(data) {
       const { tag_string, rating, uploader_id, is_deleted, is_flagged, is_pending } = data;
       const matchTags = tag_string.match(/\S+/g) ?? [];
       matchTags.push("rating:" + rating);
@@ -14068,38 +14182,26 @@
       is_flagged && matchTags.push("status:flagged");
       is_pending && matchTags.push("status:pending");
       return matchTags;
-    },
-    _getMatchTagsByEl(el) {
-      const splitWordsRe = /\S+/g;
-      const { tags = "", pools, rating, uploaderId, flags } = el.dataset;
-      const matchTags = tags.match(splitWordsRe) ?? [];
-      pools && matchTags.push(...pools.match(splitWordsRe) ?? []);
-      rating && matchTags.push("rating:" + rating);
-      uploaderId && matchTags.push("uploaderid:" + uploaderId);
-      if (flags) {
-        const status = flags.match(splitWordsRe);
-        status && status.forEach((val) => matchTags.push("status:" + val));
-      }
-      return matchTags;
-    },
-    async parseBlacklist(type, blacklistTags) {
-      var _a2;
-      let tagStr;
+    }
+    parseCsrfToken() {
+      var _a;
+      const token = (_a = document.head.querySelector('meta[name="csrf-token"]')) == null ? undefined : _a.content;
+      return token || null;
+    }
+    getBlacklistByHtml() {
+      var _a;
+      return ((_a = document.querySelector('meta[name="blacklisted-tags"]')) == null ? undefined : _a.content) ?? "";
+    }
+    getBlacklistItem(blacklistTags, source2 = "api") {
       let separator;
-      if (type === "html") {
-        tagStr = ((_a2 = document.querySelector('meta[name="blacklisted-tags"]')) == null ? undefined : _a2.content) ?? "";
+      if (source2 === "html") {
         separator = /,/;
-      } else if (type === "api") {
-        tagStr = (await danbooruApi.getProfile()).blacklisted_tags ?? "";
-        separator = /\n+/;
       } else {
-        tagStr = typeof blacklistTags === "string" ? blacklistTags : "";
         separator = /\n+/;
       }
-      if (!tagStr) return [];
-      const tags = tagStr.replace(/(rating:\w)\w+/gi, "$1").toLowerCase().split(separator).filter((tag) => tag.trim() !== "");
-      return tags.map(this._parseBlacklistItem);
-    },
+      const tags = blacklistTags.replace(/(rating:\w)\w+/gi, "$1").toLowerCase().split(separator).filter((tag) => tag.trim() !== "");
+      return tags.map(__privateMethod(this, _DanbooruParser_instances, parseBlacklistItem_fn));
+    }
     isBlacklisted(matchTags, blacklist) {
       const scoreRe = /score:(-?[0-9]+)/;
       const scoreMatch = (matchTags.find((tag) => scoreRe.test(tag)) ?? "").match(scoreRe);
@@ -14110,11 +14212,10 @@
         const scoreTest = min_score === null || score === null || score < min_score;
         return require2.every(hasTag) && scoreTest && (!optional.length || intersect(matchTags, optional).length) && !exclude.some(hasTag);
       });
-    },
-    async parseIdByHtml(id) {
-      var _a2, _b;
-      const doc = await danbooruApi.getDoc("/posts/" + id);
-      const src = (_a2 = doc.querySelector("a[download]")) == null ? undefined : _a2.href;
+    }
+    buildMetaByDoc(doc) {
+      var _a, _b;
+      const src = (_a = doc.querySelector("a[download]")) == null ? undefined : _a.href;
       if (!src) throw new Error("Can not get media src");
       const ogImageMeta = doc.querySelector('meta[property="og:image"]');
       const mediaSrc = ogImageMeta.getAttribute("content");
@@ -14153,7 +14254,12 @@
       const commentEl = doc.querySelector("#original-artist-commentary");
       commentEl && (comment2 = getElementText(commentEl));
       const imageContainer = doc.querySelector("section.image-container");
-      const { source: source2 = "", rating = "" } = imageContainer.dataset;
+      const {
+        source: source2 = "",
+        rating = "",
+        id
+      } = imageContainer.dataset;
+      if (!id) throw new Error("Can not parse post id.");
       return {
         id,
         src,
@@ -14165,19 +14271,12 @@
         tags,
         createDate: postDate,
         source: source2,
-        rating,
-        matchTags: this._getMatchTagsByEl(imageContainer)
+        rating
       };
-    },
-    async parseIdByApi(id) {
-      const [postDataResult, commentDataResult] = await Promise.allSettled([
-        danbooruApi.getPost(id),
-        danbooruApi.getArtistCommentary(id)
-      ]);
-      if (postDataResult.status === "rejected") throw postDataResult.reason;
-      if (commentDataResult.status === "rejected" && !(commentDataResult.reason instanceof JsonDataError))
-        throw commentDataResult.reason;
+    }
+    buildMetaByApi(post, artistCommentary) {
       const {
+        id,
         created_at,
         file_ext,
         file_url,
@@ -14189,8 +14288,8 @@
         tag_string_meta,
         source: source2,
         rating
-      } = postDataResult.value;
-      const { original_title = "", original_description = "" } = "value" in commentDataResult ? commentDataResult.value : {};
+      } = post;
+      const { original_title = "", original_description = "" } = artistCommentary ?? {};
       const addTypeToTag = (type, tag) => tag.split(" ").map((tag2) => type + ":" + tag2);
       const tags = [
         ...addTypeToTag("artist", tag_string_artist),
@@ -14201,7 +14300,7 @@
       ];
       const comment2 = original_title && original_description ? original_title + "\n" + original_description : original_title || original_description;
       return {
-        id,
+        id: String(id),
         src: file_url ?? "",
         extendName: file_ext,
         artist: tag_string_artist.replaceAll(" ", ",") || "UnknownArtist",
@@ -14211,104 +14310,35 @@
         tags,
         createDate: created_at,
         rating: rating ?? "",
-        source: source2,
-        matchTags: this._getMatchTags(postDataResult.value)
+        source: source2
       };
-    },
-    async *poolAndGroupGenerator(pageRange, poolOrGroupId, type, postsPerPage) {
-      const data = type === "pool" ? await danbooruApi.getPool(poolOrGroupId) : await danbooruApi.getFavoriteGroups(poolOrGroupId);
-      postsPerPage ?? (postsPerPage = (await danbooruApi.getProfile()).per_page);
-      const { post_ids } = data;
-      const [pageStart = null, pageEnd = null] = pageRange ?? [];
-      const idsPerPage = [];
-      const postCount = post_ids.length;
-      for (let i = 0; i < postCount; i += postsPerPage) {
-        const ids = post_ids.slice(i, i + postsPerPage).map((id) => String(id));
-        idsPerPage.push(ids);
-      }
-      const poolPage = idsPerPage.length;
-      const start = pageStart ?? 1;
-      const end = pageEnd ? pageEnd > poolPage ? poolPage : pageEnd : poolPage;
-      const total = end === poolPage ? (end - start) * postsPerPage + idsPerPage[poolPage - 1].length : (end - start + 1) * postsPerPage;
-      if (start > poolPage) throw new RangeError(`Page ${start} exceeds the limit.`);
-      for (let page = start - 1; page < end; page++) {
-        yield {
-          total,
-          page,
-          avaliable: idsPerPage[page],
-          invalid: [],
-          unavaliable: []
-        };
-      }
-    },
-    async *postListGenerator(pageRange, checkValidity, tags, limit, showDeletedPosts) {
-      if (!showDeletedPosts) {
-        if (!!tags && !!tags.includes("status:deleted")) {
-          showDeletedPosts = true;
-        }
-        showDeletedPosts ?? (showDeletedPosts = (await danbooruApi.getProfile()).show_deleted_posts);
-      }
-      const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
-      let page = pageStart;
-      let postListData = await danbooruApi.getPostList({
-        page,
-        tags,
-        limit
-      });
-      let total = postListData.length;
-      let fetchError = null;
-      if (total === 0) throw new Error(`There is no post in page ${page}.`);
-      do {
-        let nextPageData = null;
-        if (page !== pageEnd) {
-          try {
-            nextPageData = await danbooruApi.getPostList({ page: page + 1, tags, limit });
-            if (nextPageData.length) {
-              total += nextPageData.length;
-            } else {
-              nextPageData = null;
-            }
-          } catch (error) {
-            fetchError = error;
-            nextPageData = null;
-          }
-        }
-        const avaliable = [];
-        const invalid = [];
-        const unavaliable = [];
-        for (let i = 0; i < postListData.length; i++) {
-          const { id, file_ext, tag_string, is_deleted, file_url } = postListData[i];
-          const idStr = String(id);
-          if (is_deleted && !showDeletedPosts) {
-            invalid.push(idStr);
-            continue;
-          }
-          if (!file_url) {
-            unavaliable.push(idStr);
-          }
-          const validityCheckMeta = {
-            id: idStr,
-            extendName: file_ext,
-            tags: tag_string.split(" "),
-            matchTags: this._getMatchTags(postListData[i])
-          };
-          const isValid = await checkValidity(validityCheckMeta);
-          isValid ? avaliable.push(idStr) : invalid.push(idStr);
-        }
-        yield {
-          total,
-          page,
-          avaliable,
-          invalid,
-          unavaliable
-        };
-        page++;
-        postListData = nextPageData;
-      } while (postListData);
-      if (fetchError) throw fetchError;
     }
+  }
+  _DanbooruParser_instances = new WeakSet();
+  /**
+   * https://github.com/danbooru/danbooru/blob/master/app/javascript/src/javascripts/blacklists.js
+   */
+  parseBlacklistItem_fn = function(tags) {
+    const tagsArr = tags.split(" ");
+    const require2 = [];
+    const exclude = [];
+    const optional = [];
+    let min_score = null;
+    tagsArr.forEach((tag) => {
+      if (tag.charAt(0) === "-") {
+        exclude.push(tag.slice(1));
+      } else if (tag.charAt(0) === "~") {
+        optional.push(tag.slice(1));
+      } else if (tag.match(/^score:<.+/)) {
+        const score = tag.match(/^score:<(.+)/)[1];
+        min_score = Number.parseInt(score);
+      } else {
+        require2.push(tag);
+      }
+    });
+    return { tags, require: require2, exclude, optional, min_score };
   };
-  function artworkProgressFactory$1(btn2) {
+  function artworkProgressFactory$2(btn2) {
     if (!btn2) return;
     return function onArtworkProgress(progress) {
       btn2.setProgress(progress);
@@ -14328,7 +14358,7 @@
         path: this.buildFilePath(),
         source: this.meta,
         timeout: this.isImage() ? 6e4 : undefined,
-        onProgress: artworkProgressFactory$1(btn2)
+        onProgress: artworkProgressFactory$2(btn2)
       };
     }
     buildFilePath() {
@@ -14360,30 +14390,83 @@
     }
   }
   customElements.define(DanbooruPoolButton.tagNameLowerCase, DanbooruPoolButton);
-  async function addBookmark$1(id) {
-    var _a2;
-    try {
-      const token = (_a2 = document.head.querySelector('meta[name="csrf-token"]')) == null ? void 0 : _a2.content;
-      if (!token) throw new Error("Can not get csrf-token");
-      const script = await danbooruApi.addFavorite(id, token);
-      const galleryMatch = new RegExp("(?<=^\\/posts\\/)\\d+").exec(location.pathname);
-      if (galleryMatch && id !== galleryMatch[0]) {
-        _unsafeWindow.Danbooru.Utility.notice("You have favorited " + id);
-      } else {
-        evalScript(script);
+  class DanbooruApi extends ApiBase {
+    // Danbooru uses some custom status codes in the 4xx and 5xx range:
+    // 200 OK: Request was successful
+    // 204 No Content: Request was successful (returned by create actions)
+    // 400 Bad Request: The given parameters could not be parsed
+    // 401 Unauthorized: Authentication failed
+    // 403 Forbidden: Access denied (see help:users for permissions information)
+    // 404 Not Found: Not found
+    // 410 Gone: Pagination limit (see help:users for pagination limits)
+    // 420 Invalid Record: Record could not be saved
+    // 422 Locked: The resource is locked and cannot be modified
+    // 423 Already Exists: Resource already exists
+    // 424 Invalid Parameters: The given parameters were invalid
+    // 429 User Throttled: User is throttled, try again later (see help:users for API limits)
+    // 500 Internal Server Error: A database timeout, or some unknown error occurred on the server
+    // 502 Bad Gateway: Server cannot currently handle the request, try again later (returned during heavy load)
+    // 503 Service Unavailable: Server cannot currently handle the request, try again later (returned during downbooru)
+    async getJSON(url, init2) {
+      logger.info("Fetch url:", url);
+      const res = await this.fetch(url, init2);
+      if (res.status >= 500) throw new RequestError(res.url, res.status);
+      const data = await res.json();
+      if ("success" in data && !data.success) {
+        const { error, message } = data;
+        throw new JsonDataError(error + ", " + message);
       }
-    } catch (error) {
-      logger.error(error);
+      return data;
+    }
+    getPool(id) {
+      return this.getJSON(`/pools/${id}.json`);
+    }
+    getPost(id) {
+      return this.getJSON(`/posts/${id}.json`);
+    }
+    getPostDoc(id) {
+      return this.getDoc("/posts/" + id);
+    }
+    getPostList(param) {
+      const { tags = [], limit = 0, page = 0 } = param ?? {};
+      const searchParam = new URLSearchParams();
+      (tags == null ? undefined : tags.length) && searchParam.append("tags", tags.join(" "));
+      limit && searchParam.append("limit", String(limit));
+      page && searchParam.append("page", String(page));
+      return this.getJSON(`/posts.json?${searchParam.toString()}`);
+    }
+    /**
+     * In aftbooru, account needs to be over a week old to get commentary.
+     */
+    getArtistCommentary(id) {
+      return this.getJSON(`/posts/${id}/artist_commentary.json`);
+    }
+    getFavoriteGroups(id) {
+      return this.getJSON(`/favorite_groups/${id}.json`);
+    }
+    getProfile() {
+      return this.getJSON(`/profile.json`);
+    }
+    async addFavorite(id, token) {
+      const res = await this.fetch(`/favorites?post_id=${id}`, {
+        method: "POST",
+        headers: {
+          "X-Csrf-Token": token
+        }
+      });
+      if (!res.ok) throw new RequestError(res.url, res.status);
+      return await res.text();
     }
   }
-  class Danbooru extends SiteInject {
+  class AbstractDanbooru extends SiteInject {
     constructor() {
       super(...arguments);
+      __privateAdd(this, _AbstractDanbooru_instances);
       __publicField(this, "profile", null);
       __publicField(this, "blacklist", null);
       __publicField(this, "useBatchDownload", this.app.initBatchDownloader({
         metaType: {},
-        avatar: "/packs/static/danbooru-logo-128x128-ea111b6658173e847734.png",
+        avatar: () => this.getAvatar(),
         filterOption: {
           filters: [
             {
@@ -14401,10 +14484,7 @@
               name: t("downloader.category.filter.exclude_blacklist"),
               checked: true,
               fn: async (meta) => {
-                return !!meta.matchTags && danbooruParser.isBlacklisted(
-                  meta.matchTags,
-                  this.blacklist ?? (this.blacklist = await danbooruParser.parseBlacklist("api"))
-                );
+                return !!meta.blacklistValidationTags && this.parser.isBlacklisted(meta.blacklistValidationTags, this.blacklist);
               }
             },
             {
@@ -14426,44 +14506,56 @@
               }
             }
           ],
-          enableTagFilter: (userTags, metaTags) => {
-            const pureTags = metaTags.map((typedTag) => {
-              var _a2;
-              return ((_a2 = new RegExp("(?<=[a-z]+:).+").exec(typedTag)) == null ? undefined : _a2[0]) ?? "";
-            });
-            return userTags.some((tag) => pureTags.includes(tag));
-          }
+          enableTagFilter: true
         },
         pageOption: {
           pool: {
             name: "Pool",
             match: new RegExp("(?<=\\/pools\\/)[0-9]+"),
-            filterInGenerator: false,
-            fn: (pageRange) => {
-              var _a2, _b;
-              const poolId = (_a2 = new RegExp("(?<=\\/pools\\/)[0-9]+").exec(location.pathname)) == null ? undefined : _a2[0];
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity) => {
+              var _a;
+              const poolId = (_a = new RegExp("(?<=\\/pools\\/)[0-9]+").exec(location.pathname)) == null ? undefined : _a[0];
               if (!poolId) throw new Error("Invalid pool id");
-              return danbooruParser.poolAndGroupGenerator(
+              const perPage = this.profile.per_page;
+              const getPostDataByPage = async (page) => {
+                return this.api.getPostList({
+                  tags: [`ordpool:${poolId}`],
+                  limit: perPage,
+                  page
+                });
+              };
+              return this.parser.paginationGenerator(
                 pageRange,
-                poolId,
-                "pool",
-                (_b = this.profile) == null ? undefined : _b.per_page
+                perPage,
+                getPostDataByPage,
+                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity),
+                (post) => String(post.id)
               );
             }
           },
           favorite_groups: {
             name: "FavoriteGroups",
             match: new RegExp("(?<=\\/favorite_groups\\/)[0-9]+"),
-            filterInGenerator: false,
-            fn: (pageRange) => {
-              var _a2, _b;
-              const groupId = (_a2 = new RegExp("(?<=\\/favorite_groups\\/)[0-9]+").exec(location.pathname)) == null ? undefined : _a2[0];
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity) => {
+              var _a;
+              const groupId = (_a = new RegExp("(?<=\\/favorite_groups\\/)[0-9]+").exec(location.pathname)) == null ? undefined : _a[0];
               if (!groupId) throw new Error("Invalid pool id");
-              return danbooruParser.poolAndGroupGenerator(
+              const perPage = this.profile.per_page;
+              const getPostDataByPage = async (page) => {
+                return this.api.getPostList({
+                  tags: [`ordfavgroup:${groupId}`],
+                  limit: perPage,
+                  page
+                });
+              };
+              return this.parser.paginationGenerator(
                 pageRange,
-                groupId,
-                "favoriteGroup",
-                (_b = this.profile) == null ? undefined : _b.per_page
+                perPage,
+                getPostDataByPage,
+                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity),
+                (post) => String(post.id)
               );
             }
           },
@@ -14472,32 +14564,49 @@
             match: () => location.pathname === "/" || location.pathname === "/posts",
             filterInGenerator: true,
             fn: (pageRange, checkValidity) => {
-              var _a2, _b;
-              const searchParam = new URLSearchParams(new URL(location.href).search);
-              const tags = (_a2 = searchParam.get("tags")) == null ? undefined : _a2.split(" ");
+              var _a;
+              const perPage = this.profile.per_page;
+              const searchParam = new URLSearchParams(location.search);
+              const tags = ((_a = searchParam.get("tags")) == null ? undefined : _a.split(" ")) ?? [];
               const limit = searchParam.get("limit");
-              const limitParam = limit ? Number(limit) : undefined;
-              return danbooruParser.postListGenerator(
+              const limitParam = limit ? Number(limit) : perPage;
+              const getPostDataByPage = async (page) => {
+                return this.api.getPostList({
+                  tags,
+                  limit: limitParam,
+                  page
+                });
+              };
+              const showDeletedPosts = (tags == null ? undefined : tags.includes("status:deleted")) || this.profile.show_deleted_posts;
+              return this.parser.paginationGenerator(
                 pageRange,
-                checkValidity,
-                tags,
-                limitParam,
-                (_b = this.profile) == null ? undefined : _b.show_deleted_posts
+                perPage,
+                getPostDataByPage,
+                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity, showDeletedPosts),
+                (post) => String(post.id)
               );
             }
           },
           pool_gallery_button: {
             name: "pool_gallery_button",
             match: () => false,
-            filterInGenerator: false,
-            fn: (pageRange, poolId) => {
-              var _a2;
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity, poolId) => {
               if (!poolId) throw new Error("Invalid pool id");
-              return danbooruParser.poolAndGroupGenerator(
+              const perPage = this.profile.per_page;
+              const getPostDataByPage = async (page) => {
+                return this.api.getPostList({
+                  tags: [`ordpool:${poolId}`],
+                  limit: perPage,
+                  page
+                });
+              };
+              return this.parser.paginationGenerator(
                 pageRange,
-                poolId,
-                "pool",
-                (_a2 = this.profile) == null ? undefined : _a2.per_page
+                perPage,
+                getPostDataByPage,
+                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity),
+                (post) => String(post.id)
               );
             }
           },
@@ -14506,8 +14615,8 @@
             match: /\/pools\/gallery/
           }
         },
-        parseMetaByArtworkId(id) {
-          return danbooruParser.parseIdByApi(id);
+        parseMetaByArtworkId: async (id) => {
+          return this.getMetaByPostId(id);
         },
         async downloadArtworkByMeta(meta, signal) {
           downloader.dirHandleCheck();
@@ -14525,11 +14634,9 @@
           });
         },
         beforeDownload: async () => {
-          this.profile = await danbooruApi.getProfile();
-          this.blacklist = await danbooruParser.parseBlacklist(
-            "profile",
-            this.profile.blacklisted_tags ?? ""
-          );
+          this.profile = await this.api.getProfile();
+          const blacklistTags = this.profile.blacklisted_tags;
+          this.blacklist = blacklistTags ? this.parser.getBlacklistItem(blacklistTags) : null;
         },
         afterDownload: () => {
           this.profile = null;
@@ -14537,71 +14644,28 @@
         }
       }));
     }
-    static get hostname() {
-      return "danbooru.donmai.us";
+    getFilenameTemplate() {
+      return ["{artist}", "{character}", "{id}", "{date}"];
     }
-    inject() {
-      super.inject();
-      this.downloadArtwork = this.downloadArtwork.bind(this);
-      const path = location.pathname;
-      if (/^\/posts\/\d+/.test(path)) {
-        const imageContainer = document.querySelector(
-          "section.image-container:not(.blacklisted-active)"
-        );
-        if (!imageContainer) return;
-        const id = imageContainer.getAttribute("data-id");
-        this.createArtworkBtn(id);
-        this.createThumbnailBtn();
-      } else if (/^\/pools\/gallery/.test(path)) {
-        this.createPoolThumbnailBtn();
+    async getPostAndComment(id) {
+      const [postResult, commentResult] = await Promise.allSettled([
+        this.api.getPost(id),
+        this.api.getArtistCommentary(id)
+      ]);
+      if (postResult.status === "rejected") throw postResult.reason;
+      let comment2 = undefined;
+      if (commentResult.status === "rejected") {
+        if (!(commentResult.reason instanceof JsonDataError)) {
+          throw commentResult.reason;
+        }
       } else {
-        this.createThumbnailBtn();
+        comment2 = commentResult.value;
       }
+      return { post: postResult.value, comment: comment2 };
     }
-    createThumbnailBtn() {
-      const btnContainers = document.querySelectorAll(
-        "article a.post-preview-link"
-      );
-      if (!btnContainers.length) return;
-      btnContainers.forEach((el) => {
-        var _a2;
-        const id = (_a2 = new RegExp("(?<=\\/posts\\/)\\d+").exec(el.href)) == null ? undefined : _a2[0];
-        if (!id) return;
-        const btn2 = new ThumbnailButton({
-          id,
-          onClick: this.downloadArtwork
-        });
-        el.appendChild(btn2);
-      });
-    }
-    createArtworkBtn(id) {
-      const btnContainer = document.querySelector(
-        "section.image-container:has(picture), section.image-container:has(video)"
-      );
-      btnContainer == null ? undefined : btnContainer.appendChild(
-        new ArtworkButton({
-          id,
-          onClick: this.downloadArtwork
-        })
-      );
-    }
-    createPoolThumbnailBtn() {
-      const btnContainers = document.querySelectorAll(
-        "article a.post-preview-link"
-      );
-      if (!btnContainers.length) return;
-      const { downloading, batchDownload } = this.useBatchDownload();
-      const onClick = (btn2) => {
-        const poolId = btn2.dataset.id;
-        return batchDownload("pool_gallery_button", poolId);
-      };
-      btnContainers.forEach((el) => {
-        var _a2;
-        const poolId = (_a2 = new RegExp("(?<=\\/pools\\/)\\d+").exec(el.href)) == null ? undefined : _a2[0];
-        if (!poolId) return;
-        const btn2 = new DanbooruPoolButton({ id: poolId, downloading, onClick });
-        el.appendChild(btn2);
-      });
+    async getMetaByPostId(id) {
+      const { post, comment: commentary } = await this.getPostAndComment(id);
+      return this.parser.buildMetaByApi(post, commentary);
     }
     observeColorScheme() {
       const query = window.matchMedia("(prefers-color-scheme: dark)");
@@ -14618,21 +14682,27 @@
         });
       }
     }
-    getCustomConfig() {
-      return {
-        folderPattern: "danbooru/{artist}",
-        filenamePattern: "{id}_{artist}_{character}"
-      };
-    }
-    getFilenameTemplate() {
-      return ["{artist}", "{character}", "{id}", "{date}"];
+    async addBookmark(id) {
+      try {
+        const token = this.parser.parseCsrfToken();
+        if (!token) throw new Error("Can not get csrf-token");
+        const script = await this.api.addFavorite(id, token);
+        const galleryMatch = new RegExp("(?<=^\\/posts\\/)\\d+").exec(location.pathname);
+        if (galleryMatch && id !== galleryMatch[0]) {
+          _unsafeWindow.Danbooru.Utility.notice("You have favorited " + id);
+        } else {
+          evalScript(script);
+        }
+      } catch (error) {
+        logger.error(error);
+      }
     }
     async downloadArtwork(btn2) {
       downloader.dirHandleCheck();
       const id = btn2.dataset.id;
-      const mediaMeta = await danbooruParser.parse(id, { type: "api" });
+      const mediaMeta = await this.getMetaByPostId(id);
       const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn2);
-      this.config.get("addBookmark") && addBookmark$1(id);
+      this.config.get("addBookmark") && this.addBookmark(id);
       await downloader.download(downloadConfigs, { priority: 1 });
       const { tags, artist, title, comment: comment2, source: source2, rating } = mediaMeta;
       historyDb.add({
@@ -14644,6 +14714,101 @@
         source: source2,
         rating
       });
+    }
+    createThumbnailBtn() {
+      const btnContainers = document.querySelectorAll(
+        "article a.post-preview-link"
+      );
+      if (!btnContainers.length) return;
+      btnContainers.forEach((el) => {
+        var _a;
+        const id = (_a = new RegExp("(?<=\\/posts\\/)\\d+").exec(el.href)) == null ? undefined : _a[0];
+        if (!id) return;
+        const btn2 = new ThumbnailButton({
+          id,
+          onClick: this.downloadArtwork
+        });
+        el.appendChild(btn2);
+      });
+    }
+    createArtworkBtn() {
+      const btnContainer = document.querySelector(
+        "section.image-container:has(:is(picture, video))"
+      );
+      if (!btnContainer) return;
+      const id = btnContainer.getAttribute("data-id");
+      btnContainer.appendChild(
+        new ArtworkButton({
+          id,
+          site: btnContainer.querySelector("video") ? "native_video" : undefined,
+          onClick: this.downloadArtwork
+        })
+      );
+    }
+    createPoolThumbnailBtn() {
+      const btnContainers = document.querySelectorAll(
+        "article a.post-preview-link"
+      );
+      if (!btnContainers.length) return;
+      const { downloading, batchDownload } = this.useBatchDownload();
+      const onClick = (btn2) => {
+        const poolId = btn2.dataset.id;
+        return batchDownload("pool_gallery_button", poolId);
+      };
+      btnContainers.forEach((el) => {
+        var _a;
+        const poolId = (_a = new RegExp("(?<=\\/pools\\/)\\d+").exec(el.href)) == null ? undefined : _a[0];
+        if (!poolId) return;
+        const btn2 = new DanbooruPoolButton({ id: poolId, downloading, onClick });
+        el.appendChild(btn2);
+      });
+    }
+    inject() {
+      super.inject();
+      this.downloadArtwork = this.downloadArtwork.bind(this);
+      const path = location.pathname;
+      if (/^\/posts\/\d+/.test(path)) {
+        this.createArtworkBtn();
+        this.createThumbnailBtn();
+      } else if (/^\/pools\/gallery/.test(path)) {
+        this.createPoolThumbnailBtn();
+      } else {
+        this.createThumbnailBtn();
+      }
+    }
+  }
+  _AbstractDanbooru_instances = new WeakSet();
+  validityCheckFactory_fn2 = function(checkValidity, showDeletedPosts = true) {
+    return async (post) => {
+      const { id, is_deleted, file_ext, file_url, tag_string } = post;
+      if (!file_url) return PostValidState.UNAVAILABLE;
+      if (is_deleted && !showDeletedPosts) return PostValidState.INVALID;
+      const blacklistValidationTags = this.parser.getBlacklistValidationTags(post);
+      return await checkValidity({
+        id: String(id),
+        extendName: file_ext,
+        tags: tag_string.split(" "),
+        blacklistValidationTags
+      }) ? PostValidState.VALID : PostValidState.INVALID;
+    };
+  };
+  class Danbooru extends AbstractDanbooru {
+    constructor() {
+      super(...arguments);
+      __publicField(this, "api", new DanbooruApi());
+      __publicField(this, "parser", new DanbooruParser());
+    }
+    static get hostname() {
+      return "danbooru.donmai.us";
+    }
+    getAvatar() {
+      return "/packs/static/danbooru-logo-128x128-ea111b6658173e847734.png";
+    }
+    getCustomConfig() {
+      return {
+        folderPattern: "danbooru/{artist}",
+        filenamePattern: "{id}_{artist}_{character}"
+      };
     }
   }
   var IllustType = /* @__PURE__ */ ((IllustType2) => {
@@ -14664,7 +14829,7 @@
       return data.body;
     }
     async getArtworkHtml(illustId, lang2) {
-      const res = await fetch(`/artworks/${illustId}?lang=${lang2}`);
+      const res = await this.fetch(`/artworks/${illustId}?lang=${lang2}`);
       if (!res.ok) throw new RequestError(res.url, res.status);
       return await res.text();
     }
@@ -14775,9 +14940,9 @@
       const tagsArr = [];
       const tagsTranslatedArr = [];
       tags.tags.forEach((tagData) => {
-        var _a2;
+        var _a;
         tagsArr.push(tagData.tag);
-        tagsTranslatedArr.push(((_a2 = tagData.translation) == null ? undefined : _a2.en) || tagData.tag);
+        tagsTranslatedArr.push(((_a = tagData.translation) == null ? undefined : _a.en) || tagData.tag);
       });
       const unescapeComment = illustComment.replaceAll(/&lt;|&amp;lt;/g, "<").replaceAll(/&gt;|&amp;gt;/g, ">");
       const p = document.createElement("p");
@@ -15055,8 +15220,8 @@
     const zip = new JSZip();
     return {
       add(id, name, data) {
-        var _a2;
-        (_a2 = zip.folder(id)) == null ? undefined : _a2.file(name, data);
+        var _a;
+        (_a = zip.folder(id)) == null ? undefined : _a.file(name, data);
       },
       bundle(id, comment2) {
         const folder = zip.folder(id);
@@ -15067,9 +15232,9 @@
         zip.remove(ids);
       },
       fileCount(id) {
-        var _a2;
+        var _a;
         let count = 0;
-        (_a2 = zip.folder(id)) == null ? undefined : _a2.forEach(() => count++);
+        (_a = zip.folder(id)) == null ? undefined : _a.forEach(() => count++);
         return count;
       },
       async unzip(data) {
@@ -15410,9 +15575,9 @@
       __privateAdd(this, _queue3, new PQueue({ concurrency: 2 }));
     }
     addFrame(addFrameOptions) {
-      var _a2;
+      var _a;
       const { id, frame, delay, order } = addFrameOptions;
-      (_a2 = __privateGet(this, _ugoiraFramesData))[id] ?? (_a2[id] = {
+      (_a = __privateGet(this, _ugoiraFramesData))[id] ?? (_a[id] = {
         ugoiraFrames: [],
         delays: []
       });
@@ -15856,8 +16021,8 @@
     }
   }
   function getSelfId() {
-    var _a2, _b;
-    return ((_b = (_a2 = _unsafeWindow.dataLayer) == null ? undefined : _a2[0]) == null ? undefined : _b.user_id) ?? "";
+    var _a, _b;
+    return ((_b = (_a = _unsafeWindow.dataLayer) == null ? undefined : _a[0]) == null ? undefined : _b.user_id) ?? "";
   }
   function getIllustId(node) {
     const isLinkToArtworksPage = regexp.artworksPage.exec(node.getAttribute("href") || "");
@@ -15914,10 +16079,10 @@
     }
   }
   function findBookmarkBtn(btn2) {
-    var _a2, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e;
     const bookmarkBtnRef = {};
     if (!btn2.dataset.type) {
-      const favBtn = (_b = (_a2 = btn2.parentElement) == null ? undefined : _a2.nextElementSibling) == null ? undefined : _b.querySelector(
+      const favBtn = (_b = (_a = btn2.parentElement) == null ? undefined : _a.nextElementSibling) == null ? undefined : _b.querySelector(
         'button[type="button"]'
       );
       if (favBtn) {
@@ -15947,12 +16112,12 @@
     return location.pathname.includes(`/artworks/${illustId}`);
   }
   async function likeIllust(illustId, token) {
-    var _a2, _b, _c;
+    var _a, _b, _c;
     await pixivApi.likeIllust(illustId, token);
     if (!isArtworkPage(illustId)) return;
-    const likeBtn = (_c = (_b = (_a2 = document.querySelector(
+    const likeBtn = (_c = (_b = (_a = document.querySelector(
       `${ThumbnailButton.tagNameLowerCase}[data-type="pixiv-toolbar"]`
-    )) == null ? undefined : _a2.parentElement) == null ? undefined : _b.previousElementSibling) == null ? undefined : _c.firstElementChild;
+    )) == null ? undefined : _a.parentElement) == null ? undefined : _b.previousElementSibling) == null ? undefined : _c.firstElementChild;
     if (!likeBtn) return;
     likeBtn.disabled = true;
     likeBtn.style.color = "#0096fa";
@@ -16030,8 +16195,8 @@
   function fixPixivPreviewer(nodes) {
     if (!regexp.searchPage.test(location.pathname)) return;
     nodes.forEach((node) => {
-      var _a2;
-      (_a2 = node.querySelector(ThumbnailButton.tagNameLowerCase)) == null ? undefined : _a2.remove();
+      var _a;
+      (_a = node.querySelector(ThumbnailButton.tagNameLowerCase)) == null ? undefined : _a.remove();
     });
   }
   function createToolbarBtn(id) {
@@ -16052,8 +16217,8 @@
     );
     if (works.length < 2) return;
     works.forEach((work, idx) => {
-      var _a2;
-      const container = (_a2 = work.parentElement) == null ? undefined : _a2.parentElement;
+      var _a;
+      const container = (_a = work.parentElement) == null ? undefined : _a.parentElement;
       if (!container || container.querySelector(ArtworkButton.tagNameLowerCase)) return;
       container.appendChild(
         new ArtworkButton({
@@ -16108,14 +16273,14 @@
     observer.observe(img.parentElement, { childList: true, subtree: true });
   }
   function createPreviewModalBtn(id, unlistedId) {
-    var _a2;
+    var _a;
     const illustModalBtn = document.querySelector(
       ".gtm-manga-viewer-preview-modal-open:not(.pdl-listened)"
     );
     const mangaModalBtn = document.querySelector(".gtm-manga-viewer-open-preview:not(.pdl-listened)");
-    const mangaViewerModalBtn = (_a2 = document.querySelectorAll(
+    const mangaViewerModalBtn = (_a = document.querySelectorAll(
       ".gtm-manga-viewer-close-icon:not(.pdl-listened)"
-    )) == null ? undefined : _a2[1];
+    )) == null ? undefined : _a[1];
     if (!illustModalBtn && !mangaModalBtn && !mangaViewerModalBtn) return;
     [illustModalBtn, mangaModalBtn, mangaViewerModalBtn].forEach((node) => {
       if (node) {
@@ -16269,17 +16434,17 @@
       });
     }
     disconnectedCallback() {
-      var _a2, _b;
-      (_a2 = this.unsubscriber) == null ? undefined : _a2.call(this);
+      var _a, _b;
+      (_a = this.unsubscriber) == null ? undefined : _a.call(this);
       (_b = this.btn) == null ? undefined : _b.removeEventListener("click", this.dispatchDownload);
     }
     static get observedAttributes() {
       return ["disabled"];
     }
     attributeChangedCallback(name, oldValue, newValue) {
-      var _a2, _b;
+      var _a, _b;
       if (typeof newValue === "string") {
-        (_a2 = this.btn) == null ? undefined : _a2.setAttribute("disabled", "");
+        (_a = this.btn) == null ? undefined : _a.setAttribute("disabled", "");
       } else {
         (_b = this.btn) == null ? undefined : _b.removeAttribute("disabled");
       }
@@ -16287,11 +16452,11 @@
   }
   customElements.define(TagListButton.tagNameLowerCase, TagListButton);
   function createTagListBtn(downloading, handleDownload) {
-    var _a2;
+    var _a;
     const listContainer = document.querySelector('div[style*="position: relative"]');
     if (!listContainer) return;
     const modalRoot = listContainer == null ? undefined : listContainer.closest('div[role="presentation"], div[class="charcoal-token"]');
-    const closeBtn = (_a2 = modalRoot == null ? undefined : modalRoot.querySelector("svg")) == null ? undefined : _a2.parentElement;
+    const closeBtn = (_a = modalRoot == null ? undefined : modalRoot.querySelector("svg")) == null ? undefined : _a.parentElement;
     const tagElements = listContainer.querySelectorAll(
       'div[style*="position: absolute"] a'
     );
@@ -16387,8 +16552,8 @@
       });
     }
     disconnectedCallback() {
-      var _a2, _b;
-      (_a2 = this.unsubscriber) == null ? undefined : _a2.call(this);
+      var _a, _b;
+      (_a = this.unsubscriber) == null ? undefined : _a.call(this);
       (_b = this.btn) == null ? undefined : _b.removeEventListener("click", this.dispatchDownload);
       this.ob.disconnect();
     }
@@ -16396,9 +16561,9 @@
       return ["disabled"];
     }
     attributeChangedCallback(name, oldValue, newValue) {
-      var _a2, _b;
+      var _a, _b;
       if (typeof newValue === "string") {
-        (_a2 = this.btn) == null ? undefined : _a2.setAttribute("disabled", "");
+        (_a = this.btn) == null ? undefined : _a.setAttribute("disabled", "");
       } else {
         (_b = this.btn) == null ? undefined : _b.removeAttribute("disabled");
       }
@@ -16409,8 +16574,8 @@
     const tagsEles = Array.from(document.querySelectorAll("a[status]"));
     if (!tagsEles.length) return;
     tagsEles.forEach((ele) => {
-      var _a2;
-      if (((_a2 = ele.nextElementSibling) == null ? undefined : _a2.tagName.toLowerCase()) === ArtworkTagButton.tagNameLowerCase) return;
+      var _a;
+      if (((_a = ele.nextElementSibling) == null ? undefined : _a.tagName.toLowerCase()) === ArtworkTagButton.tagNameLowerCase) return;
       const artworkTagBtn = new ArtworkTagButton(ele, downloading, handleDownload);
       ele.parentElement.appendChild(artworkTagBtn);
     });
@@ -16659,7 +16824,7 @@
       }
     }
     pageActions() {
-      var _a2, _b;
+      var _a, _b;
       const pathname = location.pathname;
       let param;
       switch (true) {
@@ -16688,7 +16853,7 @@
         }
         case !!(param = regexp.unlisted.exec(pathname)): {
           const unlistedId = param[0];
-          const canonicalUrl = (_a2 = document.querySelector('link[rel="canonical"]')) == null ? undefined : _a2.getAttribute("href");
+          const canonicalUrl = (_a = document.querySelector('link[rel="canonical"]')) == null ? undefined : _a.getAttribute("href");
           if (!canonicalUrl) return;
           const id = (_b = regexp.artworksPage.exec(canonicalUrl)) == null ? undefined : _b[1];
           if (!id) return;
@@ -16702,8 +16867,9 @@
       }
     }
   }
-  class MoebooruParser {
+  class MoebooruParser extends ParserBase {
     constructor() {
+      super(...arguments);
       __privateAdd(this, _MoebooruParser_instances);
     }
     parseCsrfToken() {
@@ -16785,49 +16951,6 @@
         return require2.every(hasTag) && !exclude.some(hasTag);
       });
     }
-    async *paginationGenerator(pageRange, postsPerPage, getPostData, isValid, buildMeta) {
-      const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
-      let page = pageStart;
-      let postDatas = await getPostData(page);
-      let total = postDatas.length;
-      let fetchError = null;
-      if (total === 0) throw new Error(`There is no post in page ${page}.`);
-      do {
-        let nextPageData = null;
-        if (page !== pageEnd && postDatas.length >= postsPerPage) {
-          try {
-            nextPageData = await getPostData(page + 1);
-            if (nextPageData.length) {
-              total += nextPageData.length;
-            } else {
-              nextPageData = null;
-            }
-          } catch (error) {
-            fetchError = error;
-            nextPageData = null;
-          }
-        }
-        const avaliable = [];
-        const invalid = [];
-        const unavaliable = [];
-        for (let i = 0; i < postDatas.length; i++) {
-          const data = postDatas[i];
-          const isValidData = await isValid(data);
-          const meta = buildMeta(data);
-          isValidData ? avaliable.push(meta) : invalid.push(meta);
-        }
-        yield {
-          total,
-          page,
-          avaliable,
-          invalid,
-          unavaliable
-        };
-        page++;
-        postDatas = nextPageData;
-      } while (postDatas);
-      if (fetchError) throw fetchError;
-    }
   }
   _MoebooruParser_instances = new WeakSet();
   parsePostListData_fn = function(docText) {
@@ -16863,7 +16986,7 @@
       };
     });
   };
-  function artworkProgressFactory(btn2) {
+  function artworkProgressFactory$1(btn2) {
     if (!btn2) return;
     return function onArtworkProgress(progress) {
       btn2.setProgress(progress);
@@ -16871,17 +16994,24 @@
   }
   class MoebooruDownloadConfig extends DownloadConfigBuilder {
     constructor(meta) {
+      var _a;
       super(meta);
+      __privateAdd(this, _headers2);
       this.meta = meta;
+      const cf_clearance = (_a = config.get("auth")) == null ? undefined : _a.cf_clearance;
+      __privateSet(this, _headers2, cf_clearance ? {
+        cookie: `cf_clearance=${cf_clearance}`
+      } : undefined);
     }
     getDownloadConfig(btn2) {
       return {
+        headers: __privateGet(this, _headers2),
         taskId: this.generateTaskId(),
         src: this.meta.src,
         path: this.buildFilePath(),
         source: this.meta,
-        timeout: 6e4,
-        onProgress: artworkProgressFactory(btn2)
+        timeout: this.isImage() ? 6e4 : undefined,
+        onProgress: artworkProgressFactory$1(btn2)
       };
     }
     buildFilePath() {
@@ -16889,6 +17019,7 @@
       return path.replaceAll("{character}", this.normalizeString(this.meta.character));
     }
   }
+  _headers2 = new WeakMap();
   class MoebooruApi extends ApiBase {
     isBadResponse(obj) {
       return "success" in obj && !obj.success;
@@ -16962,7 +17093,7 @@
       return this.getHtml(url);
     }
     async addFavorite(id, token) {
-      const res = await fetch("/post/vote.json", {
+      const res = await this.fetch("/post/vote.json", {
         method: "POST",
         headers: {
           "x-csrf-token": token,
@@ -17221,7 +17352,7 @@
       btnContainer.appendChild(
         new ArtworkButton({
           id,
-          site: btnContainer.querySelector("video") ? undefined : "moebooru_image",
+          site: btnContainer.querySelector("video") ? "vjs_video" : "moebooru_image",
           onClick: __privateMethod(this, _Moebooru_instances, downloadArtwork_fn).bind(this)
         })
       );
@@ -17247,10 +17378,10 @@
       const postId = document.querySelector("span.post-id");
       if (!postId) return;
       const createBtn = () => {
-        var _a2;
-        (_a2 = document.querySelector(
+        var _a;
+        (_a = document.querySelector(
           `${ThumbnailButton.tagNameLowerCase}[data-type="${ThumbnailBtnType.YandeBrowse}"]`
-        )) == null ? undefined : _a2.remove();
+        )) == null ? undefined : _a.remove();
         const id = postId.textContent;
         if (!id) return;
         document.body.appendChild(
@@ -17291,7 +17422,7 @@
       const tags = data.tags.split(" ");
       tags.push("rating:" + data.rating.charAt(0));
       tags.push("status:" + data.status);
-      return await checkValidity({ id: String(data.id), tags });
+      return await checkValidity({ id: String(data.id), tags }) ? PostValidState.VALID : PostValidState.INVALID;
     };
   };
   buildMetaByGeneratorData_fn = function(data) {
@@ -17346,18 +17477,12 @@
       };
     }
   }
-  class ATFbooru extends Danbooru {
+  class ATFbooru extends AbstractDanbooru {
     constructor() {
-      super();
+      super(...arguments);
+      __publicField(this, "api", new DanbooruApi());
+      __publicField(this, "parser", new DanbooruParser());
       __publicField(this, "commentaryAccessible");
-      this.useBatchDownload = this.useBatchDownload().overwrite({
-        avatar: "/favicon.svg",
-        parseMetaByArtworkId: async (id) => {
-          return await danbooruParser.parse(id, {
-            type: await (this.commentaryAccessible ?? (this.commentaryAccessible = this.isCommentaryAccessible())) ? "api" : "html"
-          });
-        }
-      });
     }
     static get hostname() {
       return "booru.allthefallen.moe";
@@ -17368,34 +17493,29 @@
         filenamePattern: "{id}_{artist}_{character}"
       };
     }
+    getAvatar() {
+      return "/favicon.svg";
+    }
     // check if user has permission to access artist commentary.
     async isCommentaryAccessible() {
       try {
-        await danbooruApi.getArtistCommentary("703816");
+        await this.api.getArtistCommentary("703816");
       } catch (error) {
         if (!(error instanceof RequestError)) return false;
+        throw error;
       }
       return true;
     }
-    async downloadArtwork(btn2) {
-      downloader.dirHandleCheck();
-      const id = btn2.dataset.id;
-      const mediaMeta = await danbooruParser.parse(id, {
-        type: await (this.commentaryAccessible ?? (this.commentaryAccessible = this.isCommentaryAccessible())) ? "api" : "html"
-      });
-      const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn2);
-      this.config.get("addBookmark") && addBookmark$1(id);
-      await downloader.download(downloadConfigs, { priority: 1 });
-      const { tags, artist, title, comment: comment2, source: source2, rating } = mediaMeta;
-      historyDb.add({
-        pid: Number(id),
-        user: artist,
-        title,
-        comment: comment2,
-        tags,
-        source: source2,
-        rating
-      });
+    async getMetaByPostId(id) {
+      let mediaMeta;
+      if (this.commentaryAccessible ?? (this.commentaryAccessible = await this.isCommentaryAccessible())) {
+        const { post, comment: commentary } = await this.getPostAndComment(id);
+        mediaMeta = this.parser.buildMetaByApi(post, commentary);
+      } else {
+        const doc = await this.api.getPostDoc(id);
+        mediaMeta = this.parser.buildMetaByDoc(doc);
+      }
+      return mediaMeta;
     }
   }
   class Konachan extends Moebooru {
@@ -17414,7 +17534,10 @@
     getCustomConfig() {
       return {
         folderPattern: "konachan/{artist}",
-        filenamePattern: "{id}_{artist}_{character}"
+        filenamePattern: "{id}_{artist}_{character}",
+        auth: {
+          cf_clearance: ""
+        }
       };
     }
     inject() {
@@ -17453,8 +17576,620 @@
       };
     }
   }
+  class Safebooru extends GelbooruV020 {
+    constructor() {
+      super(...arguments);
+      __publicField(this, "api", new GelbooruApiV020());
+      __publicField(this, "parser", new GelbooruParserV020());
+    }
+    static get hostname() {
+      return "safebooru.org";
+    }
+    getCustomConfig() {
+      return {
+        folderPattern: "safebooru/{artist}",
+        filenamePattern: "{id}_{artist}_{character}",
+        auth: {
+          cf_clearance: ""
+        }
+      };
+    }
+    getThumbnailSelector() {
+      return ".thumb:not(.blacklisted-image) > a:first-child";
+    }
+  }
+  class GelbooruApiV025 extends GelbooruApiV020 {
+    async getPosts() {
+      throw new Error("This is a Gelbooru v0.2.0 method, do not use.");
+    }
+    async getPostsV025(params) {
+      let url = "/index.php?page=dapi&s=post&q=index&json=1";
+      Object.entries(params).forEach(([key, val]) => {
+        if (typeof val === "number") {
+          val = String(val);
+        } else if (Array.isArray(val)) {
+          val = val.join("+");
+        }
+        url += `&${key}=${val}`;
+      });
+      const res = await this.fetch(url);
+      if (!res.ok) throw new RequestError(url, res.status);
+      const postsListData = await res.json();
+      if (postsListData.post) {
+        return postsListData.post;
+      } else {
+        return [];
+      }
+    }
+  }
+  class Gelbooru extends GelbooruV020 {
+    constructor() {
+      super(...arguments);
+      __publicField(this, "api", new GelbooruApiV025());
+      __publicField(this, "parser", new GelbooruParserV020());
+    }
+    static get hostname() {
+      return "gelbooru.com";
+    }
+    getCustomConfig() {
+      return {
+        folderPattern: "gelbooru/{artist}",
+        filenamePattern: "{id}_{artist}_{character}"
+      };
+    }
+    getAvatar() {
+      return "/user_avatars/honkonymous.png";
+    }
+    getThumbnailSelector() {
+      return '.thumb > a:first-child,     .thumbnail-preview > a[id],     .commentThumbnail > a:first-child,     .thumbnail-container > span[id] > a,     a:has(img[style*="max-height: 100px"]),     a:has(div.profileThumbnailPadding)';
+    }
+    setThumbnailStyle(btnContainer) {
+      switch (true) {
+        case this.isMyfavorites(): {
+          btnContainer.setAttribute("style", "position: relative; display: inline-block;");
+          break;
+        }
+        case this.isPool(): {
+          btnContainer.setAttribute(
+            "style",
+            "position: relative; display: inline-block; margin: 10px;"
+          );
+          const image = btnContainer.querySelector("img");
+          image.style.margin = "0px";
+          image.style.padding = "0px";
+          break;
+        }
+        case this.isPostsList(): {
+          btnContainer.style.position = "relative";
+          break;
+        }
+        case this.isPostView(): {
+          btnContainer.setAttribute(
+            "style",
+            "position: relative; display: inline-block; margin: 10px;"
+          );
+          const image = btnContainer.querySelector("img");
+          image.style.margin = "0px";
+          break;
+        }
+        case this.isAccountProfile(): {
+          btnContainer.setAttribute("style", "position: relative; display: inline-block");
+          btnContainer.firstElementChild.style.padding = "0px";
+          break;
+        }
+      }
+    }
+    createArtworkBtn(id) {
+      let btnContainer = document.querySelector(".image-container > picture");
+      if (btnContainer) {
+        btnContainer.setAttribute("style", "position: relative; display: inline-block;");
+      } else {
+        const video = document.querySelector("#gelcomVideoPlayer");
+        if (!video) return;
+        btnContainer = document.createElement("div");
+        btnContainer.setAttribute("style", "position: relative; width: fit-content; font-size: 0px;");
+        video.parentElement.insertBefore(btnContainer, video);
+        btnContainer.appendChild(video);
+      }
+      btnContainer.appendChild(
+        new ArtworkButton({
+          id,
+          site: btnContainer.nodeName === "DIV" ? "native_video" : undefined,
+          onClick: this.downloadArtwork.bind(this)
+        })
+      );
+    }
+    inject() {
+      super.inject();
+      if (this.isPostView()) this.createThumbnailBtn();
+    }
+  }
+  class E621ngApi extends ApiBase {
+    constructor(option) {
+      super(option);
+      __privateAdd(this, _authParams);
+      const [username, apiKey] = option.authorization;
+      const UA = `Pixiv Downloader/${"1.7.0"} (by drunkg00se on e621)`;
+      __privateSet(this, _authParams, new URLSearchParams({ username, apiKey, _client: UA }));
+    }
+    updateAuthIfNeeded(username, apiKey) {
+      username !== __privateGet(this, _authParams).get("username") && __privateGet(this, _authParams).set("username", username);
+      apiKey !== __privateGet(this, _authParams).get("apiKey") && __privateGet(this, _authParams).set("apiKey", apiKey);
+    }
+    async getJSON(url, init2) {
+      const fullUrl = new URL(url, location.origin);
+      url += fullUrl.search === "" ? "?" : "&";
+      url += __privateGet(this, _authParams).toString();
+      logger.info("Fetch url:", url);
+      const res = await this.fetch(url, init2);
+      if (!res.ok) throw new RequestError(res.url, res.status);
+      return await res.json();
+    }
+    getFavorites(params) {
+      const searchParams = new URLSearchParams(
+        Object.entries(params).map(([key, val]) => [key, String(val)])
+      );
+      return this.getJSON(`/favorites.json?${searchParams.toString()}`);
+    }
+    getPool(poolId) {
+      return this.getJSON(`/pools/${poolId}.json`);
+    }
+    getPosts(params) {
+      const { limit, page } = params;
+      if (limit < 0 || limit > 320) throw new RangeError("limit should between 0 and 320.");
+      if (page < 1 || page > 750) throw new RangeError("Page should between 1 and 750.");
+      const searchParams = new URLSearchParams(
+        Object.entries(params).map(
+          ([key, val]) => typeof val === "string" ? [key, val] : [key, String(val)]
+        )
+      );
+      return this.getJSON(`/posts.json?${searchParams.toString()}`);
+    }
+    getPost(id) {
+      return this.getJSON(`/posts/${id}.json`);
+    }
+    getCurrentUserProfile(userId) {
+      return this.getJSON(`/users/${userId}.json`);
+    }
+    async addFavorites(postId, token) {
+      const res = await this.fetch(`/favorites.json?${__privateGet(this, _authParams).toString()}`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+          "x-csrf-token": token
+        },
+        body: `post_id=${postId}`
+      });
+      if (!res.ok) throw new RequestError("/favorites.json", res.status);
+      return res.json();
+    }
+  }
+  _authParams = new WeakMap();
+  class E621ngParser extends ParserBase {
+    buildMeta(postData) {
+      const {
+        id,
+        file,
+        tags: fullTags,
+        description,
+        created_at,
+        rating,
+        sources,
+        is_favorited: isFavorited
+      } = postData;
+      const { ext, url, md5 } = file;
+      if (!url) throw new Error(`Url can not be null: Post ${id}`);
+      const tags = [];
+      for (const [type, tagArr] of Object.entries(fullTags)) {
+        tagArr.forEach((tag) => tags.push(`${type}:${tag}`));
+      }
+      return {
+        id: String(id),
+        src: url,
+        extendName: ext,
+        artist: fullTags.artist.join(",") || "UnknownArtist",
+        character: fullTags.character.join(",") || "UnknownCharacter",
+        title: md5,
+        comment: description,
+        tags,
+        createDate: created_at,
+        source: sources.join("\n"),
+        rating,
+        isFavorited
+      };
+    }
+    parseCsrfToken() {
+      var _a;
+      return (_a = document.head.querySelector('meta[name="csrf-token"]')) == null ? undefined : _a.content;
+    }
+    parseCurrentUserId() {
+      var _a;
+      return (_a = document.head.querySelector('meta[name="current-user-id"]')) == null ? undefined : _a.content;
+    }
+  }
+  function artworkProgressFactory(btn2) {
+    if (!btn2) return;
+    return function onArtworkProgress(progress) {
+      btn2.setProgress(progress);
+    };
+  }
+  class E621ngMetaDownloadConfig extends DownloadConfigBuilder {
+    constructor(meta) {
+      super(meta);
+      this.meta = meta;
+    }
+    getDownloadConfig(btn2) {
+      return {
+        taskId: this.generateTaskId(),
+        src: this.meta.src,
+        path: this.buildFilePath(),
+        source: this.meta,
+        timeout: this.isImage() ? 6e4 : undefined,
+        onProgress: artworkProgressFactory(btn2)
+      };
+    }
+    buildFilePath() {
+      const path = super.buildFilePath();
+      return path.replaceAll("{character}", this.normalizeString(this.meta.character));
+    }
+  }
+  class E621ng extends SiteInject {
+    constructor() {
+      super();
+      __privateAdd(this, _E621ng_instances);
+      __publicField(this, "api");
+      __publicField(this, "parser");
+      __publicField(this, "profile");
+      __publicField(this, "useBatchDownload", this.app.initBatchDownloader({
+        metaType: {},
+        avatar: "/packs/static/main-logo-2653c015c5870ec4ff08.svg",
+        filterOption: {
+          filters: [
+            {
+              id: "exclude_downloaded",
+              type: "exclude",
+              name: t("downloader.category.filter.exclude_downloaded"),
+              checked: false,
+              fn(meta) {
+                return !!meta.id && historyDb.has(meta.id);
+              }
+            },
+            {
+              id: "allow_image",
+              type: "include",
+              name: t("downloader.category.filter.image"),
+              checked: true,
+              fn(meta) {
+                return (
+                  // https://e621.net/help/supported_filetypes
+                  !!meta.extendName && /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(meta.extendName)
+                );
+              }
+            },
+            {
+              id: "allow_video",
+              type: "include",
+              name: t("downloader.category.filter.video"),
+              checked: true,
+              fn(meta) {
+                return !!meta.extendName && /mp4|avi|mov|mkv|flv|wmv|webm|mpeg|mpg|m4v/i.test(meta.extendName);
+              }
+            }
+          ],
+          enableTagFilter: true
+        },
+        pageOption: {
+          pool: {
+            name: "Pool",
+            match: () => __privateMethod(this, _E621ng_instances, isPoolView_fn).call(this),
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity) => {
+              var _a;
+              const poolId = (_a = new RegExp("(?<=\\/pools\\/)[0-9]+").exec(location.pathname)) == null ? undefined : _a[0];
+              if (!poolId) throw new Error("Invalid pool id");
+              const getPostsMetaByPage = async (page) => {
+                return (await this.api.getPosts({
+                  limit: this.profile.per_page,
+                  page,
+                  tags: `pool:${poolId}`
+                })).posts;
+              };
+              return this.parser.paginationGenerator(
+                pageRange,
+                this.profile.per_page,
+                getPostsMetaByPage,
+                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity),
+                (data) => this.parser.buildMeta(data)
+              );
+            }
+          },
+          post_list: {
+            name: "Posts",
+            match: () => __privateMethod(this, _E621ng_instances, isPostsPage_fn).call(this),
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity) => {
+              const searchParam = new URLSearchParams(new URL(location.href).search);
+              const tags = searchParam.get("tags") || "";
+              const limit = searchParam.get("limit") || this.profile.per_page;
+              const getPostsMetaByPage = async (page) => {
+                return (await this.api.getPosts({
+                  limit: +limit,
+                  page,
+                  tags
+                })).posts;
+              };
+              return this.parser.paginationGenerator(
+                pageRange,
+                this.profile.per_page,
+                getPostsMetaByPage,
+                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity),
+                (data) => this.parser.buildMeta(data)
+              );
+            }
+          },
+          favorites: {
+            name: "Favorites",
+            match: () => __privateMethod(this, _E621ng_instances, isFavoritesPage_fn).call(this),
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity) => {
+              const searchParam = new URLSearchParams(new URL(location.href).search);
+              const limit = searchParam.get("limit") || this.profile.per_page;
+              const userId = searchParam.get("user_id") || this.profile.id;
+              if (!userId) throw new Error("Cannot get user id.");
+              const getPostsMetaByPage = async (page) => {
+                return (await this.api.getFavorites({
+                  limit: +limit,
+                  page,
+                  user_id: +userId
+                })).posts;
+              };
+              return this.parser.paginationGenerator(
+                pageRange,
+                this.profile.per_page,
+                getPostsMetaByPage,
+                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity),
+                (data) => this.parser.buildMeta(data)
+              );
+            }
+          },
+          pool_gallery_button: {
+            name: "pool_gallery_button",
+            match: () => false,
+            filterInGenerator: true,
+            fn: (pageRange, checkValidity, poolId) => {
+              if (!poolId) throw new Error("Invalid pool id");
+              const getPostsMetaByPage = async (page) => {
+                return (await this.api.getPosts({
+                  limit: this.profile.per_page,
+                  page,
+                  tags: `pool:${poolId}`
+                })).posts;
+              };
+              return this.parser.paginationGenerator(
+                pageRange,
+                this.profile.per_page,
+                getPostsMetaByPage,
+                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity),
+                (data) => this.parser.buildMeta(data)
+              );
+            }
+          },
+          show_downloader_in_pool_gallery: {
+            name: "pool_gallery",
+            match: /\/pools\/gallery/
+          }
+        },
+        parseMetaByArtworkId: async (id) => {
+          const { post } = await this.api.getPost(+id);
+          return this.parser.buildMeta(post);
+        },
+        async downloadArtworkByMeta(meta, signal) {
+          downloader.dirHandleCheck();
+          const downloadConfigs = new E621ngMetaDownloadConfig(meta).getDownloadConfig();
+          await downloader.download(downloadConfigs, { priority: 1, signal });
+          const { tags, artist, title, comment: comment2, source: source2, rating } = meta;
+          historyDb.add({
+            pid: Number(meta.id),
+            user: artist,
+            title,
+            comment: comment2,
+            tags,
+            source: source2,
+            rating
+          });
+        },
+        beforeDownload: async () => {
+          __privateMethod(this, _E621ng_instances, throwIfNotAuthorized_fn).call(this);
+          const userId = this.parser.parseCurrentUserId();
+          if (!userId) throw new Error("Cannot get user id.");
+          this.profile = await this.api.getCurrentUserProfile(+userId);
+        },
+        afterDownload: () => {
+          this.profile = null;
+        }
+      }));
+      const { username, apiKey } = this.config.get("auth");
+      this.api = new E621ngApi({
+        rateLimit: 2,
+        authorization: [username, apiKey]
+      });
+      this.parser = new E621ngParser();
+      this.profile = null;
+      this.config.subscribe((configData) => {
+        const { username: username2, apiKey: apiKey2 } = configData.auth;
+        this.api.updateAuthIfNeeded(username2, apiKey2);
+      });
+    }
+    static get hostname() {
+      return ["e621.net", "e926.net", "e6ai.net"];
+    }
+    getCustomConfig() {
+      return {
+        folderPattern: "e621/{artist}",
+        filenamePattern: "{id}_{artist}_{character}",
+        auth: {
+          username: "",
+          apiKey: ""
+        }
+      };
+    }
+    getFilenameTemplate() {
+      return ["{artist}", "{character}", "{id}", "{date}"];
+    }
+    async downloadArtwork(btn2) {
+      __privateMethod(this, _E621ng_instances, throwIfNotAuthorized_fn).call(this);
+      downloader.dirHandleCheck();
+      const id = +btn2.dataset.id;
+      const { post } = await this.api.getPost(id);
+      const mediaMeta = this.parser.buildMeta(post);
+      const downloadConfigs = new E621ngMetaDownloadConfig(mediaMeta).getDownloadConfig(btn2);
+      if (this.config.get("addBookmark") && !post.is_favorited) {
+        __privateMethod(this, _E621ng_instances, addFavorites_fn).call(this, id);
+      }
+      await downloader.download(downloadConfigs, { priority: 1 });
+      const { tags, artist, title, comment: comment2, source: source2, rating } = mediaMeta;
+      historyDb.add({
+        pid: id,
+        user: artist,
+        title,
+        comment: comment2,
+        tags,
+        source: source2,
+        rating
+      });
+    }
+    createArtworkBtn() {
+      const btnContainer = document.querySelector("#image-container");
+      if (!btnContainer) return;
+      btnContainer.style.width = "fit-content";
+      btnContainer.style.position = "relative";
+      const id = btnContainer.dataset.id;
+      btnContainer.appendChild(
+        new ArtworkButton({
+          id,
+          site: btnContainer.querySelector("video") ? "native_video" : undefined,
+          onClick: this.downloadArtwork
+        })
+      );
+    }
+    createPoolThumbnailBtn() {
+      const btnContainers = document.querySelectorAll("article.thumbnail > a");
+      if (!btnContainers.length) return;
+      btnContainers.forEach((el) => {
+        var _a;
+        const poolId = (_a = new RegExp("(?<=\\/pools\\/)[0-9]+").exec(el.href)) == null ? undefined : _a[0];
+        if (!poolId) return;
+        const { downloading, batchDownload } = this.useBatchDownload();
+        const onClick = (btn22) => {
+          const poolId2 = btn22.dataset.id;
+          return batchDownload("pool_gallery_button", poolId2);
+        };
+        const btn2 = new DanbooruPoolButton({ id: poolId, downloading, onClick });
+        el.style.position = "relative";
+        el.appendChild(btn2);
+      });
+    }
+    createThumbnailBtn() {
+      const btnContainers = document.querySelectorAll("article.thumbnail > a");
+      if (!btnContainers.length) return;
+      btnContainers.forEach((el) => {
+        var _a;
+        const id = (_a = new RegExp("(?<=\\/posts\\/)[0-9]+").exec(el.href)) == null ? undefined : _a[0];
+        if (!id) return;
+        el.style.position = "relative";
+        const btn2 = new ThumbnailButton({
+          id,
+          onClick: this.downloadArtwork
+        });
+        el.appendChild(btn2);
+      });
+    }
+    inject() {
+      super.inject();
+      this.downloadArtwork = this.downloadArtwork.bind(this);
+      if (__privateMethod(this, _E621ng_instances, isPostView_fn).call(this)) {
+        this.createArtworkBtn();
+      } else if (__privateMethod(this, _E621ng_instances, isPoolGallery_fn).call(this)) {
+        this.createPoolThumbnailBtn();
+      } else {
+        this.createThumbnailBtn();
+      }
+    }
+  }
+  _E621ng_instances = new WeakSet();
+  notice_fn = function(msg) {
+    _unsafeWindow.Danbooru.Utility.notice(msg);
+  };
+  noticeError_fn = function(msg) {
+    _unsafeWindow.Danbooru.Utility.error(msg);
+  };
+  isPoolGallery_fn = function() {
+    return location.pathname === "/pools/gallery";
+  };
+  isPoolView_fn = function() {
+    return /\/pools\/[0-9]+/.test(location.pathname);
+  };
+  isPostView_fn = function() {
+    return /\/posts\/[0-9]+/.test(location.pathname);
+  };
+  isFavoritesPage_fn = function() {
+    return location.pathname === "/favorites";
+  };
+  isPostsPage_fn = function() {
+    return location.pathname === "/posts";
+  };
+  isAuthorized_fn = function() {
+    const auth = this.config.get("auth");
+    return auth && auth.username && auth.apiKey;
+  };
+  throwIfNotAuthorized_fn = function() {
+    if (!__privateMethod(this, _E621ng_instances, isAuthorized_fn).call(this)) {
+      const msg = "Please input your username and apiKey in setting.";
+      __privateMethod(this, _E621ng_instances, noticeError_fn).call(this, msg);
+      throw new Error(msg);
+    }
+  };
+  validityCallbackFactory_fn2 = function(checkValidity) {
+    return async (data) => {
+      const { id, file, tags: fullTags } = data;
+      const tags = [];
+      for (const tagArr of Object.values(fullTags)) {
+        tagArr.forEach((tag) => {
+          tags.push(tag);
+        });
+      }
+      return await checkValidity({
+        id: String(id),
+        extendName: file.ext,
+        tags
+      }) ? PostValidState.VALID : PostValidState.INVALID;
+    };
+  };
+  addFavorites_fn = async function(id) {
+    const csrfToken = this.parser.parseCsrfToken();
+    if (!csrfToken) throw new Error("Cannot parse csrf-token.");
+    try {
+      __privateMethod(this, _E621ng_instances, notice_fn).call(this, `Updating posts: ${id}`);
+      await this.api.addFavorites(id, csrfToken);
+      __privateMethod(this, _E621ng_instances, notice_fn).call(this, `Favorite added: ${id}`);
+    } catch (error) {
+      __privateMethod(this, _E621ng_instances, noticeError_fn).call(this, `Failed to add favorite: ${id}. Reason: ${error}`);
+      logger.error(error);
+    }
+  };
   function getSiteInjector() {
-    const sitesAdapters = [Pixiv, Danbooru, Rule34, Yande, ATFbooru, Konachan, Sakugabooru];
+    const sitesAdapters = [
+      Pixiv,
+      Danbooru,
+      Rule34,
+      Yande,
+      ATFbooru,
+      Konachan,
+      Sakugabooru,
+      Safebooru,
+      Gelbooru,
+      E621ng
+    ];
     const hostname = location.hostname;
     for (const sites of sitesAdapters) {
       if (typeof sites.hostname === "string") {
