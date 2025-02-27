@@ -4,7 +4,7 @@
 
 ## 主要功能
 
-- 下载 [Pixiv](https://www.pixiv.net) | [Danbooru](https://danbooru.donmai.us/) | [Rule34](https://rule34.xxx/) | [Yande](https://yande.re/post) | [Konachan](https://konachan.net/) | [Sakugabooru](https://www.sakugabooru.com/) 图片。
+- 一键下载站点各页面图片。
 - 批量下载。
 - 自定义图片文件名，保存文件夹。
 - 记录下载图片历史，支持导出 / 导入。
@@ -22,16 +22,18 @@
    2. 在**Pixiv Downloader 设置**中开启“**使用 FileSystemAccess API**”。
 2. 为方便使用，可以将浏览器设置中“**下载前询问每个文件的保存位置**”选项关闭。
 
-## 批量下载
+## 支持网站
 
-| 网站                                                                           | 支持页面/方式                                                                                                                                                                | 附注                                                                                                           |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| [Pixiv](https://www.pixiv.net)                                                 | [已关注用户的新作](https://www.pixiv.net/bookmark_new_illust.php)<br>画师 / 个人主页<br>按用户作品标签                                                                       |                                                                                                                |
-| [Danbooru](https://danbooru.donmai.us/)                                        | [Posts](https://danbooru.donmai.us/posts)<br>[Pools](https://danbooru.donmai.us/pools/gallery)<br>Favorite groups                                                            |                                                                                                                |
-| [Yande.re](https://yande.re/post)                                              | [投稿](https://yande.re/post)<br>[人气](https://yande.re/post/popular_recent)<br>[人气（按日/周/月）](https://yande.re/post/popular_by_day?day=10&month=2&year=2025)<br>图集 |                                                                                                                |
-| [Konachan.net](https://konachan.net/)<br>[Konachan.com](https://konachan.com/) | 同上                                                                                                                                                                         | 在konachan.net进行批量下载时，请在下载器中添加标签黑名单"rating:q", "rating:e"，否则批量下载仍将下载NSFW图片。 |
-| [Sakugabooru](https://www.sakugabooru.com/)                                    | 同上                                                                                                                                                                         |                                                                                                                |
-| [Rule34](https://rule34.xxx/)                                                  | [Posts](https://rule34.xxx/index.php?page=post&s=list&tags=all)<br>Pools<br>My Favorites                                                                                     |                                                                                                                |
+| 网站                                                                         | 支持批量下载                                                                                                                                                           | 附注                                                                                                           |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| [Pixiv](https://www.pixiv.net)                                               | [已关注用户的新作](https://www.pixiv.net/bookmark_new_illust.php)、画师 / 个人主页、按用户作品标签                                                                     |                                                                                                                |
+| [Danbooru](https://danbooru.donmai.us/)                                      | [Posts](https://danbooru.donmai.us/posts)、[Pools](https://danbooru.donmai.us/pools/gallery)、Favorite groups                                                          |                                                                                                                |
+| [Yande.re](https://yande.re/post)                                            | [投稿](https://yande.re/post)、[人气](https://yande.re/post/popular_recent)、[人气（按日/周/月）](https://yande.re/post/popular_by_day?day=10&month=2&year=2025)、图集 |                                                                                                                |
+| [Konachan.net](https://konachan.net/)、[Konachan.com](https://konachan.com/) | 同上                                                                                                                                                                   | 在konachan.net进行批量下载时，请在下载器中添加标签黑名单"rating:q", "rating:e"，否则批量下载仍将下载NSFW图片。 |
+| [Sakugabooru](https://www.sakugabooru.com/)                                  | 同上                                                                                                                                                                   |                                                                                                                |
+| [Rule34](https://rule34.xxx/)                                                | [Posts](https://rule34.xxx/index.php?page=post&s=list&tags=all)、Pools、My Favorites                                                                                   |                                                                                                                |
+| Gelbooru                                                                     | Posts、Pools、My Favorites                                                                                                                                             |                                                                                                                |
+| E621、E926、E6ai                                                             | Posts、Pools、Favorites                                                                                                                                                | 暂不支持过滤用户黑名单                                                                                         |
 
 ## 更多功能
 
