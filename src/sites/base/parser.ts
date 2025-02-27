@@ -1,4 +1,4 @@
-import type { YieldArtworkMeta } from '@/lib/components/Downloader/useBatchDownload';
+import type { YieldArtwork } from '@/lib/components/Downloader/useBatchDownload';
 
 export interface MediaMeta {
   id: string;
@@ -23,7 +23,7 @@ export abstract class ParserBase {
     getPostData: (page: number) => Promise<PostData[]>,
     isValid: (data: PostData) => Promise<PostValidState>,
     buildMeta: (data: PostData) => IdOrMeta
-  ): AsyncGenerator<YieldArtworkMeta<IdOrMeta>, void, undefined> {
+  ): AsyncGenerator<YieldArtwork<IdOrMeta>, void, undefined> {
     const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
 
     let page = pageStart;

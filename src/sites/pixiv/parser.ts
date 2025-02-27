@@ -16,7 +16,10 @@ import { IllustType } from './types';
 import { pixivApi } from '@/sites/pixiv/api';
 import { regexp } from '@/lib/regExp';
 import { logger } from '@/lib/logger';
-import type { ValidatedIdGenerator } from '@/lib/components/Downloader/useBatchDownload';
+import type {
+  ValidatedArtworkGenerator,
+  YieldArtwork
+} from '@/lib/components/Downloader/useBatchDownload';
 import { TagLanguage } from '@/lib/config';
 
 interface PixivMetaBase extends MediaMeta {
@@ -48,20 +51,35 @@ interface PixivParam extends Record<string, string> {
 
 interface PixivParser {
   parse(id: string, param: PixivParam): Promise<PixivMeta>;
-  illustMangaGenerator: ValidatedIdGenerator<PixivMeta, string>;
-  followLatestGenerator: ValidatedIdGenerator<PixivMeta, FollowLatestMode>;
-  chunkGenerator: ValidatedIdGenerator<
-    PixivMeta,
-    | [userId: string, category: 'bookmarks', tag: string, bookmarkRest: BookmarksRest]
-    | [userId: string, category: 'illusts' | 'manga', tag: string]
-  >;
-  bookmarkGenerator: ValidatedIdGenerator<
-    PixivMeta,
-    | [userId: string]
-    | [userId: string, bookmarkRest: BookmarksRest]
-    | [userId: string, bookmarkRest: BookmarksRest, tag: string]
-  >;
-  taggedArtworkGenerator: ValidatedIdGenerator<
+
+  illustMangaGenerator: ValidatedArtworkGenerator<PixivMeta, string>;
+
+  followLatestGenerator: ValidatedArtworkGenerator<PixivMeta, FollowLatestMode>;
+
+  seriesGenerator: ValidatedArtworkGenerator<PixivMeta, string>;
+
+  chunkGenerator(
+    ...args: Parameters<
+      ValidatedArtworkGenerator<
+        PixivMeta,
+        | [userId: string, category: 'bookmarks', tag: string, bookmarkRest: BookmarksRest]
+        | [userId: string, category: 'illusts' | 'manga', tag: string]
+      >
+    >
+  ): AsyncGenerator<YieldArtwork<string>, void, undefined>;
+
+  bookmarkGenerator(
+    ...args: Parameters<
+      ValidatedArtworkGenerator<
+        PixivMeta,
+        | [userId: string]
+        | [userId: string, bookmarkRest: BookmarksRest]
+        | [userId: string, bookmarkRest: BookmarksRest, tag: string]
+      >
+    >
+  ): AsyncGenerator<YieldArtwork<string>, void, undefined>;
+
+  taggedArtworkGenerator: ValidatedArtworkGenerator<
     PixivMeta,
     | [
         userId: string,
@@ -71,7 +89,6 @@ interface PixivParser {
       ]
     | [userId: string, category: Exclude<Category, 'bookmarks'>, tag: string]
   >;
-  seriesGenerator: ValidatedIdGenerator<PixivMeta, string>;
 }
 
 export const pixivParser: PixivParser = {
@@ -240,7 +257,7 @@ export const pixivParser: PixivParser = {
     category: Category,
     tag: string,
     bookmarkRest: BookmarksRest = 'show'
-  ) {
+  ): AsyncGenerator<YieldArtwork<string>, void, undefined> {
     const ARTWORKS_PER_PAGE = 48;
     const [startPage = null, endPage = null] = pageRange ?? [];
 
@@ -314,7 +331,7 @@ export const pixivParser: PixivParser = {
     userId: string,
     bookmarkRest: BookmarksRest = 'show',
     tag: string = ''
-  ) {
+  ): AsyncGenerator<YieldArtwork<string>, void, undefined> {
     yield* this.chunkGenerator(pageRange, checkValidity, userId, 'bookmarks', tag, bookmarkRest);
   },
 
@@ -325,7 +342,7 @@ export const pixivParser: PixivParser = {
     category: Category,
     tag: string,
     bookmarkRest: BookmarksRest = 'show'
-  ) {
+  ): AsyncGenerator<YieldArtwork<string>, void, undefined> {
     if (category === 'bookmarks') {
       yield* this.bookmarkGenerator(pageRange, checkValidity, userId, bookmarkRest, tag);
     } else {

@@ -1,4 +1,4 @@
-import type { MediaMeta } from '@/sites/interface';
+import type { MediaMeta } from '@/sites/base/parser';
 import App from './App.svelte';
 import {
   defineBatchDownload,

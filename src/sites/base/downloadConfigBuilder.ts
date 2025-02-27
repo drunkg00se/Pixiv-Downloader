@@ -1,7 +1,7 @@
 import { config } from '@/lib/config';
 import { type DownloadConfig, downloader } from '@/lib/downloader';
 import { env } from '@/lib/env';
-import type { MediaMeta } from '@/sites/interface';
+import type { MediaMeta } from '@/sites/base/parser';
 import { replaceInvalidChar, unescapeHtml } from '@/lib/util';
 import dayjs from 'dayjs';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';

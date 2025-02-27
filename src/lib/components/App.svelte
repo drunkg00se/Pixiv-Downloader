@@ -8,7 +8,7 @@
   import t from '../lang';
   import type { ModalComponent } from '@skeletonlabs/skeleton';
   import type { BatchDownloadConfig, BatchDownloadDefinition } from './Downloader/useBatchDownload';
-  import type { MediaMeta } from '@/sites/interface';
+  import type { MediaMeta } from '@/sites/base/parser';
   import type { Config as ConfigStore } from '../config';
   import Config from './Modal/Config/Config.svelte';
 
