@@ -27,7 +27,8 @@ export const enum ThumbnailBtnType {
   PixivPresentation = 'pixiv-presentation',
   PixivToolbar = 'pixiv-toolbar',
   PixivMangaViewer = 'pixiv-manga-viewer',
-  YandeBrowse = 'yande-browse'
+  YandeBrowse = 'yande-browse',
+  NijieIllust = 'nijie-illust'
 }
 
 export interface ThumbnailBtnProp {

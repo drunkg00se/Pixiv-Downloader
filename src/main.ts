@@ -10,6 +10,7 @@ import { Sakugabooru } from './sites/sakugabooru';
 import { Safebooru } from './sites/safebooru';
 import { Gelbooru } from './sites/gelbooru';
 import { E621ng } from './sites/e621';
+import { Nijie } from './sites/nijie';
 import './lib/components/app.tailwind.css';
 
 // Remove CSS injected into dom in the dev server
@@ -28,7 +29,8 @@ function getSiteInjector() {
     Sakugabooru,
     Safebooru,
     Gelbooru,
-    E621ng
+    E621ng,
+    Nijie
   ];
   const hostname = location.hostname;
 

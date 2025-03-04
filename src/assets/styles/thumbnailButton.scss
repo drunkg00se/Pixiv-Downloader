@@ -99,6 +99,23 @@
     left: auto;
   }
 
+  :host([data-type='nijie-illust']) & {
+    display: inline-flex;
+    position: static;
+    height: 44px;
+    width: 44px;
+    top: auto;
+    left: auto;
+    border-radius: 8px;
+    margin: 0px 8px;
+    vertical-align: top;
+
+    & > svg {
+      width: 70%;
+      height: 70%;
+    }
+  }
+
   :host([data-status]) & {
     color: #16a34a;
   }
