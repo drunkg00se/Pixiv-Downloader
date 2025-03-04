@@ -32,6 +32,7 @@
       <SlideToggle name="show-popup-button" bind:checked={$configStore.showPopupButton} size="sm"
       ></SlideToggle>
     </li>
+
     {#if env.isPixiv()}
       <li>
         <p class="flex-auto">{t('setting.others.options.bundle_multipage_illust')}</p>
@@ -54,6 +55,7 @@
         ></SlideToggle>
       </li>
     {/if}
+
     <li class="flex-col !items-stretch">
       <div class="flex items-center">
         <div class="flex-auto">
@@ -65,7 +67,8 @@
         <SlideToggle name="fsa-enable" bind:checked={$configStore.addBookmark} size="sm"
         ></SlideToggle>
       </div>
-      {#if $configStore.addBookmark && env.isPixiv()}
+
+      {#if $configStore.addBookmark && (env.isPixiv() || env.isNijie())}
         <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
           <li>
             <label class="label flex flex-grow items-center justify-center">
@@ -77,13 +80,16 @@
               ></SlideToggle>
             </label>
           </li>
-          <li>
-            <label class="label flex flex-grow items-center justify-center">
-              <p class="flex-auto">{t('setting.others.options.add_bookmark_private_r18')}</p>
-              <SlideToggle name="fsa-enable" bind:checked={$configStore.privateR18} size="sm"
-              ></SlideToggle>
-            </label>
-          </li>
+
+          {#if env.isPixiv()}
+            <li>
+              <label class="label flex flex-grow items-center justify-center">
+                <p class="flex-auto">{t('setting.others.options.add_bookmark_private_r18')}</p>
+                <SlideToggle name="fsa-enable" bind:checked={$configStore.privateR18} size="sm"
+                ></SlideToggle>
+              </label>
+            </li>
+          {/if}
         </ul>
       {/if}
     </li>

@@ -62,5 +62,9 @@ export const env = {
 
   isRule34() {
     return location.hostname === 'rule34.xxx';
+  },
+
+  isNijie() {
+    return location.hostname === 'nijie.info';
   }
 };

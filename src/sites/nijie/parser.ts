@@ -4,6 +4,7 @@ export type NijieMeta = MediaMeta & {
   userId: string;
   comment: string;
   score: number;
+  isBookmarked: boolean;
 };
 
 export type NijieDiffSrc = {
@@ -42,6 +43,8 @@ export class NijieParser extends ParserBase {
       (el) => el.textContent!
     );
 
+    const isBookmarked = !!doc.querySelector('a[href*="bookmark_edit"]');
+
     return {
       id,
       userId,
@@ -52,7 +55,8 @@ export class NijieParser extends ParserBase {
       tags,
       createDate: postDateMatch![0],
       comment,
-      score: +goodCount
+      score: +goodCount,
+      isBookmarked
     };
   }
 

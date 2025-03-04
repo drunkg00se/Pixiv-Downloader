@@ -7,6 +7,7 @@ import { NijieParser } from './parser';
 import { NijieApi } from './api';
 import { NijieDownloadConfig, type NijieDownloaderSource } from './downloadConfigBuilder';
 import { historyDb, type HistoryData } from '@/lib/db';
+import { logger } from '@/lib/logger';
 
 export class Nijie extends SiteInject {
   protected parser = new NijieParser();
@@ -88,9 +89,16 @@ export class Nijie extends SiteInject {
       );
     }
 
+    const { userId, comment, tags, artist, title, isBookmarked } = meta;
+
+    if (!isBookmarked && this.config.get('addBookmark')) {
+      this.api
+        .addBookmark(id, this.config.get('addBookmarkWithTags') ? tags : undefined)
+        .catch(logger.error);
+    }
+
     await downloader.download(downloaderConfig);
 
-    const { userId, comment, tags, artist, title } = meta;
     const historyData: HistoryData = {
       pid: Number(id),
       user: artist,
