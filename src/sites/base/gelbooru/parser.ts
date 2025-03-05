@@ -151,8 +151,13 @@ export class GelbooruParserV020 extends ParserBase implements IGelbooruParserV02
   }
 
   parsePostsByDoc(doc: Document): GelbooruHtmlPostDataV020[] {
-    // gelbooru posts list: thumbnail-preview > a[id]
-    const imageItems = Array.from(doc.querySelectorAll('span[id], .thumbnail-preview > a[id]'));
+    // gelbooru posts list: thumbnail-preview > a[id]:has(img)
+    // safebooru, rule34, gelbooru pool : span[id]:has(a > img)
+    const imageItems = Array.from(
+      doc.querySelectorAll<HTMLAnchorElement>(
+        'span[id]:has(a > img), .thumbnail-preview > a[id]:has(img)'
+      )
+    );
     const postData = imageItems.map((el) => {
       const image = el.querySelector('img')!;
       const fullTags = image.title.trim().replaceAll(/ +/g, ' ').split(' ');
