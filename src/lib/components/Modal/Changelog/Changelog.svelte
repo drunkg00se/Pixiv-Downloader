@@ -21,19 +21,9 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
 
   <article class="modal-body mt-4">
-    <p>适配性癖不匹配的网站时数度想要申请工伤赔偿。w(ﾟДﾟ)w</p>
-    <h4 class=" text-xl mt-2">新增</h4>
-    <ul class="list-disc list-inside leading-loose">
-      <li>支持Safebooru。</li>
-      <li>支持Gelbooru。</li>
-      <li>支持E621, E926, E6ai（必须在“网站验证”中填写username和apiKey）。</li>
-      <li>
-        新设置项<strong>网站验证</strong>: 下载失败时可尝试在此填写网站对应的cookies和apikey。
-      </li>
-    </ul>
     <h4 class=" text-xl mt-2">修复</h4>
     <ul class="list-disc list-inside leading-loose">
-      <li>视频控制栏被下载按钮遮挡的问题。</li>
+      <li>无法批量下载rule34, safebooru的问题。</li>
     </ul>
   </article>
 
