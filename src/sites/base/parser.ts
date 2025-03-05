@@ -17,37 +17,44 @@ export enum PostValidState {
 }
 
 export abstract class ParserBase {
-  async *paginationGenerator<PostData extends object, IdOrMeta extends string | MediaMeta>(
+  async *paginationGenerator<PostData extends object | string, IdOrMeta extends string | MediaMeta>(
     pageRange: [start: number, end: number] | null,
-    postsPerPage: number,
-    getPostData: (page: number) => Promise<PostData[]>,
-    isValid: (data: PostData) => Promise<PostValidState>,
-    buildMeta: (data: PostData) => IdOrMeta
+    getPostData: (
+      page: number
+    ) => Promise<
+      { lastPage: false; data: PostData[] } | { lastPage: true; data: PostData[] | undefined }
+    >,
+    buildMeta: (data: PostData) => IdOrMeta,
+    isValid?: (data: PostData) => Promise<PostValidState>
   ): AsyncGenerator<YieldArtwork<IdOrMeta>, void, undefined> {
     const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
-
     let page = pageStart;
-    let postDatas: PostData[] | null = await getPostData(page);
+
+    let { lastPage, data: postDatas } = await getPostData(page);
+
+    if (!postDatas || !postDatas.length) throw new Error(`There is no post in page ${page}.`);
+
     let total = postDatas.length;
     let fetchError: Error | null = null;
 
-    if (total === 0) throw new Error(`There is no post in page ${page}.`);
-
     do {
-      let nextPageData: PostData[] | null = null;
+      let nextPageData: PostData[] | undefined = undefined;
+      let nextPageIsLast: boolean = true;
 
       // fetch next page's post data.
-      if (page !== pageEnd && postDatas.length >= postsPerPage) {
+      if (page !== pageEnd && !lastPage) {
         try {
-          nextPageData = await getPostData(page + 1);
-          if (nextPageData.length) {
-            total += nextPageData.length;
-          } else {
-            nextPageData = null;
+          const { lastPage, data } = await getPostData(page + 1);
+          const dataLen = data?.length ?? 0;
+
+          // consider it the last page if data.length === 0
+          if (dataLen) {
+            total += dataLen;
+            nextPageData = data;
+            nextPageIsLast = lastPage;
           }
         } catch (error) {
           fetchError = error as Error;
-          nextPageData = null;
         }
       }
 
@@ -55,16 +62,22 @@ export abstract class ParserBase {
       const invalid: IdOrMeta[] = [];
       const unavaliable: IdOrMeta[] = [];
 
-      for (const data of postDatas) {
-        const isPostValid = await isValid(data);
-        const idOrMeta = buildMeta(data);
+      if (typeof isValid === 'function') {
+        for (const data of postDatas) {
+          const isPostValid = await isValid(data);
+          const idOrMeta = buildMeta(data);
 
-        if (isPostValid === PostValidState.VALID) {
-          avaliable.push(idOrMeta);
-        } else if (isPostValid === PostValidState.INVALID) {
-          invalid.push(idOrMeta);
-        } else {
-          unavaliable.push(idOrMeta);
+          if (isPostValid === PostValidState.VALID) {
+            avaliable.push(idOrMeta);
+          } else if (isPostValid === PostValidState.INVALID) {
+            invalid.push(idOrMeta);
+          } else {
+            unavaliable.push(idOrMeta);
+          }
+        }
+      } else {
+        for (const data of postDatas) {
+          avaliable.push(buildMeta(data));
         }
       }
 
@@ -78,6 +91,7 @@ export abstract class ParserBase {
 
       page++;
       postDatas = nextPageData;
+      lastPage = nextPageIsLast;
     } while (postDatas);
 
     if (fetchError) throw fetchError;

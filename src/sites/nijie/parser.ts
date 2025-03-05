@@ -5,6 +5,7 @@ export type NijieMeta = MediaMeta & {
   comment: string;
   score: number;
   isBookmarked: boolean;
+  diff?: NijieDiffSrc[];
 };
 
 export type NijieDiffSrc = {
@@ -75,11 +76,38 @@ export class NijieParser extends ParserBase {
     });
   }
 
+  #parseIdByAnchors(elems: HTMLAnchorElement[]): string[] {
+    if (!elems.length) return [];
+
+    return elems.map((el) => {
+      const idMatch = /(?<=id=)[0-9]+$/.exec(el.href);
+      return idMatch![0];
+    });
+  }
+
+  parseUserPageArtworkIdByDoc(doc: Document): string[] {
+    const thumbnails = doc.querySelectorAll<HTMLAnchorElement>(
+      '.mem-index .nijiedao > a[href^="/view.php?id="]'
+    );
+    return this.#parseIdByAnchors(Array.from(thumbnails));
+  }
+
+  parseUserFeedArtworkIdByDoc(doc: Document): string[] {
+    const thumbnails = doc.querySelectorAll<HTMLAnchorElement>(
+      '#main-left-main [illust_id] .picture > a[href^="/view.php?id="]'
+    );
+    return this.#parseIdByAnchors(Array.from(thumbnails));
+  }
+
   docHasImgDiff(doc: Document) {
     return !!doc.querySelector('a[href*="#diff_"]');
   }
 
   docIsDojin(doc: Document) {
     return !!doc.querySelector('#dojin_left');
+  }
+
+  docHasNextPagination(doc: Document) {
+    return !!doc.querySelector('.page_button > a[rel="next"]');
   }
 }

@@ -52,11 +52,16 @@ export abstract class Moebooru extends SiteInject {
     return this.parser.buildMeta(data, data.tagType);
   }
 
-  #getPopularDataFactory(period: PopularPeriod): () => Promise<MoebooruGeneratorPostData[]> {
+  #getPopularDataFactory(period: PopularPeriod) {
     return async () => {
       const htmlText = await this.api.getPopularHtmlByPeriod(period);
       const { posts, tags: tagType } = this.parser.parsePostsList(htmlText);
-      return posts.map((post) => ({ ...post, tagType }));
+      const data = posts.map((post) => ({ ...post, tagType }));
+
+      return {
+        lastPage: true,
+        data
+      };
     };
   }
 
@@ -109,20 +114,23 @@ export abstract class Moebooru extends SiteInject {
         fn: (pageRange, checkValidity, tags?: string | string[]) => {
           tags ??= new URLSearchParams(location.search).get('tags') ?? '';
 
-          const POSTS_PER_PAGE = 40;
-
           const getPostData = async (page: number) => {
+            const POSTS_PER_PAGE = 40;
             const htmlText = await this.api.getPostsHtml(tags, page);
             const { posts, tags: tagType } = this.parser.parsePostsList(htmlText);
-            return posts.map((post) => ({ ...post, tagType }));
+            const data = posts.map((post) => ({ ...post, tagType }));
+
+            return {
+              lastPage: data.length < POSTS_PER_PAGE,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             pageRange,
-            POSTS_PER_PAGE,
             getPostData,
-            this.#validityCallbackFactory(checkValidity),
-            this.#buildMetaByGeneratorData.bind(this)
+            this.#buildMetaByGeneratorData.bind(this),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       },
@@ -134,10 +142,9 @@ export abstract class Moebooru extends SiteInject {
         fn: (_, checkValidity) => {
           return this.parser.paginationGenerator(
             [1, 1],
-            Number.POSITIVE_INFINITY,
             this.#getPopularDataFactory('1d'),
-            this.#validityCallbackFactory(checkValidity),
-            this.#buildMetaByGeneratorData.bind(this)
+            this.#buildMetaByGeneratorData.bind(this),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       },
@@ -149,10 +156,9 @@ export abstract class Moebooru extends SiteInject {
         fn: (_, checkValidity) => {
           return this.parser.paginationGenerator(
             [1, 1],
-            Number.POSITIVE_INFINITY,
             this.#getPopularDataFactory('1w'),
-            this.#validityCallbackFactory(checkValidity),
-            this.#buildMetaByGeneratorData.bind(this)
+            this.#buildMetaByGeneratorData.bind(this),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       },
@@ -164,10 +170,9 @@ export abstract class Moebooru extends SiteInject {
         fn: (_, checkValidity) => {
           return this.parser.paginationGenerator(
             [1, 1],
-            Number.POSITIVE_INFINITY,
             this.#getPopularDataFactory('1m'),
-            this.#validityCallbackFactory(checkValidity),
-            this.#buildMetaByGeneratorData.bind(this)
+            this.#buildMetaByGeneratorData.bind(this),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       },
@@ -179,10 +184,9 @@ export abstract class Moebooru extends SiteInject {
         fn: (_, checkValidity) => {
           return this.parser.paginationGenerator(
             [1, 1],
-            Number.POSITIVE_INFINITY,
             this.#getPopularDataFactory('1y'),
-            this.#validityCallbackFactory(checkValidity),
-            this.#buildMetaByGeneratorData.bind(this)
+            this.#buildMetaByGeneratorData.bind(this),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       },
@@ -214,18 +218,22 @@ export abstract class Moebooru extends SiteInject {
             }
           }
 
-          const getPopularData = async (): Promise<MoebooruGeneratorPostData[]> => {
+          const getPopularData = async () => {
             const htmlText = await this.api.getPopularHtmlByDate(params);
             const { posts, tags: tagType } = this.parser.parsePostsList(htmlText);
-            return posts.map((post) => ({ ...post, tagType }));
+            const data = posts.map((post) => ({ ...post, tagType }));
+
+            return {
+              lastPage: true,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             [1, 1],
-            Number.POSITIVE_INFINITY,
             getPopularData,
-            this.#validityCallbackFactory(checkValidity),
-            this.#buildMetaByGeneratorData.bind(this)
+            this.#buildMetaByGeneratorData.bind(this),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       },
@@ -237,18 +245,22 @@ export abstract class Moebooru extends SiteInject {
         fn: (_, checkValidity, poolId?: string) => {
           poolId ??= /(?<=show\/)[0-9]+/.exec(location.pathname)![0];
 
-          const getPoolData = async (): Promise<MoebooruGeneratorPostData[]> => {
+          const getPoolData = async () => {
             const htmlText = await this.api.getPoolHtml(poolId);
             const { posts, tags: tagType } = this.parser.parsePostAndPool(htmlText);
-            return posts.map((post) => ({ ...post, tagType }));
+            const data = posts.map((post) => ({ ...post, tagType }));
+
+            return {
+              lastPage: true,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             [1, 1],
-            Number.POSITIVE_INFINITY,
             getPoolData,
-            this.#validityCallbackFactory(checkValidity),
-            this.#buildMetaByGeneratorData.bind(this)
+            this.#buildMetaByGeneratorData.bind(this),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       }

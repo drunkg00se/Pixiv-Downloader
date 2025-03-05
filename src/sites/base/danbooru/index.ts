@@ -145,20 +145,24 @@ export abstract class AbstractDanbooru extends SiteInject {
 
           const perPage = this.profile!.per_page;
 
-          const getPostDataByPage = async (page: number): Promise<DanbooruPost[]> => {
-            return this.api.getPostList({
+          const getPostDataByPage = async (page: number) => {
+            const data = await this.api.getPostList({
               tags: [`ordpool:${poolId}`],
               limit: perPage,
               page
             });
+
+            return {
+              lastPage: data.length < perPage,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             pageRange,
-            perPage,
             getPostDataByPage,
-            this.#validityCheckFactory(checkValidity),
-            (post) => String(post.id)
+            (post) => String(post.id),
+            this.#validityCheckFactory(checkValidity)
           );
         }
       },
@@ -173,20 +177,24 @@ export abstract class AbstractDanbooru extends SiteInject {
 
           const perPage = this.profile!.per_page;
 
-          const getPostDataByPage = async (page: number): Promise<DanbooruPost[]> => {
-            return this.api.getPostList({
+          const getPostDataByPage = async (page: number) => {
+            const data = await this.api.getPostList({
               tags: [`ordfavgroup:${groupId}`],
               limit: perPage,
               page
             });
+
+            return {
+              lastPage: data.length < perPage,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             pageRange,
-            perPage,
             getPostDataByPage,
-            this.#validityCheckFactory(checkValidity),
-            (post) => String(post.id)
+            (post) => String(post.id),
+            this.#validityCheckFactory(checkValidity)
           );
         }
       },
@@ -203,12 +211,17 @@ export abstract class AbstractDanbooru extends SiteInject {
           const limit = searchParam.get('limit');
           const limitParam = limit ? Number(limit) : perPage;
 
-          const getPostDataByPage = async (page: number): Promise<DanbooruPost[]> => {
-            return this.api.getPostList({
+          const getPostDataByPage = async (page: number) => {
+            const data = await this.api.getPostList({
               tags,
               limit: limitParam,
               page
             });
+
+            return {
+              lastPage: data.length < limitParam,
+              data
+            };
           };
 
           const showDeletedPosts =
@@ -216,10 +229,9 @@ export abstract class AbstractDanbooru extends SiteInject {
 
           return this.parser.paginationGenerator(
             pageRange,
-            perPage,
             getPostDataByPage,
-            this.#validityCheckFactory(checkValidity, showDeletedPosts),
-            (post) => String(post.id)
+            (post) => String(post.id),
+            this.#validityCheckFactory(checkValidity, showDeletedPosts)
           );
         }
       },
@@ -233,20 +245,24 @@ export abstract class AbstractDanbooru extends SiteInject {
 
           const perPage = this.profile!.per_page;
 
-          const getPostDataByPage = async (page: number): Promise<DanbooruPost[]> => {
-            return this.api.getPostList({
+          const getPostDataByPage = async (page: number) => {
+            const data = await this.api.getPostList({
               tags: [`ordpool:${poolId}`],
               limit: perPage,
               page
             });
+
+            return {
+              lastPage: data.length < perPage,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             pageRange,
-            perPage,
             getPostDataByPage,
-            this.#validityCheckFactory(checkValidity),
-            (post) => String(post.id)
+            (post) => String(post.id),
+            this.#validityCheckFactory(checkValidity)
           );
         }
       },

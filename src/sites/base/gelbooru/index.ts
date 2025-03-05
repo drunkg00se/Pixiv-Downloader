@@ -79,20 +79,23 @@ export abstract class GelbooruV020 extends SiteInject {
         fn: (pageRange, checkValidity, userId?: string) => {
           userId ??= /(?<=id=)[0-9]+/.exec(location.search)![0];
 
-          const THUMBS_PER_PAGE = 50;
-
           const getFavoriteByPage = async (page: number) => {
+            const THUMBS_PER_PAGE = 50;
             const pid = (page - 1) * THUMBS_PER_PAGE;
             const doc = await this.api.getFavoriteDoc(userId, pid);
-            return this.parser.parseFavoriteByDoc(doc);
+            const data = this.parser.parseFavoriteByDoc(doc);
+
+            return {
+              lastPage: data.length < THUMBS_PER_PAGE,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             pageRange,
-            THUMBS_PER_PAGE,
             getFavoriteByPage,
-            this.#validityCheckFactory(checkValidity),
-            (post) => post.id
+            (post) => post.id,
+            this.#validityCheckFactory(checkValidity)
           );
         }
       },
@@ -106,15 +109,17 @@ export abstract class GelbooruV020 extends SiteInject {
 
           const getPoolData = async () => {
             const doc = await this.api.getPoolDoc(poolId);
-            return this.parser.parsePostsByDoc(doc);
+            return {
+              lastPage: true,
+              data: this.parser.parsePostsByDoc(doc)
+            };
           };
 
           return this.parser.paginationGenerator(
             [1, 1],
-            Number.POSITIVE_INFINITY,
             getPoolData,
-            this.#validityCheckFactory(checkValidity),
-            (post) => post.id
+            (post) => post.id,
+            this.#validityCheckFactory(checkValidity)
           );
         }
       },
@@ -126,20 +131,23 @@ export abstract class GelbooruV020 extends SiteInject {
         fn: (pageRange, checkValidity, tags?: string | string[]) => {
           tags ??= new URLSearchParams(location.search).get('tags') ?? 'all';
 
-          const THUMBS_PER_PAGE = 42;
-
           const getPostsByPage = async (page: number) => {
+            const THUMBS_PER_PAGE = 42;
             const pid = (page - 1) * THUMBS_PER_PAGE;
             const doc = await this.api.getPostsDoc(pid, tags);
-            return this.parser.parsePostsByDoc(doc);
+            const data = this.parser.parsePostsByDoc(doc);
+
+            return {
+              lastPage: data.length < THUMBS_PER_PAGE,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             pageRange,
-            THUMBS_PER_PAGE,
             getPostsByPage,
-            this.#validityCheckFactory(checkValidity),
-            (post) => post.id
+            (post) => post.id,
+            this.#validityCheckFactory(checkValidity)
           );
         }
       }

@@ -3,15 +3,16 @@ import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { downloader, type DownloadConfig } from '@/lib/downloader';
-import { NijieParser } from './parser';
+import { NijieParser, type NijieMeta } from './parser';
 import { NijieApi } from './api';
 import { NijieDownloadConfig, type NijieDownloaderSource } from './downloadConfigBuilder';
 import { historyDb, type HistoryData } from '@/lib/db';
 import { logger } from '@/lib/logger';
+import t from '@/lib/lang';
 
 export class Nijie extends SiteInject {
   protected parser = new NijieParser();
-  protected api = new NijieApi();
+  protected api = new NijieApi({ rateLimit: 3 });
 
   #searchParams = new URLSearchParams(location.search);
 
@@ -42,6 +43,12 @@ export class Nijie extends SiteInject {
     return location.pathname === '/okazu.php';
   }
 
+  #isUserPage(url: string) {
+    return /members\.php|members_illust\.php|members_dojin\.php|user_like_illust_view\.php/.test(
+      url
+    );
+  }
+
   #getSearchId() {
     return this.#searchParams.get('id');
   }
@@ -49,6 +56,187 @@ export class Nijie extends SiteInject {
   protected observeColorScheme() {
     document.querySelector('link[type="text/css"][href*="night_mode"]') && this.setAppDarkMode();
   }
+
+  protected useBatchDownload = this.app.initBatchDownloader({
+    metaType: {} as NijieMeta,
+
+    avatar: () => {
+      const userAvatarImg = document.querySelector<HTMLImageElement>(
+        'a[href*="members.php"].name img'
+      );
+      return userAvatarImg ? userAvatarImg.src : '/pic/icon/nijie.png';
+    },
+
+    filterOption: {
+      filters: [
+        {
+          id: 'exclude_downloaded',
+          type: 'exclude',
+          name: t('downloader.category.filter.exclude_downloaded'),
+          checked: false,
+          fn(meta) {
+            return !!meta.id && historyDb.has(meta.id);
+          }
+        },
+        {
+          id: 'allow_image',
+          type: 'include',
+          name: t('downloader.category.filter.image'),
+          checked: true,
+          fn(meta) {
+            !!meta.extendName && /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(meta.extendName);
+
+            return !!meta.tags && !meta.tags.includes('video');
+          }
+        },
+        {
+          id: 'allow_video',
+          type: 'include',
+          name: t('downloader.category.filter.video'),
+          checked: true,
+          fn(meta) {
+            return (
+              !!meta.extendName &&
+              /mp4|avi|mov|mkv|flv|wmv|webm|mpeg|mpg|m4v/i.test(meta.extendName)
+            );
+          }
+        }
+      ],
+
+      enableTagFilter: true
+    },
+
+    pageOption: {
+      illusts: {
+        name: '投稿イラスト',
+        match: (url) => this.#isUserPage(url),
+        filterInGenerator: false,
+        fn: (pageRange) => {
+          const id = this.#getSearchId();
+          if (!id) throw new Error('Invalid user ID.');
+
+          const getIllustData = async (page: number) => {
+            const doc = await this.api.getUserIllustsDoc(id, page);
+            return {
+              lastPage: !this.parser.docHasNextPagination(doc),
+              data: this.parser.parseUserPageArtworkIdByDoc(doc)
+            };
+          };
+
+          return this.parser.paginationGenerator(pageRange, getIllustData, (data) => data);
+        }
+      },
+
+      // dojin only have one page
+      dojin: {
+        name: '同人',
+        match: (url) => this.#isUserPage(url),
+        filterInGenerator: false,
+        fn: () => {
+          const id = this.#getSearchId();
+          if (!id) throw new Error('Invalid user ID.');
+
+          return this.parser.paginationGenerator(
+            [1, 1],
+            async () => {
+              const doc = await this.api.getUserDojinDoc(id);
+              return {
+                lastPage: true,
+                data: this.parser.parseUserPageArtworkIdByDoc(doc)
+              };
+            },
+            (data) => data
+          );
+        }
+      },
+
+      // user_like_illust_view may not always have 48 illusts per page.
+      bookmark: {
+        name: 'ブックマーク',
+        match: (url) => this.#isUserPage(url),
+        filterInGenerator: false,
+        fn: (pageRange) => {
+          const id = this.#getSearchId();
+          if (!id) throw new Error('Invalid user ID.');
+
+          return this.parser.paginationGenerator(
+            pageRange,
+            async (page: number) => {
+              const doc = await this.api.getUserBookmarkDoc(id, page);
+
+              return {
+                lastPage: !this.parser.docHasNextPagination(doc),
+                data: this.parser.parseUserPageArtworkIdByDoc(doc)
+              };
+            },
+            (data) => data
+          );
+        }
+      },
+
+      feed: {
+        name: '新着2次絵',
+        match: /like_user_view\.php/,
+        filterInGenerator: false,
+        fn: (pageRange) => {
+          return this.parser.paginationGenerator(
+            pageRange,
+            async (page: number) => {
+              const doc = await this.api.getUserFeedDoc(page);
+
+              return {
+                lastPage: !this.parser.docHasNextPagination(doc),
+                data: this.parser.parseUserFeedArtworkIdByDoc(doc)
+              };
+            },
+            (data) => data
+          );
+        }
+      }
+    },
+
+    parseMetaByArtworkId: async (id) => {
+      const viewDoc = await this.api.getViewDoc(id);
+      const meta = this.parser.buildMetaByView(id, viewDoc);
+
+      if (this.parser.docHasImgDiff(viewDoc)) {
+        const popupDoc = await this.api.getViewPopupDoc(id);
+        const imgDiffSrcs = this.parser.parseImgDiffSrcByDoc(popupDoc);
+        return { ...meta, diff: imgDiffSrcs };
+      }
+
+      return meta;
+    },
+
+    downloadArtworkByMeta: async (meta, signal) => {
+      downloader.dirHandleCheck();
+
+      let downloaderConfig:
+        | DownloadConfig<NijieDownloaderSource>
+        | DownloadConfig<NijieDownloaderSource>[];
+
+      if (meta.diff) {
+        downloaderConfig = new NijieDownloadConfig(meta).generateMultiPageConfig(meta.diff);
+      } else {
+        downloaderConfig = new NijieDownloadConfig(meta).getDownloadConfig();
+      }
+
+      await downloader.download(downloaderConfig, { signal });
+
+      const { id, artist, userId, title, comment, tags } = meta;
+
+      const historyData: HistoryData = {
+        pid: Number(id),
+        user: artist,
+        userId: Number(userId),
+        title,
+        comment,
+        tags
+      };
+
+      historyDb.add(historyData);
+    }
+  });
 
   protected async downloadArtwork(btn: ThumbnailButton) {
     downloader.dirHandleCheck();
@@ -97,7 +285,7 @@ export class Nijie extends SiteInject {
         .catch(logger.error);
     }
 
-    await downloader.download(downloaderConfig);
+    await downloader.download(downloaderConfig, { priority: 1 });
 
     const historyData: HistoryData = {
       pid: Number(id),
@@ -293,6 +481,7 @@ export class Nijie extends SiteInject {
     observer.observe(ozakuList, { subtree: true, childList: true });
   }
 
+  // TODO: https://nijie.info/history_illust.php
   public inject(): void {
     super.inject();
 

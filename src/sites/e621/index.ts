@@ -174,22 +174,28 @@ export class E621ng extends SiteInject {
           const poolId = /(?<=\/pools\/)[0-9]+/.exec(location.pathname)?.[0];
           if (!poolId) throw new Error('Invalid pool id');
 
-          const getPostsMetaByPage = async (page: number): Promise<E621Post[]> => {
-            return (
+          const postsPerPage = this.profile!.per_page;
+
+          const getPostsMetaByPage = async (page: number) => {
+            const data = (
               await this.api.getPosts({
-                limit: this.profile!.per_page,
+                limit: postsPerPage,
                 page,
                 tags: `pool:${poolId}`
               })
             ).posts;
+
+            return {
+              lastPage: data.length < postsPerPage,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             pageRange,
-            this.profile!.per_page,
             getPostsMetaByPage,
-            this.#validityCallbackFactory(checkValidity),
-            (data) => this.parser.buildMeta(data)
+            (data) => this.parser.buildMeta(data),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       },
@@ -201,24 +207,28 @@ export class E621ng extends SiteInject {
         fn: (pageRange, checkValidity) => {
           const searchParam = new URLSearchParams(new URL(location.href).search);
           const tags = searchParam.get('tags') || '';
-          const limit = searchParam.get('limit') || this.profile!.per_page;
+          const limit = +(searchParam.get('limit') || this.profile!.per_page);
 
-          const getPostsMetaByPage = async (page: number): Promise<E621Post[]> => {
-            return (
+          const getPostsMetaByPage = async (page: number) => {
+            const data = (
               await this.api.getPosts({
-                limit: +limit,
+                limit: limit,
                 page,
                 tags
               })
             ).posts;
+
+            return {
+              lastPage: data.length < limit,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             pageRange,
-            this.profile!.per_page,
             getPostsMetaByPage,
-            this.#validityCallbackFactory(checkValidity),
-            (data) => this.parser.buildMeta(data)
+            (data) => this.parser.buildMeta(data),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       },
@@ -229,26 +239,30 @@ export class E621ng extends SiteInject {
         filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
           const searchParam = new URLSearchParams(new URL(location.href).search);
-          const limit = searchParam.get('limit') || this.profile!.per_page;
-          const userId = searchParam.get('user_id') || this.profile!.id;
+          const limit = +(searchParam.get('limit') || this.profile!.per_page);
+          const userId = +(searchParam.get('user_id') || this.profile!.id);
           if (!userId) throw new Error('Cannot get user id.');
 
-          const getPostsMetaByPage = async (page: number): Promise<E621Post[]> => {
-            return (
+          const getPostsMetaByPage = async (page: number) => {
+            const data = (
               await this.api.getFavorites({
-                limit: +limit,
+                limit,
                 page,
-                user_id: +userId
+                user_id: userId
               })
             ).posts;
+
+            return {
+              lastPage: data.length < limit,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             pageRange,
-            this.profile!.per_page,
             getPostsMetaByPage,
-            this.#validityCallbackFactory(checkValidity),
-            (data) => this.parser.buildMeta(data)
+            (data) => this.parser.buildMeta(data),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       },
@@ -260,22 +274,27 @@ export class E621ng extends SiteInject {
         fn: (pageRange, checkValidity, poolId: string) => {
           if (!poolId) throw new Error('Invalid pool id');
 
-          const getPostsMetaByPage = async (page: number): Promise<E621Post[]> => {
-            return (
+          const getPostsMetaByPage = async (page: number) => {
+            const limit = this.profile!.per_page;
+            const data = (
               await this.api.getPosts({
-                limit: this.profile!.per_page,
+                limit,
                 page,
                 tags: `pool:${poolId}`
               })
             ).posts;
+
+            return {
+              lastPage: data.length < limit,
+              data
+            };
           };
 
           return this.parser.paginationGenerator(
             pageRange,
-            this.profile!.per_page,
             getPostsMetaByPage,
-            this.#validityCallbackFactory(checkValidity),
-            (data) => this.parser.buildMeta(data)
+            (data) => this.parser.buildMeta(data),
+            this.#validityCallbackFactory(checkValidity)
           );
         }
       },

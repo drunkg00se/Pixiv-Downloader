@@ -10,6 +10,22 @@ export class NijieApi extends ApiBase {
     return this.getDoc(`/view_popup.php?id=${id}`);
   }
 
+  getUserIllustsDoc(id: string, page: number) {
+    return this.getDoc(`/members_illust.php?id=${id}&p=${page}`);
+  }
+
+  getUserDojinDoc(id: string) {
+    return this.getDoc(`/members_dojin.php?id=${id}`);
+  }
+
+  getUserBookmarkDoc(id: string, page: number) {
+    return this.getDoc(`/user_like_illust_view.php?p=${page}&id=${id}`);
+  }
+
+  getUserFeedDoc(page: number) {
+    return this.getDoc(`/like_user_view.php?p=${page}`);
+  }
+
   async addBookmark(id: string, tags?: string[]) {
     const params = new URLSearchParams();
     params.append('id', id);
