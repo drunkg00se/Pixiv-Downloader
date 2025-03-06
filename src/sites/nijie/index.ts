@@ -43,10 +43,14 @@ export class Nijie extends SiteInject {
     return location.pathname === '/okazu.php';
   }
 
-  #isUserPage(url: string) {
+  #isSupportedUserPage(url: string) {
     return /members\.php|members_illust\.php|members_dojin\.php|user_like_illust_view\.php/.test(
       url
     );
+  }
+
+  #isSupportedHistoryPage(url: string) {
+    return /history_nuita\.php|history_illust\.php/.test(url);
   }
 
   #getSearchId() {
@@ -109,7 +113,7 @@ export class Nijie extends SiteInject {
     pageOption: {
       illusts: {
         name: '投稿イラスト',
-        match: (url) => this.#isUserPage(url),
+        match: (url) => this.#isSupportedUserPage(url),
         filterInGenerator: false,
         fn: (pageRange) => {
           const id = this.#getSearchId();
@@ -130,7 +134,7 @@ export class Nijie extends SiteInject {
       // dojin only have one page
       dojin: {
         name: '同人',
-        match: (url) => this.#isUserPage(url),
+        match: (url) => this.#isSupportedUserPage(url),
         filterInGenerator: false,
         fn: () => {
           const id = this.#getSearchId();
@@ -153,7 +157,7 @@ export class Nijie extends SiteInject {
       // user_like_illust_view may not always have 48 illusts per page.
       bookmark: {
         name: 'ブックマーク',
-        match: (url) => this.#isUserPage(url),
+        match: (url) => this.#isSupportedUserPage(url),
         filterInGenerator: false,
         fn: (pageRange) => {
           const id = this.#getSearchId();
@@ -187,6 +191,44 @@ export class Nijie extends SiteInject {
               return {
                 lastPage: !this.parser.docHasNextPagination(doc),
                 data: this.parser.parseUserFeedArtworkIdByDoc(doc)
+              };
+            },
+            (data) => data
+          );
+        }
+      },
+
+      nuita: {
+        name: '抜いた',
+        match: (url: string) => this.#isSupportedHistoryPage(url),
+        filterInGenerator: false,
+        fn: (pageRange) => {
+          return this.parser.paginationGenerator(
+            pageRange,
+            async () => {
+              const doc = await this.api.getHistoryNuitaDoc();
+              return {
+                lastPage: true,
+                data: this.parser.parseHistoryNuitaArtworkIdByDoc(doc)
+              };
+            },
+            (data) => data
+          );
+        }
+      },
+
+      history: {
+        name: '閲覧',
+        match: (url: string) => this.#isSupportedHistoryPage(url),
+        filterInGenerator: false,
+        fn: (pageRange) => {
+          return this.parser.paginationGenerator(
+            pageRange,
+            async () => {
+              const doc = await this.api.getHistoryIllustDoc();
+              return {
+                lastPage: true,
+                data: this.parser.parseHistoryIllustArtworkIdByDoc(doc)
               };
             },
             (data) => data
@@ -380,6 +422,14 @@ export class Nijie extends SiteInject {
 
       responseOdai: {
         selector: '#response_odai li a[href*="id="]:has(img)',
+        setStyle: (el: HTMLElement) => {
+          el.style.display = 'inline-block';
+        },
+        diff: undefined
+      },
+
+      historyIllust: {
+        selector: '.history_block > .picture > a[href*="id="]:has(img)',
         setStyle: (el: HTMLElement) => {
           el.style.display = 'inline-block';
         },

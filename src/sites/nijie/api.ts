@@ -26,6 +26,14 @@ export class NijieApi extends ApiBase {
     return this.getDoc(`/like_user_view.php?p=${page}`);
   }
 
+  getHistoryIllustDoc() {
+    return this.getDoc('/history_illust.php');
+  }
+
+  getHistoryNuitaDoc() {
+    return this.getDoc('/history_nuita.php');
+  }
+
   async addBookmark(id: string, tags?: string[]) {
     const params = new URLSearchParams();
     params.append('id', id);

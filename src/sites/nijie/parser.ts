@@ -104,6 +104,20 @@ export class NijieParser extends ParserBase {
     return this.#parseIdByAnchors(Array.from(thumbnails));
   }
 
+  parseHistoryIllustArtworkIdByDoc(doc: Document): string[] {
+    const thumbnails = doc.querySelectorAll<HTMLAnchorElement>(
+      '.history_block > .picture > a[href*="id="]:has(img)'
+    );
+    return this.#parseIdByAnchors(Array.from(thumbnails));
+  }
+
+  parseHistoryNuitaArtworkIdByDoc(doc: Document): string[] {
+    const thumbnails = doc.querySelectorAll<HTMLAnchorElement>(
+      '#center_column div[illust_id].illust_list .picture a[href*="id="]:has(img)'
+    );
+    return this.#parseIdByAnchors(Array.from(thumbnails));
+  }
+
   docHasImgDiff(doc: Document) {
     return !!doc.querySelector('a[href*="#diff_"]');
   }
