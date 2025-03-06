@@ -279,6 +279,7 @@ export class Nijie extends SiteInject {
 
     const { userId, comment, tags, artist, title, isBookmarked } = meta;
 
+    // odai illust will be added every time since we cannot confirm whether it's bookmarked.
     if (!isBookmarked && this.config.get('addBookmark')) {
       this.api
         .addBookmark(id, this.config.get('addBookmarkWithTags') ? tags : undefined)
@@ -340,7 +341,7 @@ export class Nijie extends SiteInject {
         diff: (el: HTMLElement) => /(?<=#diff_)[0-9]+$/.exec((el as HTMLAnchorElement).href)?.[0]
       },
 
-      other_dojin: {
+      otherDojin: {
         selector: 'a[href*="id="]:has(>.other_dojin_block)',
         setStyle: (el: HTMLElement) => {
           el.style.display = 'block';
@@ -372,6 +373,14 @@ export class Nijie extends SiteInject {
           el.style.width = width;
           img.style.width = '100%';
 
+          el.style.display = 'inline-block';
+        },
+        diff: undefined
+      },
+
+      responseOdai: {
+        selector: '#response_odai li a[href*="id="]:has(img)',
+        setStyle: (el: HTMLElement) => {
           el.style.display = 'inline-block';
         },
         diff: undefined
@@ -473,6 +482,24 @@ export class Nijie extends SiteInject {
     container.appendChild(new ArtworkButton({ id, page: 0, onClick: this.downloadArtwork }));
   }
 
+  protected createOdaiBtn() {
+    const id = this.#getSearchId();
+    const container = document.querySelector<HTMLAnchorElement>(
+      '#gallery_new > p > a:has(img#view_img)'
+    );
+    if (!id || !container) return;
+
+    const img = container.querySelector<HTMLImageElement>('img:not(.filter)')!;
+
+    const { marginBottom } = getComputedStyle(img);
+    img.style.marginBottom = '0px';
+    container.style.marginBottom = marginBottom;
+    container.style.display = 'inline-block';
+    container.style.position = 'relative';
+
+    container.appendChild(new ArtworkButton({ id, page: 0, onClick: this.downloadArtwork }));
+  }
+
   protected observeOzakuListChange() {
     const ozakuList = document.querySelector('#okazu_list');
     if (!ozakuList) return;
@@ -497,6 +524,9 @@ export class Nijie extends SiteInject {
       // dojin
       this.createDojinHeaderBtn();
       this.createDojinCoverBtn();
+
+      // odai
+      this.createOdaiBtn();
     } else if (this.#isViewPopupPage()) {
       this.createIllustSettingBtn();
       this.createImgFilterBtn();

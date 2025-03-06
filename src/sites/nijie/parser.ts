@@ -20,11 +20,13 @@ export class NijieParser extends ParserBase {
     ).split(' | ');
 
     const comment =
-      doc.querySelector<HTMLParagraphElement>('#illust_text p, #dojin_text p:not(.title)')
-        ?.textContent ?? '';
+      doc.querySelector<HTMLParagraphElement>(
+        '#illust_text p, #dojin_text p:not(.title), #view-honbun > p.m-bottom15:not(.gray)'
+      )?.textContent ?? '';
 
+    // illust / video, dojin, odai
     const src = doc.querySelector<HTMLImageElement | HTMLVideoElement>(
-      '#img_filter :is(img, video), p.image img'
+      '#img_filter :is(img, video), p.image img, #gallery_new img#view_img'
     )!.src;
 
     const userId = doc
@@ -46,6 +48,7 @@ export class NijieParser extends ParserBase {
       (el) => el.textContent!
     );
 
+    // odai view does not contain the bookmark button so we cannot confirm whether the illust is bookmarked.
     const isBookmarked = !!doc.querySelector('a[href*="bookmark_edit"]');
 
     return {
