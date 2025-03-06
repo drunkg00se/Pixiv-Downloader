@@ -202,9 +202,9 @@ export class Nijie extends SiteInject {
         name: '抜いた',
         match: (url: string) => this.#isSupportedHistoryPage(url),
         filterInGenerator: false,
-        fn: (pageRange) => {
+        fn: () => {
           return this.parser.paginationGenerator(
-            pageRange,
+            [1, 1],
             async () => {
               const doc = await this.api.getHistoryNuitaDoc();
               return {
@@ -221,9 +221,9 @@ export class Nijie extends SiteInject {
         name: '閲覧',
         match: (url: string) => this.#isSupportedHistoryPage(url),
         filterInGenerator: false,
-        fn: (pageRange) => {
+        fn: () => {
           return this.parser.paginationGenerator(
-            pageRange,
+            [1, 1],
             async () => {
               const doc = await this.api.getHistoryIllustDoc();
               return {
@@ -280,6 +280,32 @@ export class Nijie extends SiteInject {
     }
   });
 
+  async #addBookmark(id: string, tags?: string[]) {
+    try {
+      await this.api.addBookmark(id, tags);
+
+      if ((this.#isViewPage() || this.#isViewPopupPage()) && this.#getSearchId() === id) {
+        const bookmarkBtn = document.querySelector<HTMLAnchorElement>('a#bukuma-do');
+        if (!bookmarkBtn) return;
+
+        // change bookmarkBtn's href so illust will not be bookmarked again.
+        bookmarkBtn.id = 'bukuma';
+        bookmarkBtn.setAttribute(
+          'href',
+          bookmarkBtn.getAttribute('href')!.replace('bookmark.php', 'bookmark_edit.php')
+        );
+
+        // replace text.
+        bookmarkBtn.lastChild?.remove();
+        const text = document.createElement('span');
+        text.textContent = 'ブックマーク編集';
+        bookmarkBtn.appendChild(text);
+      }
+    } catch (error) {
+      logger.error(error);
+    }
+  }
+
   protected async downloadArtwork(btn: ThumbnailButton) {
     downloader.dirHandleCheck();
 
@@ -323,9 +349,7 @@ export class Nijie extends SiteInject {
 
     // odai illust will be added every time since we cannot confirm whether it's bookmarked.
     if (!isBookmarked && this.config.get('addBookmark')) {
-      this.api
-        .addBookmark(id, this.config.get('addBookmarkWithTags') ? tags : undefined)
-        .catch(logger.error);
+      this.#addBookmark(id, this.config.get('addBookmarkWithTags') ? tags : undefined);
     }
 
     await downloader.download(downloaderConfig, { priority: 1 });
