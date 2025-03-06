@@ -18,8 +18,10 @@ export class NijieParser extends ParserBase {
     const [title, artist] = (
       doc.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.content ?? ''
     ).split(' | ');
+
     const comment =
-      doc.querySelector<HTMLMetaElement>('meta[property="og:description"]')?.content ?? '';
+      doc.querySelector<HTMLParagraphElement>('#illust_text p, #dojin_text p:not(.title)')
+        ?.textContent ?? '';
 
     const src = doc.querySelector<HTMLImageElement | HTMLVideoElement>(
       '#img_filter :is(img, video), p.image img'
