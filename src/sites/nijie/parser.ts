@@ -66,12 +66,14 @@ export class NijieParser extends ParserBase {
     };
   }
 
-  parseImgDiffSrcByDoc(doc: Document): NijieDiffSrc[] {
+  parseDiffSrcByDoc(doc: Document): NijieDiffSrc[] {
     return Array.from(
-      doc.querySelectorAll<HTMLImageElement>('#img_filter img[src*="pic.nijie.net"]')
+      doc.querySelectorAll<HTMLImageElement | HTMLVideoElement>(
+        '#img_filter :is(img[src*="pic.nijie.net"], video)'
+      )
     ).map((el) => {
       const src = el.src;
-      const matchExt = el.src.match(/(?<=\.)[a-z]{3,4}$/i);
+      const matchExt = src.match(/(?<=\.)[a-z0-9]{3,4}$/i);
       if (!matchExt) throw new Error('Can not parse ext.');
 
       return {
@@ -118,7 +120,7 @@ export class NijieParser extends ParserBase {
     return this.#parseIdByAnchors(Array.from(thumbnails));
   }
 
-  docHasImgDiff(doc: Document) {
+  docHasDiff(doc: Document) {
     return !!doc.querySelector('a[href*="#diff_"]');
   }
 

@@ -82,15 +82,22 @@ export class Nijie extends SiteInject {
             return !!meta.id && historyDb.has(meta.id);
           }
         },
+        // nijie post may contain both image and video.
         {
           id: 'allow_image',
           type: 'include',
           name: t('downloader.category.filter.image'),
           checked: true,
           fn(meta) {
-            !!meta.extendName && /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(meta.extendName);
+            if (meta.diff) {
+              return meta.diff.some(({ extendName }) =>
+                /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(extendName)
+              );
+            }
 
-            return !!meta.tags && !meta.tags.includes('video');
+            return (
+              !!meta.extendName && /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(meta.extendName)
+            );
           }
         },
         {
@@ -99,6 +106,12 @@ export class Nijie extends SiteInject {
           name: t('downloader.category.filter.video'),
           checked: true,
           fn(meta) {
+            if (meta.diff) {
+              return meta.diff.some(({ extendName }) =>
+                /mp4|avi|mov|mkv|flv|wmv|webm|mpeg|mpg|m4v/i.test(extendName)
+              );
+            }
+
             return (
               !!meta.extendName &&
               /mp4|avi|mov|mkv|flv|wmv|webm|mpeg|mpg|m4v/i.test(meta.extendName)
@@ -241,9 +254,9 @@ export class Nijie extends SiteInject {
       const viewDoc = await this.api.getViewDoc(id);
       const meta = this.parser.buildMetaByView(id, viewDoc);
 
-      if (this.parser.docHasImgDiff(viewDoc)) {
+      if (this.parser.docHasDiff(viewDoc)) {
         const popupDoc = await this.api.getViewPopupDoc(id);
-        const imgDiffSrcs = this.parser.parseImgDiffSrcByDoc(popupDoc);
+        const imgDiffSrcs = this.parser.parseDiffSrcByDoc(popupDoc);
         return { ...meta, diff: imgDiffSrcs };
       }
 
@@ -327,7 +340,7 @@ export class Nijie extends SiteInject {
     const meta = this.parser.buildMetaByView(id, viewDoc);
 
     // downloading the first page or illust doesn't have diff
-    if (pageNum === 0 || !this.parser.docHasImgDiff(viewDoc)) {
+    if (pageNum === 0 || !this.parser.docHasDiff(viewDoc)) {
       downloaderConfig = new NijieDownloadConfig(meta).getDownloadConfig(btn);
     } else {
       if (this.#isViewPopupPage() && id === this.#getSearchId()) {
@@ -336,7 +349,7 @@ export class Nijie extends SiteInject {
         popupDoc = await this.api.getViewPopupDoc(id);
       }
 
-      const imgDiffSrcs = this.parser.parseImgDiffSrcByDoc(popupDoc);
+      const imgDiffSrcs = this.parser.parseDiffSrcByDoc(popupDoc);
 
       downloaderConfig = new NijieDownloadConfig(meta).generateMultiPageConfig(
         imgDiffSrcs,
@@ -516,13 +529,15 @@ export class Nijie extends SiteInject {
     }
 
     containers.forEach((container, idx) => {
-      const img = container.querySelector<HTMLImageElement>('img:not(.filter)');
-      if (!img) return;
+      const media = container.querySelector<HTMLImageElement | HTMLVideoElement>(
+        'img[src*="pic.nijie.net"], video'
+      );
+      if (!media) return;
 
       // img in view.php has 10px margin-bottom;
-      const { marginBottom } = getComputedStyle(img);
+      const { marginBottom } = getComputedStyle(media);
       container.style.marginBottom = marginBottom;
-      img.style.marginBottom = '0px';
+      media.style.marginBottom = '0px';
 
       // modify the filter image's z-index so it doen't block the download button.
       const filterImg = container.querySelector<HTMLImageElement>('img.filter');
@@ -582,7 +597,6 @@ export class Nijie extends SiteInject {
     observer.observe(ozakuList, { subtree: true, childList: true });
   }
 
-  // TODO: https://nijie.info/history_illust.php
   public inject(): void {
     super.inject();
 
