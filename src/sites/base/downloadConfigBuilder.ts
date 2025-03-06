@@ -5,6 +5,7 @@ import type { MediaMeta } from '@/sites/base/parser';
 import { replaceInvalidChar, unescapeHtml } from '@/lib/util';
 import dayjs from 'dayjs';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
+import { regexp } from '@/lib/regExp';
 
 export abstract class DownloadConfigBuilder<T extends MediaMeta> {
   constructor(protected meta: MediaMeta) {}
@@ -40,7 +41,7 @@ export abstract class DownloadConfigBuilder<T extends MediaMeta> {
   }
 
   protected isImage(): boolean {
-    return /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(this.meta.extendName);
+    return regexp.imageExt.test(this.meta.extendName);
   }
 
   protected buildFilePath(): string {

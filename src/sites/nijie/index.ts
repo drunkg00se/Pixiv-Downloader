@@ -9,6 +9,7 @@ import { NijieDownloadConfig, type NijieDownloaderSource } from './downloadConfi
 import { historyDb, type HistoryData } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import t from '@/lib/lang';
+import { regexp } from '@/lib/regExp';
 
 export class Nijie extends SiteInject {
   protected parser = new NijieParser();
@@ -90,14 +91,10 @@ export class Nijie extends SiteInject {
           checked: true,
           fn(meta) {
             if (meta.diff) {
-              return meta.diff.some(({ extendName }) =>
-                /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(extendName)
-              );
+              return meta.diff.some(({ extendName }) => regexp.imageExt.test(extendName));
             }
 
-            return (
-              !!meta.extendName && /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(meta.extendName)
-            );
+            return !!meta.extendName && regexp.imageExt.test(meta.extendName);
           }
         },
         {
@@ -107,15 +104,10 @@ export class Nijie extends SiteInject {
           checked: true,
           fn(meta) {
             if (meta.diff) {
-              return meta.diff.some(({ extendName }) =>
-                /mp4|avi|mov|mkv|flv|wmv|webm|mpeg|mpg|m4v/i.test(extendName)
-              );
+              return meta.diff.some(({ extendName }) => regexp.videoExt.test(extendName));
             }
 
-            return (
-              !!meta.extendName &&
-              /mp4|avi|mov|mkv|flv|wmv|webm|mpeg|mpg|m4v/i.test(meta.extendName)
-            );
+            return !!meta.extendName && regexp.videoExt.test(meta.extendName);
           }
         }
       ],

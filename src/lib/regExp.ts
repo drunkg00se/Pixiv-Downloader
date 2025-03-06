@@ -13,5 +13,8 @@ export const regexp = {
   historyPage: /\/history\.php/,
   historyThumbnailsId: /\d+(?=_)/,
   series: /\/user\/([0-9]+)\/series\/([0-9]+)/,
-  unlisted: /(?<=artworks\/unlisted\/)[A-Za-z0-9]+/
+  unlisted: /(?<=artworks\/unlisted\/)[A-Za-z0-9]+/,
+
+  imageExt: /bmp|jp(e)?g|jfif|png|tif(f)?|gif|svg|ico|webp|heif|heic|raw|cr2|nef|arw|dng|avif/i,
+  videoExt: /mp4|avi|mkv|mov|wmv|flv|webm|mpeg|mpg|3gp|m4v|ts|vob|ogv|rm|rmvb|m2ts|mxf|asf|swf/i
 };
