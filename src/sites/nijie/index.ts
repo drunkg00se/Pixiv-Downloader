@@ -4,7 +4,7 @@ import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumb
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { downloader, type DownloadConfig } from '@/lib/downloader';
 import { NijieParser, type NijieMeta } from './parser';
-import { NijieApi } from './api';
+import { NijieApi, type IllustSearchParams } from './api';
 import { NijieDownloadConfig, type NijieDownloaderSource } from './downloadConfigBuilder';
 import { historyDb, type HistoryData } from '@/lib/db';
 import { logger } from '@/lib/logger';
@@ -234,6 +234,72 @@ export class Nijie extends SiteInject {
               return {
                 lastPage: true,
                 data: this.parser.parseHistoryIllustArtworkIdByDoc(doc)
+              };
+            },
+            (data) => data
+          );
+        }
+      },
+
+      okiniiri: {
+        name: 'お気に入り',
+        match: /okiniiri\.php/,
+        filterInGenerator: false,
+        fn: (pageRange) => {
+          const tagId = this.#searchParams.get('id') ?? '0';
+          const sort = this.#searchParams.get('sort') ?? '0';
+
+          if (sort !== '0' && sort !== '1')
+            throw new RangeError('Invalid sort params, must be "0" or "1"');
+
+          return this.parser.paginationGenerator(
+            pageRange,
+            async (page) => {
+              const doc = await this.api.getOkiniiriDoc(tagId, String(page), sort);
+              return {
+                lastPage: !this.parser.docHasNextPagination(doc),
+                data: this.parser.parseOkiniiriArtworkIdByDoc(doc)
+              };
+            },
+            (data) => data
+          );
+        }
+      },
+
+      userIllustTagSearch: {
+        name: 'イラスト検索',
+        match: /search\.php.+user_id=[0-9]+/,
+        filterInGenerator: false,
+        fn: (pageRange) => {
+          const mode = Number(this.#searchParams.get('mode')) as IllustSearchParams['mode'];
+          const type = (this.#searchParams.get('type') || undefined) as IllustSearchParams['type'];
+          const sort = Number(this.#searchParams.get('sort')) as IllustSearchParams['sort'];
+          const illustType = Number(
+            this.#searchParams.get('illust_type')
+          ) as IllustSearchParams['illustType'];
+          const period = Number(this.#searchParams.get('p')) as IllustSearchParams['period'];
+          const userId = this.#searchParams.get('user_id');
+          const word = this.#searchParams.get('word') ?? '';
+
+          if (!userId) throw new Error('User id is required.');
+
+          return this.parser.paginationGenerator(
+            pageRange,
+            async (page: number) => {
+              const doc = await this.api.getIllustSearchDoc({
+                mode,
+                type,
+                sort,
+                illustType,
+                period,
+                userId,
+                word,
+                page
+              });
+
+              return {
+                lastPage: !this.parser.docHasNextPagination(doc),
+                data: this.parser.parseSearchArtworkIdByDoc(doc)
               };
             },
             (data) => data
