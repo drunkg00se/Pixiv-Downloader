@@ -92,7 +92,7 @@ export type IndexOption<T extends MediaMeta<string[]>, Option extends OptionBase
   index: number;
 };
 
-export class MediaDownloadConfig<T extends MediaMeta<string | string[]>> {
+export class MediaDownloadConfig {
   id: string;
   src: string | string[];
   ext: string | string[];
@@ -111,7 +111,7 @@ export class MediaDownloadConfig<T extends MediaMeta<string | string[]>> {
 
   onDownloadCompleted: (() => void) | undefined = undefined;
 
-  protected constructor(mediaMeta: T) {
+  protected constructor(mediaMeta: MediaMeta<string | string[]>) {
     const { id, src, extendName, artist, title, tags, createDate } = mediaMeta;
 
     this.id = id;
@@ -155,7 +155,7 @@ export class MediaDownloadConfig<T extends MediaMeta<string | string[]>> {
     const tags = this.tags.map((tag) => this.normalizeString(tag));
 
     const path = template
-      .replaceAll(/\{date\((.*?)\)\}|\{date\}/g, this.replaceDateTemplate)
+      .replaceAll(/\{date\((.*?)\)\}|\{date\}/g, this.replaceDateTemplate.bind(this))
       .replaceAll('{artist}', artist)
       .replaceAll('{title}', title)
       .replaceAll('{tags}', tags.join('_'))
@@ -188,7 +188,7 @@ export class MediaDownloadConfig<T extends MediaMeta<string | string[]>> {
 
   getMultipleMediaDownloadCB(setProgress: NonNullable<OptionBase['setProgress']>) {
     return (this.onDownloadCompleted ??= () => {
-      setProgress(++this.downloaded / this.total);
+      setProgress((++this.downloaded / this.total) * 100);
     });
   }
 
@@ -210,7 +210,7 @@ export class MediaDownloadConfig<T extends MediaMeta<string | string[]>> {
     option: SingleOption<T, O> | IndexOption<U, O>
   ): DownloadConfig<T | U> {
     const { mediaMeta, filenameTemplate, folderTemplate, setProgress } = option;
-    const config = new MediaDownloadConfig(mediaMeta);
+    const config = new this(mediaMeta);
 
     let index: number | undefined = undefined;
     if ('index' in option) {
@@ -233,7 +233,7 @@ export class MediaDownloadConfig<T extends MediaMeta<string | string[]>> {
     option: MultiOption<T, O>
   ): DownloadConfig<T>[] {
     const { mediaMeta, filenameTemplate, folderTemplate, setProgress } = option;
-    const config = new MediaDownloadConfig(mediaMeta);
+    const config = new this(mediaMeta);
     const path = config.getAllSavePaths(folderTemplate, filenameTemplate);
 
     return path.map((v, i) => {
@@ -253,7 +253,7 @@ interface MoebooruOption extends OptionBase {
   cfClearance?: string;
 }
 
-export class BooruDownloadConfig extends MediaDownloadConfig<BooruMeta> {
+export class BooruDownloadConfig extends MediaDownloadConfig {
   protected character: string;
 
   constructor(meta: BooruMeta) {
@@ -286,19 +286,10 @@ export class BooruDownloadConfig extends MediaDownloadConfig<BooruMeta> {
   }
 
   static create(option: SingleOption<BooruMeta, MoebooruOption>): DownloadConfig<BooruMeta> {
-    const { mediaMeta, filenameTemplate, folderTemplate, setProgress, cfClearance } = option;
-    const config = new BooruDownloadConfig(mediaMeta);
+    return super.create(option);
+  }
 
-    const path = config.getSavePath(folderTemplate, filenameTemplate);
-
-    return {
-      headers: cfClearance ? config.getHeaders(cfClearance) : undefined,
-      taskId: config.getTaskId(),
-      src: config.getSrc(),
-      path: path as string,
-      source: mediaMeta,
-      timeout: config.getDownloadTimeout(),
-      onProgress: setProgress
-    };
+  static createMulti(): never {
+    throw new Error('BooruDownloadConfig does not support this method.');
   }
 }

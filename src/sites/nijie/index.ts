@@ -2,10 +2,10 @@ import type { ConfigData } from '@/lib/config';
 import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
-import { downloader, type DownloadConfig } from '@/lib/downloader';
+import { downloader } from '@/lib/downloader';
 import { NijieParser, type NijieMeta } from './parser';
 import { NijieApi, type IllustSearchParams } from './api';
-import { NijieDownloadConfig, type NijieDownloaderSource } from './downloadConfigBuilder';
+import { NijieDownloadConfig } from './downloadConfigBuilder';
 import { historyDb, type HistoryData } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import t from '@/lib/lang';
@@ -63,7 +63,7 @@ export class Nijie extends SiteInject {
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
-    metaType: {} as NijieMeta,
+    metaType: {} as NijieMeta<string | string[]>,
 
     avatar: () => {
       const userAvatarImg = document.querySelector<HTMLImageElement>(
@@ -90,11 +90,13 @@ export class Nijie extends SiteInject {
           name: t('downloader.category.filter.image'),
           checked: true,
           fn(meta) {
-            if (meta.diff) {
-              return meta.diff.some(({ extendName }) => regexp.imageExt.test(extendName));
+            if (meta.extendName === undefined) return false;
+
+            if (Array.isArray(meta.extendName)) {
+              return meta.extendName.some((extendName) => regexp.imageExt.test(extendName));
             }
 
-            return !!meta.extendName && regexp.imageExt.test(meta.extendName);
+            return regexp.imageExt.test(meta.extendName);
           }
         },
         {
@@ -103,11 +105,13 @@ export class Nijie extends SiteInject {
           name: t('downloader.category.filter.video'),
           checked: true,
           fn(meta) {
-            if (meta.diff) {
-              return meta.diff.some(({ extendName }) => regexp.videoExt.test(extendName));
+            if (meta.extendName === undefined) return false;
+
+            if (Array.isArray(meta.extendName)) {
+              return meta.extendName.some((extendName) => regexp.videoExt.test(extendName));
             }
 
-            return !!meta.extendName && regexp.videoExt.test(meta.extendName);
+            return regexp.videoExt.test(meta.extendName);
           }
         }
       ],
@@ -315,7 +319,8 @@ export class Nijie extends SiteInject {
       if (this.parser.docHasDiff(viewDoc)) {
         const popupDoc = await this.api.getViewPopupDoc(id);
         const imgDiffSrcs = this.parser.parseDiffSrcByDoc(popupDoc);
-        return { ...meta, diff: imgDiffSrcs };
+
+        return this.parser.mergeImageDiff(meta, imgDiffSrcs);
       }
 
       return meta;
@@ -324,17 +329,26 @@ export class Nijie extends SiteInject {
     downloadArtworkByMeta: async (meta, signal) => {
       downloader.dirHandleCheck();
 
-      let downloaderConfig:
-        | DownloadConfig<NijieDownloaderSource>
-        | DownloadConfig<NijieDownloaderSource>[];
+      const folderTemplate = this.config.get('folderPattern');
+      const filenameTemplate = this.config.get('filenamePattern');
 
-      if (meta.diff) {
-        downloaderConfig = new NijieDownloadConfig(meta).generateMultiPageConfig(meta.diff);
+      if (Array.isArray(meta.src)) {
+        const downloaderConfig = NijieDownloadConfig.createMulti({
+          mediaMeta: meta as NijieMeta<string[]>,
+          folderTemplate,
+          filenameTemplate
+        });
+
+        await downloader.download(downloaderConfig, { signal });
       } else {
-        downloaderConfig = new NijieDownloadConfig(meta).getDownloadConfig();
-      }
+        const downloaderConfig = NijieDownloadConfig.create({
+          mediaMeta: meta as NijieMeta<string>,
+          folderTemplate,
+          filenameTemplate
+        });
 
-      await downloader.download(downloaderConfig, { signal });
+        await downloader.download(downloaderConfig, { signal });
+      }
 
       const { id, artist, userId, title, comment, tags } = meta;
 
@@ -382,10 +396,10 @@ export class Nijie extends SiteInject {
 
     const { id, page } = btn.dataset as { id: string; page?: string };
     const pageNum = page ? +page : undefined;
+    const setProgress = (progress: number) => {
+      btn.setProgress(progress);
+    };
 
-    let downloaderConfig:
-      | DownloadConfig<NijieDownloaderSource>
-      | DownloadConfig<NijieDownloaderSource>[];
     let viewDoc: Document;
     let popupDoc: Document;
 
@@ -396,25 +410,8 @@ export class Nijie extends SiteInject {
     }
 
     const meta = this.parser.buildMetaByView(id, viewDoc);
-
-    // downloading the first page or illust doesn't have diff
-    if (pageNum === 0 || !this.parser.docHasDiff(viewDoc)) {
-      downloaderConfig = new NijieDownloadConfig(meta).getDownloadConfig(btn);
-    } else {
-      if (this.#isViewPopupPage() && id === this.#getSearchId()) {
-        popupDoc = document;
-      } else {
-        popupDoc = await this.api.getViewPopupDoc(id);
-      }
-
-      const imgDiffSrcs = this.parser.parseDiffSrcByDoc(popupDoc);
-
-      downloaderConfig = new NijieDownloadConfig(meta).generateMultiPageConfig(
-        imgDiffSrcs,
-        pageNum,
-        btn
-      );
-    }
+    const folderTemplate = this.config.get('folderPattern');
+    const filenameTemplate = this.config.get('filenamePattern');
 
     const { userId, comment, tags, artist, title, isBookmarked } = meta;
 
@@ -423,7 +420,46 @@ export class Nijie extends SiteInject {
       this.#addBookmark(id, this.config.get('addBookmarkWithTags') ? tags : undefined);
     }
 
-    await downloader.download(downloaderConfig, { priority: 1 });
+    // downloading the first page or illust doesn't have diff
+    if (pageNum === 0 || !this.parser.docHasDiff(viewDoc)) {
+      const downloadConfig = NijieDownloadConfig.create({
+        mediaMeta: meta,
+        folderTemplate,
+        filenameTemplate,
+        setProgress
+      });
+
+      await downloader.download(downloadConfig, { priority: 1 });
+    } else {
+      if (this.#isViewPopupPage() && id === this.#getSearchId()) {
+        popupDoc = document;
+      } else {
+        popupDoc = await this.api.getViewPopupDoc(id);
+      }
+
+      const imgDiffSrcs = this.parser.parseDiffSrcByDoc(popupDoc);
+      const diffMeta = this.parser.mergeImageDiff(meta, imgDiffSrcs);
+
+      if (pageNum) {
+        const downloadConfig = NijieDownloadConfig.create({
+          mediaMeta: diffMeta,
+          folderTemplate,
+          filenameTemplate,
+          index: pageNum,
+          setProgress
+        });
+        await downloader.download(downloadConfig, { priority: 1 });
+      } else {
+        const downloadConfig = NijieDownloadConfig.createMulti({
+          mediaMeta: diffMeta,
+          folderTemplate,
+          filenameTemplate,
+          setProgress
+        });
+
+        await downloader.download(downloadConfig, { priority: 1 });
+      }
+    }
 
     const historyData: HistoryData = {
       pid: Number(id),

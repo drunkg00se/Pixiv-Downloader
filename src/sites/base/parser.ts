@@ -22,7 +22,10 @@ export enum PostValidState {
 }
 
 export abstract class ParserBase {
-  async *paginationGenerator<PostData extends object | string, IdOrMeta extends string | MediaMeta>(
+  async *paginationGenerator<
+    PostData extends object | string,
+    IdOrMeta extends string | MediaMeta<string | string[]>
+  >(
     pageRange: [start: number, end: number] | null,
     getPostData: (
       page: number

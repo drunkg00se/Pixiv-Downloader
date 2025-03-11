@@ -1,104 +1,33 @@
-import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-import type { NijieDiffSrc, NijieMeta } from './parser';
-import { type DownloadConfig } from '@/lib/downloader';
-import { DownloadConfigBuilder } from '../base/downloadConfigBuilder';
+import type { NijieMeta } from './parser';
+import { MediaDownloadConfig } from '../base/downloadConfigBuilder';
 
-export interface NijieDownloaderSource extends NijieMeta {
-  page: number;
-  total: number;
-}
+export class NijieDownloadConfig extends MediaDownloadConfig {
+  protected userId: string;
 
-function artworkProgressFactory(
-  btn?: ThumbnailButton
-): DownloadConfig<NijieDownloaderSource>['onProgress'] | undefined {
-  if (!btn) return;
-
-  return function onArtworkProgress(progress) {
-    btn.setProgress(progress);
-  };
-}
-
-export class NijieDownloadConfig extends DownloadConfigBuilder<NijieDownloaderSource> {
-  #source: NijieDownloaderSource;
-
-  constructor(protected meta: NijieMeta) {
+  constructor(meta: NijieMeta<string | string[]>) {
     super(meta);
-
-    this.#source = { ...this.meta, page: 0, total: 1 };
+    this.userId = meta.userId;
   }
 
-  protected buildFilePath(): string {
-    const path = super.buildFilePath();
-    const { page, userId } = this.#source;
-
-    return path.replaceAll('{page}', String(page)).replaceAll('{artistID}', userId);
+  static supportedTemplate() {
+    return ['{artist}', '{artistID}', '{title}', '{id}', '{page}', '{tags}', '{date}'];
   }
 
-  public getDownloadConfig(btn?: ThumbnailButton): DownloadConfig<NijieDownloaderSource> {
-    return {
-      taskId: this.generateTaskId(),
-      src: this.#source.src,
-      path: this.buildFilePath(),
-      source: this.#source,
-      timeout: this.isImage() ? 60000 : undefined,
-      onProgress: artworkProgressFactory(btn)
-    };
-  }
+  replaceTemplate(template: string): string[] {
+    const artist = this.normalizeString(this.artist);
+    const title = this.normalizeString(this.title);
+    const tags = this.tags.map((tag) => this.normalizeString(tag));
 
-  protected onImageDiffDownloadProgress(btn?: ThumbnailButton, total?: number) {
-    if (!btn || !total) return;
-    let completed = 0;
+    const path = template
+      .replaceAll(/\{date\((.*?)\)\}|\{date\}/g, this.replaceDateTemplate.bind(this))
+      .replaceAll('{artist}', artist)
+      .replaceAll('{artistID}', this.userId)
+      .replaceAll('{title}', title)
+      .replaceAll('{id}', this.id)
+      .replaceAll('{tags}', tags.join('_'));
 
-    return () => {
-      const progress = Math.floor((++completed / total) * 100);
-      btn.setProgress(progress);
-    };
-  }
-
-  public generateMultiPageConfig(
-    diffSrcs: NijieDiffSrc[],
-    page?: number,
-    btn?: ThumbnailButton
-  ): DownloadConfig<NijieDownloaderSource> | DownloadConfig<NijieDownloaderSource>[] {
-    const config = this.getDownloadConfig(btn);
-    const total = diffSrcs.length;
-    const path = super.buildFilePath();
-
-    config.onProgress = undefined;
-    config.onXhrLoaded = this.onImageDiffDownloadProgress(btn, total);
-
-    if (page === undefined) {
-      return diffSrcs.map((diffSrc, idx) => {
-        const source = {
-          ...this.#source,
-          ...diffSrc,
-          total,
-          page: idx
-        };
-
-        return {
-          ...config,
-          source,
-          src: source.src,
-          path: path.replaceAll('{page}', String(idx)).replaceAll('{artistID}', source.userId)
-        };
-      });
-    } else {
-      if (page > total || page < 0) throw new RangeError('Invalid page');
-
-      const source = {
-        ...this.#source,
-        ...diffSrcs[page],
-        total,
-        page
-      };
-
-      return {
-        ...config,
-        source,
-        src: source.src,
-        path: path.replaceAll('{page}', String(page)).replaceAll('{artistID}', source.userId)
-      };
-    }
+    return Array.from({ length: Array.isArray(this.ext) ? this.ext.length : 1 }, (_, i) =>
+      path.replaceAll('{page}', String(i))
+    );
   }
 }

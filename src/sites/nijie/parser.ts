@@ -1,12 +1,11 @@
 import { ParserBase, type MediaMeta } from '../base/parser';
 
-export type NijieMeta = MediaMeta & {
+export interface NijieMeta<T extends string | string[] = string> extends MediaMeta<T> {
   userId: string;
   comment: string;
   score: number;
   isBookmarked: boolean;
-  diff?: NijieDiffSrc[];
-};
+}
 
 export type NijieDiffSrc = {
   src: string;
@@ -81,6 +80,22 @@ export class NijieParser extends ParserBase {
         extendName: matchExt[0]
       };
     });
+  }
+
+  mergeImageDiff(meta: NijieMeta, diffs: NijieDiffSrc[]): NijieMeta<string[]> {
+    const src: string[] = [];
+    const extendName: string[] = [];
+
+    for (const diff of diffs) {
+      src.push(diff.src);
+      extendName.push(diff.extendName);
+    }
+
+    return {
+      ...meta,
+      src,
+      extendName
+    };
   }
 
   #parseIdByAnchors(elems: HTMLAnchorElement[]): string[] {

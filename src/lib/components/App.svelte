@@ -16,8 +16,8 @@
     dark?: boolean;
     config: ConfigStore;
     filenameTemplate?: string[];
-    downloaderConfig?: BatchDownloadConfig<MediaMeta>;
-    useBatchDownload?: BatchDownloadDefinition<MediaMeta>;
+    downloaderConfig?: BatchDownloadConfig<MediaMeta<string | string[]>>;
+    useBatchDownload?: BatchDownloadDefinition<MediaMeta<string | string[]>>;
   }
 
   let {

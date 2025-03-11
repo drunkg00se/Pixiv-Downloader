@@ -7,7 +7,7 @@ import type { MediaMeta } from '@/sites/base/parser';
 import PQueue from 'p-queue';
 import { useChannel } from './useChannel';
 
-export interface YieldArtwork<IdOrMeta extends string | MediaMeta> {
+export interface YieldArtwork<IdOrMeta extends string | MediaMeta<string | string[]>> {
   total: number;
   page: number;
   avaliable: IdOrMeta[];
@@ -17,11 +17,14 @@ export interface YieldArtwork<IdOrMeta extends string | MediaMeta> {
 
 type CustomTagFilter = (blacklistedTags: string[], tags: string[]) => boolean;
 
-type FilterFn<ArtworkMeta extends MediaMeta> = (
+type FilterFn<ArtworkMeta extends MediaMeta<string | string[]>> = (
   artworkMeta: Partial<ArtworkMeta>
 ) => boolean | Promise<boolean>;
 
-export type ValidatedArtworkGenerator<ArtworkMeta extends MediaMeta, RestArgs = undefined> = (
+export type ValidatedArtworkGenerator<
+  ArtworkMeta extends MediaMeta<string | string[]>,
+  RestArgs = undefined
+> = (
   pageRange: [start: number, end: number] | null,
   checkValidity: (meta: Partial<ArtworkMeta>) => Promise<boolean>,
   ...restArgs: RestArgs extends unknown[] ? RestArgs : [RestArgs]
@@ -45,7 +48,7 @@ interface GeneratorOptionBase {
   afterDownload?(): void;
 }
 
-interface ValidatedArtworkGeneratorOption<ArtworkMeta extends MediaMeta>
+interface ValidatedArtworkGeneratorOption<ArtworkMeta extends MediaMeta<string | string[]>>
   extends GeneratorOptionBase {
   filterInGenerator: true;
   fn: ValidatedArtworkGenerator<ArtworkMeta, any[]>;
@@ -56,12 +59,15 @@ interface ArtworkGeneratorOption extends GeneratorOptionBase {
   fn: ArtworkGenerator<any[]>;
 }
 
-export type PageOption<ArtworkMeta extends MediaMeta> = Record<
+export type PageOption<ArtworkMeta extends MediaMeta<string | string[]>> = Record<
   string,
   ValidatedArtworkGeneratorOption<ArtworkMeta> | ArtworkGeneratorOption | GeneratorOptionBase
 >;
 
-type OmitNotGeneratorKey<ArtworkMeta extends MediaMeta, P extends PageOption<ArtworkMeta>> = {
+type OmitNotGeneratorKey<
+  ArtworkMeta extends MediaMeta<string | string[]>,
+  P extends PageOption<ArtworkMeta>
+> = {
   [K in keyof P]: P[K] extends ArtworkGeneratorOption
     ? K
     : P[K] extends ValidatedArtworkGeneratorOption<ArtworkMeta>
@@ -75,7 +81,7 @@ type DropFirstAndSecondArg<F> = F extends (x: any, y: any, ...args: infer P) => 
 
 type GetGeneratorParameters<
   Option,
-  ArtworkMeta extends MediaMeta
+  ArtworkMeta extends MediaMeta<string | string[]>
 > = Option extends ArtworkGeneratorOption
   ? DropFirstArg<Option['fn']>
   : Option extends ValidatedArtworkGeneratorOption<ArtworkMeta>
@@ -83,7 +89,7 @@ type GetGeneratorParameters<
     : never;
 
 interface BatchDownload<
-  ArtworkMeta extends MediaMeta,
+  ArtworkMeta extends MediaMeta<string | string[]>,
   P extends PageOption<ArtworkMeta> = PageOption<ArtworkMeta>
 > {
   artworkCount: Readable<number>;
@@ -100,14 +106,14 @@ interface BatchDownload<
 }
 
 export interface BatchDownloadDefinition<
-  ArtworkMeta extends MediaMeta,
+  ArtworkMeta extends MediaMeta<string | string[]>,
   P extends PageOption<ArtworkMeta> = PageOption<ArtworkMeta>
 > {
   (): BatchDownload<ArtworkMeta, P>;
 }
 
 export interface BatchDownloadConfig<
-  ArtworkMeta extends MediaMeta,
+  ArtworkMeta extends MediaMeta<string | string[]>,
   P extends PageOption<ArtworkMeta> = PageOption<ArtworkMeta>
 > {
   /** use for type inference */
@@ -153,9 +159,10 @@ interface LogItem {
 
 const ERROR_MASKED = 'Masked.';
 
-export function defineBatchDownload<T extends MediaMeta, P extends PageOption<T> = PageOption<T>>(
-  downloaderConfig: BatchDownloadConfig<T, P>
-): BatchDownloadDefinition<T, P> {
+export function defineBatchDownload<
+  T extends MediaMeta<string | string[]>,
+  P extends PageOption<T> = PageOption<T>
+>(downloaderConfig: BatchDownloadConfig<T, P>): BatchDownloadDefinition<T, P> {
   const { requestDownload, cancelDownloadRequest, processNextDownload } = useChannel();
 
   const artworkCount = writable<number>(0);

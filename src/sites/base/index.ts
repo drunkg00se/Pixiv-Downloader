@@ -11,7 +11,7 @@ export abstract class SiteInject {
 
   protected config: ReturnType<typeof loadConfig>;
 
-  protected useBatchDownload?: BatchDownloadDefinition<MediaMeta>;
+  protected useBatchDownload?: BatchDownloadDefinition<MediaMeta<string | string[]>>;
 
   constructor() {
     this.config = loadConfig(this.getCustomConfig() || undefined);

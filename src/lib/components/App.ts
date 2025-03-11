@@ -48,7 +48,7 @@ export const PdlApp = create_custom_element(
         this.config = props.config;
       }
 
-      initBatchDownloader<T extends MediaMeta, P extends PageOption<T>>(
+      initBatchDownloader<T extends MediaMeta<string | string[]>, P extends PageOption<T>>(
         config: BatchDownloadConfig<T, P>
       ): BatchDownloadDefinition<T, P> {
         this.downloaderConfig = config;

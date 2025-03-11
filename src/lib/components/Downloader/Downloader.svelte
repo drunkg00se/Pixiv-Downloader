@@ -29,8 +29,8 @@
   import type { MediaMeta } from '@/sites/base/parser';
 
   interface Props {
-    downloaderConfig: BatchDownloadConfig<MediaMeta>;
-    useBatchDownload: BatchDownloadDefinition<MediaMeta>;
+    downloaderConfig: BatchDownloadConfig<MediaMeta<string | string[]>>;
+    useBatchDownload: BatchDownloadDefinition<MediaMeta<string | string[]>>;
   }
 
   type FunctionKeys<T> = {
@@ -54,7 +54,8 @@
 
   initFilterStore();
 
-  let batchDownloadEntries: [string, PageOption<MediaMeta>['string']][] | null = $state(null);
+  let batchDownloadEntries: [string, PageOption<MediaMeta<string | string[]>>['string']][] | null =
+    $state(null);
 
   // dom binding
   let startDownloadEl: HTMLDivElement;
@@ -159,7 +160,8 @@
     if (!downloaderConfig) return;
 
     const { pageOption } = downloaderConfig;
-    const generatorOptionEntries: [string, PageOption<MediaMeta>['string']][] = [];
+    const generatorOptionEntries: [string, PageOption<MediaMeta<string | string[]>>['string']][] =
+      [];
 
     for (const key in pageOption) {
       const item = pageOption[key];
