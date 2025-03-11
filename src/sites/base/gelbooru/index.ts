@@ -4,11 +4,11 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { GelbooruParserV020, type GelbooruHtmlPostDataV020, type GelbooruMeta } from './parser';
 import { downloader } from '@/lib/downloader';
 import { historyDb } from '@/lib/db';
-import { GelbooruDownloadConfig } from './downloadConfigBuilder';
 import t from '@/lib/lang';
 import type { GelbooruApiV020 } from './api';
 import { unsafeWindow } from '$';
 import { PostValidState } from '../parser';
+import { BooruDownloadConfig } from '../downloadConfigBuilder';
 
 export abstract class GelbooruV020 extends SiteInject {
   protected abstract api: GelbooruApiV020;
@@ -158,14 +158,19 @@ export abstract class GelbooruV020 extends SiteInject {
       return this.parser.buildMeta(id, doc);
     },
 
-    async downloadArtworkByMeta(meta, signal) {
+    downloadArtworkByMeta: async (meta, signal) => {
       downloader.dirHandleCheck();
 
-      const { id, tags, artist, title, source, rating } = meta;
-      const downloadConfigs = new GelbooruDownloadConfig(meta).getDownloadConfig();
+      const downloadConfigs = BooruDownloadConfig.create({
+        mediaMeta: meta,
+        folderTemplate: this.config.get('folderPattern'),
+        filenameTemplate: this.config.get('filenamePattern'),
+        cfClearance: this.config.get('auth')?.cf_clearance
+      });
 
       await downloader.download(downloadConfigs, { signal });
 
+      const { id, tags, artist, title, source, rating } = meta;
       historyDb.add({
         pid: Number(id),
         user: artist,
@@ -188,15 +193,22 @@ export abstract class GelbooruV020 extends SiteInject {
 
     const doc = await this.api.getPostDoc(id);
     const mediaMeta = this.parser.buildMeta(id, doc);
-
-    const { tags, artist, title, source, rating } = mediaMeta;
-    const downloadConfigs = new GelbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
+    const downloadConfig = BooruDownloadConfig.create({
+      mediaMeta,
+      folderTemplate: this.config.get('folderPattern'),
+      filenameTemplate: this.config.get('filenamePattern'),
+      cfClearance: this.config.get('auth')?.cf_clearance,
+      setProgress: (progress: number) => {
+        btn.setProgress(progress);
+      }
+    });
 
     // TODO: check if post is already favorited.
     this.config.get('addBookmark') && this.#addBookmark(id);
 
-    await downloader.download(downloadConfigs, { priority: 1 });
+    await downloader.download(downloadConfig, { priority: 1 });
 
+    const { tags, artist, title, source, rating } = mediaMeta;
     historyDb.add({
       pid: Number(id),
       user: artist,

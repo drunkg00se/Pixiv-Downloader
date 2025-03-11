@@ -4,7 +4,6 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { DanbooruParser, type DanbooruBlacklistItem, type DanbooruMeta } from './parser';
 import t from '@/lib/lang';
 import { historyDb } from '@/lib/db';
-import { DanbooruDownloadConfig } from './downloadConfigBuilder';
 import { downloader } from '@/lib/downloader';
 import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton';
 import type { DanbooruArtistCommentary, DanbooruPost, DanbooruUserProfile } from './types';
@@ -14,6 +13,7 @@ import { unsafeWindow } from '$';
 import { evalScript } from '@/lib/util';
 import { logger } from '@/lib/logger';
 import { PostValidState } from '../parser';
+import { BooruDownloadConfig } from '../downloadConfigBuilder';
 
 export abstract class AbstractDanbooru extends SiteInject {
   protected abstract api: DanbooruApi;
@@ -277,12 +277,16 @@ export abstract class AbstractDanbooru extends SiteInject {
       return this.getMetaByPostId(id);
     },
 
-    async downloadArtworkByMeta(meta, signal) {
+    downloadArtworkByMeta: async (meta, signal) => {
       downloader.dirHandleCheck();
 
-      const downloadConfigs = new DanbooruDownloadConfig(meta).getDownloadConfig();
+      const downloadConfig = BooruDownloadConfig.create({
+        mediaMeta: meta,
+        folderTemplate: this.config.get('folderPattern'),
+        filenameTemplate: this.config.get('filenamePattern')
+      });
 
-      await downloader.download(downloadConfigs, { signal });
+      await downloader.download(downloadConfig, { signal });
 
       const { id, tags, artist, title, comment, source, rating } = meta;
       historyDb.add({
@@ -357,11 +361,18 @@ export abstract class AbstractDanbooru extends SiteInject {
     const id = btn.dataset.id!;
 
     const mediaMeta = await this.getMetaByPostId(id);
-    const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
+    const downloadConfig = BooruDownloadConfig.create({
+      mediaMeta,
+      folderTemplate: this.config.get('folderPattern'),
+      filenameTemplate: this.config.get('filenamePattern'),
+      setProgress: (progress: number) => {
+        btn.setProgress(progress);
+      }
+    });
 
     this.config.get('addBookmark') && this.addBookmark(id);
 
-    await downloader.download(downloadConfigs, { priority: 1 });
+    await downloader.download(downloadConfig, { priority: 1 });
 
     const { tags, artist, title, comment, source, rating } = mediaMeta;
     historyDb.add({

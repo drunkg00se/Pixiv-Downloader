@@ -6,12 +6,12 @@ import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton
 import { E621ngApi, type E621FullCurrentUser, type E621Post } from './api';
 import { downloader } from '@/lib/downloader';
 import { E621ngParser, type E621ngMeta } from './parser';
-import { E621ngMetaDownloadConfig } from './downloadConfigBuilder';
 import { historyDb } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { unsafeWindow } from '$';
 import t from '@/lib/lang';
 import { PostValidState } from '../base/parser';
+import { BooruDownloadConfig } from '../base/downloadConfigBuilder';
 
 export class E621ng extends SiteInject {
   static get hostname(): string[] {
@@ -310,15 +310,18 @@ export class E621ng extends SiteInject {
       return this.parser.buildMeta(post);
     },
 
-    async downloadArtworkByMeta(meta, signal) {
+    downloadArtworkByMeta: async (meta, signal) => {
       downloader.dirHandleCheck();
 
-      const downloadConfigs = new E621ngMetaDownloadConfig(meta).getDownloadConfig();
+      const downloadConfig = BooruDownloadConfig.create({
+        mediaMeta: meta,
+        folderTemplate: this.config.get('folderPattern'),
+        filenameTemplate: this.config.get('filenamePattern')
+      });
 
-      await downloader.download(downloadConfigs, { priority: 1, signal });
+      await downloader.download(downloadConfig, { priority: 1, signal });
 
       const { tags, artist, title, comment, source, rating } = meta;
-
       historyDb.add({
         pid: Number(meta.id),
         user: artist,
@@ -365,13 +368,20 @@ export class E621ng extends SiteInject {
 
     const { post } = await this.api.getPost(id);
     const mediaMeta = this.parser.buildMeta(post);
-    const downloadConfigs = new E621ngMetaDownloadConfig(mediaMeta).getDownloadConfig(btn);
+    const downloadConfig = BooruDownloadConfig.create({
+      mediaMeta,
+      folderTemplate: this.config.get('folderPattern'),
+      filenameTemplate: this.config.get('filenamePattern'),
+      setProgress: (progress: number) => {
+        btn.setProgress(progress);
+      }
+    });
 
     if (this.config.get('addBookmark') && !post.is_favorited) {
       this.#addFavorites(id);
     }
 
-    await downloader.download(downloadConfigs, { priority: 1 });
+    await downloader.download(downloadConfig, { priority: 1 });
 
     const { tags, artist, title, comment, source, rating } = mediaMeta;
 

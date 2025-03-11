@@ -2,7 +2,6 @@ import { SiteInject } from '../../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { MoebooruParser, type MoebooruBlacklistItem, type MoebooruMeta } from './parser';
-import { MoebooruDownloadConfig } from './downloadConfigBuilder';
 import { downloader } from '@/lib/downloader';
 import { historyDb } from '@/lib/db';
 import t from '@/lib/lang';
@@ -14,6 +13,7 @@ import {
 } from './api';
 import { logger } from '@/lib/logger';
 import { PostValidState } from '../parser';
+import { BooruDownloadConfig } from '../downloadConfigBuilder';
 
 type MoebooruGeneratorPostData = PossibleMoebooruPostData & {
   tagType: Record<string, string>;
@@ -272,13 +272,19 @@ export abstract class Moebooru extends SiteInject {
       return this.parser.buildMeta(posts[0], tags);
     },
 
-    async downloadArtworkByMeta(meta, signal) {
+    downloadArtworkByMeta: async (meta, signal) => {
       downloader.dirHandleCheck();
+
+      const downloadConfig = BooruDownloadConfig.create({
+        mediaMeta: meta,
+        folderTemplate: this.config.get('folderPattern'),
+        filenameTemplate: this.config.get('filenamePattern'),
+        cfClearance: this.config.get('auth')?.cf_clearance
+      });
+
+      await downloader.download(downloadConfig, { signal });
+
       const { id, tags, artist, title, rating, source } = meta;
-      const downloadConfigs = new MoebooruDownloadConfig(meta).getDownloadConfig();
-
-      await downloader.download(downloadConfigs, { signal });
-
       historyDb.add({
         pid: Number(id),
         user: artist,
@@ -302,16 +308,24 @@ export abstract class Moebooru extends SiteInject {
     const { posts, tags: tagType, votes } = this.parser.parsePostAndPool(htmlText);
     const mediaMeta = this.parser.buildMeta(posts[0], tagType);
 
-    const { tags, artist, title, rating, source } = mediaMeta;
-    const downloadConfigs = new MoebooruDownloadConfig(mediaMeta).getDownloadConfig(btn);
+    const downloadConfig = BooruDownloadConfig.create({
+      mediaMeta: mediaMeta,
+      folderTemplate: this.config.get('folderPattern'),
+      filenameTemplate: this.config.get('filenamePattern'),
+      cfClearance: this.config.get('auth')?.cf_clearance,
+      setProgress: (progress: number) => {
+        btn.setProgress(progress);
+      }
+    });
 
     if (this.config.get('addBookmark') && !this.parser.isFavorite(id, votes)) {
       const token = this.parser.parseCsrfToken();
       this.api.addFavorite(id, token).catch(logger.error);
     }
 
-    await downloader.download(downloadConfigs, { priority: 1 });
+    await downloader.download(downloadConfig, { priority: 1 });
 
+    const { tags, artist, title, rating, source } = mediaMeta;
     historyDb.add({
       pid: Number(id),
       user: artist,

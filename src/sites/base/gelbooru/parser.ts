@@ -1,12 +1,10 @@
-import { ParserBase, type MediaMeta } from '../parser';
+import { ParserBase, type BooruMeta } from '../parser';
 import type { GelbooruPostDataV020 } from './api';
 import { logger } from '@/lib/logger';
 
-export type GelbooruMeta = MediaMeta & {
-  character: string;
+export interface GelbooruMeta extends BooruMeta {
   rating: GelbooruPostDataV020['rating'];
-  source: string;
-};
+}
 
 export interface GelbooruHtmlPostDataV020 {
   id: string;

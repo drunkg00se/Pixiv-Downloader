@@ -1,13 +1,18 @@
 import type { YieldArtwork } from '@/lib/components/Downloader/useBatchDownload';
 
-export interface MediaMeta {
+export interface MediaMeta<T extends string | string[] = string> {
   id: string;
-  src: string;
-  extendName: string;
+  src: T;
+  extendName: T;
   artist: string;
   title: string;
   tags: string[];
   createDate: string;
+}
+
+export interface BooruMeta extends MediaMeta {
+  character: string;
+  source: string;
 }
 
 export enum PostValidState {

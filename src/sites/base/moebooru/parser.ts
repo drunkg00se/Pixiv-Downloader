@@ -1,4 +1,4 @@
-import { ParserBase, type MediaMeta } from '../parser';
+import { ParserBase, type BooruMeta } from '../parser';
 import type {
   MoebooruPostDataLegacy,
   MoebooruPostData,
@@ -45,11 +45,9 @@ type PossibleHtmlPostData = MoebooruHtmlPostDataLegacy | MoebooruHtmlPostData;
 
 type PossiblePostListDataWithTagType = Pick<PossibleHtmlPostData, 'posts' | 'tags'>;
 
-export type MoebooruMeta = MediaMeta & {
-  character: string;
+export interface MoebooruMeta extends BooruMeta {
   rating: MoebooruPostData['rating'];
-  source: string;
-};
+}
 
 export class MoebooruParser extends ParserBase {
   #parsePostListData(docText: string): PossibleMoebooruPostData[] {

@@ -1,17 +1,14 @@
-import { ParserBase, type MediaMeta } from '../parser';
+import { ParserBase, type BooruMeta } from '../parser';
 import { getElementText, intersect } from '@/lib/util';
 import type { DanbooruPost, DanbooruArtistCommentary } from './types';
 
-// general | sensitive | questionable | explicit
-type Rating = 'g' | 's' | 'q' | 'e' | '';
+type Rating = NonNullable<DanbooruPost['rating']> | '';
 
-export type DanbooruMeta = MediaMeta & {
+export interface DanbooruMeta extends BooruMeta {
   comment: string;
-  character: string;
   rating: Rating;
-  source: string;
   blacklistValidationTags?: string[];
-};
+}
 
 export interface DanbooruBlacklistItem {
   tags: string;

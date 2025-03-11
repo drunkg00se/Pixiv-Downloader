@@ -1,14 +1,11 @@
-import { ParserBase, type MediaMeta } from '@/sites/base/parser';
+import { ParserBase, type BooruMeta } from '@/sites/base/parser';
 import type { E621Post } from './api';
-// import type { YieldArtworkMeta } from '@/lib/components/Downloader/useBatchDownload';
 
-export type E621ngMeta = MediaMeta & {
+export interface E621ngMeta extends BooruMeta {
   comment: string;
-  character: string;
   rating: E621Post['rating'];
-  source: string;
   isFavorited: boolean;
-};
+}
 
 export class E621ngParser extends ParserBase {
   buildMeta(postData: E621Post): E621ngMeta {
