@@ -1,8 +1,11 @@
 import { logger } from '@/lib/logger';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-import { downloadArtwork } from '../../downloadArtwork';
 
-export function createPreviewModalBtn(id: string, unlistedId?: string) {
+export function createPreviewModalBtn(
+  id: string,
+  downloadArtwork: (btn: ThumbnailButton) => void,
+  unlistedId?: string
+) {
   //artworks插画页预览按钮class
   const illustModalBtn = document.querySelector(
     '.gtm-manga-viewer-preview-modal-open:not(.pdl-listened)'
@@ -21,13 +24,17 @@ export function createPreviewModalBtn(id: string, unlistedId?: string) {
     if (node) {
       node.classList.add('pdl-listened');
       node.addEventListener('click', () => {
-        handleModalClick(id, unlistedId);
+        handleModalClick(id, downloadArtwork, unlistedId);
       });
     }
   });
 }
 
-function handleModalClick(id: string, unlistedId?: string): void {
+function handleModalClick(
+  id: string,
+  downloadArtwork: (btn: ThumbnailButton) => void,
+  unlistedId?: string
+): void {
   //获得modal打开后的dom
   const timer = setInterval(() => {
     logger.info('Start to find modal.');

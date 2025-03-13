@@ -1,7 +1,10 @@
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-import { downloadArtwork } from '../../downloadArtwork';
 
-export function createMangaViewerBtn(id: string, unlistedId?: string): void {
+export function createMangaViewerBtn(
+  id: string,
+  downloadArtwork: (btn: ThumbnailButton) => void,
+  unlistedId?: string
+): void {
   const mangaViewerBackBtn = document.querySelector<HTMLDivElement>('.gtm-manga-viewer-close-icon');
   if (!mangaViewerBackBtn) return;
 

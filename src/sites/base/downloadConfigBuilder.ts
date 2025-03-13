@@ -1,77 +1,8 @@
-import { downloader, type DownloadConfig } from '@/lib/downloader';
+import { type DownloadConfig } from '@/lib/downloader';
 import type { BooruMeta, MediaMeta } from '@/sites/base/parser';
 import { replaceInvalidChar, unescapeHtml } from '@/lib/util';
 import dayjs from 'dayjs';
 import { regexp } from '@/lib/regExp';
-import { config } from '@/lib/config';
-import { env } from '@/lib/env';
-import type { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-
-export abstract class DownloadConfigBuilder<T extends MediaMeta> {
-  constructor(protected meta: MediaMeta) {}
-
-  protected normalizeString(str: string): string {
-    return replaceInvalidChar(unescapeHtml(str));
-  }
-
-  protected getFolderPattern(): string {
-    return config.get('folderPattern');
-  }
-
-  protected getFilenamePattern(): string {
-    return config.get('filenamePattern');
-  }
-
-  protected getFullpathPattern(): string {
-    const folder = this.getFolderPattern();
-    const filename = this.getFilenamePattern() + '.' + this.meta.extendName;
-    return folder ? folder + '/' + filename : filename;
-  }
-
-  protected isBrowserApi(): boolean {
-    return env.isBrowserDownloadMode();
-  }
-
-  protected isFsaEnable(): boolean {
-    return downloader.fileSystemAccessEnabled;
-  }
-
-  protected supportSubpath(): boolean {
-    return this.isBrowserApi() || this.isFsaEnable();
-  }
-
-  protected isImage(): boolean {
-    return regexp.imageExt.test(this.meta.extendName);
-  }
-
-  protected buildFilePath(): string {
-    const path = this.getFullpathPattern();
-    const { id, createDate } = this.meta;
-    let { artist, title, tags } = this.meta;
-
-    artist = this.normalizeString(artist);
-    title = this.normalizeString(title);
-    tags = tags.map((tag) => this.normalizeString(tag));
-
-    const replaceDate = (_: string, p1: string): string => {
-      const format = p1 || 'YYYY-MM-DD';
-      return dayjs(createDate).format(format);
-    };
-
-    return path
-      .replaceAll(/\{date\((.*?)\)\}|\{date\}/g, replaceDate)
-      .replaceAll('{artist}', artist)
-      .replaceAll('{title}', title)
-      .replaceAll('{tags}', tags.join('_'))
-      .replaceAll('{id}', id);
-  }
-
-  protected generateTaskId() {
-    return this.meta.id + '_' + Math.random().toString(36).slice(2);
-  }
-
-  abstract getDownloadConfig(btn?: ThumbnailButton): DownloadConfig<T> | DownloadConfig<T>[];
-}
 
 export interface OptionBase {
   folderTemplate: string;
@@ -126,6 +57,11 @@ export class MediaDownloadConfig {
     this.downloaded = 0;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getHeaders(_option?: OptionBase): Record<string, string> | undefined {
+    return undefined;
+  }
+
   normalizeString(str: string): string {
     return replaceInvalidChar(unescapeHtml(str));
   }
@@ -164,14 +100,14 @@ export class MediaDownloadConfig {
     return Array.from({ length: Array.isArray(this.ext) ? this.ext.length : 1 }, () => path);
   }
 
-  getSavePath(folderTemplate: string, filenameTemplate: string, idx = 0): string {
+  getSavePath(folderTemplate: string, filenameTemplate: string, idx = 0, ext?: string): string {
     const template = folderTemplate ? `${folderTemplate}/${filenameTemplate}` : filenameTemplate;
     const path = this.replaceTemplate(template);
 
     if (Array.isArray(this.ext)) {
-      return `${path[idx]}.${this.ext[idx]}`;
+      return `${path[idx]}.${ext ?? this.ext[idx]}`;
     } else {
-      return `${path[idx]}.${this.ext}`;
+      return `${path[idx]}.${ext ?? this.ext}`;
     }
   }
 
@@ -202,13 +138,13 @@ export class MediaDownloadConfig {
 
   static create<T extends MediaMeta, O extends OptionBase>(
     option: SingleOption<T, O>
-  ): DownloadConfig<T>;
+  ): DownloadConfig;
   static create<U extends MediaMeta<string[]>, O extends OptionBase>(
     option: IndexOption<U, O>
-  ): DownloadConfig<U>;
+  ): DownloadConfig;
   static create<T extends MediaMeta, U extends MediaMeta<string[]>, O extends OptionBase>(
     option: SingleOption<T, O> | IndexOption<U, O>
-  ): DownloadConfig<T | U> {
+  ): DownloadConfig {
     const { mediaMeta, filenameTemplate, folderTemplate, setProgress } = option;
     const config = new this(mediaMeta);
 
@@ -220,10 +156,10 @@ export class MediaDownloadConfig {
     const path = config.getSavePath(folderTemplate, filenameTemplate, index);
 
     return {
+      headers: config.getHeaders(),
       taskId: config.getTaskId(),
       src: config.getSrc(index),
       path: path,
-      source: mediaMeta,
       timeout: config.getDownloadTimeout(index),
       onProgress: setProgress
     };
@@ -231,17 +167,17 @@ export class MediaDownloadConfig {
 
   static createMulti<T extends MediaMeta<string[]>, O extends OptionBase>(
     option: MultiOption<T, O>
-  ): DownloadConfig<T>[] {
+  ): DownloadConfig[] {
     const { mediaMeta, filenameTemplate, folderTemplate, setProgress } = option;
     const config = new this(mediaMeta);
     const path = config.getAllSavePaths(folderTemplate, filenameTemplate);
 
     return path.map((v, i) => {
       return {
+        headers: config.getHeaders(),
         taskId: config.getTaskId(),
         src: config.getSrc(i),
         path: v,
-        source: mediaMeta,
         timeout: config.getDownloadTimeout(i),
         onFileSaved: setProgress ? config.getMultipleMediaDownloadCB(setProgress) : undefined
       };
@@ -249,7 +185,7 @@ export class MediaDownloadConfig {
   }
 }
 
-interface MoebooruOption extends OptionBase {
+interface BooruOption extends OptionBase {
   cfClearance?: string;
 }
 
@@ -261,9 +197,9 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
     this.character = meta.character;
   }
 
-  protected getHeaders(cfClearance: string): Record<'cookie', string> {
+  getHeaders(option: BooruOption): Record<string, string> {
     return {
-      cookie: `cf_clearance=${cfClearance}`
+      cookie: `cf_clearance=${option.cfClearance}`
     };
   }
 
@@ -285,7 +221,7 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
     return ['{artist}', '{title}', '{character}', '{id}', '{date}'];
   }
 
-  static create(option: SingleOption<BooruMeta, MoebooruOption>): DownloadConfig<BooruMeta> {
+  static create(option: SingleOption<BooruMeta, BooruOption>): DownloadConfig {
     return super.create(option);
   }
 

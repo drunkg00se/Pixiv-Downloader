@@ -2,7 +2,7 @@ import type { ConfigData } from '@/lib/config';
 import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
-import { downloader } from '@/lib/downloader';
+import { downloader, type DownloadConfig } from '@/lib/downloader';
 import { NijieParser, type NijieMeta } from './parser';
 import { NijieApi, type IllustSearchParams } from './api';
 import { NijieDownloadConfig } from './downloadConfigBuilder';
@@ -332,23 +332,23 @@ export class Nijie extends SiteInject {
       const folderTemplate = this.config.get('folderPattern');
       const filenameTemplate = this.config.get('filenamePattern');
 
+      let downloadConfig: DownloadConfig | DownloadConfig[];
+
       if (Array.isArray(meta.src)) {
-        const downloaderConfig = NijieDownloadConfig.createMulti({
+        downloadConfig = NijieDownloadConfig.createMulti({
           mediaMeta: meta as NijieMeta<string[]>,
           folderTemplate,
           filenameTemplate
         });
-
-        await downloader.download(downloaderConfig, { signal });
       } else {
-        const downloaderConfig = NijieDownloadConfig.create({
+        downloadConfig = NijieDownloadConfig.create({
           mediaMeta: meta as NijieMeta<string>,
           folderTemplate,
           filenameTemplate
         });
-
-        await downloader.download(downloaderConfig, { signal });
       }
+
+      await downloader.download(downloadConfig, { signal });
 
       const { id, artist, userId, title, comment, tags } = meta;
 
@@ -395,10 +395,6 @@ export class Nijie extends SiteInject {
     downloader.dirHandleCheck();
 
     const { id, page } = btn.dataset as { id: string; page?: string };
-    const pageNum = page ? +page : undefined;
-    const setProgress = (progress: number) => {
-      btn.setProgress(progress);
-    };
 
     let viewDoc: Document;
     let popupDoc: Document;
@@ -410,9 +406,6 @@ export class Nijie extends SiteInject {
     }
 
     const meta = this.parser.buildMetaByView(id, viewDoc);
-    const folderTemplate = this.config.get('folderPattern');
-    const filenameTemplate = this.config.get('filenamePattern');
-
     const { userId, comment, tags, artist, title, isBookmarked } = meta;
 
     // odai illust will be added every time since we cannot confirm whether it's bookmarked.
@@ -420,16 +413,23 @@ export class Nijie extends SiteInject {
       this.#addBookmark(id, this.config.get('addBookmarkWithTags') ? tags : undefined);
     }
 
+    let downloadConfig: DownloadConfig | DownloadConfig[];
+
+    const folderTemplate = this.config.get('folderPattern');
+    const filenameTemplate = this.config.get('filenamePattern');
+    const pageNum = page ? +page : undefined;
+    const setProgress = (progress: number) => {
+      btn.setProgress(progress);
+    };
+
     // downloading the first page or illust doesn't have diff
     if (pageNum === 0 || !this.parser.docHasDiff(viewDoc)) {
-      const downloadConfig = NijieDownloadConfig.create({
+      downloadConfig = NijieDownloadConfig.create({
         mediaMeta: meta,
         folderTemplate,
         filenameTemplate,
         setProgress
       });
-
-      await downloader.download(downloadConfig, { priority: 1 });
     } else {
       if (this.#isViewPopupPage() && id === this.#getSearchId()) {
         popupDoc = document;
@@ -441,25 +441,24 @@ export class Nijie extends SiteInject {
       const diffMeta = this.parser.mergeImageDiff(meta, imgDiffSrcs);
 
       if (pageNum) {
-        const downloadConfig = NijieDownloadConfig.create({
+        downloadConfig = NijieDownloadConfig.create({
           mediaMeta: diffMeta,
           folderTemplate,
           filenameTemplate,
           index: pageNum,
           setProgress
         });
-        await downloader.download(downloadConfig, { priority: 1 });
       } else {
-        const downloadConfig = NijieDownloadConfig.createMulti({
+        downloadConfig = NijieDownloadConfig.createMulti({
           mediaMeta: diffMeta,
           folderTemplate,
           filenameTemplate,
           setProgress
         });
-
-        await downloader.download(downloadConfig, { priority: 1 });
       }
     }
+
+    await downloader.download(downloadConfig, { priority: 1 });
 
     const historyData: HistoryData = {
       pid: Number(id),

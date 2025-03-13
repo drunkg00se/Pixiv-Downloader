@@ -22,27 +22,25 @@ import type {
 } from '@/lib/components/Downloader/useBatchDownload';
 import { TagLanguage } from '@/lib/config';
 
-interface PixivMetaBase extends MediaMeta {
+interface PixivMetaBase<T extends string | string[]> extends MediaMeta<T> {
   userId: string;
-  illustType: IllustType;
   tagsTranslated: string[];
-  pageCount: number;
   comment: string;
   token: string;
   bookmarkData: ArtworkDetail['bookmarkData'];
   likeData: boolean;
 }
 
-export interface PixivIllustMeta extends PixivMetaBase {
+export interface PixivIllustMeta<T extends string | string[] = string> extends PixivMetaBase<T> {
   illustType: IllustType.illusts | IllustType.manga;
 }
 
-export interface PixivUgoiraMeta extends PixivMetaBase {
+export interface PixivUgoiraMeta extends PixivMetaBase<string[]> {
   illustType: IllustType.ugoira;
   ugoiraMeta: UgoiraMeta;
 }
 
-export type PixivMeta = PixivIllustMeta | PixivUgoiraMeta;
+export type PixivMeta = PixivIllustMeta<string | string[]> | PixivUgoiraMeta;
 
 interface PixivParam extends Record<string, string> {
   type: 'html' | 'api' | 'unlisted';
@@ -158,7 +156,6 @@ export const pixivParser: PixivParser = {
       tags: tagsArr,
       tagsTranslated: tagsTranslatedArr,
       userId,
-      pageCount,
       comment,
       bookmarkData,
       createDate,
@@ -167,10 +164,30 @@ export const pixivParser: PixivParser = {
     };
 
     if (illustType === IllustType.ugoira) {
+      const ugoiraMeta = await pixivApi.getUgoiraMeta(illustId);
+      const pageCount = ugoiraMeta.frames.length;
+
+      const src = Array.from({ length: pageCount }, (_, i) =>
+        meta.src.replace('ugoira0', 'ugoira' + i)
+      );
+      const extendName = Array.from<string>({ length: pageCount }).fill(meta.extendName);
+
       return {
         ...meta,
+        src,
+        extendName,
         illustType,
-        ugoiraMeta: await pixivApi.getUgoiraMeta(illustId)
+        ugoiraMeta
+      };
+    } else if (pageCount > 1) {
+      const src = Array.from({ length: pageCount }, (_, i) => meta.src.replace('_p0', '_p' + i));
+      const extendName = Array.from<string>({ length: pageCount }).fill(meta.extendName);
+
+      return {
+        ...meta,
+        src,
+        extendName,
+        illustType
       };
     } else {
       return {

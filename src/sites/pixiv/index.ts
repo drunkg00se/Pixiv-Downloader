@@ -1,9 +1,8 @@
 import { SiteInject } from '../base';
 import { historyDb, type HistoryData } from '@/lib/db';
-import { pixivParser, type PixivMeta } from './parser';
-import { IllustType, type BookmarksRest, type Category } from './types';
-import { downloader } from '@/lib/downloader';
-import { PixivDownloadConfig } from './downloadConfigBuilder';
+import { pixivParser, type PixivIllustMeta, type PixivMeta } from './parser';
+import { BookmarkRestrict, IllustType, type BookmarksRest, type Category } from './types';
+import { downloader, type DownloadConfig } from '@/lib/downloader';
 import { getSelfId } from './helpers/getSelfId';
 import { regexp } from '@/lib/regExp';
 import { pixivApi } from './api';
@@ -20,7 +19,11 @@ import { createUnlistedToolbar } from './observerCB/artworksPage/unlistedToolbar
 import { createTagListBtn } from './observerCB/userPage/tagListButton';
 import { createFrequentTagBtn } from './observerCB/userPage/frequentTagButton';
 import type { TagProps } from '@/lib/components/Pixiv/artworkTagButton';
-import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
+import { ThumbnailBtnStatus, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
+import { PixivDownloadConfigNext } from './downloadConfigBuilder';
+import { addBookmark } from './helpers/addBookmark';
+import { likeIllust } from './helpers/likeIllust';
+import { UgoiraFormat } from '@/lib/config';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -212,10 +215,10 @@ export class Pixiv extends SiteInject {
       return pixivParser.parse(id, { tagLang: this.config.get('tagLang'), type: 'api' });
     },
 
-    async downloadArtworkByMeta(meta, signal) {
+    downloadArtworkByMeta: async (meta, signal) => {
       downloader.dirHandleCheck();
 
-      const downloadConfigs = new PixivDownloadConfig(meta).getDownloadConfig();
+      const downloadConfigs = this.getDownloadConfig(meta);
 
       await downloader.download(downloadConfigs, { signal });
 
@@ -238,6 +241,8 @@ export class Pixiv extends SiteInject {
 
   public inject() {
     super.inject();
+
+    this.downloadArtwork = this.downloadArtwork.bind(this);
 
     new MutationObserver((records) => {
       this.injectThumbnailButtons(records);
@@ -295,7 +300,7 @@ export class Pixiv extends SiteInject {
     //为小图添加下载按钮
     if (this.firstObserverCbRunFlag) {
       //排行榜页前50不是动态加载，第一次加载没有Pdlbtn
-      createThumbnailBtn(document.querySelectorAll('a'));
+      createThumbnailBtn(document.querySelectorAll('a'), this.downloadArtwork);
       this.firstObserverCbRunFlag = false;
     } else {
       fixPixivPreviewer(addedNodes);
@@ -308,7 +313,7 @@ export class Pixiv extends SiteInject {
             : Array.from(current.querySelectorAll('a'))
         );
       }, [] as HTMLAnchorElement[]);
-      createThumbnailBtn(thumbnails);
+      createThumbnailBtn(thumbnails, this.downloadArtwork);
     }
   }
 
@@ -318,11 +323,11 @@ export class Pixiv extends SiteInject {
     switch (true) {
       case !!(param = regexp.artworksPage.exec(pathname)): {
         const id = param[1];
-        createToolbarBtn(id);
-        createWorkExpanedViewBtn(id);
-        createPresentationBtn(id);
-        createPreviewModalBtn(id);
-        createMangaViewerBtn(id);
+        createToolbarBtn(id, this.downloadArtwork);
+        createWorkExpanedViewBtn(id, this.downloadArtwork);
+        createPresentationBtn(id, this.downloadArtwork);
+        createPreviewModalBtn(id, this.downloadArtwork);
+        createMangaViewerBtn(id, this.downloadArtwork);
         break;
       }
       case regexp.userPageTags.test(pathname): {
@@ -337,7 +342,10 @@ export class Pixiv extends SiteInject {
         break;
       }
       case regexp.historyPage.test(pathname): {
-        createThumbnailBtn(document.querySelectorAll<HTMLSpanElement>('span[style]._history-item'));
+        createThumbnailBtn(
+          document.querySelectorAll<HTMLSpanElement>('span[style]._history-item'),
+          this.downloadArtwork
+        );
         break;
       }
       case !!(param = regexp.unlisted.exec(pathname)): {
@@ -347,15 +355,180 @@ export class Pixiv extends SiteInject {
         const id = regexp.artworksPage.exec(canonicalUrl)?.[1];
         if (!id) return;
 
-        createUnlistedToolbar(id, unlistedId);
-        createWorkExpanedViewBtn(id, unlistedId);
-        createPresentationBtn(id, unlistedId);
-        createPreviewModalBtn(id, unlistedId);
-        createMangaViewerBtn(id, unlistedId);
+        createUnlistedToolbar(id, this.downloadArtwork, unlistedId);
+        createWorkExpanedViewBtn(id, this.downloadArtwork, unlistedId);
+        createPresentationBtn(id, this.downloadArtwork, unlistedId);
+        createPreviewModalBtn(id, this.downloadArtwork, unlistedId);
+        createMangaViewerBtn(id, this.downloadArtwork, unlistedId);
         break;
       }
       default:
         break;
     }
+  }
+
+  protected isMultiImageMeta(
+    meta: PixivIllustMeta<string | string[]>
+  ): meta is PixivIllustMeta<string[]> {
+    return Array.isArray(meta.src) && meta.src.length > 1;
+  }
+
+  protected getDownloadConfig(
+    meta: PixivMeta,
+    setProgress?: (progress: number) => void,
+    page?: number
+  ): DownloadConfig | DownloadConfig[] {
+    const folderTemplate = this.config.get('folderPattern');
+    const filenameTemplate = this.config.get('filenamePattern');
+    const ugoiraFormat = this.config.get('ugoiraFormat');
+    const bundleManga = this.config.get('bundleManga');
+    const bundleIllust = this.config.get('bundleIllusts');
+    const mixEffect = this.config.get('mixEffect');
+    const mixEffectFormat = ugoiraFormat === UgoiraFormat.ZIP ? UgoiraFormat.MP4 : ugoiraFormat;
+
+    const option = {
+      folderTemplate,
+      filenameTemplate,
+      setProgress
+    };
+
+    if ('ugoiraMeta' in meta) {
+      if (ugoiraFormat !== UgoiraFormat.ZIP) {
+        return PixivDownloadConfigNext.createConvert({
+          ...option,
+          mediaMeta: meta,
+          convertFormat: ugoiraFormat
+        });
+      }
+
+      return PixivDownloadConfigNext.createBundle({
+        ...option,
+        mediaMeta: meta
+      });
+    }
+
+    if (this.isMultiImageMeta(meta)) {
+      if (page !== undefined) {
+        if (mixEffect) {
+          return PixivDownloadConfigNext.createSeasonalEffect({
+            ...option,
+            index: page,
+            convertFormat: mixEffectFormat,
+            mediaMeta: meta
+          });
+        }
+
+        return PixivDownloadConfigNext.create({
+          ...option,
+          index: page,
+          mediaMeta: meta
+        });
+      }
+
+      if (
+        (meta.illustType === IllustType.manga && bundleManga) ||
+        (meta.illustType === IllustType.illusts && bundleIllust)
+      ) {
+        return PixivDownloadConfigNext.createBundle({
+          ...option,
+          mediaMeta: meta
+        });
+      }
+
+      return PixivDownloadConfigNext.createMulti({
+        ...option,
+        mediaMeta: meta
+      });
+    }
+
+    if (mixEffect) {
+      return PixivDownloadConfigNext.createSeasonalEffect({
+        ...option,
+        convertFormat: mixEffectFormat,
+        mediaMeta: meta as PixivIllustMeta
+      });
+    }
+
+    return PixivDownloadConfigNext.create({
+      ...option,
+      mediaMeta: meta as PixivIllustMeta
+    });
+  }
+
+  protected async downloadArtwork(btn: ThumbnailButton) {
+    downloader.dirHandleCheck();
+
+    const { id, page, unlistedId } = btn.dataset as {
+      id: string;
+      page?: string;
+      unlistedId?: string;
+    };
+    const pageNum = page !== undefined ? +page : undefined;
+
+    const tagLang = this.config.get('tagLang');
+
+    let pixivMeta: PixivMeta;
+
+    if (!unlistedId) {
+      const shouldAddBookmark = this.config.get('addBookmark');
+      const shouldLikeIllust = this.config.get('likeIllust');
+
+      if (shouldAddBookmark || shouldLikeIllust) {
+        pixivMeta = await pixivParser.parse(id, { tagLang, type: 'html' });
+        const { bookmarkData, token, tags, likeData } = pixivMeta;
+
+        if (!bookmarkData && shouldAddBookmark) {
+          const addedTags = this.config.get('addBookmarkWithTags') ? tags : undefined;
+          const restrict =
+            this.config.get('privateR18') && tags.includes('R-18')
+              ? BookmarkRestrict.private
+              : BookmarkRestrict.public;
+          addBookmark(id, token, { btn, tags: addedTags, restrict });
+        }
+
+        if (!likeData && shouldLikeIllust) {
+          likeIllust(id, token);
+        }
+      } else {
+        pixivMeta = await pixivParser.parse(id, { tagLang, type: 'api' });
+      }
+    } else {
+      pixivMeta = await pixivParser.parse(unlistedId, { tagLang, type: 'unlisted' });
+    }
+
+    const downloadConfigs = this.getDownloadConfig(
+      pixivMeta,
+      (progress: number) => {
+        console.log('progress', progress);
+        if (progress > 0) {
+          btn.setProgress(progress);
+        } else {
+          btn.setStatus(ThumbnailBtnStatus.Loading);
+        }
+      },
+      pageNum
+    );
+
+    await downloader.download(downloadConfigs, { priority: 1 });
+
+    const { comment, tags, artist, userId, title } = pixivMeta;
+    const historyData: HistoryData = {
+      pid: Number(id),
+      user: artist,
+      userId: Number(userId),
+      title,
+      comment,
+      tags
+    };
+
+    if (page !== undefined) {
+      historyData.page = Number(page);
+    }
+
+    if (unlistedId) {
+      historyData.unlistedId = unlistedId;
+    }
+
+    historyDb.add(historyData);
   }
 }

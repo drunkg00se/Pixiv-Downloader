@@ -1,7 +1,11 @@
+import type { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { UnlistedArtworkToolbar } from '@/lib/components/Pixiv/unlistedToolbar';
-import { downloadArtwork } from '../../downloadArtwork';
 
-export function createUnlistedToolbar(id: string, unlistedId: string) {
+export function createUnlistedToolbar(
+  id: string,
+  downloadArtwork: (btn: ThumbnailButton) => void,
+  unlistedId: string
+) {
   const toolbar = document.querySelector(UnlistedArtworkToolbar.tagNameLowerCase);
   if (toolbar) return;
 

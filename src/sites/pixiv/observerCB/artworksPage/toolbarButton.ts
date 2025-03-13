@@ -1,8 +1,10 @@
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-import { downloadArtwork } from '../../downloadArtwork';
 
 // artworks页作品下载按钮
-export function createToolbarBtn(id: string): void {
+export function createToolbarBtn(
+  id: string,
+  downloadArtwork: (btn: ThumbnailButton) => void
+): void {
   const toolbar = document.querySelector<HTMLElement>('main section section');
   if (!toolbar || toolbar.querySelector(ThumbnailButton.tagNameLowerCase)) return;
 

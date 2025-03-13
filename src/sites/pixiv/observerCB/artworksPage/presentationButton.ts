@@ -1,13 +1,16 @@
 import { regexp } from '@/lib/regExp';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-import { downloadArtwork } from '../../downloadArtwork';
 import { logger } from '@/lib/logger';
 
 let observer: MutationObserver | null;
 let btn: ThumbnailButton | null;
 
 // 预览大图的下载按钮
-export function createPresentationBtn(id: string, unlistedId?: string) {
+export function createPresentationBtn(
+  id: string,
+  downloadArtwork: (btn: ThumbnailButton) => void,
+  unlistedId?: string
+) {
   //侧边栏也符合选择符匹配
   const containers = document.querySelector("body > [role='presentation'] > div");
 

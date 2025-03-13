@@ -8,37 +8,33 @@ type XhrResult = [Error, null] | [null, Blob];
 
 type DownloadOption = { signal?: AbortSignal; priority?: number };
 
-export type DownloaderHooks<T> = {
-  onProgress?: (progress: number, config: DownloadConfig<T>) => void;
-  onXhrLoaded?: (config: DownloadConfig<T>) => void;
+export type DownloaderHooks = {
+  onProgress?: (progress: number, config: DownloadConfig) => void;
+  onXhrLoaded?: (config: DownloadConfig) => void;
   beforeFileSave?: (
     blob: Blob,
-    config: DownloadConfig<T>,
+    config: DownloadConfig,
     signal?: AbortSignal
   ) => Promise<Blob | void>;
-  onFileSaved?: (config: DownloadConfig<T>) => void;
-  onError?: (err: Error, config: DownloadConfig<T>) => void;
-  onAbort?: (config: DownloadConfig<T>) => void;
+  onFileSaved?: (config: DownloadConfig) => void;
+  onError?: (err: Error, config: DownloadConfig) => void;
+  onAbort?: (config: DownloadConfig) => void;
 };
 
-export type DownloadConfig<T> = {
+export type DownloadConfig = {
   taskId: string;
   src: string;
   path: string;
-  source: T;
   timeout?: number;
   headers?: Record<string, string>;
-} & DownloaderHooks<T>;
+} & DownloaderHooks;
 
 interface IDownloader {
   fileSystemAccessEnabled: Readonly<boolean>;
   dirHandleCheck: () => void;
   updateDirHandle: () => Promise<string>;
   getCurrentFsaDirName: () => string;
-  download: <T>(
-    configs: DownloadConfig<T> | DownloadConfig<T>[],
-    option?: DownloadOption
-  ) => Promise<void>;
+  download: (configs: DownloadConfig | DownloadConfig[], option?: DownloadOption) => Promise<void>;
 }
 
 class Downloader implements IDownloader {
@@ -67,7 +63,7 @@ class Downloader implements IDownloader {
     return fileSaveAdapters.getFsaDirName();
   }
 
-  #xhr<T>(config: DownloadConfig<T>, signal?: AbortSignal): Promise<XhrResult> {
+  #xhr(config: DownloadConfig, signal?: AbortSignal): Promise<XhrResult> {
     if (signal?.aborted) return Promise.resolve([signal.reason as Error, null]);
 
     const { src, onProgress, timeout, taskId, headers } = config;
@@ -126,8 +122,8 @@ class Downloader implements IDownloader {
     });
   }
 
-  async #dispatchDownload<T>(
-    config: DownloadConfig<T>,
+  async #dispatchDownload(
+    config: DownloadConfig,
     priority: number = 0,
     signal?: AbortSignal
   ): Promise<void> {
@@ -204,7 +200,7 @@ class Downloader implements IDownloader {
     }
   }
 
-  async download<T>(configs: DownloadConfig<T> | DownloadConfig<T>[], option: DownloadOption = {}) {
+  async download(configs: DownloadConfig | DownloadConfig[], option: DownloadOption = {}) {
     const { signal, priority } = option;
 
     signal?.throwIfAborted();

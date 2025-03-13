@@ -2,10 +2,10 @@ import { regexp } from '@/lib/regExp';
 import { getSelfId } from '@/sites/pixiv/helpers/getSelfId';
 import { getIllustId } from '@/sites/pixiv/helpers/getIllustId';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-import { downloadArtwork } from '../downloadArtwork';
 
 export function createThumbnailBtn(
-  nodes: HTMLAnchorElement[] | NodeListOf<HTMLAnchorElement> | NodeListOf<HTMLSpanElement>
+  nodes: HTMLAnchorElement[] | NodeListOf<HTMLAnchorElement> | NodeListOf<HTMLSpanElement>,
+  downloadArtwork: (btn: ThumbnailButton) => void
 ): void {
   let isSelfBookmark = false;
   const inBookmarkPage = regexp.bookmarkPage.exec(location.pathname);
