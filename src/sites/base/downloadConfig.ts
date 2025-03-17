@@ -128,7 +128,7 @@ export abstract class MediaDownloadConfig<T extends string | string[] = string> 
       }
     );
 
-    const dateRe = new RegExp(`{(${SupportedTemplate.DATE})(\\(([a-zA-Z_-]+?)\\))?}`, 'g');
+    const dateRe = new RegExp(`{(${SupportedTemplate.DATE})(\\((.+?)\\))?}`, 'g');
 
     return path.replace(
       dateRe,
