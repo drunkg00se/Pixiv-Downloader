@@ -58,8 +58,8 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     return this.comment + '\n' + JSON.stringify(delays);
   }
 
-  protected renderTemplate(template: string, data: Partial<TemplateData>): string {
-    return this.replaceTemplate(template, {
+  protected getTemplateData(data: Partial<TemplateData> & { page: string }): Partial<TemplateData> {
+    return {
       id: this.id,
       artist: this.normalizeString(this.artist) || this.userId,
       artistID: this.userId,
@@ -70,32 +70,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
         .filter(Boolean)
         .join('_'),
       ...data
-    });
-  }
-
-  protected getSavePath(
-    folderTemplate: string,
-    filenameTemplate: string,
-    ext?: string,
-    useTranslatedTags = false,
-    index = 0
-  ): string {
-    const templateData: Partial<TemplateData> = {
-      page: String(index)
     };
-
-    useTranslatedTags &&
-      (templateData.tags = this.translatedTags
-        .map((tag) => this.normalizeString(tag))
-        .filter(Boolean)
-        .join('_'));
-
-    const path = this.renderTemplate(
-      this.getPathTemplate(folderTemplate, filenameTemplate),
-      templateData
-    );
-
-    return `${path}.${ext || (Array.isArray(this.ext) ? this.ext[index] : this.ext)}`;
   }
 
   handleConvertFactory(convertFormat: ConvertFormat, setProgress?: (progress: number) => void) {
@@ -203,14 +178,28 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
 
   create(option: PixivOptionBase | PixivIndexOption): DownloadConfig {
     const { filenameTemplate, folderTemplate, setProgress, useTranslatedTags } = option;
-    const index = 'index' in option ? option.index : undefined;
+    const index = 'index' in option ? option.index : 0;
     const headers = this.getHeaders();
+
+    const templateData = this.getTemplateData(
+      useTranslatedTags
+        ? {
+            tags: this.translatedTags
+              .map((tag) => this.normalizeString(tag))
+              .filter(Boolean)
+              .join('_'),
+            page: String(index)
+          }
+        : {
+            page: String(index)
+          }
+    );
 
     return {
       headers,
       taskId: this.getTaskId(),
       src: this.getSrc(index),
-      path: this.getSavePath(folderTemplate, filenameTemplate, undefined, useTranslatedTags, index),
+      path: this.getSavePath(folderTemplate, filenameTemplate, this.getExt(index), templateData),
       timeout: this.getDownloadTimeout(index),
       onProgress: setProgress
     };
@@ -225,12 +214,29 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
 
     const onFileSaved = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
 
+    const overwriteData: Partial<TemplateData> = useTranslatedTags
+      ? {
+          tags: this.translatedTags
+            .map((tag) => this.normalizeString(tag))
+            .filter(Boolean)
+            .join('_')
+        }
+      : {};
+
     return this.src.map((src, i) => {
       return {
         headers,
         taskId,
         src,
-        path: this.getSavePath(folderTemplate, filenameTemplate, undefined, useTranslatedTags, i),
+        path: this.getSavePath(
+          folderTemplate,
+          filenameTemplate,
+          this.getExt(i),
+          this.getTemplateData({
+            ...overwriteData,
+            page: String(i)
+          })
+        ),
         timeout: this.getDownloadTimeout(),
         onFileSaved
       };
@@ -244,15 +250,22 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
 
     const taskId = this.getTaskId();
     const headers = this.getHeaders();
-
     const onXhrLoaded = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
+
+    const overwriteData: Partial<TemplateData> = useTranslatedTags
+      ? {
+          tags: this.translatedTags
+            .map((tag) => this.normalizeString(tag))
+            .filter(Boolean)
+            .join('_')
+        }
+      : {};
 
     const path = this.getSavePath(
       folderTemplate,
       filenameTemplate,
       'zip',
-      useTranslatedTags,
-      this.src.length
+      this.getTemplateData({ ...overwriteData, page: String(this.src.length) })
     );
 
     // always add {page} when bundling
@@ -261,7 +274,15 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       : filenameTemplate + `_{${SupportedTemplate.PAGE}}`;
 
     const filenames = this.src.map((_, i) => {
-      return this.getSavePath('', filenameTemplateWithPage, undefined, useTranslatedTags, i);
+      return this.getSavePath(
+        '',
+        filenameTemplateWithPage,
+        this.getExt(i),
+        this.getTemplateData({
+          ...overwriteData,
+          page: String(i)
+        })
+      );
     });
 
     return this.src.map((src, i) => {
@@ -290,12 +311,21 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     const onXhrLoaded = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
     const beforeFileSave = this.handleConvertFactory(convertFormat, setProgress);
 
-    const path = this.getSavePath(
-      folderTemplate,
-      filenameTemplate,
-      convertFormat,
+    const templateData = this.getTemplateData(
       useTranslatedTags
+        ? {
+            tags: this.translatedTags
+              .map((tag) => this.normalizeString(tag))
+              .filter(Boolean)
+              .join('_'),
+            page: String(0)
+          }
+        : {
+            page: String(0)
+          }
     );
+
+    const path = this.getSavePath(folderTemplate, filenameTemplate, convertFormat, templateData);
 
     return this.src.map((src, i) => {
       return {
@@ -316,21 +346,27 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     const { filenameTemplate, folderTemplate, setProgress, convertFormat, useTranslatedTags } =
       option;
 
-    const index: number | undefined = 'index' in option ? option.index : undefined;
+    const index: number | undefined = 'index' in option ? option.index : 0;
 
-    const path = this.getSavePath(
-      folderTemplate,
-      filenameTemplate,
-      convertFormat,
-      useTranslatedTags,
-      index
+    const templateData = this.getTemplateData(
+      useTranslatedTags
+        ? {
+            tags: this.translatedTags
+              .map((tag) => this.normalizeString(tag))
+              .filter(Boolean)
+              .join('_'),
+            page: String(index)
+          }
+        : {
+            page: String(index)
+          }
     );
 
     return {
       headers: this.getHeaders(),
       taskId: this.getTaskId(),
       src: this.getSrc(index),
-      path,
+      path: this.getSavePath(folderTemplate, filenameTemplate, convertFormat, templateData),
       timeout: this.getDownloadTimeout(index),
       onProgress: setProgress,
       beforeFileSave: this.handleSeasonalEffectFactory(convertFormat, setProgress)

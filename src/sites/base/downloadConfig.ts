@@ -80,6 +80,10 @@ export abstract class MediaDownloadConfig<T extends string | string[] = string> 
     return Array.isArray(this.src) ? this.src[idx] : this.src;
   }
 
+  protected getExt(idx = 0): string {
+    return Array.isArray(this.ext) ? this.ext[idx] : this.ext;
+  }
+
   protected getDownloadTimeout(idx = 0): number | undefined {
     return this.isImageExt(Array.isArray(this.ext) ? this.ext[idx] : this.ext)
       ? this.imageTimeout
@@ -96,7 +100,7 @@ export abstract class MediaDownloadConfig<T extends string | string[] = string> 
     return folderTemplate ? `${folderTemplate}/${filenameTemplate}` : filenameTemplate;
   }
 
-  protected replaceTemplate(template: string, data: Partial<TemplateData>): string {
+  #replaceTemplate(template: string, data: Partial<TemplateData>): string {
     const re = new RegExp(
       `{(${SupportedTemplate.ARTIST}|` +
         `${SupportedTemplate.ARTISTID}|` +
@@ -132,9 +136,21 @@ export abstract class MediaDownloadConfig<T extends string | string[] = string> 
     );
   }
 
-  protected abstract renderTemplate(template: string, data: Partial<TemplateData>): string;
+  protected getSavePath(
+    folderTemplate: string,
+    filenameTemplate: string,
+    ext: string,
+    templateData: Partial<TemplateData>
+  ): string {
+    const path = this.#replaceTemplate(
+      this.getPathTemplate(folderTemplate, filenameTemplate),
+      templateData
+    );
 
-  protected abstract getSavePath(folderTemplate: string, filenameTemplate: string): string;
+    return `${path}.${ext}`;
+  }
+
+  protected abstract getTemplateData(data?: Partial<TemplateData>): Partial<TemplateData>;
 
   abstract create(option: OptionBase): DownloadConfig | DownloadConfig[];
 }
@@ -216,19 +232,14 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
     };
   }
 
-  protected renderTemplate(template: string): string {
-    return this.replaceTemplate(template, {
+  protected getTemplateData(): Partial<TemplateData> {
+    return {
       id: this.id,
       artist: this.artist,
       character: this.character,
       date: this.createDate,
       title: this.title
-    });
-  }
-
-  protected getSavePath(folderTemplate: string, filenameTemplate: string): string {
-    const path = this.renderTemplate(this.getPathTemplate(folderTemplate, filenameTemplate));
-    return `${path}.${this.ext}`;
+    };
   }
 
   create(option: BooruOption): DownloadConfig {
@@ -238,7 +249,12 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
       headers: cfClearance ? this.getHeaders(cfClearance) : undefined,
       taskId: this.getTaskId(),
       src: this.getSrc(),
-      path: this.getSavePath(folderTemplate, filenameTemplate),
+      path: this.getSavePath(
+        folderTemplate,
+        filenameTemplate,
+        this.getExt(),
+        this.getTemplateData()
+      ),
       timeout: this.getDownloadTimeout(),
       onProgress: setProgress
     };

@@ -26,8 +26,8 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
     return this.comment;
   }
 
-  protected renderTemplate(template: string, data: Partial<TemplateData>): string {
-    return this.replaceTemplate(template, {
+  protected getTemplateData(data: Partial<TemplateData> & { page: string }): Partial<TemplateData> {
+    return {
       id: this.id,
       artist: this.normalizeString(this.artist) || this.userId,
       artistID: this.userId,
@@ -38,30 +38,22 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
         .filter(Boolean)
         .join('_'),
       ...data
-    });
-  }
-
-  protected getSavePath(
-    folderTemplate: string,
-    filenameTemplate: string,
-    ext?: string,
-    index = 0
-  ): string {
-    const path = this.renderTemplate(this.getPathTemplate(folderTemplate, filenameTemplate), {
-      page: String(index)
-    });
-
-    return `${path}.${ext || (Array.isArray(this.ext) ? this.ext[index] : this.ext)}`;
+    };
   }
 
   create(option: OptionBase | IndexOption): DownloadConfig {
     const { filenameTemplate, folderTemplate, setProgress } = option;
-    const index = 'index' in option ? option.index : undefined;
+    const index = 'index' in option ? option.index : 0;
 
     return {
       taskId: this.getTaskId(),
       src: this.getSrc(index),
-      path: this.getSavePath(folderTemplate, filenameTemplate, undefined, index),
+      path: this.getSavePath(
+        folderTemplate,
+        filenameTemplate,
+        this.getExt(index),
+        this.getTemplateData({ page: String(index) })
+      ),
       timeout: this.getDownloadTimeout(index),
       onProgress: setProgress
     };
@@ -78,7 +70,12 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
       return {
         taskId,
         src,
-        path: this.getSavePath(folderTemplate, filenameTemplate, undefined, i),
+        path: this.getSavePath(
+          folderTemplate,
+          filenameTemplate,
+          this.getExt(i),
+          this.getTemplateData({ page: String(i) })
+        ),
         timeout: this.getDownloadTimeout(),
         onFileSaved
       };
@@ -86,13 +83,22 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
   }
 
   createBundle(option: OptionBase): DownloadConfig[] {
-    if (!this.isStringArray(this.src)) throw new Error(`Artwork ${this.id} only have one media.`);
+    if (!this.isStringArray(this.src) || !this.isStringArray(this.ext))
+      throw new Error(`Artwork ${this.id} only have one media.`);
 
     const { filenameTemplate, folderTemplate, setProgress } = option;
 
     const taskId = this.getTaskId();
-    const path = this.getSavePath(folderTemplate, filenameTemplate, 'zip', this.src.length);
     const onXhrLoaded = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
+
+    const path = this.getSavePath(
+      folderTemplate,
+      filenameTemplate,
+      'zip',
+      this.getTemplateData({
+        page: String(this.src.length)
+      })
+    );
 
     // always add {page} when bundling
     const filenameTemplateWithPage = filenameTemplate.includes(`{${SupportedTemplate.PAGE}}`)
@@ -100,7 +106,12 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
       : filenameTemplate + `_{${SupportedTemplate.PAGE}}`;
 
     const filenames = this.src.map((_, i) => {
-      return this.getSavePath('', filenameTemplateWithPage, undefined, i);
+      return this.getSavePath(
+        '',
+        filenameTemplateWithPage,
+        this.getExt(i),
+        this.getTemplateData({ page: String(i) })
+      );
     });
 
     return this.src.map((src, i) => {
