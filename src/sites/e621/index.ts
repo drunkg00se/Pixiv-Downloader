@@ -181,7 +181,7 @@ export class E621ng extends SiteInject {
               await this.api.getPosts({
                 limit: postsPerPage,
                 page,
-                tags: `pool:${poolId}`
+                tags: `pool:${poolId} order:id`
               })
             ).posts;
 
