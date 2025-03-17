@@ -36,6 +36,7 @@
 | Gelbooru                                                                     | Posts、Pools、My Favorites                                                                                                                                             |                                                                                                                |
 | Safebooru                                                                    | Posts、Pools、My Favorites                                                                                                                                             |                                                                                                                |
 | E621、E926、E6ai                                                             | Posts、Pools、Favorites                                                                                                                                                | 暂不支持过滤用户黑名单。必须在“网站验证”中填入username和apiKey。                                               |
+| Nijie.info                                                                   | members_illust, members_dojin, user_like_illust_view, okiniiri, members_tag(search.php)                                                                                |                                                                                                                |
 
 ## 更多功能
 
