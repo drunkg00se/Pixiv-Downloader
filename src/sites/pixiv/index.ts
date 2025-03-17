@@ -20,10 +20,10 @@ import { createTagListBtn } from './observerCB/userPage/tagListButton';
 import { createFrequentTagBtn } from './observerCB/userPage/frequentTagButton';
 import type { TagProps } from '@/lib/components/Pixiv/artworkTagButton';
 import { ThumbnailBtnStatus, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
-import { PixivDownloadConfigNext } from './downloadConfigBuilder';
+import { PixivDownloadConfig } from './downloadConfig';
 import { addBookmark } from './helpers/addBookmark';
 import { likeIllust } from './helpers/likeIllust';
-import { UgoiraFormat } from '@/lib/config';
+import { TagLanguage, UgoiraFormat } from '@/lib/config';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -386,42 +386,39 @@ export class Pixiv extends SiteInject {
     const mixEffect = this.config.get('mixEffect');
     const mixEffectFormat = ugoiraFormat === UgoiraFormat.ZIP ? UgoiraFormat.MP4 : ugoiraFormat;
 
+    const useTranslatedTags = this.config.get('tagLang') !== TagLanguage.JAPANESE;
+
     const option = {
       folderTemplate,
       filenameTemplate,
+      useTranslatedTags,
       setProgress
     };
 
     if ('ugoiraMeta' in meta) {
       if (ugoiraFormat !== UgoiraFormat.ZIP) {
-        return PixivDownloadConfigNext.createConvert({
+        return new PixivDownloadConfig(meta).createConvert({
           ...option,
-          mediaMeta: meta,
           convertFormat: ugoiraFormat
         });
       }
 
-      return PixivDownloadConfigNext.createBundle({
-        ...option,
-        mediaMeta: meta
-      });
+      return new PixivDownloadConfig(meta).createBundle(option);
     }
 
     if (this.isMultiImageMeta(meta)) {
       if (page !== undefined) {
         if (mixEffect) {
-          return PixivDownloadConfigNext.createSeasonalEffect({
+          return new PixivDownloadConfig(meta).createSeasonalEffect({
             ...option,
             index: page,
-            convertFormat: mixEffectFormat,
-            mediaMeta: meta
+            convertFormat: mixEffectFormat
           });
         }
 
-        return PixivDownloadConfigNext.create({
+        return new PixivDownloadConfig(meta).create({
           ...option,
-          index: page,
-          mediaMeta: meta
+          index: page
         });
       }
 
@@ -429,30 +426,20 @@ export class Pixiv extends SiteInject {
         (meta.illustType === IllustType.manga && bundleManga) ||
         (meta.illustType === IllustType.illusts && bundleIllust)
       ) {
-        return PixivDownloadConfigNext.createBundle({
-          ...option,
-          mediaMeta: meta
-        });
+        return new PixivDownloadConfig(meta).createBundle(option);
       }
 
-      return PixivDownloadConfigNext.createMulti({
-        ...option,
-        mediaMeta: meta
-      });
+      return new PixivDownloadConfig(meta).createMulti(option);
     }
 
     if (mixEffect) {
-      return PixivDownloadConfigNext.createSeasonalEffect({
+      return new PixivDownloadConfig(meta).createSeasonalEffect({
         ...option,
-        convertFormat: mixEffectFormat,
-        mediaMeta: meta as PixivIllustMeta
+        convertFormat: mixEffectFormat
       });
     }
 
-    return PixivDownloadConfigNext.create({
-      ...option,
-      mediaMeta: meta as PixivIllustMeta
-    });
+    return new PixivDownloadConfig(meta).create(option);
   }
 
   protected async downloadArtwork(btn: ThumbnailButton) {
@@ -499,7 +486,6 @@ export class Pixiv extends SiteInject {
     const downloadConfigs = this.getDownloadConfig(
       pixivMeta,
       (progress: number) => {
-        console.log('progress', progress);
         if (progress > 0) {
           btn.setProgress(progress);
         } else {

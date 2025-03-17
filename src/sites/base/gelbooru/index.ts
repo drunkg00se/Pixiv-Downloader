@@ -8,7 +8,7 @@ import t from '@/lib/lang';
 import type { GelbooruApiV020 } from './api';
 import { unsafeWindow } from '$';
 import { PostValidState } from '../parser';
-import { BooruDownloadConfig } from '../downloadConfigBuilder';
+import { BooruDownloadConfig } from '../downloadConfig';
 
 export abstract class GelbooruV020 extends SiteInject {
   protected abstract api: GelbooruApiV020;
@@ -161,8 +161,7 @@ export abstract class GelbooruV020 extends SiteInject {
     downloadArtworkByMeta: async (meta, signal) => {
       downloader.dirHandleCheck();
 
-      const downloadConfigs = BooruDownloadConfig.create({
-        mediaMeta: meta,
+      const downloadConfigs = new BooruDownloadConfig(meta).create({
         folderTemplate: this.config.get('folderPattern'),
         filenameTemplate: this.config.get('filenamePattern'),
         cfClearance: this.config.get('auth')?.cf_clearance
@@ -193,8 +192,7 @@ export abstract class GelbooruV020 extends SiteInject {
 
     const doc = await this.api.getPostDoc(id);
     const mediaMeta = this.parser.buildMeta(id, doc);
-    const downloadConfig = BooruDownloadConfig.create({
-      mediaMeta,
+    const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
       folderTemplate: this.config.get('folderPattern'),
       filenameTemplate: this.config.get('filenamePattern'),
       cfClearance: this.config.get('auth')?.cf_clearance,

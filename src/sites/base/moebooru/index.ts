@@ -13,7 +13,7 @@ import {
 } from './api';
 import { logger } from '@/lib/logger';
 import { PostValidState } from '../parser';
-import { BooruDownloadConfig } from '../downloadConfigBuilder';
+import { BooruDownloadConfig } from '../downloadConfig';
 
 type MoebooruGeneratorPostData = PossibleMoebooruPostData & {
   tagType: Record<string, string>;
@@ -275,8 +275,7 @@ export abstract class Moebooru extends SiteInject {
     downloadArtworkByMeta: async (meta, signal) => {
       downloader.dirHandleCheck();
 
-      const downloadConfig = BooruDownloadConfig.create({
-        mediaMeta: meta,
+      const downloadConfig = new BooruDownloadConfig(meta).create({
         folderTemplate: this.config.get('folderPattern'),
         filenameTemplate: this.config.get('filenamePattern'),
         cfClearance: this.config.get('auth')?.cf_clearance
@@ -308,8 +307,7 @@ export abstract class Moebooru extends SiteInject {
     const { posts, tags: tagType, votes } = this.parser.parsePostAndPool(htmlText);
     const mediaMeta = this.parser.buildMeta(posts[0], tagType);
 
-    const downloadConfig = BooruDownloadConfig.create({
-      mediaMeta: mediaMeta,
+    const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
       folderTemplate: this.config.get('folderPattern'),
       filenameTemplate: this.config.get('filenamePattern'),
       cfClearance: this.config.get('auth')?.cf_clearance,

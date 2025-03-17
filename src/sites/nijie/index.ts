@@ -335,14 +335,12 @@ export class Nijie extends SiteInject {
       let downloadConfig: DownloadConfig | DownloadConfig[];
 
       if (Array.isArray(meta.src)) {
-        downloadConfig = NijieDownloadConfig.createMulti({
-          mediaMeta: meta as NijieMeta<string[]>,
+        downloadConfig = new NijieDownloadConfig(meta).createMulti({
           folderTemplate,
           filenameTemplate
         });
       } else {
-        downloadConfig = NijieDownloadConfig.create({
-          mediaMeta: meta as NijieMeta<string>,
+        downloadConfig = new NijieDownloadConfig(meta).create({
           folderTemplate,
           filenameTemplate
         });
@@ -424,8 +422,7 @@ export class Nijie extends SiteInject {
 
     // downloading the first page or illust doesn't have diff
     if (pageNum === 0 || !this.parser.docHasDiff(viewDoc)) {
-      downloadConfig = NijieDownloadConfig.create({
-        mediaMeta: meta,
+      downloadConfig = new NijieDownloadConfig(meta).create({
         folderTemplate,
         filenameTemplate,
         setProgress
@@ -441,16 +438,14 @@ export class Nijie extends SiteInject {
       const diffMeta = this.parser.mergeImageDiff(meta, imgDiffSrcs);
 
       if (pageNum) {
-        downloadConfig = NijieDownloadConfig.create({
-          mediaMeta: diffMeta,
+        downloadConfig = new NijieDownloadConfig(diffMeta).create({
           folderTemplate,
           filenameTemplate,
           index: pageNum,
           setProgress
         });
       } else {
-        downloadConfig = NijieDownloadConfig.createMulti({
-          mediaMeta: diffMeta,
+        downloadConfig = new NijieDownloadConfig(diffMeta).createMulti({
           folderTemplate,
           filenameTemplate,
           setProgress

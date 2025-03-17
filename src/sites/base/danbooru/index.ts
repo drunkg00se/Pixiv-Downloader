@@ -13,7 +13,7 @@ import { unsafeWindow } from '$';
 import { evalScript } from '@/lib/util';
 import { logger } from '@/lib/logger';
 import { PostValidState } from '../parser';
-import { BooruDownloadConfig } from '../downloadConfigBuilder';
+import { BooruDownloadConfig } from '../downloadConfig';
 
 export abstract class AbstractDanbooru extends SiteInject {
   protected abstract api: DanbooruApi;
@@ -280,8 +280,7 @@ export abstract class AbstractDanbooru extends SiteInject {
     downloadArtworkByMeta: async (meta, signal) => {
       downloader.dirHandleCheck();
 
-      const downloadConfig = BooruDownloadConfig.create({
-        mediaMeta: meta,
+      const downloadConfig = new BooruDownloadConfig(meta).create({
         folderTemplate: this.config.get('folderPattern'),
         filenameTemplate: this.config.get('filenamePattern')
       });
@@ -361,8 +360,7 @@ export abstract class AbstractDanbooru extends SiteInject {
     const id = btn.dataset.id!;
 
     const mediaMeta = await this.getMetaByPostId(id);
-    const downloadConfig = BooruDownloadConfig.create({
-      mediaMeta,
+    const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
       folderTemplate: this.config.get('folderPattern'),
       filenameTemplate: this.config.get('filenamePattern'),
       setProgress: (progress: number) => {

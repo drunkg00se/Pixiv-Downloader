@@ -11,7 +11,7 @@ import { logger } from '@/lib/logger';
 import { unsafeWindow } from '$';
 import t from '@/lib/lang';
 import { PostValidState } from '../base/parser';
-import { BooruDownloadConfig } from '../base/downloadConfigBuilder';
+import { BooruDownloadConfig } from '../base/downloadConfig';
 
 export class E621ng extends SiteInject {
   static get hostname(): string[] {
@@ -313,8 +313,7 @@ export class E621ng extends SiteInject {
     downloadArtworkByMeta: async (meta, signal) => {
       downloader.dirHandleCheck();
 
-      const downloadConfig = BooruDownloadConfig.create({
-        mediaMeta: meta,
+      const downloadConfig = new BooruDownloadConfig(meta).create({
         folderTemplate: this.config.get('folderPattern'),
         filenameTemplate: this.config.get('filenamePattern')
       });
@@ -368,8 +367,7 @@ export class E621ng extends SiteInject {
 
     const { post } = await this.api.getPost(id);
     const mediaMeta = this.parser.buildMeta(post);
-    const downloadConfig = BooruDownloadConfig.create({
-      mediaMeta,
+    const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
       folderTemplate: this.config.get('folderPattern'),
       filenameTemplate: this.config.get('filenamePattern'),
       setProgress: (progress: number) => {
