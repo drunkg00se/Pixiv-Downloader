@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.7.1
+// @version            1.8.0
 // @author             ruaruarua
-// @description        一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai
-// @description:zh-TW  一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai
-// @description:en     Download artworks with one click. Batch download artworks or download by tags. Convert ugoira formats: Gif | Apng | Webp | Webm | MP4. Customize image file name, save path. Save / export download history. Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai
+// @description        一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info
+// @description:zh-TW  一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info
+// @description:en     Download artworks with one click. Batch download artworks or download by tags. Convert ugoira formats: Gif | Apng | Webp | Webm | MP4. Customize image file name, save path. Save / export download history. Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info
 // @license            MIT
 // @icon               https://www.pixiv.net/favicon.ico
 // @supportURL         https://github.com/drunkg00se/Pixiv-Downloader/issues
@@ -22,6 +22,7 @@
 // @match              https://e621.net/*
 // @match              https://e926.net/*
 // @match              https://e6ai.net/*
+// @match              https://nijie.info/*
 // @require            https://unpkg.com/dexie@3.2.7/dist/dexie.min.js
 // @require            https://unpkg.com/jszip@3.9.1/dist/jszip.min.js
 // @require            https://unpkg.com/gif.js@0.2.0/dist/gif.js
@@ -46,6 +47,7 @@
 // @connect            e621.net
 // @connect            e926.net
 // @connect            e6ai.net
+// @connect            nijie.net
 // @grant              GM_download
 // @grant              GM_getResourceText
 // @grant              GM_info
@@ -55,7 +57,7 @@
 // @noframes
 // ==/UserScript==
 
-(t=>{const r=new CSSStyleSheet;r.replaceSync(t),window._pdlShadowStyle=r})(` .anim-indeterminate.svelte-12wvf64{transform-origin:0% 50%;animation:svelte-12wvf64-anim-indeterminate 2s infinite linear}@keyframes svelte-12wvf64-anim-indeterminate{0%{transform:translate(0) scaleX(0)}40%{transform:translate(0) scaleX(.4)}to{transform:translate(100%) scaleX(.5)}}*,:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}:before,:after{--tw-content: ""}:host [data-theme=skeleton],:host{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}:host [data-theme=skeleton]{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h3,h4{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}dl,dd,h1,h3,h4,hr,figure,p{margin:0}fieldset{margin:0;padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}[type=text],input:where(:not([type])),[type=email],[type=url],[type=password],[type=number],[type=date],[type=datetime-local],[type=month],[type=search],[type=tel],[type=time],[type=week],[multiple],textarea,select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0;padding:8px 12px;font-size:16px;line-height:24px;--tw-shadow: 0 0 #0000}[type=text]:focus,input:where(:not([type])):focus,[type=email]:focus,[type=url]:focus,[type=password]:focus,[type=number]:focus,[type=date]:focus,[type=datetime-local]:focus,[type=month]:focus,[type=search]:focus,[type=tel]:focus,[type=time]:focus,[type=week]:focus,[multiple]:focus,textarea:focus,select:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);border-color:#2563eb}input::-moz-placeholder,textarea::-moz-placeholder{color:#6b7280;opacity:1}input::placeholder,textarea::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 8px center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:initial;background-position:initial;background-repeat:unset;background-size:initial;padding-right:12px;-webkit-print-color-adjust:unset;print-color-adjust:unset}[type=checkbox],[type=radio]{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;flex-shrink:0;height:16px;width:16px;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow: 0 0 #0000}[type=checkbox]{border-radius:0}[type=radio]{border-radius:100%}[type=checkbox]:focus,[type=radio]:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 2px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}[type=checkbox]:checked,[type=radio]:checked{border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}[type=checkbox]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=checkbox]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=radio]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=radio]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:checked:hover,[type=checkbox]:checked:focus,[type=radio]:checked:hover,[type=radio]:checked:focus{border-color:transparent;background-color:currentColor}[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}@media (forced-colors: active){[type=checkbox]:indeterminate{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:indeterminate:hover,[type=checkbox]:indeterminate:focus{border-color:transparent;background-color:currentColor}[type=file]{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type=file]:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}:host [data-theme=skeleton]{background-color:rgb(var(--color-surface-50));font-size:16px;line-height:24px;font-family:var(--theme-font-family-base);color:rgba(var(--theme-font-color-base))}:host .dark [data-theme=skeleton]{background-color:rgb(var(--color-surface-900));color:rgba(var(--theme-font-color-dark))}::-moz-selection{background-color:rgb(var(--color-primary-500) / .3)}::selection{background-color:rgb(var(--color-primary-500) / .3)}:host [data-theme=skeleton]{-webkit-tap-highlight-color:rgba(128,128,128,.5);scrollbar-color:rgba(0,0,0,.2) rgba(255,255,255,.05)}:host [data-theme=skeleton]{scrollbar-color:rgba(128,128,128,.5) rgba(0,0,0,.1);scrollbar-width:thin}:host.dark{scrollbar-color:rgba(255,255,255,.1) rgba(0,0,0,.05)}hr:not(.divider){display:block;border-top-width:1px;border-style:solid;border-color:rgb(var(--color-surface-300))}.dark hr:not(.divider){border-color:rgb(var(--color-surface-600))}fieldset,label{display:block}::-moz-placeholder{color:rgb(var(--color-surface-500))}::placeholder{color:rgb(var(--color-surface-500))}.dark ::-moz-placeholder{color:rgb(var(--color-surface-400))}.dark ::placeholder{color:rgb(var(--color-surface-400))}:is(.dark input::-webkit-calendar-picker-indicator){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z'/%3E%3C/svg%3E") no-repeat 50% 50%;pointer-events:none;height:16px;width:16px;border-radius:9999px;background-size:contain;opacity:0}input[type=search]:focus::-webkit-search-cancel-button{pointer-events:auto;opacity:1}:is(.dark input[type=search]::-webkit-search-cancel-button){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}progress{webkit-appearance:none;-moz-appearance:none;-webkit-appearance:none;appearance:none;height:8px;width:100%;overflow:hidden;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-400))}.dark progress{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-400))}.dark progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-value{background-color:rgb(var(--color-surface-900))}.dark progress::-webkit-progress-value{background-color:rgb(var(--color-surface-50))}::-moz-progress-bar{background-color:rgb(var(--color-surface-900))}.dark ::-moz-progress-bar{background-color:rgb(var(--color-surface-50))}:indeterminate::-moz-progress-bar{width:0}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled{cursor:not-allowed;opacity:.5}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}input[type=file]:not(.file-dropzone-input)::file-selector-button{font-size:14px;line-height:20px;padding:6px 12px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50));margin-right:8px;border-width:0px}input[type=file]:not(.file-dropzone-input)::file-selector-button>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}input[type=file]:not(.file-dropzone-input)::file-selector-button:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.dark input[type=file]:not(.file-dropzone-input)::file-selector-button{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}[type=range]{width:100%;accent-color:rgb(var(--color-surface-900) / 1)}:is(.dark [type=range]){accent-color:rgb(var(--color-surface-50) / 1)}[data-sort]{cursor:pointer}[data-sort]:hover:hover,.dark [data-sort]:hover:hover{background-color:rgb(var(--color-primary-500) / .1)}[data-sort]:after{margin-left:8px!important;opacity:0;--tw-content: "\u2193" !important;content:var(--tw-content)!important}[data-popup]{position:absolute;top:0;left:0;display:none;transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}:host [data-theme=skeleton]{--theme-font-family-base: system-ui;--theme-font-family-heading: system-ui;--theme-font-color-base: 0 0 0;--theme-font-color-dark: 255 255 255;--theme-rounded-base: 9999px;--theme-rounded-container: 8px;--theme-border-base: 1px;--on-primary: 0 0 0;--on-secondary: 255 255 255;--on-tertiary: 0 0 0;--on-success: 0 0 0;--on-warning: 0 0 0;--on-error: 255 255 255;--on-surface: 255 255 255;--color-primary-50: 219 245 236;--color-primary-100: 207 241 230;--color-primary-200: 195 238 224;--color-primary-300: 159 227 205;--color-primary-400: 87 207 167;--color-primary-500: 15 186 129;--color-primary-600: 14 167 116;--color-primary-700: 11 140 97;--color-primary-800: 9 112 77;--color-primary-900: 7 91 63;--color-secondary-50: 229 227 251;--color-secondary-100: 220 218 250;--color-secondary-200: 211 209 249;--color-secondary-300: 185 181 245;--color-secondary-400: 132 126 237;--color-secondary-500: 79 70 229;--color-secondary-600: 71 63 206;--color-secondary-700: 59 53 172;--color-secondary-800: 47 42 137;--color-secondary-900: 39 34 112;--color-tertiary-50: 219 242 252;--color-tertiary-100: 207 237 251;--color-tertiary-200: 195 233 250;--color-tertiary-300: 159 219 246;--color-tertiary-400: 86 192 240;--color-tertiary-500: 14 165 233;--color-tertiary-600: 13 149 210;--color-tertiary-700: 11 124 175;--color-tertiary-800: 8 99 140;--color-tertiary-900: 7 81 114;--color-success-50: 237 247 220;--color-success-100: 230 245 208;--color-success-200: 224 242 197;--color-success-300: 206 235 162;--color-success-400: 169 219 92;--color-success-500: 132 204 22;--color-success-600: 119 184 20;--color-success-700: 99 153 17;--color-success-800: 79 122 13;--color-success-900: 65 100 11;--color-warning-50: 252 244 218;--color-warning-100: 251 240 206;--color-warning-200: 250 236 193;--color-warning-300: 247 225 156;--color-warning-400: 240 202 82;--color-warning-500: 234 179 8;--color-warning-600: 211 161 7;--color-warning-700: 176 134 6;--color-warning-800: 140 107 5;--color-warning-900: 115 88 4;--color-error-50: 249 221 234;--color-error-100: 246 209 228;--color-error-200: 244 198 221;--color-error-300: 238 163 200;--color-error-400: 225 94 159;--color-error-500: 212 25 118;--color-error-600: 191 23 106;--color-error-700: 159 19 89;--color-error-800: 127 15 71;--color-error-900: 104 12 58;--color-surface-50: 228 230 238;--color-surface-100: 219 222 233;--color-surface-200: 210 214 227;--color-surface-300: 182 189 210;--color-surface-400: 128 140 177;--color-surface-500: 73 90 143;--color-surface-600: 66 81 129;--color-surface-700: 55 68 107;--color-surface-800: 44 54 86;--color-surface-900: 36 44 70}[data-theme=skeleton] h1,[data-theme=skeleton] h3,[data-theme=skeleton] h4{font-weight:700}[data-theme=skeleton]{background-image:radial-gradient(at 0% 0%,rgba(var(--color-secondary-500) / .33) 0px,transparent 50%),radial-gradient(at 98% 1%,rgba(var(--color-error-500) / .33) 0px,transparent 50%);background-attachment:fixed;background-position:center;background-repeat:no-repeat;background-size:cover}*{scrollbar-color:initial;scrollbar-width:initial}.\\!container{width:100%!important}.container{width:100%}@media (min-width: 640px){.\\!container{max-width:640px!important}.container{max-width:640px}}@media (min-width: 768px){.\\!container{max-width:768px!important}.container{max-width:768px}}@media (min-width: 1024px){.\\!container{max-width:1024px!important}.container{max-width:1024px}}@media (min-width: 1280px){.\\!container{max-width:1280px!important}.container{max-width:1280px}}@media (min-width: 1536px){.\\!container{max-width:1536px!important}.container{max-width:1536px}}.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}.h3{font-size:20px;line-height:28px;font-family:var(--theme-font-family-heading)}.h4{font-size:18px;line-height:28px;font-family:var(--theme-font-family-heading)}.anchor{--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));text-decoration-line:underline}.anchor:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}:is(.dark .anchor){--tw-text-opacity: 1;color:rgb(var(--color-primary-500) / var(--tw-text-opacity))}.time{font-size:14px;line-height:20px;--tw-text-opacity: 1;color:rgb(var(--color-surface-500) / var(--tw-text-opacity))}:is(.dark .time){--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-size:12px;line-height:16px;--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .3);border-radius:4px;padding:2px 4px}:is(.dark .code){--tw-text-opacity: 1;color:rgb(var(--color-primary-400) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .2)}.alert{display:flex;flex-direction:column;align-items:flex-start;padding:16px;color:rgb(var(--color-surface-900));border-radius:var(--theme-rounded-container)}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.dark .alert{color:rgb(var(--color-surface-50))}.\\!btn:disabled{cursor:not-allowed!important;opacity:.5!important}.btn:disabled,.btn-icon:disabled,.btn-group>*:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!btn:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:disabled:hover,.btn-icon:disabled:hover,.btn-group>*:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.btn:disabled:active,.btn-icon:disabled:active,.btn-group>*:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!btn{font-size:16px!important;line-height:24px!important;padding:9px 20px!important;white-space:nowrap!important;text-align:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important;border-radius:var(--theme-rounded-base)!important}.btn{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base)}.\\!btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.\\!btn:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:active{--tw-scale-x: 95% !important;--tw-scale-y: 95% !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important;--tw-brightness: brightness(.9) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-sm{padding:6px 12px;font-size:14px;line-height:20px}.btn-icon{font-size:16px;line-height:24px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;padding:0;aspect-ratio:1 / 1;width:43px;border-radius:9999px}.btn-icon>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-icon:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon-sm{aspect-ratio:1 / 1;width:33px;font-size:14px;line-height:20px}.btn-group{display:inline-flex;flex-direction:row;overflow:hidden;border-radius:var(--theme-rounded-base);isolation:isolate}.btn-group>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(0px * var(--tw-space-x-reverse));margin-left:calc(0px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button,.btn-group a{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;color:inherit!important;text-decoration-line:none!important}.btn-group button>:not([hidden])~:not([hidden]),.btn-group a>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button:hover,.btn-group a:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);background-color:rgb(var(--color-surface-50) / 3%)}.btn-group button:active,.btn-group a:active{background-color:rgb(var(--color-surface-900) / 3%)}.btn-group>*+*{border-top-width:0px;border-left-width:1px;border-color:rgb(var(--color-surface-500) / .2)}.card{background-color:rgb(var(--color-surface-100));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(23 23 23 / .05);border-radius:var(--theme-rounded-container)}.dark .card{background-color:rgb(var(--color-surface-800));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(250 250 250 / .05)}a.card{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}a.card:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!chip{cursor:pointer!important;white-space:nowrap!important;padding:6px 12px!important;text-align:center!important;font-size:12px!important;line-height:16px!important;border-radius:4px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important}.chip{cursor:pointer;white-space:nowrap;padding:6px 12px;text-align:center;font-size:12px;line-height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.\\!chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}a.chip:hover,button.chip:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}a.\\!chip:hover,button.\\!chip:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!chip:disabled{cursor:not-allowed!important;opacity:.5!important}.chip:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!chip:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.chip:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.label>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.\\!input{width:100%!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.2s!important;background-color:rgb(var(--color-surface-200))!important;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base)!important;border-color:rgb(var(--color-surface-400))!important}.input,.textarea,.select,.input-group{width:100%;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.2s;background-color:rgb(var(--color-surface-200));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .input,.dark .textarea,.dark .select,.dark .input-group{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.dark .\\!input{background-color:rgb(var(--color-surface-700))!important;border-color:rgb(var(--color-surface-500))!important}.\\!input:hover{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:hover,.textarea:hover,.select:hover,.input-group:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:focus,.textarea:focus,.select:focus,.input-group:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus-within{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))!important}.input:focus-within,.textarea:focus-within,.select:focus-within,.input-group:focus-within{--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.\\!input{border-radius:var(--theme-rounded-base)!important}.input,.input-group{border-radius:var(--theme-rounded-base)}.textarea,.select{border-radius:var(--theme-rounded-container)}.select>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select{padding:8px 32px 8px 8px}.select[size]{background-image:none}.select optgroup>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select optgroup{font-weight:700}.select optgroup option{margin-left:0;padding-left:0}.select optgroup option:first-of-type{margin-top:12px}.select optgroup option:last-child{margin-bottom:12px!important}.select option{cursor:pointer;padding:8px 16px;background-color:rgb(var(--color-surface-200));border-radius:var(--theme-rounded-base)}.dark .select option{background-color:rgb(var(--color-surface-700))}.select option:checked{background:rgb(var(--color-primary-500)) linear-gradient(0deg,rgb(var(--color-primary-500)),rgb(var(--color-primary-500)));color:rgb(var(--on-primary))}.checkbox,.radio{height:20px;width:20px;cursor:pointer;border-radius:4px;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;background-color:rgb(var(--color-surface-200));border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .checkbox,.dark .radio{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.checkbox:hover,.radio:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.checkbox:focus,.radio:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.checkbox:checked,.checkbox:indeterminate,.radio:checked{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:hover,.checkbox:indeterminate:hover,.radio:checked:hover{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:focus,.checkbox:indeterminate:focus,.radio:checked:focus{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)}.radio{border-radius:var(--theme-rounded-base)}.\\!input[type=file]{padding:4px!important}.input[type=file]{padding:4px}.\\!input[type=color]{height:40px!important;width:40px!important;cursor:pointer!important;overflow:hidden!important;border-style:none!important;border-radius:var(--theme-rounded-base)!important;-webkit-appearance:none!important}.input[type=color]{height:40px;width:40px;cursor:pointer;overflow:hidden;border-style:none;border-radius:var(--theme-rounded-base);-webkit-appearance:none}.\\!input[type=color]::-webkit-color-swatch-wrapper{padding:0!important}.input[type=color]::-webkit-color-swatch-wrapper{padding:0}.\\!input[type=color]::-webkit-color-swatch{border-style:none!important}.input[type=color]::-webkit-color-swatch{border-style:none}.\\!input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input[type=color]::-moz-color-swatch{border-style:none!important}.input[type=color]::-moz-color-swatch{border-style:none}.\\!input:disabled{cursor:not-allowed!important;opacity:.5!important}.input:disabled,.textarea:disabled,.select:disabled,.input-group>input:disabled,.input-group>textarea:disabled,.input-group>select:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!input:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:disabled:hover,.textarea:disabled:hover,.select:disabled:hover,.input-group>input:disabled:hover,.input-group>textarea:disabled:hover,.input-group>select:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!input[readonly],.input[readonly],.textarea[readonly],.select[readonly]{cursor:not-allowed!important;border-color:transparent!important}.\\!input[readonly]:hover,.input[readonly]:hover,.textarea[readonly]:hover,.select[readonly]:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input-group{display:grid;overflow:hidden}.input-group input,.input-group select{border-width:0px;background-color:transparent;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.input-group select option{background-color:rgb(var(--color-surface-200))}.dark .input-group select option{background-color:rgb(var(--color-surface-700))}.input-group div,.input-group a,.input-group button{display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:16px}.input-group-divider input,.input-group-divider select,.input-group-divider div,.input-group-divider a{border-left-width:1px;border-color:rgb(var(--color-surface-400));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;min-width:-moz-fit-content!important;min-width:fit-content!important}.dark .input-group-divider input,.dark .input-group-divider select,.dark .input-group-divider div,.dark .input-group-divider a{border-color:rgb(var(--color-surface-500))}.input-group-divider input:focus,.input-group-divider select:focus,.input-group-divider div:focus,.input-group-divider a:focus{border-color:rgb(var(--color-surface-400))}.dark .input-group-divider input:focus,.dark .input-group-divider select:focus,.dark .input-group-divider div:focus,.dark .input-group-divider a:focus{border-color:rgb(var(--color-surface-500))}.input-group-divider *:first-child{border-left-width:0px!important}.input-group-shim{background-color:rgb(var(--color-surface-400) / .1);color:rgb(var(--color-surface-600))}.dark .input-group-shim{color:rgb(var(--color-surface-300))}.input-error{--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}:is(.dark .input-error){--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::-moz-placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.list{list-style-type:none}.list>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.list li{display:flex;align-items:center;border-radius:var(--theme-rounded-base)}.list li>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.placeholder{height:20px;background-color:rgb(var(--color-surface-300));border-radius:var(--theme-rounded-base)}.dark .placeholder{background-color:rgb(var(--color-surface-600))}.w-modal{width:100%;max-width:640px}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-style:auto;outline-color:-webkit-focus-ring-color}.variant-filled{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .variant-filled{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.\\!variant-filled-primary{--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-filled-primary{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .variant-filled-primary){--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .\\!variant-filled-primary){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-ghost-surface{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .variant-ghost-surface){--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}.variant-soft,.variant-soft-surface{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .variant-soft,.dark .variant-soft-surface{color:rgb(var(--color-surface-200))}:is(.dark .variant-soft),:is(.dark .variant-soft-surface){background-color:rgb(var(--color-surface-500) / .2)}@media (min-width: 768px){.h3{font-size:24px;line-height:32px}.h4{font-size:20px;line-height:28px}}@media (min-width: 1024px){.alert{flex-direction:row;align-items:center}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(0px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0px * var(--tw-space-y-reverse));--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-width:0px!important}.visible{visibility:visible}.static{position:static}.fixed{position:fixed}.\\!absolute{position:absolute!important}.absolute{position:absolute}.relative{position:relative}.bottom-0{bottom:0}.bottom-24{bottom:96px}.left-0{left:0}.left-1\\/2{left:50%}.right-0{right:0}.right-2{right:8px}.right-20{right:80px}.right-4{right:16px}.top-0{top:0}.top-1\\/2{top:50%}.top-2{top:8px}.top-36{top:144px}.-z-10{z-index:-10}.z-\\[999\\]{z-index:999}.row-span-2{grid-row:span 2 / span 2}.row-start-1{grid-row-start:1}.\\!m-0{margin:0!important}.m-auto{margin:auto}.mx-2{margin-left:8px;margin-right:8px}.my-4{margin-top:16px;margin-bottom:16px}.my-\\[1px\\]{margin-top:1px;margin-bottom:1px}.ml-1{margin-left:4px}.ml-3{margin-left:12px}.ml-4{margin-left:16px}.mr-2{margin-right:8px}.mr-6{margin-right:24px}.mt-2{margin-top:8px}.mt-4{margin-top:16px}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.contents{display:contents}.hidden{display:none}.size-14{width:56px;height:56px}.size-full{width:100%;height:100%}.h-0{height:0px}.h-10{height:40px}.h-2{height:8px}.h-4{height:16px}.h-48{height:192px}.h-6{height:24px}.h-8{height:32px}.h-\\[38px\\]{height:38px}.h-auto{height:auto}.h-fit{height:-moz-fit-content;height:fit-content}.h-full{height:100%}.h-screen{height:100vh}.max-h-\\[200px\\]{max-height:200px}.min-h-0{min-height:0px}.min-h-full{min-height:100%}.w-0{width:0px}.w-12{width:48px}.w-16{width:64px}.w-20{width:80px}.w-32{width:128px}.w-36{width:144px}.w-48{width:192px}.w-5{width:20px}.w-6{width:24px}.w-8{width:32px}.w-\\[140px\\]{width:140px}.w-\\[38px\\]{width:38px}.w-\\[50\\%\\]{width:50%}.w-\\[600px\\]{width:600px}.w-full{width:100%}.w-screen{width:100vw}.max-w-full{max-width:100%}.flex-1{flex:1 1 0%}.flex-auto{flex:1 1 auto}.flex-none{flex:none}.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.basis-0{flex-basis:0px}.origin-\\[50\\%_50\\%\\]{transform-origin:50% 50%}.-translate-x-1\\/2{--tw-translate-x: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-x-full{--tw-translate-x: -100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\\/2{--tw-translate-y: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-0{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-\\[calc\\(100\\%-44px\\)\\]{--tw-translate-x: calc(100% - 44px) ;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-full{--tw-translate-x: 100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-90{--tw-rotate: -90deg;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-\\[0\\.8\\]{--tw-scale-x: .8;--tw-scale-y: .8;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!transform-none{transform:none!important}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.\\!cursor-default{cursor:default!important}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-\\[0px_1fr\\]{grid-template-columns:0px 1fr}.grid-cols-\\[140px_1fr\\]{grid-template-columns:140px 1fr}.grid-cols-\\[auto_1fr_auto\\]{grid-template-columns:auto 1fr auto}.grid-cols-\\[auto_1fr_auto_auto\\]{grid-template-columns:auto 1fr auto auto}.grid-rows-\\[0fr\\]{grid-template-rows:0fr}.grid-rows-\\[1fr\\]{grid-template-rows:1fr}.grid-rows-\\[auto_1fr\\]{grid-template-rows:auto 1fr}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.\\!items-stretch{align-items:stretch!important}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.justify-evenly{justify-content:space-evenly}.gap-1{gap:4px}.gap-14{gap:56px}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.gap-6{gap:24px}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(8px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(8px * var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.divide-y-\\[1px\\]>:not([hidden])~:not([hidden]){--tw-divide-y-reverse: 0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.self-start{align-self:flex-start}.self-stretch{align-self:stretch}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-y-hidden{overflow-y:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.break-words{overflow-wrap:break-word}.rounded{border-radius:4px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:8px}.rounded-md{border-radius:6px}.rounded-none{border-radius:0}.rounded-e-\\[4px\\]{border-start-end-radius:4px;border-end-end-radius:4px}.rounded-s-full{border-start-start-radius:9999px;border-end-start-radius:9999px}.border{border-width:1px}.border-0{border-width:0px}.\\!border-t-0{border-top-width:0px!important}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l{border-left-width:1px}.\\!border-surface-700{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-700) / var(--tw-border-opacity, 1))!important}.border-surface-400\\/20{border-color:rgb(var(--color-surface-400) / .2)}.bg-primary-500{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity, 1))}.bg-primary-500\\/30{background-color:rgb(var(--color-primary-500) / .3)}.bg-surface-400{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-400) / var(--tw-bg-opacity, 1))}.bg-surface-400\\/20{background-color:rgb(var(--color-surface-400) / .2)}.bg-surface-900{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-900) / var(--tw-bg-opacity, 1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity: 1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\\/30{background-color:#ffffff4d}.bg-white\\/75{background-color:#ffffffbf}.bg-scroll{background-attachment:scroll}.fill-current{fill:currentColor}.fill-primary-500{fill:rgb(var(--color-primary-500) / 1)}.fill-slate-700{fill:#334155}.fill-transparent{fill:transparent}.stroke-primary-500{stroke:rgb(var(--color-primary-500) / 1)}.stroke-primary-500\\/30{stroke:rgb(var(--color-primary-500) / .3)}.stroke-surface-500\\/30{stroke:rgb(var(--color-surface-500) / .3)}.stroke-surface-900{stroke:rgb(var(--color-surface-900) / 1)}.object-cover{-o-object-fit:cover;object-fit:cover}.object-center{-o-object-position:center;object-position:center}.\\!p-0{padding:0!important}.p-0{padding:0}.p-1{padding:4px}.p-2{padding:8px}.p-4{padding:16px}.\\!px-1{padding-left:4px!important;padding-right:4px!important}.\\!py-2{padding-top:8px!important;padding-bottom:8px!important}.\\!py-\\[7px\\]{padding-top:7px!important;padding-bottom:7px!important}.px-3{padding-left:12px;padding-right:12px}.px-4{padding-left:16px;padding-right:16px}.px-8{padding-left:32px;padding-right:32px}.py-1{padding-top:4px;padding-bottom:4px}.py-2{padding-top:8px;padding-bottom:8px}.py-6{padding-top:24px;padding-bottom:24px}.pb-6{padding-bottom:24px}.pl-6{padding-left:24px}.pr-0{padding-right:0}.pr-2{padding-right:8px}.pr-4{padding-right:16px}.pr-6{padding-right:24px}.pt-4{padding-top:16px}.text-center{text-align:center}.text-2xl{font-size:24px;line-height:32px}.text-\\[12px\\]{font-size:12px}.text-base{font-size:16px;line-height:24px}.text-sm{font-size:14px;line-height:20px}.text-xl{font-size:20px;line-height:28px}.text-xs{font-size:12px;line-height:16px}.font-bold{font-weight:700}.italic{font-style:italic}.leading-\\[14px\\]{line-height:14px}.leading-loose{line-height:2}.\\!text-error-500{--tw-text-opacity: 1 !important;color:rgb(var(--color-error-500) / var(--tw-text-opacity, 1))!important}.text-error-500{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity, 1))}.text-surface-400{--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity, 1))}.underline-offset-2{text-underline-offset:2px}.accent-surface-900{accent-color:rgb(var(--color-surface-900) / 1)}.opacity-40{opacity:.4}.opacity-50{opacity:.5}.opacity-70{opacity:.7}.mix-blend-hard-light{mix-blend-mode:hard-light}.shadow{--tw-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);--tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.shadow-xl{--tw-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);--tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.-outline-offset-\\[3px\\]{outline-offset:-3px}.\\!ring-0{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.blur{--tw-blur: blur(8px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\\[1px\\]{--tw-blur: blur(1px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-xl{--tw-drop-shadow: drop-shadow(0 20px 13px rgb(0 0 0 / .03)) drop-shadow(0 8px 5px rgb(0 0 0 / .08));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur: blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-columns\\]{transition-property:grid-template-columns;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-rows\\]{transition-property:grid-template-rows;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[stroke-dashoffset\\]{transition-property:stroke-dashoffset;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[transform\\]{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[width\\]{transition-property:width;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.delay-100{transition-delay:.1s}.duration-100{transition-duration:.1s}.duration-\\[200ms\\]{transition-duration:.2s}.duration-\\[250ms\\]{transition-duration:.25s}.duration-\\[400ms\\]{transition-duration:.4s}.bg-surface-backdrop-token{background-color:rgb(var(--color-surface-400) / .7)}.dark .bg-surface-backdrop-token{background-color:rgb(var(--color-surface-900) / .7)}.bg-surface-100-800-token{background-color:rgb(var(--color-surface-100))}.dark .bg-surface-100-800-token{background-color:rgb(var(--color-surface-800))}.bg-surface-200-700-token{background-color:rgb(var(--color-surface-200))}.dark .bg-surface-200-700-token{background-color:rgb(var(--color-surface-700))}.bg-surface-900-50-token{background-color:rgb(var(--color-surface-900))}.dark .bg-surface-900-50-token{background-color:rgb(var(--color-surface-50))}.border-token{border-width:var(--theme-border-base)}.border-surface-400-500-token{border-color:rgb(var(--color-surface-400))}.dark .border-surface-400-500-token{border-color:rgb(var(--color-surface-500))}.border-surface-900-50-token{border-color:rgb(var(--color-surface-900))}.dark .border-surface-900-50-token{border-color:rgb(var(--color-surface-50))}.border-surface-800-100-token{border-color:rgb(var(--color-surface-800))}.dark .border-surface-800-100-token{border-color:rgb(var(--color-surface-100))}.rounded-token{border-radius:var(--theme-rounded-base)}.rounded-container-token{border-radius:var(--theme-rounded-container)}.rounded-tl-container-token{border-top-left-radius:var(--theme-rounded-container)}.rounded-tr-container-token{border-top-right-radius:var(--theme-rounded-container)}.fill-token{fill:rgba(var(--theme-font-color-base))}.dark .fill-token{fill:rgba(var(--theme-font-color-dark))}.text-surface-700-200-token{color:rgb(var(--color-surface-700))}.dark .text-surface-700-200-token{color:rgb(var(--color-surface-200))}.scrollbar-thin::-webkit-scrollbar-track{background-color:var(--scrollbar-track);border-radius:var(--scrollbar-track-radius)}.scrollbar-thin::-webkit-scrollbar-track:hover{background-color:var(--scrollbar-track-hover, var(--scrollbar-track))}.scrollbar-thin::-webkit-scrollbar-track:active{background-color:var(--scrollbar-track-active, var(--scrollbar-track-hover, var(--scrollbar-track)))}.scrollbar-thin::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:var(--scrollbar-thumb-radius)}.scrollbar-thin::-webkit-scrollbar-thumb:hover{background-color:var(--scrollbar-thumb-hover, var(--scrollbar-thumb))}.scrollbar-thin::-webkit-scrollbar-thumb:active{background-color:var(--scrollbar-thumb-active, var(--scrollbar-thumb-hover, var(--scrollbar-thumb)))}.scrollbar-thin::-webkit-scrollbar-corner{background-color:var(--scrollbar-corner);border-radius:var(--scrollbar-corner-radius)}.scrollbar-thin::-webkit-scrollbar-corner:hover{background-color:var(--scrollbar-corner-hover, var(--scrollbar-corner))}.scrollbar-thin::-webkit-scrollbar-corner:active{background-color:var(--scrollbar-corner-active, var(--scrollbar-corner-hover, var(--scrollbar-corner)))}.scrollbar-thin{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb, initial) var(--scrollbar-track, initial)}.scrollbar-thin::-webkit-scrollbar{display:block;width:8px;height:8px}.scrollbar-track-transparent{--scrollbar-track: transparent !important}.scrollbar-thumb-slate-400\\/50{--scrollbar-thumb: rgb(148 163 184 / .5) !important}.scrollbar-corner-transparent{--scrollbar-corner: transparent !important}.has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}:is(.dark .has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked)){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.hover\\:variant-soft:hover,.hover\\:variant-soft-surface:hover{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .hover\\:variant-soft:hover,.dark .hover\\:variant-soft-surface:hover{color:rgb(var(--color-surface-200))}:is(.dark .hover\\:variant-soft:hover){background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .hover\\:variant-soft-surface:hover){background-color:rgb(var(--color-surface-500) / .2)}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){background-color:rgb(var(--color-primary-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-primary-700))}.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){color:rgb(var(--color-primary-200))}:is(.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled])){background-color:rgb(var(--color-primary-500) / .2)}.\\*\\:\\!m-0>*{margin:0!important}.\\*\\:items-center>*{align-items:center}.\\*\\:\\!rounded-none>*{border-radius:0!important}.\\*\\:py-4>*{padding-top:16px;padding-bottom:16px}.\\*\\:text-sm>*{font-size:14px;line-height:20px}.\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-300))}.dark .\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-600))}.hover\\:translate-x-0:hover{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\\:text-xl:hover{font-size:20px;line-height:28px}.hover\\:opacity-100:hover{opacity:1}.hover\\:brightness-110:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.hover\\:brightness-\\[105\\%\\]:hover{--tw-brightness: brightness(105%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\\:decoration-wavy:focus{text-decoration-style:wavy}.focus\\:\\!outline-none:focus{outline:2px solid transparent!important;outline-offset:2px!important}.disabled\\:cursor-wait:disabled{cursor:wait}.disabled\\:opacity-70:disabled{opacity:.7}.dark\\:\\!border-surface-200:is(.dark *){--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-200) / var(--tw-border-opacity, 1))!important}.dark\\:border-surface-500\\/20:is(.dark *){border-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-black\\/15:is(.dark *){background-color:#00000026}.dark\\:bg-surface-300:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-300) / var(--tw-bg-opacity, 1))}.dark\\:bg-surface-500\\/20:is(.dark *){background-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-surface-700:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-700) / var(--tw-bg-opacity, 1))}.dark\\:fill-slate-200:is(.dark *){fill:#e2e8f0}.dark\\:stroke-surface-50:is(.dark *){stroke:rgb(var(--color-surface-50) / 1)}.dark\\:accent-surface-50:is(.dark *){accent-color:rgb(var(--color-surface-50) / 1)}.dark\\:hover\\:brightness-110:hover:is(.dark *){--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}@media (min-width: 768px){.md\\:h-\\[600px\\]{height:600px}.md\\:max-w-screen-md{max-width:768px}.md\\:max-w-screen-sm{max-width:640px}.md\\:flex-row{flex-direction:row}.md\\:\\!items-baseline{align-items:baseline!important}}@media (min-width: 1024px){.lg\\:max-w-screen-md{max-width:768px}}@media (min-width: 1280px){.xl\\:max-w-screen-lg{max-width:1024px}}.\\[\\&\\:last-child\\]\\:\\*\\:pt-4>*:last-child{padding-top:16px}.\\[\\&\\:not\\(\\:last-child\\)\\]\\:\\*\\:py-4>*:not(:last-child){padding-top:16px;padding-bottom:16px}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:hover\\:bg-slate-400\\/30:hover:not([disabled]){background-color:#94a3b84d}.\\[\\&\\>input\\]\\:\\!min-w-0>input{min-width:0px!important}.\\[\\&\\>input\\]\\:\\!border-transparent>input{border-color:transparent!important} `);
+(t=>{const r=new CSSStyleSheet;r.replaceSync(t),window._pdlShadowStyle=r})(` .anim-indeterminate.svelte-12wvf64{transform-origin:0% 50%;animation:svelte-12wvf64-anim-indeterminate 2s infinite linear}@keyframes svelte-12wvf64-anim-indeterminate{0%{transform:translate(0) scaleX(0)}40%{transform:translate(0) scaleX(.4)}to{transform:translate(100%) scaleX(.5)}}*,:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}:before,:after{--tw-content: ""}:host [data-theme=skeleton],:host{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}:host [data-theme=skeleton]{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h3,h4{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}dl,dd,h1,h3,h4,hr,figure,p{margin:0}fieldset{margin:0;padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}[type=text],input:where(:not([type])),[type=email],[type=url],[type=password],[type=number],[type=date],[type=datetime-local],[type=month],[type=search],[type=tel],[type=time],[type=week],[multiple],textarea,select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0;padding:8px 12px;font-size:16px;line-height:24px;--tw-shadow: 0 0 #0000}[type=text]:focus,input:where(:not([type])):focus,[type=email]:focus,[type=url]:focus,[type=password]:focus,[type=number]:focus,[type=date]:focus,[type=datetime-local]:focus,[type=month]:focus,[type=search]:focus,[type=tel]:focus,[type=time]:focus,[type=week]:focus,[multiple]:focus,textarea:focus,select:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);border-color:#2563eb}input::-moz-placeholder,textarea::-moz-placeholder{color:#6b7280;opacity:1}input::placeholder,textarea::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-year-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-meridiem-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 8px center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:initial;background-position:initial;background-repeat:unset;background-size:initial;padding-right:12px;-webkit-print-color-adjust:unset;print-color-adjust:unset}[type=checkbox],[type=radio]{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;flex-shrink:0;height:16px;width:16px;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow: 0 0 #0000}[type=checkbox]{border-radius:0}[type=radio]{border-radius:100%}[type=checkbox]:focus,[type=radio]:focus{outline:2px solid transparent;outline-offset:2px;--tw-ring-inset: var(--tw-empty, );--tw-ring-offset-width: 2px;--tw-ring-offset-color: #fff;--tw-ring-color: #2563eb;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}[type=checkbox]:checked,[type=radio]:checked{border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}[type=checkbox]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=checkbox]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=radio]:checked{background-image:url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e")}@media (forced-colors: active){[type=radio]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:checked:hover,[type=checkbox]:checked:focus,[type=radio]:checked:hover,[type=radio]:checked:focus{border-color:transparent;background-color:currentColor}[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");border-color:transparent;background-color:currentColor;background-size:100% 100%;background-position:center;background-repeat:no-repeat}@media (forced-colors: active){[type=checkbox]:indeterminate{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:indeterminate:hover,[type=checkbox]:indeterminate:focus{border-color:transparent;background-color:currentColor}[type=file]{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type=file]:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}:host [data-theme=skeleton]{background-color:rgb(var(--color-surface-50));font-size:16px;line-height:24px;font-family:var(--theme-font-family-base);color:rgba(var(--theme-font-color-base))}:host .dark [data-theme=skeleton]{background-color:rgb(var(--color-surface-900));color:rgba(var(--theme-font-color-dark))}::-moz-selection{background-color:rgb(var(--color-primary-500) / .3)}::selection{background-color:rgb(var(--color-primary-500) / .3)}:host [data-theme=skeleton]{-webkit-tap-highlight-color:rgba(128,128,128,.5);scrollbar-color:rgba(0,0,0,.2) rgba(255,255,255,.05)}:host [data-theme=skeleton]{scrollbar-color:rgba(128,128,128,.5) rgba(0,0,0,.1);scrollbar-width:thin}:host.dark{scrollbar-color:rgba(255,255,255,.1) rgba(0,0,0,.05)}hr:not(.divider){display:block;border-top-width:1px;border-style:solid;border-color:rgb(var(--color-surface-300))}.dark hr:not(.divider){border-color:rgb(var(--color-surface-600))}fieldset,label{display:block}::-moz-placeholder{color:rgb(var(--color-surface-500))}::placeholder{color:rgb(var(--color-surface-500))}.dark ::-moz-placeholder{color:rgb(var(--color-surface-400))}.dark ::placeholder{color:rgb(var(--color-surface-400))}:is(.dark input::-webkit-calendar-picker-indicator){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z'/%3E%3C/svg%3E") no-repeat 50% 50%;pointer-events:none;height:16px;width:16px;border-radius:9999px;background-size:contain;opacity:0}input[type=search]:focus::-webkit-search-cancel-button{pointer-events:auto;opacity:1}:is(.dark input[type=search]::-webkit-search-cancel-button){--tw-invert: invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}progress{webkit-appearance:none;-moz-appearance:none;-webkit-appearance:none;appearance:none;height:8px;width:100%;overflow:hidden;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-400))}.dark progress{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-400))}.dark progress::-webkit-progress-bar{background-color:rgb(var(--color-surface-500))}progress::-webkit-progress-value{background-color:rgb(var(--color-surface-900))}.dark progress::-webkit-progress-value{background-color:rgb(var(--color-surface-50))}::-moz-progress-bar{background-color:rgb(var(--color-surface-900))}.dark ::-moz-progress-bar{background-color:rgb(var(--color-surface-50))}:indeterminate::-moz-progress-bar{width:0}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled{cursor:not-allowed;opacity:.5}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}input[type=file]:not(.file-dropzone-input)::file-selector-button{font-size:14px;line-height:20px;padding:6px 12px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base);background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50));margin-right:8px;border-width:0px}input[type=file]:not(.file-dropzone-input)::file-selector-button>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}input[type=file]:not(.file-dropzone-input)::file-selector-button:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}input[type=file]:not(.file-dropzone-input)::file-selector-button:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.dark input[type=file]:not(.file-dropzone-input)::file-selector-button{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}[type=range]{width:100%;accent-color:rgb(var(--color-surface-900) / 1)}:is(.dark [type=range]){accent-color:rgb(var(--color-surface-50) / 1)}[data-sort]{cursor:pointer}[data-sort]:hover:hover,.dark [data-sort]:hover:hover{background-color:rgb(var(--color-primary-500) / .1)}[data-sort]:after{margin-left:8px!important;opacity:0;--tw-content: "\u2193" !important;content:var(--tw-content)!important}[data-popup]{position:absolute;top:0;left:0;display:none;transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}:host [data-theme=skeleton]{--theme-font-family-base: system-ui;--theme-font-family-heading: system-ui;--theme-font-color-base: 0 0 0;--theme-font-color-dark: 255 255 255;--theme-rounded-base: 9999px;--theme-rounded-container: 8px;--theme-border-base: 1px;--on-primary: 0 0 0;--on-secondary: 255 255 255;--on-tertiary: 0 0 0;--on-success: 0 0 0;--on-warning: 0 0 0;--on-error: 255 255 255;--on-surface: 255 255 255;--color-primary-50: 219 245 236;--color-primary-100: 207 241 230;--color-primary-200: 195 238 224;--color-primary-300: 159 227 205;--color-primary-400: 87 207 167;--color-primary-500: 15 186 129;--color-primary-600: 14 167 116;--color-primary-700: 11 140 97;--color-primary-800: 9 112 77;--color-primary-900: 7 91 63;--color-secondary-50: 229 227 251;--color-secondary-100: 220 218 250;--color-secondary-200: 211 209 249;--color-secondary-300: 185 181 245;--color-secondary-400: 132 126 237;--color-secondary-500: 79 70 229;--color-secondary-600: 71 63 206;--color-secondary-700: 59 53 172;--color-secondary-800: 47 42 137;--color-secondary-900: 39 34 112;--color-tertiary-50: 219 242 252;--color-tertiary-100: 207 237 251;--color-tertiary-200: 195 233 250;--color-tertiary-300: 159 219 246;--color-tertiary-400: 86 192 240;--color-tertiary-500: 14 165 233;--color-tertiary-600: 13 149 210;--color-tertiary-700: 11 124 175;--color-tertiary-800: 8 99 140;--color-tertiary-900: 7 81 114;--color-success-50: 237 247 220;--color-success-100: 230 245 208;--color-success-200: 224 242 197;--color-success-300: 206 235 162;--color-success-400: 169 219 92;--color-success-500: 132 204 22;--color-success-600: 119 184 20;--color-success-700: 99 153 17;--color-success-800: 79 122 13;--color-success-900: 65 100 11;--color-warning-50: 252 244 218;--color-warning-100: 251 240 206;--color-warning-200: 250 236 193;--color-warning-300: 247 225 156;--color-warning-400: 240 202 82;--color-warning-500: 234 179 8;--color-warning-600: 211 161 7;--color-warning-700: 176 134 6;--color-warning-800: 140 107 5;--color-warning-900: 115 88 4;--color-error-50: 249 221 234;--color-error-100: 246 209 228;--color-error-200: 244 198 221;--color-error-300: 238 163 200;--color-error-400: 225 94 159;--color-error-500: 212 25 118;--color-error-600: 191 23 106;--color-error-700: 159 19 89;--color-error-800: 127 15 71;--color-error-900: 104 12 58;--color-surface-50: 228 230 238;--color-surface-100: 219 222 233;--color-surface-200: 210 214 227;--color-surface-300: 182 189 210;--color-surface-400: 128 140 177;--color-surface-500: 73 90 143;--color-surface-600: 66 81 129;--color-surface-700: 55 68 107;--color-surface-800: 44 54 86;--color-surface-900: 36 44 70}[data-theme=skeleton] h1,[data-theme=skeleton] h3,[data-theme=skeleton] h4{font-weight:700}[data-theme=skeleton]{background-image:radial-gradient(at 0% 0%,rgba(var(--color-secondary-500) / .33) 0px,transparent 50%),radial-gradient(at 98% 1%,rgba(var(--color-error-500) / .33) 0px,transparent 50%);background-attachment:fixed;background-position:center;background-repeat:no-repeat;background-size:cover}*{scrollbar-color:initial;scrollbar-width:initial}.\\!container{width:100%!important}.container{width:100%}@media (min-width: 640px){.\\!container{max-width:640px!important}.container{max-width:640px}}@media (min-width: 768px){.\\!container{max-width:768px!important}.container{max-width:768px}}@media (min-width: 1024px){.\\!container{max-width:1024px!important}.container{max-width:1024px}}@media (min-width: 1280px){.\\!container{max-width:1280px!important}.container{max-width:1280px}}@media (min-width: 1536px){.\\!container{max-width:1536px!important}.container{max-width:1536px}}.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}.h3{font-size:20px;line-height:28px;font-family:var(--theme-font-family-heading)}.h4{font-size:18px;line-height:28px;font-family:var(--theme-font-family-heading)}.anchor{--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));text-decoration-line:underline}.anchor:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}:is(.dark .anchor){--tw-text-opacity: 1;color:rgb(var(--color-primary-500) / var(--tw-text-opacity))}.time{font-size:14px;line-height:20px;--tw-text-opacity: 1;color:rgb(var(--color-surface-500) / var(--tw-text-opacity))}:is(.dark .time){--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity))}.code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-size:12px;line-height:16px;--tw-text-opacity: 1;color:rgb(var(--color-primary-700) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .3);border-radius:4px;padding:2px 4px}:is(.dark .code){--tw-text-opacity: 1;color:rgb(var(--color-primary-400) / var(--tw-text-opacity));background-color:rgb(var(--color-primary-500) / .2)}.alert{display:flex;flex-direction:column;align-items:flex-start;padding:16px;color:rgb(var(--color-surface-900));border-radius:var(--theme-rounded-container)}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.dark .alert{color:rgb(var(--color-surface-50))}.\\!btn:disabled{cursor:not-allowed!important;opacity:.5!important}.btn:disabled,.btn-icon:disabled,.btn-group>*:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!btn:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:disabled:hover,.btn-icon:disabled:hover,.btn-group>*:disabled:hover{--tw-brightness: brightness(1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.btn:disabled:active,.btn-icon:disabled:active,.btn-group>*:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!btn{font-size:16px!important;line-height:24px!important;padding:9px 20px!important;white-space:nowrap!important;text-align:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important;border-radius:var(--theme-rounded-base)!important}.btn{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;border-radius:var(--theme-rounded-base)}.\\!btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.btn>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.\\!btn:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!btn:active{--tw-scale-x: 95% !important;--tw-scale-y: 95% !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important;--tw-brightness: brightness(.9) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.btn:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-sm{padding:6px 12px;font-size:14px;line-height:20px}.btn-icon{font-size:16px;line-height:24px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;padding:0;aspect-ratio:1 / 1;width:43px;border-radius:9999px}.btn-icon>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-icon:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon:active{--tw-scale-x: 95%;--tw-scale-y: 95%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-brightness: brightness(.9);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.btn-icon-sm{aspect-ratio:1 / 1;width:33px;font-size:14px;line-height:20px}.btn-group{display:inline-flex;flex-direction:row;overflow:hidden;border-radius:var(--theme-rounded-base);isolation:isolate}.btn-group>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(0px * var(--tw-space-x-reverse));margin-left:calc(0px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button,.btn-group a{font-size:16px;line-height:24px;padding:9px 20px;white-space:nowrap;text-align:center;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s;color:inherit!important;text-decoration-line:none!important}.btn-group button>:not([hidden])~:not([hidden]),.btn-group a>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.btn-group button:hover,.btn-group a:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);background-color:rgb(var(--color-surface-50) / 3%)}.btn-group button:active,.btn-group a:active{background-color:rgb(var(--color-surface-900) / 3%)}.btn-group>*+*{border-top-width:0px;border-left-width:1px;border-color:rgb(var(--color-surface-500) / .2)}.card{background-color:rgb(var(--color-surface-100));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(23 23 23 / .05);border-radius:var(--theme-rounded-container)}.dark .card{background-color:rgb(var(--color-surface-800));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-color: rgb(250 250 250 / .05)}a.card{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}a.card:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!chip{cursor:pointer!important;white-space:nowrap!important;padding:6px 12px!important;text-align:center!important;font-size:12px!important;line-height:16px!important;border-radius:4px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;transition-property:all!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.15s!important}.chip{cursor:pointer;white-space:nowrap;padding:6px 12px;text-align:center;font-size:12px;line-height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.\\!chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0 !important;margin-right:calc(8px * var(--tw-space-x-reverse))!important;margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))!important}.chip>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}a.chip:hover,button.chip:hover{--tw-brightness: brightness(1.15);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}a.\\!chip:hover,button.\\!chip:hover{--tw-brightness: brightness(1.15) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!chip:disabled{cursor:not-allowed!important;opacity:.5!important}.chip:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!chip:disabled:active{--tw-scale-x: 1 !important;--tw-scale-y: 1 !important;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))!important}.chip:disabled:active{--tw-scale-x: 1;--tw-scale-y: 1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.label>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.\\!input{width:100%!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter!important;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter!important;transition-timing-function:cubic-bezier(.4,0,.2,1)!important;transition-duration:.2s!important;background-color:rgb(var(--color-surface-200))!important;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base)!important;border-color:rgb(var(--color-surface-400))!important}.input,.textarea,.select,.input-group{width:100%;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.2s;background-color:rgb(var(--color-surface-200));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .input,.dark .textarea,.dark .select,.dark .input-group{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.dark .\\!input{background-color:rgb(var(--color-surface-700))!important;border-color:rgb(var(--color-surface-500))!important}.\\!input:hover{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:hover,.textarea:hover,.select:hover,.input-group:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus{--tw-brightness: brightness(1.05) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:focus,.textarea:focus,.select:focus,.input-group:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input:focus-within{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))!important}.input:focus-within,.textarea:focus-within,.select:focus-within,.input-group:focus-within{--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.\\!input{border-radius:var(--theme-rounded-base)!important}.input,.input-group{border-radius:var(--theme-rounded-base)}.textarea,.select{border-radius:var(--theme-rounded-container)}.select>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select{padding:8px 32px 8px 8px}.select[size]{background-image:none}.select optgroup>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.select optgroup{font-weight:700}.select optgroup option{margin-left:0;padding-left:0}.select optgroup option:first-of-type{margin-top:12px}.select optgroup option:last-child{margin-bottom:12px!important}.select option{cursor:pointer;padding:8px 16px;background-color:rgb(var(--color-surface-200));border-radius:var(--theme-rounded-base)}.dark .select option{background-color:rgb(var(--color-surface-700))}.select option:checked{background:rgb(var(--color-primary-500)) linear-gradient(0deg,rgb(var(--color-primary-500)),rgb(var(--color-primary-500)));color:rgb(var(--on-primary))}.checkbox,.radio{height:20px;width:20px;cursor:pointer;border-radius:4px;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;background-color:rgb(var(--color-surface-200));border-width:var(--theme-border-base);border-color:rgb(var(--color-surface-400))}.dark .checkbox,.dark .radio{background-color:rgb(var(--color-surface-700));border-color:rgb(var(--color-surface-500))}.checkbox:hover,.radio:hover{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.checkbox:focus,.radio:focus{--tw-brightness: brightness(1.05);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);--tw-border-opacity: 1;border-color:rgb(var(--color-primary-500) / var(--tw-border-opacity))}.checkbox:checked,.checkbox:indeterminate,.radio:checked{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:hover,.checkbox:indeterminate:hover,.radio:checked:hover{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))}.checkbox:checked:focus,.checkbox:indeterminate:focus,.radio:checked:focus{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)}.radio{border-radius:var(--theme-rounded-base)}.\\!input[type=file]{padding:4px!important}.input[type=file]{padding:4px}.\\!input[type=color]{height:40px!important;width:40px!important;cursor:pointer!important;overflow:hidden!important;border-style:none!important;border-radius:var(--theme-rounded-base)!important;-webkit-appearance:none!important}.input[type=color]{height:40px;width:40px;cursor:pointer;overflow:hidden;border-style:none;border-radius:var(--theme-rounded-base);-webkit-appearance:none}.\\!input[type=color]::-webkit-color-swatch-wrapper{padding:0!important}.input[type=color]::-webkit-color-swatch-wrapper{padding:0}.\\!input[type=color]::-webkit-color-swatch{border-style:none!important}.input[type=color]::-webkit-color-swatch{border-style:none}.\\!input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input[type=color]::-webkit-color-swatch:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.\\!input[type=color]::-moz-color-swatch{border-style:none!important}.input[type=color]::-moz-color-swatch{border-style:none}.\\!input:disabled{cursor:not-allowed!important;opacity:.5!important}.input:disabled,.textarea:disabled,.select:disabled,.input-group>input:disabled,.input-group>textarea:disabled,.input-group>select:disabled{cursor:not-allowed!important;opacity:.5!important}.\\!input:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input:disabled:hover,.textarea:disabled:hover,.select:disabled:hover,.input-group>input:disabled:hover,.input-group>textarea:disabled:hover,.input-group>select:disabled:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.\\!input[readonly],.input[readonly],.textarea[readonly],.select[readonly]{cursor:not-allowed!important;border-color:transparent!important}.\\!input[readonly]:hover,.input[readonly]:hover,.textarea[readonly]:hover,.select[readonly]:hover{--tw-brightness: brightness(1) !important;filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)!important}.input-group{display:grid;overflow:hidden}.input-group input,.input-group select{border-width:0px;background-color:transparent;--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.input-group select option{background-color:rgb(var(--color-surface-200))}.dark .input-group select option{background-color:rgb(var(--color-surface-700))}.input-group div,.input-group a,.input-group button{display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:16px}.input-group-divider input,.input-group-divider select,.input-group-divider div,.input-group-divider a{border-left-width:1px;border-color:rgb(var(--color-surface-400));--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;min-width:-moz-fit-content!important;min-width:fit-content!important}.dark .input-group-divider input,.dark .input-group-divider select,.dark .input-group-divider div,.dark .input-group-divider a{border-color:rgb(var(--color-surface-500))}.input-group-divider input:focus,.input-group-divider select:focus,.input-group-divider div:focus,.input-group-divider a:focus{border-color:rgb(var(--color-surface-400))}.dark .input-group-divider input:focus,.dark .input-group-divider select:focus,.dark .input-group-divider div:focus,.dark .input-group-divider a:focus{border-color:rgb(var(--color-surface-500))}.input-group-divider *:first-child{border-left-width:0px!important}.input-group-shim{background-color:rgb(var(--color-surface-400) / .1);color:rgb(var(--color-surface-600))}.dark .input-group-shim{color:rgb(var(--color-surface-300))}.input-error{--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}:is(.dark .input-error){--tw-border-opacity: 1;border-color:rgb(var(--color-error-500) / var(--tw-border-opacity));--tw-bg-opacity: 1;background-color:rgb(var(--color-error-200) / var(--tw-bg-opacity));--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::-moz-placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.input-error::placeholder{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity))}.list{list-style-type:none}.list>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.list li{display:flex;align-items:center;border-radius:var(--theme-rounded-base)}.list li>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.placeholder{height:20px;background-color:rgb(var(--color-surface-300));border-radius:var(--theme-rounded-base)}.dark .placeholder{background-color:rgb(var(--color-surface-600))}.w-modal{width:100%;max-width:640px}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-style:auto;outline-color:-webkit-focus-ring-color}.variant-filled{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .variant-filled{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.\\!variant-filled-primary{--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-filled-primary{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .variant-filled-primary){--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity));color:rgb(var(--on-primary))}:is(.dark .\\!variant-filled-primary){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.variant-ghost-surface{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000);--tw-ring-inset: inset;--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .variant-ghost-surface){--tw-ring-opacity: 1;--tw-ring-color: rgb(var(--color-surface-500) / var(--tw-ring-opacity));background-color:rgb(var(--color-surface-500) / .2)}.variant-soft,.variant-soft-surface{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .variant-soft,.dark .variant-soft-surface{color:rgb(var(--color-surface-200))}:is(.dark .variant-soft),:is(.dark .variant-soft-surface){background-color:rgb(var(--color-surface-500) / .2)}@media (min-width: 768px){.h3{font-size:24px;line-height:32px}.h4{font-size:20px;line-height:28px}}@media (min-width: 1024px){.alert{flex-direction:row;align-items:center}.alert>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(0px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0px * var(--tw-space-y-reverse));--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}}.modal *:focus:not([tabindex="-1"]):not(.input):not(.textarea):not(.select):not(.input-group):not(.input-group input){outline-width:0px!important}.visible{visibility:visible}.static{position:static}.fixed{position:fixed}.\\!absolute{position:absolute!important}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.bottom-0{bottom:0}.bottom-24{bottom:96px}.left-0{left:0}.left-1\\/2{left:50%}.right-0{right:0}.right-2{right:8px}.right-20{right:80px}.right-4{right:16px}.top-0{top:0}.top-1\\/2{top:50%}.top-2{top:8px}.top-36{top:144px}.-z-10{z-index:-10}.z-\\[999\\]{z-index:999}.row-span-2{grid-row:span 2 / span 2}.row-start-1{grid-row-start:1}.\\!m-0{margin:0!important}.m-auto{margin:auto}.mx-2{margin-left:8px;margin-right:8px}.my-4{margin-top:16px;margin-bottom:16px}.my-\\[1px\\]{margin-top:1px;margin-bottom:1px}.ml-1{margin-left:4px}.ml-3{margin-left:12px}.ml-4{margin-left:16px}.mr-2{margin-right:8px}.mr-6{margin-right:24px}.mt-2{margin-top:8px}.mt-4{margin-top:16px}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.contents{display:contents}.hidden{display:none}.size-14{width:56px;height:56px}.size-full{width:100%;height:100%}.h-0{height:0px}.h-10{height:40px}.h-2{height:8px}.h-4{height:16px}.h-48{height:192px}.h-6{height:24px}.h-8{height:32px}.h-\\[38px\\]{height:38px}.h-auto{height:auto}.h-fit{height:-moz-fit-content;height:fit-content}.h-full{height:100%}.h-screen{height:100vh}.max-h-\\[200px\\]{max-height:200px}.min-h-0{min-height:0px}.min-h-full{min-height:100%}.w-0{width:0px}.w-12{width:48px}.w-16{width:64px}.w-20{width:80px}.w-32{width:128px}.w-36{width:144px}.w-48{width:192px}.w-5{width:20px}.w-6{width:24px}.w-8{width:32px}.w-\\[140px\\]{width:140px}.w-\\[38px\\]{width:38px}.w-\\[50\\%\\]{width:50%}.w-\\[600px\\]{width:600px}.w-full{width:100%}.w-screen{width:100vw}.max-w-full{max-width:100%}.flex-1{flex:1 1 0%}.flex-auto{flex:1 1 auto}.flex-none{flex:none}.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.basis-0{flex-basis:0px}.origin-\\[50\\%_50\\%\\]{transform-origin:50% 50%}.-translate-x-1\\/2{--tw-translate-x: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-x-full{--tw-translate-x: -100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\\/2{--tw-translate-y: -50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-0{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-\\[calc\\(100\\%-44px\\)\\]{--tw-translate-x: calc(100% - 44px) ;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-full{--tw-translate-x: 100%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-90{--tw-rotate: -90deg;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-\\[0\\.8\\]{--tw-scale-x: .8;--tw-scale-y: .8;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.\\!transform-none{transform:none!important}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.\\!cursor-default{cursor:default!important}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-\\[0px_1fr\\]{grid-template-columns:0px 1fr}.grid-cols-\\[140px_1fr\\]{grid-template-columns:140px 1fr}.grid-cols-\\[auto_1fr_auto\\]{grid-template-columns:auto 1fr auto}.grid-cols-\\[auto_1fr_auto_auto\\]{grid-template-columns:auto 1fr auto auto}.grid-rows-\\[0fr\\]{grid-template-rows:0fr}.grid-rows-\\[1fr\\]{grid-template-rows:1fr}.grid-rows-\\[auto_1fr\\]{grid-template-rows:auto 1fr}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.\\!items-stretch{align-items:stretch!important}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.justify-evenly{justify-content:space-evenly}.gap-1{gap:4px}.gap-14{gap:56px}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.gap-6{gap:24px}.gap-x-2{-moz-column-gap:8px;column-gap:8px}.gap-y-1{row-gap:4px}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(8px * var(--tw-space-x-reverse));margin-left:calc(8px * calc(1 - var(--tw-space-x-reverse)))}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(16px * var(--tw-space-x-reverse));margin-left:calc(16px * calc(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(4px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4px * var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(8px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(8px * var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse: 0;margin-top:calc(16px * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(16px * var(--tw-space-y-reverse))}.divide-y-\\[1px\\]>:not([hidden])~:not([hidden]){--tw-divide-y-reverse: 0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.self-start{align-self:flex-start}.self-stretch{align-self:stretch}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-y-hidden{overflow-y:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.break-words{overflow-wrap:break-word}.rounded{border-radius:4px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:8px}.rounded-md{border-radius:6px}.rounded-none{border-radius:0}.rounded-e-\\[4px\\]{border-start-end-radius:4px;border-end-end-radius:4px}.rounded-s-full{border-start-start-radius:9999px;border-end-start-radius:9999px}.border{border-width:1px}.border-0{border-width:0px}.\\!border-t-0{border-top-width:0px!important}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-l{border-left-width:1px}.\\!border-surface-700{--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-700) / var(--tw-border-opacity, 1))!important}.border-surface-400\\/20{border-color:rgb(var(--color-surface-400) / .2)}.bg-primary-500{--tw-bg-opacity: 1;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity, 1))}.bg-primary-500\\/30{background-color:rgb(var(--color-primary-500) / .3)}.bg-surface-400{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-400) / var(--tw-bg-opacity, 1))}.bg-surface-400\\/20{background-color:rgb(var(--color-surface-400) / .2)}.bg-surface-900{--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-900) / var(--tw-bg-opacity, 1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity: 1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\\/30{background-color:#ffffff4d}.bg-white\\/75{background-color:#ffffffbf}.bg-scroll{background-attachment:scroll}.fill-current{fill:currentColor}.fill-primary-500{fill:rgb(var(--color-primary-500) / 1)}.fill-slate-700{fill:#334155}.fill-transparent{fill:transparent}.stroke-primary-500{stroke:rgb(var(--color-primary-500) / 1)}.stroke-primary-500\\/30{stroke:rgb(var(--color-primary-500) / .3)}.stroke-surface-500\\/30{stroke:rgb(var(--color-surface-500) / .3)}.stroke-surface-900{stroke:rgb(var(--color-surface-900) / 1)}.object-cover{-o-object-fit:cover;object-fit:cover}.object-center{-o-object-position:center;object-position:center}.\\!p-0{padding:0!important}.p-0{padding:0}.p-1{padding:4px}.p-2{padding:8px}.p-4{padding:16px}.\\!px-1{padding-left:4px!important;padding-right:4px!important}.\\!py-2{padding-top:8px!important;padding-bottom:8px!important}.\\!py-\\[7px\\]{padding-top:7px!important;padding-bottom:7px!important}.px-3{padding-left:12px;padding-right:12px}.px-4{padding-left:16px;padding-right:16px}.px-8{padding-left:32px;padding-right:32px}.py-1{padding-top:4px;padding-bottom:4px}.py-2{padding-top:8px;padding-bottom:8px}.py-6{padding-top:24px;padding-bottom:24px}.pb-6{padding-bottom:24px}.pl-6{padding-left:24px}.pr-0{padding-right:0}.pr-2{padding-right:8px}.pr-4{padding-right:16px}.pr-6{padding-right:24px}.pt-4{padding-top:16px}.text-center{text-align:center}.text-2xl{font-size:24px;line-height:32px}.text-\\[12px\\]{font-size:12px}.text-base{font-size:16px;line-height:24px}.text-sm{font-size:14px;line-height:20px}.text-xl{font-size:20px;line-height:28px}.text-xs{font-size:12px;line-height:16px}.font-bold{font-weight:700}.italic{font-style:italic}.leading-\\[14px\\]{line-height:14px}.leading-loose{line-height:2}.\\!text-error-500{--tw-text-opacity: 1 !important;color:rgb(var(--color-error-500) / var(--tw-text-opacity, 1))!important}.text-error-500{--tw-text-opacity: 1;color:rgb(var(--color-error-500) / var(--tw-text-opacity, 1))}.text-surface-400{--tw-text-opacity: 1;color:rgb(var(--color-surface-400) / var(--tw-text-opacity, 1))}.underline-offset-2{text-underline-offset:2px}.accent-surface-900{accent-color:rgb(var(--color-surface-900) / 1)}.opacity-40{opacity:.4}.opacity-50{opacity:.5}.opacity-70{opacity:.7}.mix-blend-hard-light{mix-blend-mode:hard-light}.shadow{--tw-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);--tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.shadow-xl{--tw-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);--tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.-outline-offset-\\[3px\\]{outline-offset:-3px}.\\!ring-0{--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important}.blur{--tw-blur: blur(8px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\\[1px\\]{--tw-blur: blur(1px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-xl{--tw-drop-shadow: drop-shadow(0 20px 13px rgb(0 0 0 / .03)) drop-shadow(0 8px 5px rgb(0 0 0 / .08));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur: blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-columns\\]{transition-property:grid-template-columns;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[grid-template-rows\\]{transition-property:grid-template-rows;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[stroke-dashoffset\\]{transition-property:stroke-dashoffset;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[transform\\]{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-\\[width\\]{transition-property:width;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.delay-100{transition-delay:.1s}.duration-100{transition-duration:.1s}.duration-\\[200ms\\]{transition-duration:.2s}.duration-\\[250ms\\]{transition-duration:.25s}.duration-\\[400ms\\]{transition-duration:.4s}.bg-surface-backdrop-token{background-color:rgb(var(--color-surface-400) / .7)}.dark .bg-surface-backdrop-token{background-color:rgb(var(--color-surface-900) / .7)}.bg-surface-100-800-token{background-color:rgb(var(--color-surface-100))}.dark .bg-surface-100-800-token{background-color:rgb(var(--color-surface-800))}.bg-surface-200-700-token{background-color:rgb(var(--color-surface-200))}.dark .bg-surface-200-700-token{background-color:rgb(var(--color-surface-700))}.bg-surface-900-50-token{background-color:rgb(var(--color-surface-900))}.dark .bg-surface-900-50-token{background-color:rgb(var(--color-surface-50))}.border-token{border-width:var(--theme-border-base)}.border-surface-400-500-token{border-color:rgb(var(--color-surface-400))}.dark .border-surface-400-500-token{border-color:rgb(var(--color-surface-500))}.border-surface-900-50-token{border-color:rgb(var(--color-surface-900))}.dark .border-surface-900-50-token{border-color:rgb(var(--color-surface-50))}.border-surface-800-100-token{border-color:rgb(var(--color-surface-800))}.dark .border-surface-800-100-token{border-color:rgb(var(--color-surface-100))}.rounded-token{border-radius:var(--theme-rounded-base)}.rounded-container-token{border-radius:var(--theme-rounded-container)}.rounded-tl-container-token{border-top-left-radius:var(--theme-rounded-container)}.rounded-tr-container-token{border-top-right-radius:var(--theme-rounded-container)}.fill-token{fill:rgba(var(--theme-font-color-base))}.dark .fill-token{fill:rgba(var(--theme-font-color-dark))}.text-surface-700-200-token{color:rgb(var(--color-surface-700))}.dark .text-surface-700-200-token{color:rgb(var(--color-surface-200))}.scrollbar-thin::-webkit-scrollbar-track{background-color:var(--scrollbar-track);border-radius:var(--scrollbar-track-radius)}.scrollbar-thin::-webkit-scrollbar-track:hover{background-color:var(--scrollbar-track-hover, var(--scrollbar-track))}.scrollbar-thin::-webkit-scrollbar-track:active{background-color:var(--scrollbar-track-active, var(--scrollbar-track-hover, var(--scrollbar-track)))}.scrollbar-thin::-webkit-scrollbar-thumb{background-color:var(--scrollbar-thumb);border-radius:var(--scrollbar-thumb-radius)}.scrollbar-thin::-webkit-scrollbar-thumb:hover{background-color:var(--scrollbar-thumb-hover, var(--scrollbar-thumb))}.scrollbar-thin::-webkit-scrollbar-thumb:active{background-color:var(--scrollbar-thumb-active, var(--scrollbar-thumb-hover, var(--scrollbar-thumb)))}.scrollbar-thin::-webkit-scrollbar-corner{background-color:var(--scrollbar-corner);border-radius:var(--scrollbar-corner-radius)}.scrollbar-thin::-webkit-scrollbar-corner:hover{background-color:var(--scrollbar-corner-hover, var(--scrollbar-corner))}.scrollbar-thin::-webkit-scrollbar-corner:active{background-color:var(--scrollbar-corner-active, var(--scrollbar-corner-hover, var(--scrollbar-corner)))}.scrollbar-thin{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb, initial) var(--scrollbar-track, initial)}.scrollbar-thin::-webkit-scrollbar{display:block;width:8px;height:8px}.scrollbar-track-transparent{--scrollbar-track: transparent !important}.scrollbar-thumb-slate-400\\/50{--scrollbar-thumb: rgb(148 163 184 / .5) !important}.scrollbar-corner-transparent{--scrollbar-corner: transparent !important}.has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}:is(.dark .has-\\[\\:checked\\]\\:\\!variant-filled-primary:has(:checked)){--tw-bg-opacity: 1 !important;background-color:rgb(var(--color-primary-500) / var(--tw-bg-opacity))!important;color:rgb(var(--on-primary))!important}.hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-900));color:rgb(var(--color-surface-50))}.dark .hover\\:variant-filled:hover{background-color:rgb(var(--color-surface-50));color:rgb(var(--color-surface-900))}.hover\\:variant-soft:hover,.hover\\:variant-soft-surface:hover{background-color:rgb(var(--color-surface-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-surface-700))}.dark .hover\\:variant-soft:hover,.dark .hover\\:variant-soft-surface:hover{color:rgb(var(--color-surface-200))}:is(.dark .hover\\:variant-soft:hover){background-color:rgb(var(--color-surface-500) / .2)}:is(.dark .hover\\:variant-soft-surface:hover){background-color:rgb(var(--color-surface-500) / .2)}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){background-color:rgb(var(--color-primary-400) / .2);--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color) !important;box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow, 0 0 #0000)!important;color:rgb(var(--color-primary-700))}.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled]){color:rgb(var(--color-primary-200))}:is(.dark .\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:variant-soft-primary:not([disabled])){background-color:rgb(var(--color-primary-500) / .2)}.\\*\\:\\!m-0>*{margin:0!important}.\\*\\:items-center>*{align-items:center}.\\*\\:\\!rounded-none>*{border-radius:0!important}.\\*\\:py-4>*{padding-top:16px;padding-bottom:16px}.\\*\\:text-sm>*{font-size:14px;line-height:20px}.\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-300))}.dark .\\*\\:border-surface-300-600-token>*{border-color:rgb(var(--color-surface-600))}.hover\\:translate-x-0:hover{--tw-translate-x: 0px;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\\:text-xl:hover{font-size:20px;line-height:28px}.hover\\:opacity-100:hover{opacity:1}.hover\\:brightness-110:hover{--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.hover\\:brightness-\\[105\\%\\]:hover{--tw-brightness: brightness(105%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.focus\\:decoration-wavy:focus{text-decoration-style:wavy}.focus\\:\\!outline-none:focus{outline:2px solid transparent!important;outline-offset:2px!important}.disabled\\:cursor-wait:disabled{cursor:wait}.disabled\\:opacity-70:disabled{opacity:.7}.dark\\:\\!border-surface-200:is(.dark *){--tw-border-opacity: 1 !important;border-color:rgb(var(--color-surface-200) / var(--tw-border-opacity, 1))!important}.dark\\:border-surface-500\\/20:is(.dark *){border-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-black\\/15:is(.dark *){background-color:#00000026}.dark\\:bg-surface-300:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-300) / var(--tw-bg-opacity, 1))}.dark\\:bg-surface-500\\/20:is(.dark *){background-color:rgb(var(--color-surface-500) / .2)}.dark\\:bg-surface-700:is(.dark *){--tw-bg-opacity: 1;background-color:rgb(var(--color-surface-700) / var(--tw-bg-opacity, 1))}.dark\\:fill-slate-200:is(.dark *){fill:#e2e8f0}.dark\\:stroke-surface-50:is(.dark *){stroke:rgb(var(--color-surface-50) / 1)}.dark\\:accent-surface-50:is(.dark *){accent-color:rgb(var(--color-surface-50) / 1)}.dark\\:hover\\:brightness-110:hover:is(.dark *){--tw-brightness: brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}@media (min-width: 768px){.md\\:h-\\[600px\\]{height:600px}.md\\:max-w-screen-md{max-width:768px}.md\\:max-w-screen-sm{max-width:640px}.md\\:flex-row{flex-direction:row}.md\\:\\!items-baseline{align-items:baseline!important}}@media (min-width: 1024px){.lg\\:max-w-screen-md{max-width:768px}}@media (min-width: 1280px){.xl\\:max-w-screen-lg{max-width:1024px}}.\\[\\&\\:last-child\\]\\:\\*\\:pt-4>*:last-child{padding-top:16px}.\\[\\&\\:not\\(\\:last-child\\)\\]\\:\\*\\:py-4>*:not(:last-child){padding-top:16px;padding-bottom:16px}.\\[\\&\\:not\\(\\[disabled\\]\\)\\]\\:hover\\:bg-slate-400\\/30:hover:not([disabled]){background-color:#94a3b84d}.\\[\\&\\>input\\]\\:\\!min-w-0>input{min-width:0px!important}.\\[\\&\\>input\\]\\:\\!border-transparent>input{border-color:transparent!important} `);
 
 (function (Dexie, dayjs, JSZip, GIF, webmMuxer, mp4Muxer) {
   'use strict';
@@ -79,7 +81,7 @@
       return __privateGet(obj, member, getter);
     }
   });
-  var _channel, _event, _events, _instance, _FileSystemAccessHandler_instances, addChannelEventListeners_fn, _queue, _carryoverConcurrencyCount, _isIntervalIgnored, _intervalCount, _intervalCap, _interval, _intervalEnd, _intervalId, _timeoutId, _queue2, _queueClass, _pending, _concurrency, _isPaused, _throwOnTimeout, _PQueue_instances, doesIntervalAllowAnother_get, doesConcurrentAllowAnother_get, next_fn, onResumeInterval_fn, isIntervalPaused_get, tryToStartAnother_fn, initializeIntervalIfNeeded_fn, onInterval_fn, processQueue_fn, throwOnAbort_fn, onEvent_fn, _DOWNLOAD_RETRY, _downloadQueue, _Downloader_instances, xhr_fn, dispatchDownload_fn, _headers, _GelbooruV020_instances, validityCheckFactory_fn, addBookmark_fn, _DanbooruParser_instances, parseBlacklistItem_fn, _AbstractDanbooru_instances, validityCheckFactory_fn2, _ugoiraFramesData, _queue3, _Converter_instances, processConvert_fn, _MoebooruParser_instances, parsePostListData_fn, parseTagListData_fn, parseBlacklist_fn, _headers2, _Moebooru_instances, validityCallbackFactory_fn, buildMetaByGeneratorData_fn, getPopularDataFactory_fn, downloadArtwork_fn, _Konachan_instances, fixPoolImageStyle_fn, _authParams, _E621ng_instances, notice_fn, noticeError_fn, isPoolGallery_fn, isPoolView_fn, isPostView_fn, isFavoritesPage_fn, isPostsPage_fn, isAuthorized_fn, throwIfNotAuthorized_fn, validityCallbackFactory_fn2, addFavorites_fn;
+  var _channel, _event, _events, _instance, _FileSystemAccessHandler_instances, addChannelEventListeners_fn, _queue, _carryoverConcurrencyCount, _isIntervalIgnored, _intervalCount, _intervalCap, _interval, _intervalEnd, _intervalId, _timeoutId, _queue2, _queueClass, _pending, _concurrency, _isPaused, _throwOnTimeout, _PQueue_instances, doesIntervalAllowAnother_get, doesConcurrentAllowAnother_get, next_fn, onResumeInterval_fn, isIntervalPaused_get, tryToStartAnother_fn, initializeIntervalIfNeeded_fn, onInterval_fn, processQueue_fn, throwOnAbort_fn, onEvent_fn, _DOWNLOAD_RETRY, _downloadQueue, _Downloader_instances, xhr_fn, dispatchDownload_fn, _MediaDownloadConfig_instances, replaceTemplate_fn, _GelbooruV020_instances, validityCheckFactory_fn, addBookmark_fn, _DanbooruParser_instances, parseBlacklistItem_fn, _AbstractDanbooru_instances, validityCheckFactory_fn2, _ugoiraFramesData, _queue3, _Converter_instances, processConvert_fn, _MoebooruParser_instances, parsePostListData_fn, parseTagListData_fn, parseBlacklist_fn, _Moebooru_instances, validityCallbackFactory_fn, buildMetaByGeneratorData_fn, getPopularDataFactory_fn, downloadArtwork_fn, _Konachan_instances, fixPoolImageStyle_fn, _authParams, _E621ng_instances, notice_fn, noticeError_fn, isPoolGallery_fn, isPoolView_fn, isPostView_fn, isFavoritesPage_fn, isPostsPage_fn, isAuthorized_fn, throwIfNotAuthorized_fn, validityCallbackFactory_fn2, addFavorites_fn, _NijieParser_instances, parseIdByAnchors_fn, _searchParams, _Nijie_instances, isViewPage_fn, isViewPopupPage_fn, isOkazuPage_fn, isSupportedUserPage_fn, isSupportedHistoryPage_fn, getSearchId_fn, addBookmark_fn2;
   (() => {
     if (/\[native code\]/.test(Array.from.toString())) return;
     const iframe = document.createElement("iframe");
@@ -527,7 +529,7 @@
     }
   }
   const historyDb = new ReadableHistoryDb();
-  const btnStyle = ".pdl-thumbnail{position:absolute;display:flex;justify-content:center;align-items:center;margin:0;padding:0;height:32px;width:32px;top:calc((100% - 32px) * var(--pdl-btn-top) / 100);left:calc((100% - 32px) * var(--pdl-btn-left) / 100);border:none;border-radius:4px;overflow:hidden;white-space:nowrap;-webkit-user-select:none;-moz-user-select:none;user-select:none;font-family:system-ui;font-size:13px;font-weight:700;color:#262626;background-color:#ffffff80;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:1;cursor:pointer}.pdl-thumbnail:disabled{cursor:not-allowed}.pdl-thumbnail>svg{position:absolute;width:85%;height:85%;fill:currentColor;stroke:currentColor}.pdl-thumbnail>span{opacity:0;transition:opacity .2s}.pdl-thumbnail>span.show{opacity:1}:host([data-type=gallery]) .pdl-thumbnail{position:sticky;top:40px;left:0}:host([data-type=pixiv-my-bookmark]) .pdl-thumbnail{top:calc((100% - 32px) * var(--pdl-btn-self-bookmark-top) / 100);left:calc((100% - 32px) * var(--pdl-btn-self-bookmark-left) / 100)}:host([data-type=pixiv-history]) .pdl-thumbnail{z-index:auto}:host([data-type=pixiv-presentation]) .pdl-thumbnail{position:fixed;top:50px;right:20px;left:auto}:host([data-type=pixiv-toolbar]) .pdl-thumbnail{position:relative;top:auto;left:auto;color:inherit;background-color:transparent}:host([data-type=pixiv-manga-viewer]) .pdl-thumbnail{top:80%;right:4px;left:auto}:host([data-type=yande-browse]) .pdl-thumbnail{top:320px;right:4px;left:auto}:host([data-status]) .pdl-thumbnail{color:#16a34a}:host([data-status=error]) .pdl-thumbnail{color:#ef4444}";
+  const btnStyle = ".pdl-thumbnail{position:absolute;display:flex;justify-content:center;align-items:center;margin:0;padding:0;height:32px;width:32px;top:calc((100% - 32px) * var(--pdl-btn-top) / 100);left:calc((100% - 32px) * var(--pdl-btn-left) / 100);border:none;border-radius:4px;overflow:hidden;white-space:nowrap;-webkit-user-select:none;-moz-user-select:none;user-select:none;font-family:system-ui;font-size:13px;font-weight:700;color:#262626;background-color:#ffffff80;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:1;cursor:pointer}.pdl-thumbnail:disabled{cursor:not-allowed}.pdl-thumbnail>svg{position:absolute;width:85%;height:85%;fill:currentColor;stroke:currentColor}.pdl-thumbnail>span{opacity:0;transition:opacity .2s}.pdl-thumbnail>span.show{opacity:1}:host([data-type=gallery]) .pdl-thumbnail{position:sticky;top:40px;left:0}:host([data-type=pixiv-my-bookmark]) .pdl-thumbnail{top:calc((100% - 32px) * var(--pdl-btn-self-bookmark-top) / 100);left:calc((100% - 32px) * var(--pdl-btn-self-bookmark-left) / 100)}:host([data-type=pixiv-history]) .pdl-thumbnail{z-index:auto}:host([data-type=pixiv-presentation]) .pdl-thumbnail{position:fixed;top:50px;right:20px;left:auto}:host([data-type=pixiv-toolbar]) .pdl-thumbnail{position:relative;top:auto;left:auto;color:inherit;background-color:transparent}:host([data-type=pixiv-manga-viewer]) .pdl-thumbnail{top:80%;right:4px;left:auto}:host([data-type=yande-browse]) .pdl-thumbnail{top:320px;right:4px;left:auto}:host([data-type=nijie-illust]) .pdl-thumbnail{display:inline-flex;position:static;height:44px;width:44px;top:auto;left:auto;border-radius:8px;margin:0 8px;vertical-align:top}:host([data-type=nijie-illust]) .pdl-thumbnail>svg{width:70%;height:70%}:host([data-status]) .pdl-thumbnail{color:#16a34a}:host([data-status=error]) .pdl-thumbnail{color:#ef4444}";
   const svgGroup = `<svg xmlns="http://www.w3.org/2000/svg" style="display: none">
   <symbol id="pdl-download" viewBox="0 0 512 512">
     <path
@@ -631,6 +633,7 @@
     ThumbnailBtnType2["PixivToolbar"] = "pixiv-toolbar";
     ThumbnailBtnType2["PixivMangaViewer"] = "pixiv-manga-viewer";
     ThumbnailBtnType2["YandeBrowse"] = "yande-browse";
+    ThumbnailBtnType2["NijieIllust"] = "nijie-illust";
     return ThumbnailBtnType2;
   })(ThumbnailBtnType || {});
   class ThumbnailButton extends HTMLElement {
@@ -1333,7 +1336,7 @@
   function loadConfig(customConfig = {}) {
     if (config) throw new Error("`config` has already been defined.");
     const defaultConfig = Object.freeze({
-      version: "1.7.1",
+      version: "1.8.0",
       ugoiraFormat: "zip",
       folderPattern: "",
       filenamePattern: "{id}",
@@ -7197,7 +7200,7 @@
   var root_1$e = /* @__PURE__ */ template(`<input type="checkbox" tabindex="-1">`);
   var root_2$7 = /* @__PURE__ */ template(`<input type="radio" tabindex="-1">`);
   var root_3$8 = /* @__PURE__ */ template(`<div><!></div>`);
-  var root_4$4 = /* @__PURE__ */ template(`<div><!></div>`);
+  var root_4$5 = /* @__PURE__ */ template(`<div><!></div>`);
   var root$g = /* @__PURE__ */ template(`<label><div data-testid="listbox-item" role="option" tabindex="0"><div class="h-0 w-0 overflow-hidden"><!></div> <div><!> <div><!></div> <!></div></div></label>`);
   function ListBoxItem($$anchor, $$props) {
     const $$slots = sanitize_slots($$props);
@@ -7405,7 +7408,7 @@
     var node_4 = sibling(div_4, 2);
     {
       var consequent_2 = ($$anchor2) => {
-        var div_5 = root_4$4();
+        var div_5 = root_4$5();
         var node_5 = child(div_5);
         slot(node_5, $$props, "trail", {}, null);
         reset(div_5);
@@ -7790,7 +7793,7 @@
   var root_1$c = /* @__PURE__ */ template(`<label><!></label>`);
   var root_3$7 = /* @__PURE__ */ template(`<option></option>`);
   var root_2$6 = /* @__PURE__ */ template(`<datalist class="range-slider-ticks"></datalist>`);
-  var root_4$3 = /* @__PURE__ */ template(`<div class="range-slider-trail"><!></div>`);
+  var root_4$4 = /* @__PURE__ */ template(`<div class="range-slider-trail"><!></div>`);
   var root$b = /* @__PURE__ */ template(`<div data-testid="range-slider"><!> <div><input> <!></div> <!></div>`);
   function RangeSlider($$anchor, $$props) {
     const $$slots = sanitize_slots($$props);
@@ -7897,7 +7900,7 @@
     var node_3 = sibling(div_1, 2);
     {
       var consequent_2 = ($$anchor2) => {
-        var div_2 = root_4$3();
+        var div_2 = root_4$4();
         var node_4 = child(div_2);
         slot(node_4, $$props, "trail", {}, null);
         reset(div_2);
@@ -8376,8 +8379,8 @@
     append($$anchor, label);
     pop();
   }
-  var root_4$2 = /* @__PURE__ */ template(`<header><!></header>`);
-  var root_5$2 = /* @__PURE__ */ template(`<article><!></article>`);
+  var root_4$3 = /* @__PURE__ */ template(`<header><!></header>`);
+  var root_5$3 = /* @__PURE__ */ template(`<article><!></article>`);
   var root_6$1 = /* @__PURE__ */ template(`<img alt="Modal">`);
   var root_7 = /* @__PURE__ */ template(`<footer><button type="button"> </button></footer>`);
   var root_9$3 = /* @__PURE__ */ template(`<footer><button type="button"> </button> <button type="button"> </button></footer>`);
@@ -8575,7 +8578,7 @@
               var node_3 = child(div_2);
               {
                 var consequent = ($$anchor5) => {
-                  var header = root_4$2();
+                  var header = root_4$3();
                   var node_4 = child(header);
                   html(node_4, () => $modalStore()[0].title);
                   reset(header);
@@ -8590,7 +8593,7 @@
               var node_5 = sibling(node_3, 2);
               {
                 var consequent_1 = ($$anchor5) => {
-                  var article = root_5$2();
+                  var article = root_5$3();
                   var node_6 = child(article);
                   html(node_6, () => $modalStore()[0].body);
                   reset(article);
@@ -8897,7 +8900,7 @@
   }
   delegate(["click"]);
   var on_click$2 = (_, showCreditCode) => set(showCreditCode, !get$1(showCreditCode));
-  var root_1$7 = /* @__PURE__ */ template(`<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><h4 class=" text-xl mt-2">修复</h4> <ul class="list-disc list-inside leading-loose"><li>无法批量下载rule34, safebooru的问题。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`, 1);
+  var root_1$7 = /* @__PURE__ */ template(`<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><h4 class=" text-xl mt-2">新增</h4> <ul class="list-disc list-inside leading-loose"><li>支持新网站：Nijie.info。</li> <li>添加文件名模板：<code class=" code">&#123;score&#125;</code>。注：Pixiv中为收藏数，Nijie中为点赞数。</li></ul> <h4 class=" text-xl mt-2">修复</h4> <ul class="list-disc list-inside leading-loose"><li>修复未按正确顺序下载E621 pool的问题。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`, 1);
   function Changelog($$anchor, $$props) {
     push($$props, true);
     const anchorFocus = `focus:!outline-none focus:decoration-wavy`;
@@ -8911,7 +8914,7 @@
       children: ($$anchor2, $$slotProps) => {
         var fragment_1 = root_1$7();
         var header = first_child(fragment_1);
-        header.textContent = `Pixiv Downloader ${"1.7.1"}`;
+        header.textContent = `Pixiv Downloader ${"1.8.0"}`;
         var footer = sibling(header, 4);
         var div = child(footer);
         var button = child(div);
@@ -9883,6 +9886,9 @@
     },
     isRule34() {
       return location.hostname === "rule34.xxx";
+    },
+    isNijie() {
+      return location.hostname === "nijie.info";
     }
   };
   const check = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>check</title><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>`;
@@ -10997,17 +11003,17 @@
   var root_1$5 = /* @__PURE__ */ template(`<input type="text">`);
   var root_2$3 = /* @__PURE__ */ template(`<input type="text" disabled>`);
   var root_3$4 = /* @__PURE__ */ template(`<button class="chip variant-soft hover:variant-filled"><span> </span></button>`);
-  var root_5$1 = /* @__PURE__ */ template(`<!> <!> <!>`, 1);
-  var root_4$1 = /* @__PURE__ */ template(`<li><p class="flex-auto"> </p> <span class="text-sm italic"> </span> <button class="btn btn-sm variant-filled"> </button></li> <li><p class="flex-auto"> </p> <!></li>`, 1);
+  var root_5$2 = /* @__PURE__ */ template(`<!> <!> <!>`, 1);
+  var root_4$2 = /* @__PURE__ */ template(`<li><p class="flex-auto"> </p> <span class="text-sm italic"> </span> <button class="btn btn-sm variant-filled"> </button></li> <li><p class="flex-auto"> </p> <!></li>`, 1);
   var root_9$2 = /* @__PURE__ */ template(`<button class="chip variant-soft hover:variant-filled"><span> </span></button>`);
   var root_11 = /* @__PURE__ */ template(`<!> <!> <!> <!>`, 1);
   var root_10 = /* @__PURE__ */ template(`<li><div class="flex-auto"><p> </p> <p> </p></div> <!></li>`);
-  var root$6 = /* @__PURE__ */ template(`<div><section><p> </p> <ul><li class=" flex-col gap-3"><div class="input-group input-group-divider grid-cols-[auto_1fr_auto_auto]"><button type="button" class="[&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button> <!> <button type="button" class="variant-soft-surface [&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button></div> <div class=" self-start space-x-2"></div></li> <li><p class="flex-auto"> </p> <!></li> <!></ul></section> <section><p> </p> <ul><li class=" flex-col gap-3"><div class="input-group input-group-divider grid-cols-[auto_1fr_auto]"><button type="button" class="[&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button> <input type="text" required> <button type="button" class="variant-soft-surface dark:variant-fill-surface [&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button></div> <div class=" self-start space-x-2"></div></li> <!></ul></section></div>`);
+  var root$6 = /* @__PURE__ */ template(`<div><section><p> </p> <ul><li class=" flex-col gap-3"><div class="input-group input-group-divider grid-cols-[auto_1fr_auto_auto]"><button type="button" class="[&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button> <!> <button type="button" class="variant-soft-surface [&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button></div> <div class=" flex flex-wrap self-start gap-y-1 gap-x-2"></div></li> <li><p class="flex-auto"> </p> <!></li> <!></ul></section> <section><p> </p> <ul><li class=" flex-col gap-3"><div class="input-group input-group-divider grid-cols-[auto_1fr_auto]"><button type="button" class="[&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button> <input type="text" required> <button type="button" class="variant-soft-surface dark:variant-fill-surface [&amp;:not([disabled])]:variant-soft-primary"><i class=" w-6 fill-current"><!></i></button></div> <div class=" flex flex-wrap self-start gap-y-1 gap-x-2"></div></li> <!></ul></section></div>`);
   function SaveTo($$anchor, $$props) {
     push($$props, true);
     const [$$stores, $$cleanup] = setup_stores();
     const $configStore = () => store_get(configStore, "$configStore", $$stores);
-    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, ""), templates = prop($$props, "templates", 19, () => getContext("filenameTemplate")), descritionText = prop($$props, "descritionText", 3, "text-sm text-surface-400");
+    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), UlClass = prop($$props, "class", 3, ""), templates = prop($$props, "templates", 19, () => getContext("supportedTemplate")), descriptionText = prop($$props, "descriptionText", 3, "text-sm text-surface-400");
     const configStore = getContext("store");
     const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
     let directoryRef;
@@ -11105,9 +11111,11 @@
     reset(button_1);
     reset(div_1);
     var div_2 = sibling(div_1, 2);
-    each(div_2, 21, templates, index, ($$anchor2, template2) => {
+    each(div_2, 21, () => Object.entries(templates()), index, ($$anchor2, $$item) => {
+      let template2 = () => get$1($$item)[0];
+      let description = () => get$1($$item)[1];
       var button_2 = root_3$4();
-      var event_handler = /* @__PURE__ */ derived$1(() => insertDirTemplateAtCursor(get$1(template2)));
+      var event_handler = /* @__PURE__ */ derived$1(() => insertDirTemplateAtCursor(`{${template2()}}`));
       button_2.__click = function(...$$args) {
         var _a;
         (_a = get$1(event_handler)) == null ? undefined : _a.apply(this, $$args);
@@ -11118,7 +11126,7 @@
       reset(button_2);
       template_effect(() => {
         button_2.disabled = !get$1(subDirectoryAvailable);
-        set_text(text_1, get$1(template2));
+        set_text(text_1, description());
       });
       append($$anchor2, button_2);
     });
@@ -11148,7 +11156,7 @@
     var node_4 = sibling(li_1, 2);
     {
       var consequent_1 = ($$anchor2) => {
-        var fragment = root_4$1();
+        var fragment = root_4$2();
         var li_2 = first_child(fragment);
         var p_2 = child(li_2);
         var text_3 = child(p_2, true);
@@ -11172,7 +11180,7 @@
         RadioGroup(node_5, {
           class: "shrink-0",
           children: ($$anchor3, $$slotProps) => {
-            var fragment_1 = root_5$1();
+            var fragment_1 = root_5$2();
             var node_6 = first_child(fragment_1);
             RadioItem(node_6, {
               name: "filenameConfigAction",
@@ -11283,9 +11291,11 @@
     reset(button_5);
     reset(div_3);
     var div_4 = sibling(div_3, 2);
-    each(div_4, 21, templates, index, ($$anchor2, template2) => {
+    each(div_4, 21, () => Object.entries(templates()), index, ($$anchor2, $$item) => {
+      let template2 = () => get$1($$item)[0];
+      let description = () => get$1($$item)[1];
       var button_6 = root_9$2();
-      var event_handler_1 = /* @__PURE__ */ derived$1(() => insertFilenameTemplateAtCursor(get$1(template2)));
+      var event_handler_1 = /* @__PURE__ */ derived$1(() => insertFilenameTemplateAtCursor(`{${template2()}}`));
       button_6.__click = function(...$$args) {
         var _a;
         (_a = get$1(event_handler_1)) == null ? undefined : _a.apply(this, $$args);
@@ -11294,7 +11304,7 @@
       var text_11 = child(span_2, true);
       reset(span_2);
       reset(button_6);
-      template_effect(() => set_text(text_11, get$1(template2)));
+      template_effect(() => set_text(text_11, description()));
       append($$anchor2, button_6);
     });
     reset(div_4);
@@ -11403,7 +11413,7 @@
           $$slots: { default: true }
         });
         reset(li_5);
-        template_effect(() => set_class(p_6, clsx(descritionText())));
+        template_effect(() => set_class(p_6, clsx(descriptionText())));
         append($$anchor2, li_5);
       };
       if_block(node_11, ($$render) => {
@@ -12068,8 +12078,8 @@
   delegate(["click"]);
   var root_1$3 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
   var root_2$2 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
-  var root_4 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
-  var root_5 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
+  var root_4$1 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
+  var root_5$1 = /* @__PURE__ */ template(`<div class="flex justify-between items-center"><p> </p> <div class="text-xs"> </div></div>`);
   var root_3$2 = /* @__PURE__ */ template(`<section><p> </p> <ul><li class="flex-col !items-stretch md:flex-row md:!items-baseline gap-4 *:!m-0"><!> <!></li></ul></section>`);
   var root$3 = /* @__PURE__ */ template(`<div><div class="flex items-center justify-center"><div></div></div> <section><p> </p> <ul><li class="flex-col !items-stretch md:flex-row md:!items-baseline gap-4 *:!m-0"><!> <!></li></ul></section> <!></div>`);
   function BtnPosition($$anchor, $$props) {
@@ -12219,7 +12229,7 @@
             change: () => updateBtnPosConfig("pdl-btn-self-bookmark-left", get$1(bookmarkBtnLeft))
           },
           children: ($$anchor3, $$slotProps) => {
-            var div_7 = root_4();
+            var div_7 = root_4$1();
             var p_4 = child(div_7);
             var text_6 = child(p_4, true);
             template_effect(() => set_text(text_6, t("setting.button_position.options.horizon_position")));
@@ -12250,7 +12260,7 @@
             change: () => updateBtnPosConfig("pdl-btn-self-bookmark-top", get$1(bookmarkBtnTop))
           },
           children: ($$anchor3, $$slotProps) => {
-            var div_9 = root_5();
+            var div_9 = root_5$1();
             var p_5 = child(div_9);
             var text_8 = child(p_5, true);
             template_effect(() => set_text(text_8, t("setting.button_position.options.vertical_position")));
@@ -12288,15 +12298,17 @@
     pop();
     $$cleanup();
   }
-  var root_1$2 = /* @__PURE__ */ template(`<li><p class="flex-auto"> </p> <!></li> <li><p class="flex-auto"> </p> <!></li> <li><div class="flex-auto"><p> </p> <p> </p></div> <!></li>`, 1);
-  var root_2$1 = /* @__PURE__ */ template(`<ul><li><label class="label flex flex-grow items-center justify-center"><p class="flex-auto"> </p> <!></label></li> <li><label class="label flex flex-grow items-center justify-center"><p class="flex-auto"> </p> <!></label></li></ul>`);
-  var root_3$1 = /* @__PURE__ */ template(`<section><p>实验性功能</p> <ul><li><div class="flex-auto"><p>为单页插图增加 #pixivGlow2024 效果</p> <p>* 转换至动图格式。如果插图尺寸过大，可能占用大量内存 / 转换失败</p></div> <!></li></ul></section>`);
-  var root$2 = /* @__PURE__ */ template(`<div><ul><li><p class="flex-auto"> </p> <!></li> <!> <li class="flex-col !items-stretch"><div class="flex items-center"><div class="flex-auto"><p> </p> <p> </p></div> <!></div> <!></li></ul> <!></div>`);
+  var root_1$2 = /* @__PURE__ */ template(`<li><p class="flex-auto"> </p> <!></li>`);
+  var root_2$1 = /* @__PURE__ */ template(`<li><p class="flex-auto"> </p> <!></li> <li><div class="flex-auto"><p> </p> <p> </p></div> <!></li>`, 1);
+  var root_4 = /* @__PURE__ */ template(`<li><label class="label flex flex-grow items-center justify-center"><p class="flex-auto"> </p> <!></label></li>`);
+  var root_3$1 = /* @__PURE__ */ template(`<ul><li><label class="label flex flex-grow items-center justify-center"><p class="flex-auto"> </p> <!></label></li> <!></ul>`);
+  var root_5 = /* @__PURE__ */ template(`<section><p>实验性功能</p> <ul><li><div class="flex-auto"><p>为单页插图增加 #pixivGlow2024 效果</p> <p>* 转换至动图格式。如果插图尺寸过大，可能占用大量内存 / 转换失败</p></div> <!></li></ul></section>`);
+  var root$2 = /* @__PURE__ */ template(`<div><ul><li><p class="flex-auto"> </p> <!></li> <!> <!> <li class="flex-col !items-stretch"><div class="flex items-center"><div class="flex-auto"><p> </p> <p> </p></div> <!></div> <!></li></ul> <!></div>`);
   function Others($$anchor, $$props) {
     push($$props, true);
     const [$$stores, $$cleanup] = setup_stores();
     const $configStore = () => store_get(configStore, "$configStore", $$stores);
-    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), descritionText = prop($$props, "descritionText", 3, "text-sm text-surface-400"), UlClass = prop($$props, "class", 3, "");
+    let bg = prop($$props, "bg", 3, "bg-white/30 dark:bg-black/15"), border = prop($$props, "border", 3, "divide-y-[1px] *:border-surface-300-600-token"), padding = prop($$props, "padding", 3, "px-4 *:py-4"), margin = prop($$props, "margin", 3, "mt-2 *:!m-0"), rounded = prop($$props, "rounded", 3, "rounded-container-token *:!rounded-none"), sectionSpace = prop($$props, "sectionSpace", 19, () => `space-y-4`), sectionTitle = prop($$props, "sectionTitle", 3, "font-bold"), descriptionText = prop($$props, "descriptionText", 3, "text-sm text-surface-400"), UlClass = prop($$props, "class", 3, "");
     const configStore = getContext("store");
     const ulClasses = /* @__PURE__ */ derived$1(() => `list *:items-center ${padding()} ${margin()} ${border()} ${bg()} ${rounded()} ${UlClass()}`);
     var div = root$2();
@@ -12321,8 +12333,7 @@
     var node_1 = sibling(li, 2);
     {
       var consequent = ($$anchor2) => {
-        var fragment = root_1$2();
-        var li_1 = first_child(fragment);
+        var li_1 = root_1$2();
         var p_1 = child(li_1);
         var text_1 = child(p_1, true);
         template_effect(() => set_text(text_1, t("setting.others.options.bundle_multipage_illust")));
@@ -12339,13 +12350,23 @@
           }
         });
         reset(li_1);
-        var li_2 = sibling(li_1, 2);
+        append($$anchor2, li_1);
+      };
+      if_block(node_1, ($$render) => {
+        if (env.isPixiv() || env.isNijie()) $$render(consequent);
+      });
+    }
+    var node_3 = sibling(node_1, 2);
+    {
+      var consequent_1 = ($$anchor2) => {
+        var fragment = root_2$1();
+        var li_2 = first_child(fragment);
         var p_2 = child(li_2);
         var text_2 = child(p_2, true);
         template_effect(() => set_text(text_2, t("setting.others.options.bundle_manga")));
         reset(p_2);
-        var node_3 = sibling(p_2, 2);
-        SlideToggle(node_3, {
+        var node_4 = sibling(p_2, 2);
+        SlideToggle(node_4, {
           name: "bundle-manga",
           size: "sm",
           get checked() {
@@ -12367,8 +12388,8 @@
         template_effect(() => set_text(text_4, t("setting.others.options.option_does_not_apply_to_batch_download")));
         reset(p_4);
         reset(div_1);
-        var node_4 = sibling(div_1, 2);
-        SlideToggle(node_4, {
+        var node_5 = sibling(div_1, 2);
+        SlideToggle(node_5, {
           name: "bundle-manga",
           size: "sm",
           get checked() {
@@ -12379,14 +12400,14 @@
           }
         });
         reset(li_3);
-        template_effect(() => set_class(p_4, clsx(descritionText())));
+        template_effect(() => set_class(p_4, clsx(descriptionText())));
         append($$anchor2, fragment);
       };
-      if_block(node_1, ($$render) => {
-        if (env.isPixiv()) $$render(consequent);
+      if_block(node_3, ($$render) => {
+        if (env.isPixiv()) $$render(consequent_1);
       });
     }
-    var li_4 = sibling(node_1, 2);
+    var li_4 = sibling(node_3, 2);
     var div_2 = child(li_4);
     var div_3 = child(div_2);
     var p_5 = child(div_3);
@@ -12398,8 +12419,8 @@
     template_effect(() => set_text(text_6, t("setting.others.options.option_does_not_apply_to_batch_download")));
     reset(p_6);
     reset(div_3);
-    var node_5 = sibling(div_3, 2);
-    SlideToggle(node_5, {
+    var node_6 = sibling(div_3, 2);
+    SlideToggle(node_6, {
       name: "fsa-enable",
       size: "sm",
       get checked() {
@@ -12410,18 +12431,18 @@
       }
     });
     reset(div_2);
-    var node_6 = sibling(div_2, 2);
+    var node_7 = sibling(div_2, 2);
     {
-      var consequent_1 = ($$anchor2) => {
-        var ul_1 = root_2$1();
+      var consequent_3 = ($$anchor2) => {
+        var ul_1 = root_3$1();
         var li_5 = child(ul_1);
         var label = child(li_5);
         var p_7 = child(label);
         var text_7 = child(p_7, true);
         template_effect(() => set_text(text_7, t("setting.others.options.add_bookmark_with_tags")));
         reset(p_7);
-        var node_7 = sibling(p_7, 2);
-        SlideToggle(node_7, {
+        var node_8 = sibling(p_7, 2);
+        SlideToggle(node_8, {
           name: "fsa-enable",
           size: "sm",
           get checked() {
@@ -12433,47 +12454,56 @@
         });
         reset(label);
         reset(li_5);
-        var li_6 = sibling(li_5, 2);
-        var label_1 = child(li_6);
-        var p_8 = child(label_1);
-        var text_8 = child(p_8, true);
-        template_effect(() => set_text(text_8, t("setting.others.options.add_bookmark_private_r18")));
-        reset(p_8);
-        var node_8 = sibling(p_8, 2);
-        SlideToggle(node_8, {
-          name: "fsa-enable",
-          size: "sm",
-          get checked() {
-            return $configStore().privateR18;
-          },
-          set checked($$value) {
-            store_mutate(configStore, untrack($configStore).privateR18 = $$value, untrack($configStore));
-          }
-        });
-        reset(label_1);
-        reset(li_6);
+        var node_9 = sibling(li_5, 2);
+        {
+          var consequent_2 = ($$anchor3) => {
+            var li_6 = root_4();
+            var label_1 = child(li_6);
+            var p_8 = child(label_1);
+            var text_8 = child(p_8, true);
+            template_effect(() => set_text(text_8, t("setting.others.options.add_bookmark_private_r18")));
+            reset(p_8);
+            var node_10 = sibling(p_8, 2);
+            SlideToggle(node_10, {
+              name: "fsa-enable",
+              size: "sm",
+              get checked() {
+                return $configStore().privateR18;
+              },
+              set checked($$value) {
+                store_mutate(configStore, untrack($configStore).privateR18 = $$value, untrack($configStore));
+              }
+            });
+            reset(label_1);
+            reset(li_6);
+            append($$anchor3, li_6);
+          };
+          if_block(node_9, ($$render) => {
+            if (env.isPixiv()) $$render(consequent_2);
+          });
+        }
         reset(ul_1);
         template_effect(() => set_class(ul_1, `list ${border() ?? ""} ${rounded() ?? ""} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4`));
         append($$anchor2, ul_1);
       };
-      if_block(node_6, ($$render) => {
-        if ($configStore().addBookmark && env.isPixiv()) $$render(consequent_1);
+      if_block(node_7, ($$render) => {
+        if ($configStore().addBookmark && (env.isPixiv() || env.isNijie())) $$render(consequent_3);
       });
     }
     reset(li_4);
     reset(ul);
-    var node_9 = sibling(ul, 2);
+    var node_11 = sibling(ul, 2);
     {
-      var consequent_2 = ($$anchor2) => {
-        var section = root_3$1();
+      var consequent_4 = ($$anchor2) => {
+        var section = root_5();
         var p_9 = child(section);
         var ul_2 = sibling(p_9, 2);
         var li_7 = child(ul_2);
         var div_4 = child(li_7);
         var p_10 = sibling(child(div_4), 2);
         reset(div_4);
-        var node_10 = sibling(div_4, 2);
-        SlideToggle(node_10, {
+        var node_12 = sibling(div_4, 2);
+        SlideToggle(node_12, {
           name: "mix-effect",
           size: "sm",
           get checked() {
@@ -12489,19 +12519,19 @@
         template_effect(() => {
           set_class(p_9, clsx(sectionTitle()));
           set_class(ul_2, clsx(get$1(ulClasses)));
-          set_class(p_10, `${descritionText() ?? ""} !text-error-500`);
+          set_class(p_10, `${descriptionText() ?? ""} !text-error-500`);
         });
         append($$anchor2, section);
       };
-      if_block(node_9, ($$render) => {
-        if (env.isPixiv()) $$render(consequent_2);
+      if_block(node_11, ($$render) => {
+        if (env.isPixiv()) $$render(consequent_4);
       });
     }
     reset(div);
     template_effect(() => {
       set_class(div, clsx(sectionSpace()));
       set_class(ul, clsx(get$1(ulClasses)));
-      set_class(p_6, clsx(descritionText()));
+      set_class(p_6, clsx(descriptionText()));
     });
     append($$anchor, div);
     pop();
@@ -12778,8 +12808,8 @@
     push($$props, true);
     const [$$stores, $$cleanup] = setup_stores();
     const $config = () => store_get($$props.config, "$config", $$stores);
-    let dark = prop($$props, "dark", 3, false), filenameTemplate = prop($$props, "filenameTemplate", 19, () => []);
-    setContext("filenameTemplate", filenameTemplate());
+    let dark = prop($$props, "dark", 3, false), supportedTemplate = prop($$props, "supportedTemplate", 19, () => ({}));
+    setContext("supportedTemplate", supportedTemplate());
     setContext("store", $$props.config);
     initializeStores();
     const modalStore = getModalStore();
@@ -13438,7 +13468,7 @@
     {
       dark: { type: "Boolean" },
       config: {},
-      filenameTemplate: {},
+      supportedTemplate: {},
       downloaderConfig: {},
       useBatchDownload: {}
     },
@@ -13450,14 +13480,14 @@
         constructor(props) {
           super();
           //@ts-expect-error no_unsed_var
-          __publicField(this, "filenameTemplate");
+          __publicField(this, "supportedTemplate");
           //@ts-expect-error no_unsed_var
           __publicField(this, "config");
           //@ts-expect-error no_unsed_var
           __publicField(this, "downloaderConfig");
           //@ts-expect-error no_unsed_var
           __publicField(this, "useBatchDownload");
-          this.filenameTemplate = props.filenameTemplate;
+          this.supportedTemplate = props.supportedTemplate;
           this.config = props.config;
         }
         initBatchDownloader(config2) {
@@ -13482,7 +13512,7 @@
     createApp() {
       return new PdlApp({
         config: this.config,
-        filenameTemplate: this.getFilenameTemplate()
+        supportedTemplate: this.getSupportedTemplate()
       });
     }
     injectStyle() {
@@ -13539,40 +13569,47 @@
     return PostValidState2;
   })(PostValidState || {});
   class ParserBase {
-    async *paginationGenerator(pageRange, postsPerPage, getPostData, isValid, buildMeta) {
+    async *paginationGenerator(pageRange, getPostData, buildMeta, isValid) {
       const [pageStart = 1, pageEnd = 0] = pageRange ?? [];
       let page = pageStart;
-      let postDatas = await getPostData(page);
+      let { lastPage, data: postDatas } = await getPostData(page);
+      if (!postDatas || !postDatas.length) throw new Error(`There is no post in page ${page}.`);
       let total = postDatas.length;
       let fetchError = null;
-      if (total === 0) throw new Error(`There is no post in page ${page}.`);
       do {
-        let nextPageData = null;
-        if (page !== pageEnd && postDatas.length >= postsPerPage) {
+        let nextPageData = undefined;
+        let nextPageIsLast = true;
+        if (page !== pageEnd && !lastPage) {
           try {
-            nextPageData = await getPostData(page + 1);
-            if (nextPageData.length) {
-              total += nextPageData.length;
-            } else {
-              nextPageData = null;
+            const { lastPage: lastPage2, data } = await getPostData(page + 1);
+            const dataLen = (data == null ? void 0 : data.length) ?? 0;
+            if (dataLen) {
+              total += dataLen;
+              nextPageData = data;
+              nextPageIsLast = lastPage2;
             }
           } catch (error) {
             fetchError = error;
-            nextPageData = null;
           }
         }
         const avaliable = [];
         const invalid = [];
         const unavaliable = [];
-        for (const data of postDatas) {
-          const isPostValid = await isValid(data);
-          const idOrMeta = buildMeta(data);
-          if (isPostValid === 0) {
-            avaliable.push(idOrMeta);
-          } else if (isPostValid === 1) {
-            invalid.push(idOrMeta);
-          } else {
-            unavaliable.push(idOrMeta);
+        if (typeof isValid === "function") {
+          for (const data of postDatas) {
+            const isPostValid = await isValid(data);
+            const idOrMeta = buildMeta(data);
+            if (isPostValid === 0) {
+              avaliable.push(idOrMeta);
+            } else if (isPostValid === 1) {
+              invalid.push(idOrMeta);
+            } else {
+              unavaliable.push(idOrMeta);
+            }
+          }
+        } else {
+          for (const data of postDatas) {
+            avaliable.push(buildMeta(data));
           }
         }
         yield {
@@ -13584,6 +13621,7 @@
         };
         page++;
         postDatas = nextPageData;
+        lastPage = nextPageIsLast;
       } while (postDatas);
       if (fetchError) throw fetchError;
     }
@@ -13623,7 +13661,7 @@
       };
     }
     parseStatistics(doc) {
-      var _a, _b, _c, _d, _e;
+      var _a, _b, _c, _d, _e, _f;
       const uploaderEl = doc.querySelector('a[href*="page=account&s=profile"]');
       const postDateStr = (_b = (_a = uploaderEl == null ? undefined : uploaderEl.parentElement) == null ? undefined : _a.firstChild) == null ? undefined : _b.nodeValue;
       const postDate = postDateStr ? postDateStr.split(": ")[1] : "";
@@ -13638,8 +13676,11 @@
         }
       }
       const rating = /Rating: ?(General|Explicit|Questionable|Safe|Sensitive)/.exec(doc.documentElement.innerHTML)[1].toLowerCase();
+      const score = (_f = doc.querySelector("span[id^=psc]")) == null ? undefined : _f.textContent;
+      if (!score) throw new Error("Cannot parse score");
       return {
         postDate,
+        score: +score,
         source: source2,
         rating
       };
@@ -13648,7 +13689,7 @@
       const src = this.parseArtworkSrc(doc);
       const [title, extendName] = this.parseArtworkNameBySrc(src);
       const { artist, character, tags } = this.parseTags(doc);
-      const { postDate, source: source2, rating } = this.parseStatistics(doc);
+      const { postDate, source: source2, rating, score } = this.parseStatistics(doc);
       return {
         id,
         src,
@@ -13658,6 +13699,7 @@
         title,
         tags,
         createDate: postDate,
+        score,
         source: source2,
         rating
       };
@@ -13725,87 +13767,264 @@
       return postData;
     }
   }
-  class DownloadConfigBuilder {
-    constructor(meta) {
-      this.meta = meta;
+  const regexp = {
+    preloadData: /"meta-preload-data" content='(.*?)'>/,
+    globalData: /"meta-global-data" content='(.*?)'>/,
+    artworksPage: /artworks\/(\d+)$/,
+    userPage: /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/,
+    bookmarkPage: /users\/(\d+)\/bookmarks\/artworks/,
+    userPageTags: new RegExp("(?<=users\\/)([0-9]+)\\/(artworks|illustrations|manga|bookmarks(?=\\/artworks))(?:\\/artworks)?\\/?([^?]*)"),
+    searchPage: /\/tags\/.*\/(artworks|illustrations|manga)/,
+    activityHref: /illust_id=(\d+)/,
+    originSrcPageNum: new RegExp("(?<=_p)\\d+"),
+    followLatest: /\/bookmark_new_illust(?:_r18)?\.php/,
+    historyPage: /\/history\.php/,
+    historyThumbnailsId: /\d+(?=_)/,
+    series: /\/user\/([0-9]+)\/series\/([0-9]+)/,
+    unlisted: new RegExp("(?<=artworks\\/unlisted\\/)[A-Za-z0-9]+"),
+    imageExt: /bmp|jp(e)?g|jfif|png|tif(f)?|gif|svg|ico|webp|heif|heic|raw|cr2|nef|arw|dng|avif/i,
+    videoExt: /mp4|avi|mkv|mov|wmv|flv|webm|mpeg|mpg|3gp|m4v|ts|vob|ogv|rm|rmvb|m2ts|mxf|asf|swf/i
+  };
+  function createCompressor() {
+    const zip = new JSZip();
+    return {
+      add(id, name, data) {
+        var _a;
+        (_a = zip.folder(id)) == null ? undefined : _a.file(name, data);
+      },
+      bundle(id, comment2) {
+        const folder = zip.folder(id);
+        if (!folder) throw new TypeError("no such folder:" + id);
+        return folder.generateAsync({ type: "blob", comment: comment2 });
+      },
+      remove(ids) {
+        zip.remove(ids);
+      },
+      fileCount(id) {
+        var _a;
+        let count = 0;
+        (_a = zip.folder(id)) == null ? undefined : _a.forEach(() => count++);
+        return count;
+      },
+      async unzip(data) {
+        const id = Math.random().toString(36);
+        let folder = zip.folder(id);
+        if (!folder) throw TypeError("Can not get new root folder");
+        const filesPromises = [];
+        folder = await folder.loadAsync(data);
+        folder.forEach((_, file) => {
+          filesPromises.push(file.async("blob"));
+        });
+        const files = await Promise.all(filesPromises);
+        zip.remove(id);
+        return files;
+      }
+    };
+  }
+  const compressor = createCompressor();
+  var SupportedTemplate = /* @__PURE__ */ ((SupportedTemplate2) => {
+    SupportedTemplate2["ID"] = "id";
+    SupportedTemplate2["ARTIST"] = "artist";
+    SupportedTemplate2["ARTISTID"] = "artistID";
+    SupportedTemplate2["CHARACTER"] = "character";
+    SupportedTemplate2["DATE"] = "date";
+    SupportedTemplate2["SCORE"] = "score";
+    SupportedTemplate2["TAGS"] = "tags";
+    SupportedTemplate2["TITLE"] = "title";
+    SupportedTemplate2["PAGE"] = "page";
+    return SupportedTemplate2;
+  })(SupportedTemplate || {});
+  class MediaDownloadConfig {
+    constructor(mediaMeta) {
+      __privateAdd(this, _MediaDownloadConfig_instances);
+      __publicField(this, "id");
+      __publicField(this, "src");
+      __publicField(this, "ext");
+      __publicField(this, "artist");
+      __publicField(this, "title");
+      __publicField(this, "tags");
+      __publicField(this, "createDate");
+      __publicField(this, "imageTimeout", 6e4);
+      __publicField(this, "videoTimeout");
+      __publicField(this, "taskId");
+      __publicField(this, "downloaded");
+      __publicField(this, "total");
+      __publicField(this, "onDownloadCompleted");
+      const { id, src, extendName, artist, title, tags, createDate } = mediaMeta;
+      this.id = id;
+      this.src = src;
+      this.ext = extendName;
+      this.artist = artist;
+      this.title = title;
+      this.tags = tags;
+      this.createDate = createDate;
+      this.total = Array.isArray(src) ? src.length : 1;
+      this.downloaded = 0;
+    }
+    static get supportedTemplate() {
+      throw new Error("Should be overwritten by a subclass");
     }
     normalizeString(str) {
       return replaceInvalidChar(unescapeHtml(str));
     }
-    getFolderPattern() {
-      return config.get("folderPattern");
+    isStringArray(val) {
+      return Array.isArray(val);
     }
-    getFilenamePattern() {
-      return config.get("filenamePattern");
+    isImageExt(ext) {
+      return regexp.imageExt.test(ext);
     }
-    getFullpathPattern() {
-      const folder = this.getFolderPattern();
-      const filename = this.getFilenamePattern() + "." + this.meta.extendName;
-      return folder ? folder + "/" + filename : filename;
+    getTaskId() {
+      return this.taskId ?? (this.taskId = this.id + "_" + Math.random().toString(36).slice(2));
     }
-    isBrowserApi() {
-      return env.isBrowserDownloadMode();
+    getSrc(idx = 0) {
+      return Array.isArray(this.src) ? this.src[idx] : this.src;
     }
-    isFsaEnable() {
-      return downloader.fileSystemAccessEnabled;
+    getExt(idx = 0) {
+      return Array.isArray(this.ext) ? this.ext[idx] : this.ext;
     }
-    supportSubpath() {
-      return this.isBrowserApi() || this.isFsaEnable();
+    getDownloadTimeout(idx = 0) {
+      return this.isImageExt(Array.isArray(this.ext) ? this.ext[idx] : this.ext) ? this.imageTimeout : this.videoTimeout;
     }
-    isImage() {
-      return /bmp|jp(e)?g|png|tif|gif|exif|svg|webp/i.test(this.meta.extendName);
+    getMultipleMediaDownloadCB(setProgress) {
+      return this.onDownloadCompleted ?? (this.onDownloadCompleted = () => {
+        setProgress(++this.downloaded / this.total * 100);
+      });
     }
-    buildFilePath() {
-      const path = this.getFullpathPattern();
-      const { id, createDate } = this.meta;
-      let { artist, title, tags } = this.meta;
-      artist = this.normalizeString(artist);
-      title = this.normalizeString(title);
-      tags = tags.map((tag) => this.normalizeString(tag));
-      const replaceDate = (_, p1) => {
-        const format = p1 || "YYYY-MM-DD";
-        return dayjs(createDate).format(format);
-      };
-      return path.replaceAll(/\{date\((.*?)\)\}|\{date\}/g, replaceDate).replaceAll("{artist}", artist).replaceAll("{title}", title).replaceAll("{tags}", tags.join("_")).replaceAll("{id}", id);
+    getPathTemplate(folderTemplate, filenameTemplate) {
+      return folderTemplate ? `${folderTemplate}/${filenameTemplate}` : filenameTemplate;
     }
-    generateTaskId() {
-      return this.meta.id + "_" + Math.random().toString(36).slice(2);
+    getSavePath(folderTemplate, filenameTemplate, ext, templateData) {
+      const path = __privateMethod(this, _MediaDownloadConfig_instances, replaceTemplate_fn).call(this, this.getPathTemplate(folderTemplate, filenameTemplate), templateData);
+      return `${path}.${ext}`;
     }
   }
-  function artworkProgressFactory$3(btn2) {
-    if (!btn2) return;
-    return function onArtworkProgress(progress) {
-      btn2.setProgress(progress);
-    };
+  _MediaDownloadConfig_instances = new WeakSet();
+  replaceTemplate_fn = function(template2, data) {
+    const re = new RegExp(
+      `{(${"artist"}|${"artistID"}|${"character"}|${"id"}|${"page"}|${"score"}|${"tags"}|${"title"})}`,
+      "g"
+    );
+    const path = template2.replace(
+      re,
+      (match, templateName) => {
+        if (!(templateName in data)) return match;
+        const val = data[templateName];
+        return !val ? match : val;
+      }
+    );
+    const dateRe = new RegExp(`{(${"date"})(\\((.+?)\\))?}`, "g");
+    return path.replace(
+      dateRe,
+      (match, _templateName, _formatMatch, formatValue) => {
+        if (!data.date) return match;
+        const format = formatValue || "YYYY-MM-DD";
+        const date = data.date;
+        return dayjs(date).format(format);
+      }
+    );
+  };
+  class MayBeMultiIllustsConfig extends MediaDownloadConfig {
+    constructor() {
+      super(...arguments);
+      __publicField(this, "handleBeforeSaveCb");
+      __publicField(this, "handleErrorCb");
+      __publicField(this, "handleAbortCb");
+      __publicField(this, "filenames");
+    }
+    handleBundleFactory(filenames) {
+      this.filenames ?? (this.filenames = filenames);
+      return this.handleBeforeSaveCb ?? (this.handleBeforeSaveCb = async (imgBlob, config2, signal) => {
+        signal == null ? undefined : signal.throwIfAborted();
+        const { taskId, src } = config2;
+        const index2 = this.src.indexOf(src);
+        if (index2 === -1) throw new Error("No src matches.");
+        compressor.add(taskId, this.filenames[index2], imgBlob);
+        if (compressor.fileCount(taskId) !== filenames.length) return;
+        const zipData = await compressor.bundle(taskId, this.getZipComment());
+        signal == null ? undefined : signal.throwIfAborted();
+        compressor.remove(taskId);
+        return zipData;
+      });
+    }
+    handleBundleErrorFactory() {
+      return this.handleErrorCb ?? (this.handleErrorCb = () => {
+        compressor.remove(this.getTaskId());
+      });
+    }
+    handleBundleAbortFactory() {
+      return this.handleAbortCb ?? (this.handleAbortCb = () => {
+        compressor.remove(this.getTaskId());
+      });
+    }
   }
-  class GelbooruDownloadConfig extends DownloadConfigBuilder {
+  class BooruDownloadConfig extends MediaDownloadConfig {
     constructor(meta) {
-      var _a;
       super(meta);
-      __privateAdd(this, _headers);
-      this.meta = meta;
-      const cf_clearance = (_a = config.get("auth")) == null ? undefined : _a.cf_clearance;
-      __privateSet(this, _headers, cf_clearance ? {
-        cookie: `cf_clearance=${cf_clearance}`
-      } : undefined);
+      __publicField(this, "character");
+      __publicField(this, "score");
+      this.character = meta.character;
+      this.score = meta.score;
     }
-    getDownloadConfig(btn2) {
+    static get supportedTemplate() {
       return {
-        headers: __privateGet(this, _headers),
-        taskId: this.generateTaskId(),
-        src: this.meta.src,
-        path: this.buildFilePath(),
-        source: this.meta,
-        timeout: this.isImage() ? 6e4 : undefined,
-        onProgress: artworkProgressFactory$3(btn2)
+        [
+          "id"
+          /* ID */
+        ]: "{id}",
+        [
+          "artist"
+          /* ARTIST */
+        ]: "{artist}",
+        [
+          "character"
+          /* CHARACTER */
+        ]: "{character}",
+        [
+          "date"
+          /* DATE */
+        ]: "{date}, {date(YYYY-MM-DD)}",
+        [
+          "title"
+          /* TITLE */
+        ]: "{title}",
+        [
+          "score"
+          /* SCORE */
+        ]: "{score}"
       };
     }
-    buildFilePath() {
-      const path = super.buildFilePath();
-      return path.replaceAll("{character}", this.normalizeString(this.meta.character));
+    getHeaders(cfClearance) {
+      return {
+        cookie: `cf_clearance=${cfClearance}`
+      };
+    }
+    getTemplateData() {
+      return {
+        id: this.id,
+        artist: this.artist,
+        character: this.character,
+        date: this.createDate,
+        title: this.title,
+        score: String(this.score)
+      };
+    }
+    create(option) {
+      const { filenameTemplate, folderTemplate, setProgress, cfClearance } = option;
+      return {
+        headers: cfClearance ? this.getHeaders(cfClearance) : undefined,
+        taskId: this.getTaskId(),
+        src: this.getSrc(),
+        path: this.getSavePath(
+          folderTemplate,
+          filenameTemplate,
+          this.getExt(),
+          this.getTemplateData()
+        ),
+        timeout: this.getDownloadTimeout(),
+        onProgress: setProgress
+      };
     }
   }
-  _headers = new WeakMap();
   class GelbooruV020 extends SiteInject {
     constructor() {
       super(...arguments);
@@ -13854,18 +14073,21 @@
             filterInGenerator: true,
             fn: (pageRange, checkValidity, userId) => {
               userId ?? (userId = new RegExp("(?<=id=)[0-9]+").exec(location.search)[0]);
-              const THUMBS_PER_PAGE = 50;
               const getFavoriteByPage = async (page) => {
+                const THUMBS_PER_PAGE = 50;
                 const pid = (page - 1) * THUMBS_PER_PAGE;
                 const doc = await this.api.getFavoriteDoc(userId, pid);
-                return this.parser.parseFavoriteByDoc(doc);
+                const data = this.parser.parseFavoriteByDoc(doc);
+                return {
+                  lastPage: data.length < THUMBS_PER_PAGE,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 pageRange,
-                THUMBS_PER_PAGE,
                 getFavoriteByPage,
-                __privateMethod(this, _GelbooruV020_instances, validityCheckFactory_fn).call(this, checkValidity),
-                (post) => post.id
+                (post) => post.id,
+                __privateMethod(this, _GelbooruV020_instances, validityCheckFactory_fn).call(this, checkValidity)
               );
             }
           },
@@ -13877,14 +14099,16 @@
               poolId ?? (poolId = new RegExp("(?<=id=)[0-9]+").exec(location.search)[0]);
               const getPoolData = async () => {
                 const doc = await this.api.getPoolDoc(poolId);
-                return this.parser.parsePostsByDoc(doc);
+                return {
+                  lastPage: true,
+                  data: this.parser.parsePostsByDoc(doc)
+                };
               };
               return this.parser.paginationGenerator(
                 [1, 1],
-                Number.POSITIVE_INFINITY,
                 getPoolData,
-                __privateMethod(this, _GelbooruV020_instances, validityCheckFactory_fn).call(this, checkValidity),
-                (post) => post.id
+                (post) => post.id,
+                __privateMethod(this, _GelbooruV020_instances, validityCheckFactory_fn).call(this, checkValidity)
               );
             }
           },
@@ -13894,18 +14118,21 @@
             filterInGenerator: true,
             fn: (pageRange, checkValidity, tags) => {
               tags ?? (tags = new URLSearchParams(location.search).get("tags") ?? "all");
-              const THUMBS_PER_PAGE = 42;
               const getPostsByPage = async (page) => {
+                const THUMBS_PER_PAGE = 42;
                 const pid = (page - 1) * THUMBS_PER_PAGE;
                 const doc = await this.api.getPostsDoc(pid, tags);
-                return this.parser.parsePostsByDoc(doc);
+                const data = this.parser.parsePostsByDoc(doc);
+                return {
+                  lastPage: data.length < THUMBS_PER_PAGE,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 pageRange,
-                THUMBS_PER_PAGE,
                 getPostsByPage,
-                __privateMethod(this, _GelbooruV020_instances, validityCheckFactory_fn).call(this, checkValidity),
-                (post) => post.id
+                (post) => post.id,
+                __privateMethod(this, _GelbooruV020_instances, validityCheckFactory_fn).call(this, checkValidity)
               );
             }
           }
@@ -13914,11 +14141,16 @@
           const doc = await this.api.getPostDoc(id);
           return this.parser.buildMeta(id, doc);
         },
-        async downloadArtworkByMeta(meta, signal) {
+        downloadArtworkByMeta: async (meta, signal) => {
+          var _a;
           downloader.dirHandleCheck();
-          const { id, tags, artist, title, source: source2, rating } = meta;
-          const downloadConfigs = new GelbooruDownloadConfig(meta).getDownloadConfig();
+          const downloadConfigs = new BooruDownloadConfig(meta).create({
+            folderTemplate: this.config.get("folderPattern"),
+            filenameTemplate: this.config.get("filenamePattern"),
+            cfClearance: (_a = this.config.get("auth")) == null ? undefined : _a.cf_clearance
+          });
           await downloader.download(downloadConfigs, { signal });
+          const { id, tags, artist, title, source: source2, rating } = meta;
           historyDb.add({
             pid: Number(id),
             user: artist,
@@ -13930,18 +14162,29 @@
         }
       }));
     }
+    getSupportedTemplate() {
+      return BooruDownloadConfig.supportedTemplate;
+    }
     getAvatar() {
       return "/favicon.ico";
     }
     async downloadArtwork(btn2) {
+      var _a;
       downloader.dirHandleCheck();
       const id = btn2.dataset.id;
       const doc = await this.api.getPostDoc(id);
       const mediaMeta = this.parser.buildMeta(id, doc);
-      const { tags, artist, title, source: source2, rating } = mediaMeta;
-      const downloadConfigs = new GelbooruDownloadConfig(mediaMeta).getDownloadConfig(btn2);
+      const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
+        folderTemplate: this.config.get("folderPattern"),
+        filenameTemplate: this.config.get("filenamePattern"),
+        cfClearance: (_a = this.config.get("auth")) == null ? undefined : _a.cf_clearance,
+        setProgress: (progress) => {
+          btn2.setProgress(progress);
+        }
+      });
       this.config.get("addBookmark") && __privateMethod(this, _GelbooruV020_instances, addBookmark_fn).call(this, id);
-      await downloader.download(downloadConfigs, { priority: 1 });
+      await downloader.download(downloadConfig, { priority: 1 });
+      const { tags, artist, title, source: source2, rating } = mediaMeta;
       historyDb.add({
         pid: Number(id),
         user: artist,
@@ -13980,9 +14223,6 @@
           onClick: this.downloadArtwork.bind(this)
         })
       );
-    }
-    getFilenameTemplate() {
-      return ["{artist}", "{character}", "{id}", "{date}"];
     }
     isPostsList() {
       return this.searchParams.get("page") === "post" && this.searchParams.get("s") === "list";
@@ -14259,6 +14499,7 @@
       commentEl && (comment2 = getElementText(commentEl));
       const imageContainer = doc.querySelector("section.image-container");
       const {
+        score = "0",
         source: source2 = "",
         rating = "",
         id
@@ -14274,6 +14515,7 @@
         comment: comment2,
         tags,
         createDate: postDate,
+        score: +score,
         source: source2,
         rating
       };
@@ -14290,6 +14532,7 @@
         tag_string_copyright,
         tag_string_general,
         tag_string_meta,
+        score,
         source: source2,
         rating
       } = post;
@@ -14314,6 +14557,7 @@
         tags,
         createDate: created_at,
         rating: rating ?? "",
+        score,
         source: source2
       };
     }
@@ -14342,34 +14586,6 @@
     });
     return { tags, require: require2, exclude, optional, min_score };
   };
-  function artworkProgressFactory$2(btn2) {
-    if (!btn2) return;
-    return function onArtworkProgress(progress) {
-      btn2.setProgress(progress);
-    };
-  }
-  class DanbooruDownloadConfig extends DownloadConfigBuilder {
-    constructor(meta) {
-      super(meta);
-      this.meta = meta;
-    }
-    getDownloadConfig(btn2) {
-      if (!this.meta.src)
-        throw new Error(`You need a gold account to see this image. ID: ${this.meta.id}`);
-      return {
-        taskId: this.generateTaskId(),
-        src: this.meta.src,
-        path: this.buildFilePath(),
-        source: this.meta,
-        timeout: this.isImage() ? 6e4 : undefined,
-        onProgress: artworkProgressFactory$2(btn2)
-      };
-    }
-    buildFilePath() {
-      const path = super.buildFilePath();
-      return path.replaceAll("{character}", this.normalizeString(this.meta.character));
-    }
-  }
   class DanbooruPoolButton extends ThumbnailButton {
     constructor(props) {
       super({
@@ -14523,18 +14739,21 @@
               if (!poolId) throw new Error("Invalid pool id");
               const perPage = this.profile.per_page;
               const getPostDataByPage = async (page) => {
-                return this.api.getPostList({
+                const data = await this.api.getPostList({
                   tags: [`ordpool:${poolId}`],
                   limit: perPage,
                   page
                 });
+                return {
+                  lastPage: data.length < perPage,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 pageRange,
-                perPage,
                 getPostDataByPage,
-                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity),
-                (post) => String(post.id)
+                (post) => String(post.id),
+                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity)
               );
             }
           },
@@ -14548,18 +14767,21 @@
               if (!groupId) throw new Error("Invalid pool id");
               const perPage = this.profile.per_page;
               const getPostDataByPage = async (page) => {
-                return this.api.getPostList({
+                const data = await this.api.getPostList({
                   tags: [`ordfavgroup:${groupId}`],
                   limit: perPage,
                   page
                 });
+                return {
+                  lastPage: data.length < perPage,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 pageRange,
-                perPage,
                 getPostDataByPage,
-                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity),
-                (post) => String(post.id)
+                (post) => String(post.id),
+                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity)
               );
             }
           },
@@ -14575,19 +14797,22 @@
               const limit = searchParam.get("limit");
               const limitParam = limit ? Number(limit) : perPage;
               const getPostDataByPage = async (page) => {
-                return this.api.getPostList({
+                const data = await this.api.getPostList({
                   tags,
                   limit: limitParam,
                   page
                 });
+                return {
+                  lastPage: data.length < limitParam,
+                  data
+                };
               };
               const showDeletedPosts = (tags == null ? undefined : tags.includes("status:deleted")) || this.profile.show_deleted_posts;
               return this.parser.paginationGenerator(
                 pageRange,
-                perPage,
                 getPostDataByPage,
-                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity, showDeletedPosts),
-                (post) => String(post.id)
+                (post) => String(post.id),
+                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity, showDeletedPosts)
               );
             }
           },
@@ -14599,18 +14824,21 @@
               if (!poolId) throw new Error("Invalid pool id");
               const perPage = this.profile.per_page;
               const getPostDataByPage = async (page) => {
-                return this.api.getPostList({
+                const data = await this.api.getPostList({
                   tags: [`ordpool:${poolId}`],
                   limit: perPage,
                   page
                 });
+                return {
+                  lastPage: data.length < perPage,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 pageRange,
-                perPage,
                 getPostDataByPage,
-                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity),
-                (post) => String(post.id)
+                (post) => String(post.id),
+                __privateMethod(this, _AbstractDanbooru_instances, validityCheckFactory_fn2).call(this, checkValidity)
               );
             }
           },
@@ -14622,10 +14850,13 @@
         parseMetaByArtworkId: async (id) => {
           return this.getMetaByPostId(id);
         },
-        async downloadArtworkByMeta(meta, signal) {
+        downloadArtworkByMeta: async (meta, signal) => {
           downloader.dirHandleCheck();
-          const downloadConfigs = new DanbooruDownloadConfig(meta).getDownloadConfig();
-          await downloader.download(downloadConfigs, { signal });
+          const downloadConfig = new BooruDownloadConfig(meta).create({
+            folderTemplate: this.config.get("folderPattern"),
+            filenameTemplate: this.config.get("filenamePattern")
+          });
+          await downloader.download(downloadConfig, { signal });
           const { id, tags, artist, title, comment: comment2, source: source2, rating } = meta;
           historyDb.add({
             pid: Number(id),
@@ -14648,8 +14879,8 @@
         }
       }));
     }
-    getFilenameTemplate() {
-      return ["{artist}", "{character}", "{id}", "{date}"];
+    getSupportedTemplate() {
+      return BooruDownloadConfig.supportedTemplate;
     }
     async getPostAndComment(id) {
       const [postResult, commentResult] = await Promise.allSettled([
@@ -14705,9 +14936,15 @@
       downloader.dirHandleCheck();
       const id = btn2.dataset.id;
       const mediaMeta = await this.getMetaByPostId(id);
-      const downloadConfigs = new DanbooruDownloadConfig(mediaMeta).getDownloadConfig(btn2);
+      const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
+        folderTemplate: this.config.get("folderPattern"),
+        filenameTemplate: this.config.get("filenamePattern"),
+        setProgress: (progress) => {
+          btn2.setProgress(progress);
+        }
+      });
       this.config.get("addBookmark") && this.addBookmark(id);
-      await downloader.download(downloadConfigs, { priority: 1 });
+      await downloader.download(downloadConfig, { priority: 1 });
       const { tags, artist, title, comment: comment2, source: source2, rating } = mediaMeta;
       historyDb.add({
         pid: Number(id),
@@ -14889,22 +15126,6 @@
     }
   }
   const pixivApi = new PixivApi();
-  const regexp = {
-    preloadData: /"meta-preload-data" content='(.*?)'>/,
-    globalData: /"meta-global-data" content='(.*?)'>/,
-    artworksPage: /artworks\/(\d+)$/,
-    userPage: /\/users\/(\d+)$|\/users\/(\d+)\/(?!following|mypixiv|followers)/,
-    bookmarkPage: /users\/(\d+)\/bookmarks\/artworks/,
-    userPageTags: new RegExp("(?<=users\\/)([0-9]+)\\/(artworks|illustrations|manga|bookmarks(?=\\/artworks))(?:\\/artworks)?\\/?([^?]*)"),
-    searchPage: /\/tags\/.*\/(artworks|illustrations|manga)/,
-    activityHref: /illust_id=(\d+)/,
-    originSrcPageNum: new RegExp("(?<=_p)\\d+"),
-    followLatest: /\/bookmark_new_illust(?:_r18)?\.php/,
-    historyPage: /\/history\.php/,
-    historyThumbnailsId: /\d+(?=_)/,
-    series: /\/user\/([0-9]+)\/series\/([0-9]+)/,
-    unlisted: new RegExp("(?<=artworks\\/unlisted\\/)[A-Za-z0-9]+")
-  };
   const pixivParser = {
     async parse(illustId, param) {
       let illustData;
@@ -14939,7 +15160,8 @@
         createDate,
         urls,
         bookmarkData,
-        likeData
+        likeData,
+        bookmarkCount
       } = illustData;
       const tagsArr = [];
       const tagsTranslatedArr = [];
@@ -14961,18 +15183,36 @@
         tags: tagsArr,
         tagsTranslated: tagsTranslatedArr,
         userId,
-        pageCount,
         comment: comment2,
         bookmarkData,
         createDate,
         likeData,
-        token
+        token,
+        bookmarkCount
       };
       if (illustType === IllustType.ugoira) {
+        const ugoiraMeta = await pixivApi.getUgoiraMeta(illustId);
+        const pageCount2 = ugoiraMeta.frames.length;
+        const src = Array.from(
+          { length: pageCount2 },
+          (_, i) => meta.src.replace("ugoira0", "ugoira" + i)
+        );
+        const extendName = Array.from({ length: pageCount2 }).fill(meta.extendName);
         return {
           ...meta,
+          src,
+          extendName,
           illustType,
-          ugoiraMeta: await pixivApi.getUgoiraMeta(illustId)
+          ugoiraMeta
+        };
+      } else if (pageCount > 1) {
+        const src = Array.from({ length: pageCount }, (_, i) => meta.src.replace("_p0", "_p" + i));
+        const extendName = Array.from({ length: pageCount }).fill(meta.extendName);
+        return {
+          ...meta,
+          src,
+          extendName,
+          illustType
         };
       } else {
         return {
@@ -15220,43 +15460,448 @@
       } while (yieldedId < total);
     }
   };
-  function createCompressor() {
-    const zip = new JSZip();
-    return {
-      add(id, name, data) {
-        var _a;
-        (_a = zip.folder(id)) == null ? undefined : _a.file(name, data);
-      },
-      bundle(id, comment2) {
-        const folder = zip.folder(id);
-        if (!folder) throw new TypeError("no such folder:" + id);
-        return folder.generateAsync({ type: "blob", comment: comment2 });
-      },
-      remove(ids) {
-        zip.remove(ids);
-      },
-      fileCount(id) {
-        var _a;
-        let count = 0;
-        (_a = zip.folder(id)) == null ? undefined : _a.forEach(() => count++);
-        return count;
-      },
-      async unzip(data) {
-        const id = Math.random().toString(36);
-        let folder = zip.folder(id);
-        if (!folder) throw TypeError("Can not get new root folder");
-        const filesPromises = [];
-        folder = await folder.loadAsync(data);
-        folder.forEach((_, file) => {
-          filesPromises.push(file.async("blob"));
-        });
-        const files = await Promise.all(filesPromises);
-        zip.remove(id);
-        return files;
-      }
-    };
+  function getSelfId() {
+    var _a, _b;
+    return ((_b = (_a = _unsafeWindow.dataLayer) == null ? undefined : _a[0]) == null ? undefined : _b.user_id) ?? "";
   }
-  const compressor = createCompressor();
+  function getIllustId(node) {
+    const isLinkToArtworksPage = regexp.artworksPage.exec(node.getAttribute("href") || "");
+    if (isLinkToArtworksPage) {
+      if (node.getAttribute("data-gtm-value") || [
+        "gtm-illust-recommend-node-node",
+        "gtm-discover-user-recommend-node",
+        "work",
+        "_history-item",
+        "_history-related-item"
+      ].some((className) => node.classList.contains(className))) {
+        return isLinkToArtworksPage[1];
+      }
+    } else if (node instanceof HTMLSpanElement && node.className.includes("_history-item")) {
+      const img = node.querySelector("img");
+      if (!img) return "";
+      const matchPid = regexp.historyThumbnailsId.exec(img.src);
+      if (matchPid) return matchPid[0];
+    } else {
+      const isActivityThumb = regexp.activityHref.exec(node.getAttribute("href") || "");
+      if (isActivityThumb && node.classList.contains("work")) {
+        return isActivityThumb[1];
+      }
+    }
+    return "";
+  }
+  function createThumbnailBtn(nodes, downloadArtwork) {
+    let isSelfBookmark = false;
+    const inBookmarkPage = regexp.bookmarkPage.exec(location.pathname);
+    inBookmarkPage && inBookmarkPage[1] === getSelfId() && (isSelfBookmark = true);
+    nodes.forEach((e) => {
+      let illustId;
+      let type;
+      if ((e.childElementCount !== 0 || e.className.includes("_history-item") || e.className.includes("_history-related-item")) && !e.querySelector(ThumbnailButton.tagNameLowerCase) && (illustId = getIllustId(e))) {
+        if (isSelfBookmark) {
+          type = ThumbnailBtnType.PixivMyBookmark;
+        } else if (e.className.includes("_history-related-item")) {
+          e.style.position = "relative";
+          type = ThumbnailBtnType.PixivHistory;
+        } else if (e.className.includes("_history-item")) {
+          type = ThumbnailBtnType.PixivHistory;
+        }
+        const btn2 = new ThumbnailButton({
+          id: illustId,
+          type,
+          onClick: downloadArtwork
+        });
+        e.appendChild(btn2);
+      }
+    });
+  }
+  function fixPixivPreviewer(nodes) {
+    if (!regexp.searchPage.test(location.pathname)) return;
+    nodes.forEach((node) => {
+      var _a;
+      (_a = node.querySelector(ThumbnailButton.tagNameLowerCase)) == null ? undefined : _a.remove();
+    });
+  }
+  function createToolbarBtn(id, downloadArtwork) {
+    const toolbar = document.querySelector("main section section");
+    if (!toolbar || toolbar.querySelector(ThumbnailButton.tagNameLowerCase)) return;
+    const btn2 = new ThumbnailButton({
+      id,
+      type: ThumbnailBtnType.PixivToolbar,
+      onClick: downloadArtwork
+    });
+    const pdlBtnWrap = toolbar.lastElementChild.cloneNode();
+    pdlBtnWrap.appendChild(btn2);
+    toolbar.appendChild(pdlBtnWrap);
+  }
+  function createWorkExpanedViewBtn(id, downloadArtwork, unlistedId) {
+    const works = document.querySelectorAll(
+      "figure a.gtm-expand-full-size-illust"
+    );
+    if (works.length < 2) return;
+    works.forEach((work, idx) => {
+      var _a;
+      const container = (_a = work.parentElement) == null ? undefined : _a.parentElement;
+      if (!container || container.querySelector(ArtworkButton.tagNameLowerCase)) return;
+      container.appendChild(
+        new ArtworkButton({
+          id,
+          page: idx,
+          extraData: unlistedId ? { unlistedId } : undefined,
+          onClick: downloadArtwork
+        })
+      );
+    });
+  }
+  let observer;
+  let btn;
+  function createPresentationBtn(id, downloadArtwork, unlistedId) {
+    const containers = document.querySelector("body > [role='presentation'] > div");
+    if (!containers) {
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+        btn = null;
+      }
+      return;
+    }
+    if (containers.querySelector(ThumbnailButton.tagNameLowerCase)) return;
+    const img = containers.querySelector("div > img");
+    if (!img) return;
+    const isOriginImg = regexp.originSrcPageNum.exec(img.src);
+    if (!isOriginImg) return;
+    const [pageNum] = isOriginImg;
+    btn = new ThumbnailButton({
+      id,
+      type: ThumbnailBtnType.PixivPresentation,
+      page: Number(pageNum),
+      extraData: unlistedId ? { unlistedId } : undefined,
+      onClick: downloadArtwork
+    });
+    containers.appendChild(btn);
+    observer = new MutationObserver((mutationList) => {
+      const newImg = mutationList[1]["addedNodes"][0];
+      const [pageNum2] = regexp.originSrcPageNum.exec(newImg.src) ?? [];
+      if (!pageNum2) return logger.throw("Invalid image element.");
+      btn == null ? undefined : btn.remove();
+      btn = new ThumbnailButton({
+        id,
+        type: ThumbnailBtnType.PixivPresentation,
+        page: Number(pageNum2),
+        extraData: unlistedId ? { unlistedId } : undefined,
+        onClick: downloadArtwork
+      });
+      containers.appendChild(btn);
+    });
+    observer.observe(img.parentElement, { childList: true, subtree: true });
+  }
+  function createPreviewModalBtn(id, downloadArtwork, unlistedId) {
+    var _a;
+    const illustModalBtn = document.querySelector(
+      ".gtm-manga-viewer-preview-modal-open:not(.pdl-listened)"
+    );
+    const mangaModalBtn = document.querySelector(".gtm-manga-viewer-open-preview:not(.pdl-listened)");
+    const mangaViewerModalBtn = (_a = document.querySelectorAll(
+      ".gtm-manga-viewer-close-icon:not(.pdl-listened)"
+    )) == null ? undefined : _a[1];
+    if (!illustModalBtn && !mangaModalBtn && !mangaViewerModalBtn) return;
+    [illustModalBtn, mangaModalBtn, mangaViewerModalBtn].forEach((node) => {
+      if (node) {
+        node.classList.add("pdl-listened");
+        node.addEventListener("click", () => {
+          handleModalClick(id, downloadArtwork, unlistedId);
+        });
+      }
+    });
+  }
+  function handleModalClick(id, downloadArtwork, unlistedId) {
+    const timer = setInterval(() => {
+      logger.info("Start to find modal.");
+      const ulList = document.querySelectorAll("ul");
+      const previewList = ulList[ulList.length - 1];
+      if (getComputedStyle(previewList).display !== "grid") return;
+      clearInterval(timer);
+      previewList.childNodes.forEach((node, idx) => {
+        node.style.position = "relative";
+        node.appendChild(
+          new ThumbnailButton({
+            id,
+            page: idx,
+            extraData: unlistedId ? { unlistedId } : undefined,
+            onClick: downloadArtwork
+          })
+        );
+      });
+    }, 300);
+  }
+  function createMangaViewerBtn(id, downloadArtwork, unlistedId) {
+    const mangaViewerBackBtn = document.querySelector(".gtm-manga-viewer-close-icon");
+    if (!mangaViewerBackBtn) return;
+    const container = mangaViewerBackBtn.parentElement;
+    if (!container || container.querySelector(ThumbnailButton.tagNameLowerCase)) return;
+    container.appendChild(
+      new ThumbnailButton({
+        id,
+        type: ThumbnailBtnType.PixivMangaViewer,
+        extraData: unlistedId ? { unlistedId } : undefined,
+        onClick: downloadArtwork
+      })
+    );
+  }
+  const toolbarStyle = ".button-wrapper{display:flex;justify-content:flex-end;align-items:center;height:32px;padding:8px 12px}";
+  class UnlistedArtworkToolbar extends HTMLElement {
+    constructor(props) {
+      super();
+      __publicField(this, "props");
+      this.props = props;
+    }
+    static get tagNameLowerCase() {
+      return "pdl-unlisted-artwork-toolbar";
+    }
+    render() {
+      if (this.shadowRoot) return;
+      const shadowRoot = this.attachShadow({ mode: "open" });
+      shadowRoot.innerHTML = `<style>${toolbarStyle}</style><div class="button-wrapper"></div>`;
+      const thumbnailButton = new ThumbnailButton({
+        ...this.props,
+        type: ThumbnailBtnType.PixivToolbar
+      });
+      const wrapper = shadowRoot.querySelector(".button-wrapper");
+      wrapper.appendChild(thumbnailButton);
+    }
+    connectedCallback() {
+      this.render();
+    }
+  }
+  customElements.define(UnlistedArtworkToolbar.tagNameLowerCase, UnlistedArtworkToolbar);
+  function createUnlistedToolbar(id, downloadArtwork, unlistedId) {
+    const toolbar = document.querySelector(UnlistedArtworkToolbar.tagNameLowerCase);
+    if (toolbar) return;
+    const container = document.querySelector('div[style^="transform: translateY"]');
+    if (!container) return;
+    const el = new UnlistedArtworkToolbar({
+      id,
+      onClick: downloadArtwork,
+      extraData: {
+        unlistedId
+      }
+    });
+    container.appendChild(el);
+    const showAllBtn = container.querySelector(
+      'button[type="button"]:not([style])'
+    );
+    showAllBtn && (showAllBtn.style.bottom = "48px");
+  }
+  class TagListButton extends HTMLElement {
+    constructor(tagUrl, downloading, handleDownload) {
+      super();
+      __publicField(this, "btn");
+      __publicField(this, "unsubscriber");
+      this.tagUrl = tagUrl;
+      this.downloading = downloading;
+      this.handleDownload = handleDownload;
+      this.dispatchDownload = this.dispatchDownload.bind(this);
+    }
+    static get tagNameLowerCase() {
+      return "pdl-tag-list-button";
+    }
+    async render() {
+      if (this.shadowRoot) return;
+      const shadowRoot = this.attachShadow({ mode: "open" });
+      addStyleToShadow(shadowRoot);
+      shadowRoot.innerHTML = ` 
+  <div class=" flex items-center">    
+    <hr class="!border-t-0 border-l h-6 ml-4 mr-2" />
+    <button class=" h-[38px] w-[38px] btn-icon [&:not([disabled])]:hover:bg-slate-400/30 disabled:cursor-wait disabled:opacity-70">
+      <i class="text-sm w-6 fill-current mx-2">
+      ${downloadSvg}
+      </i>
+    </button>
+  </div>
+  `;
+    }
+    getTagProps() {
+      const url = new URL(this.tagUrl);
+      const { searchParams, pathname } = url;
+      const extractUrlMatch = regexp.userPageTags.exec(pathname);
+      if (!extractUrlMatch) throw new Error(`Could not extract tag props from: ${pathname}`);
+      const [, userId, urlCategory, tag] = extractUrlMatch;
+      if (!tag) throw new Error(`Could not extract tag from: ${pathname}`);
+      let category;
+      if (urlCategory === "illustrations" || urlCategory === "artworks") {
+        category = "illusts";
+      } else {
+        category = urlCategory;
+      }
+      return {
+        userId,
+        category,
+        tag,
+        rest: searchParams.get("rest") === "hide" ? "hide" : "show"
+      };
+    }
+    dispatchDownload(evt) {
+      evt == null ? undefined : evt.preventDefault();
+      this.handleDownload(this.getTagProps()).catch(logger.error);
+    }
+    connectedCallback() {
+      this.render();
+      this.btn ?? (this.btn = this.shadowRoot.querySelector("button"));
+      this.btn.addEventListener("click", this.dispatchDownload);
+      this.unsubscriber = this.downloading.subscribe((val) => {
+        if (val) {
+          this.setAttribute("disabled", "");
+        } else {
+          this.removeAttribute("disabled");
+        }
+      });
+    }
+    disconnectedCallback() {
+      var _a, _b;
+      (_a = this.unsubscriber) == null ? undefined : _a.call(this);
+      (_b = this.btn) == null ? undefined : _b.removeEventListener("click", this.dispatchDownload);
+    }
+    static get observedAttributes() {
+      return ["disabled"];
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+      var _a, _b;
+      if (typeof newValue === "string") {
+        (_a = this.btn) == null ? undefined : _a.setAttribute("disabled", "");
+      } else {
+        (_b = this.btn) == null ? undefined : _b.removeAttribute("disabled");
+      }
+    }
+  }
+  customElements.define(TagListButton.tagNameLowerCase, TagListButton);
+  function createTagListBtn(downloading, handleDownload) {
+    var _a;
+    const listContainer = document.querySelector('div[style*="position: relative"]');
+    if (!listContainer) return;
+    const modalRoot = listContainer == null ? undefined : listContainer.closest('div[role="presentation"], div[class="charcoal-token"]');
+    const closeBtn = (_a = modalRoot == null ? undefined : modalRoot.querySelector("svg")) == null ? undefined : _a.parentElement;
+    const tagElements = listContainer.querySelectorAll(
+      'div[style*="position: absolute"] a'
+    );
+    tagElements.forEach((ele) => {
+      if (ele.querySelector(TagListButton.tagNameLowerCase)) return;
+      const btn2 = new TagListButton(ele.href, downloading, (props) => {
+        closeBtn == null ? undefined : closeBtn.click();
+        return handleDownload(props);
+      });
+      ele.appendChild(btn2);
+    });
+  }
+  class ArtworkTagButton extends HTMLElement {
+    constructor(tagElement, downloading, handleDownload) {
+      super();
+      __publicField(this, "btn");
+      __publicField(this, "ob");
+      __publicField(this, "unsubscriber");
+      this.tagElement = tagElement;
+      this.downloading = downloading;
+      this.handleDownload = handleDownload;
+      this.dispatchDownload = this.dispatchDownload.bind(this);
+      this.ob = new MutationObserver(() => {
+        this.changeBtnColor();
+      });
+    }
+    static get tagNameLowerCase() {
+      return "pdl-artwork-tag";
+    }
+    // 为了美观
+    resetTagStyle() {
+      this.tagElement.style.borderTopRightRadius = "0px";
+      this.tagElement.style.borderBottomRightRadius = "0px";
+    }
+    changeBtnColor() {
+      if (!this.btn) return;
+      const { color, backgroundColor } = getComputedStyle(this.tagElement);
+      this.btn.style.color = color;
+      this.btn.style.backgroundColor = backgroundColor;
+    }
+    async render() {
+      if (this.shadowRoot) return;
+      const shadowRoot = this.attachShadow({ mode: "open" });
+      addStyleToShadow(shadowRoot);
+      shadowRoot.innerHTML = `  <button class="flex h-full items-center pr-2 rounded-e-[4px] disabled:cursor-wait disabled:opacity-70">
+    <hr class="!border-t-0 border-l h-6 pr-2" />
+    <i class="text-sm w-6 fill-current">
+      ${downloadSvg}
+    </i>
+  </button>`;
+      this.resetTagStyle();
+    }
+    getTagProps() {
+      const tagTitles = this.tagElement.querySelectorAll("div[title]");
+      const tagStr = tagTitles[tagTitles.length - 1].getAttribute("title");
+      const tag = tagStr.startsWith("#") ? tagStr.slice(1) : "未分類";
+      const url = new URL(this.tagElement.href);
+      const { searchParams, pathname } = url;
+      const extractUrlMatch = regexp.userPageTags.exec(pathname);
+      if (!extractUrlMatch) throw new Error(`Could not extract tag props from: ${pathname}`);
+      const [, userId, urlCategory] = extractUrlMatch;
+      let category;
+      if (urlCategory === "illustrations" || urlCategory === "artworks") {
+        category = "illusts";
+      } else {
+        category = urlCategory;
+      }
+      return {
+        userId,
+        category,
+        tag,
+        rest: searchParams.get("rest") === "hide" ? "hide" : "show"
+      };
+    }
+    dispatchDownload() {
+      this.handleDownload(this.getTagProps()).catch(logger.error);
+    }
+    connectedCallback() {
+      this.render();
+      this.btn ?? (this.btn = this.shadowRoot.querySelector("button"));
+      this.changeBtnColor();
+      this.btn.addEventListener("click", this.dispatchDownload);
+      this.unsubscriber = this.downloading.subscribe((val) => {
+        if (val) {
+          this.setAttribute("disabled", "");
+        } else {
+          this.removeAttribute("disabled");
+        }
+      });
+      this.ob.observe(this.tagElement, {
+        attributes: true,
+        attributeFilter: ["class"]
+      });
+    }
+    disconnectedCallback() {
+      var _a, _b;
+      (_a = this.unsubscriber) == null ? undefined : _a.call(this);
+      (_b = this.btn) == null ? undefined : _b.removeEventListener("click", this.dispatchDownload);
+      this.ob.disconnect();
+    }
+    static get observedAttributes() {
+      return ["disabled"];
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+      var _a, _b;
+      if (typeof newValue === "string") {
+        (_a = this.btn) == null ? undefined : _a.setAttribute("disabled", "");
+      } else {
+        (_b = this.btn) == null ? undefined : _b.removeAttribute("disabled");
+      }
+    }
+  }
+  customElements.define(ArtworkTagButton.tagNameLowerCase, ArtworkTagButton);
+  function createFrequentTagBtn(downloading, handleDownload) {
+    const tagsEles = Array.from(document.querySelectorAll("a[status]"));
+    if (!tagsEles.length) return;
+    tagsEles.forEach((ele) => {
+      var _a;
+      if (((_a = ele.nextElementSibling) == null ? undefined : _a.tagName.toLowerCase()) === ArtworkTagButton.tagNameLowerCase) return;
+      const artworkTagBtn = new ArtworkTagButton(ele, downloading, handleDownload);
+      ele.parentElement.appendChild(artworkTagBtn);
+    });
+  }
   const gifWorker = (() => GM_getResourceText("gif.js/dist/gif.worker?raw"))();
   const workerUrl$2 = URL.createObjectURL(new Blob([gifWorker], { type: "text/javascript" }));
   function isBlobArray$2(frames2) {
@@ -15667,391 +16312,272 @@
     return result;
   };
   const converter = new Converter();
-  const pixivHooks = {
-    download: {
-      singleArtworkProgressFactory(btn2, pageCount) {
-        if (!btn2 || !pageCount) return;
-        return function onSingleArtworkProgress(progress) {
-          if (pageCount === 1) {
-            btn2.setProgress(progress);
-          }
-        };
-      },
-      mulityArtworksProgressFactory(btn2, pageCount) {
-        if (!btn2 || !pageCount) return;
-        let pageComplete = 0;
-        return function onMulityArtworksProgress() {
-          if (pageCount < 2) return;
-          const progress = Math.floor(++pageComplete / pageCount * 100);
-          btn2.setProgress(progress);
-        };
-      }
-    },
-    bundle: {
-      async beforeFileSave(imgBlob, config2, signal) {
+  class PixivDownloadConfig extends MayBeMultiIllustsConfig {
+    constructor(mediaMeta) {
+      super(mediaMeta);
+      __publicField(this, "ugoiraMeta");
+      __publicField(this, "illustType");
+      __publicField(this, "userId");
+      __publicField(this, "comment");
+      __publicField(this, "translatedTags");
+      __publicField(this, "bookmarkCount");
+      this.ugoiraMeta = "ugoiraMeta" in mediaMeta ? mediaMeta.ugoiraMeta : undefined;
+      this.illustType = mediaMeta.illustType;
+      this.userId = mediaMeta.userId;
+      this.comment = mediaMeta.comment;
+      this.translatedTags = mediaMeta.tagsTranslated;
+      this.bookmarkCount = mediaMeta.bookmarkCount;
+      console.log(mediaMeta);
+    }
+    static get supportedTemplate() {
+      return {
+        [SupportedTemplate.ID]: "{id}",
+        [SupportedTemplate.ARTIST]: "{artist}",
+        [SupportedTemplate.ARTISTID]: "{artistID}",
+        [SupportedTemplate.DATE]: "{date} {date(YYYY-MM-DD)}",
+        [SupportedTemplate.PAGE]: "{page}",
+        [SupportedTemplate.SCORE]: "{score}: bookmarkCount",
+        [SupportedTemplate.TAGS]: "{tags}",
+        [SupportedTemplate.TITLE]: "{title}"
+      };
+    }
+    getHeaders() {
+      return {
+        referer: "https://www.pixiv.net"
+      };
+    }
+    getZipComment() {
+      if (!this.ugoiraMeta) return this.comment;
+      const delays = this.ugoiraMeta.frames.map(({ delay }) => delay);
+      return this.comment + "\n" + JSON.stringify(delays);
+    }
+    getTemplateData(data) {
+      return {
+        id: this.id,
+        artist: this.normalizeString(this.artist) || this.userId,
+        artistID: this.userId,
+        date: this.createDate,
+        score: String(this.bookmarkCount),
+        title: this.normalizeString(this.title) || this.id,
+        tags: this.tags.map((tag) => this.normalizeString(tag)).filter(Boolean).join("_"),
+        ...data
+      };
+    }
+    handleConvertFactory(convertFormat, setProgress) {
+      return this.handleBeforeSaveCb ?? (this.handleBeforeSaveCb = async (imgBlob, config2, signal) => {
         signal == null ? undefined : signal.throwIfAborted();
-        const { taskId, source: source2 } = config2;
-        compressor.add(taskId, source2.filename, imgBlob);
-        if (compressor.fileCount(taskId) !== source2.pageCount) return;
-        let comment2;
-        if ("ugoiraMeta" in config2.source) {
-          const delays = config2.source.ugoiraMeta.frames.map((frames2) => frames2.delay);
-          comment2 = JSON.stringify(delays);
-        }
-        const zipData = await compressor.bundle(taskId, comment2);
+        const { taskId, src } = config2;
+        const index2 = this.src.indexOf(src);
+        if (index2 === -1) throw new Error("No src matches.");
+        if (!this.ugoiraMeta) return;
+        this.handleAbortCb ?? (this.handleAbortCb = () => {
+          converter.clearFrames(taskId);
+        });
+        signal == null ? undefined : signal.addEventListener("abort", this.handleAbortCb, { once: true });
+        converter.addFrame({
+          id: taskId,
+          frame: imgBlob,
+          delay: this.ugoiraMeta.frames[index2]["delay"],
+          order: index2
+        });
+        if (converter.framesCount(taskId) !== this.ugoiraMeta.frames.length) return;
+        return await converter.convert({
+          id: taskId,
+          format: convertFormat,
+          onProgress: setProgress,
+          signal
+        });
+      });
+    }
+    handleSeasonalEffectFactory(convertFormat, onProgress) {
+      return this.handleBeforeSaveCb ?? (this.handleBeforeSaveCb = async (imgBlob, config2, signal) => {
         signal == null ? undefined : signal.throwIfAborted();
-        compressor.remove(taskId);
-        return zipData;
-      },
-      onError(_, config2) {
-        compressor.remove(config2.taskId);
-      },
-      onAbort(config2) {
-        compressor.remove(config2.taskId);
-      }
-    },
-    convert: {
-      convertProgressFactory(btn2) {
-        return function onConvertProgress(progress) {
-          if (progress > 0) {
-            btn2.setProgress(progress, false);
-          } else {
-            btn2.setStatus(ThumbnailBtnStatus.Loading);
-          }
-        };
-      },
-      beforeFileSaveFactory(btn2) {
-        const onProgress = btn2 ? this.convertProgressFactory(btn2) : undefined;
-        let clearFrames;
-        return async function beforeFileSave(imgBlob, config2, signal) {
-          signal == null ? undefined : signal.throwIfAborted();
-          const { taskId, source: source2 } = config2;
-          if (source2.illustType !== IllustType.ugoira) return;
-          clearFrames ?? (clearFrames = () => {
-            converter.clearFrames(taskId);
-          });
-          signal == null ? undefined : signal.addEventListener("abort", clearFrames, { once: true });
-          converter.addFrame({
+        const effectId = "pixivGlow2024";
+        const url = "https://source.pixiv.net/special/seasonal-effect-tag/pixiv-glow-2024/effect.png";
+        const { taskId } = config2;
+        const effectData = await historyDb.getImageEffect(effectId);
+        if (effectData && !("width" in effectData)) {
+          const { data } = effectData;
+          const blob = await converter.appendPixivEffect({
             id: taskId,
-            frame: imgBlob,
-            delay: source2.ugoiraMeta.frames[source2.order]["delay"],
-            order: source2.order
-          });
-          if (converter.framesCount(taskId) !== source2.pageCount) return;
-          return await converter.convert({
-            id: taskId,
-            format: config2.source.extendName,
+            format: convertFormat,
+            illust: imgBlob,
+            seasonalEffect: data,
             onProgress,
             signal
           });
-        };
-      },
-      mixGlowEffect(btn2) {
-        const onProgress = btn2 ? this.convertProgressFactory(btn2) : undefined;
-        return async function beforeFileSave(imgBlob, pixivConfig, signal) {
-          signal == null ? undefined : signal.throwIfAborted();
-          const effectId = "pixivGlow2024";
-          const url = "https://source.pixiv.net/special/seasonal-effect-tag/pixiv-glow-2024/effect.png";
-          const { taskId } = pixivConfig;
-          const effectData = await historyDb.getImageEffect(effectId);
-          if (effectData && !("width" in effectData)) {
-            const { data } = effectData;
-            const blob = await converter.appendPixivEffect({
-              id: taskId,
-              format: pixivConfig.source.extendName,
-              illust: imgBlob,
-              seasonalEffect: data,
-              onProgress,
-              signal
+          return blob;
+        } else {
+          const effctBlob = await new Promise((resolve, reject) => {
+            _GM_xmlhttpRequest({
+              url,
+              headers: {
+                referer: "https://www.pixiv.net"
+              },
+              responseType: "blob",
+              onload(e) {
+                resolve(e.response);
+              },
+              onerror: reject,
+              ontimeout: () => reject(new Error("Timeout"))
             });
-            return blob;
-          } else {
-            const effctBlob = await new Promise((resolve, reject) => {
-              _GM_xmlhttpRequest({
-                url,
-                headers: {
-                  referer: "https://www.pixiv.net"
-                },
-                responseType: "blob",
-                onload(e) {
-                  resolve(e.response);
-                },
-                onerror: reject,
-                ontimeout: () => reject(new Error("Timeout"))
-              });
-            });
-            const blob = await converter.appendPixivEffect({
-              id: taskId,
-              format: pixivConfig.source.extendName,
-              illust: imgBlob,
-              // seasonalEffect will be transfered to worker
-              seasonalEffect: await effctBlob.arrayBuffer(),
-              onProgress,
-              signal
-            });
-            historyDb.addImageEffect({
-              id: effectId,
-              data: await effctBlob.arrayBuffer()
-            });
-            return blob;
-          }
-        };
-      }
-    }
-  };
-  const downloaderHooks = {
-    getHooks(meta, downloadType, button) {
-      switch (downloadType) {
-        case "download":
-          return {
-            onProgress: pixivHooks.download.singleArtworkProgressFactory(button, meta.pageCount),
-            onFileSaved: pixivHooks.download.mulityArtworksProgressFactory(button, meta.pageCount)
-          };
-        case "bundle":
-          return {
-            onXhrLoaded: pixivHooks.download.mulityArtworksProgressFactory(button, meta.pageCount),
-            beforeFileSave: pixivHooks.bundle.beforeFileSave,
-            onError: pixivHooks.bundle.onError
-          };
-        case "convert":
-          return {
-            onXhrLoaded: pixivHooks.download.mulityArtworksProgressFactory(button, meta.pageCount),
-            beforeFileSave: pixivHooks.convert.beforeFileSaveFactory(button)
-          };
-        case "mixEffect":
-          return {
-            onProgress: pixivHooks.download.singleArtworkProgressFactory(button, meta.pageCount),
-            beforeFileSave: pixivHooks.convert.mixGlowEffect(button)
-          };
-      }
-    }
-  };
-  class PixivDownloadConfig extends DownloadConfigBuilder {
-    constructor(meta) {
-      super(meta);
-      __publicField(this, "downloadAll", true);
-      __publicField(this, "headers", {
-        referer: "https://www.pixiv.net"
+          });
+          const blob = await converter.appendPixivEffect({
+            id: taskId,
+            format: convertFormat,
+            illust: imgBlob,
+            // seasonalEffect will be transfered to worker
+            seasonalEffect: await effctBlob.arrayBuffer(),
+            onProgress,
+            signal
+          });
+          historyDb.addImageEffect({
+            id: effectId,
+            data: await effctBlob.arrayBuffer()
+          });
+          return blob;
+        }
       });
-      __publicField(this, "timeout", 6e4);
-      __publicField(this, "getImgSrc", () => "");
-      this.meta = meta;
-      this.getImgSrc = this.meta.illustType === IllustType.ugoira ? (page) => this.meta.src.replace("ugoira0", "ugoira" + page) : (page) => this.meta.src.replace("_p0", "_p" + page);
     }
-    getConvertFormat() {
-      return config.get("ugoiraFormat");
-    }
-    getMixEffectFormat() {
-      const format = this.getConvertFormat();
-      if (format === "zip") return UgoiraFormat.WEBM;
-      return format;
-    }
-    needConvert() {
-      return this.meta.illustType === IllustType.ugoira && config.get("ugoiraFormat") !== "zip";
-    }
-    needBundle() {
-      const { pageCount, illustType } = this.meta;
-      return this.downloadAll && (illustType === IllustType.ugoira && this.getConvertFormat() === "zip" || pageCount > 1 && (illustType === IllustType.manga && config.get("bundleManga") || illustType === IllustType.illusts && config.get("bundleIllusts")));
-    }
-    useTranslatedTags() {
-      return config.get("tagLang") !== "ja";
-    }
-    supportSubpath() {
-      return this.isBrowserApi() || this.isFsaEnable();
-    }
-    buildPattern(pattern, page) {
-      const { id, userId, artist, title, tags, tagsTranslated, createDate, pageCount } = this.meta;
-      const currPage = page === undefined ? pageCount : page;
-      const useTags = this.useTranslatedTags() ? tagsTranslated : tags;
-      const fArtist = this.normalizeString(artist) || userId;
-      const fTitle = this.normalizeString(title) || id;
-      const fTags = this.normalizeString(useTags.join("_"));
-      const replaceDate = (_, p1) => {
-        const format = p1 || "YYYY-MM-DD";
-        return dayjs(createDate).format(format);
+    create(option) {
+      const { filenameTemplate, folderTemplate, setProgress, useTranslatedTags } = option;
+      const index2 = "index" in option ? option.index : 0;
+      const headers = this.getHeaders();
+      const templateData = this.getTemplateData(
+        useTranslatedTags ? {
+          tags: this.translatedTags.map((tag) => this.normalizeString(tag)).filter(Boolean).join("_"),
+          page: String(index2)
+        } : {
+          page: String(index2)
+        }
+      );
+      return {
+        headers,
+        taskId: this.getTaskId(),
+        src: this.getSrc(index2),
+        path: this.getSavePath(folderTemplate, filenameTemplate, this.getExt(index2), templateData),
+        timeout: this.getDownloadTimeout(index2),
+        onProgress: setProgress
       };
-      return pattern.replaceAll(/\{date\((.*?)\)\}|\{date\}/g, replaceDate).replaceAll("{artist}", fArtist).replaceAll("{artistID}", userId).replaceAll("{title}", fTitle).replaceAll("{tags}", fTags).replaceAll("{page}", String(currPage)).replaceAll("{id}", id);
     }
-    getDownloadConfig(btn2) {
-      const { illustType, src, pageCount, extendName } = this.meta;
-      const pageAttr = btn2 == null ? undefined : btn2.dataset.page;
-      const downloadPage = pageAttr ? Number(pageAttr) : undefined;
-      if (downloadPage && (downloadPage > pageCount - 1 || downloadPage < 0))
-        throw new Error("Invalid downloadPage.");
-      if (downloadPage !== undefined) this.downloadAll = false;
-      const taskId = this.generateTaskId();
-      const headers = this.headers;
-      const supportSubPath = this.supportSubpath();
-      const downloadConfigs = [];
-      if ((pageCount === 1 || downloadPage !== undefined) && illustType !== IllustType.ugoira) {
-        const imgSrc = downloadPage ? this.getImgSrc(downloadPage) : src;
-        let path;
-        let hooks;
-        let source2;
-        if (config.get("mixEffect") && btn2) {
-          const effectExt = this.getMixEffectFormat();
-          const pathPatternNoExt = supportSubPath ? this.getFullpathPattern().slice(0, -4) : this.getFilenamePattern();
-          const pathPattern = pathPatternNoExt + "." + effectExt;
-          path = this.buildPattern(pathPattern, downloadPage ? downloadPage : 0);
-          const filename = path.slice(path.lastIndexOf("/") + 1);
-          hooks = downloaderHooks.getHooks({ ...this.meta, pageCount: 1 }, "mixEffect", btn2);
-          source2 = {
-            ...this.meta,
-            pageCount: 1,
-            extendName: effectExt,
-            filename,
-            order: downloadPage ?? 0
-          };
-        } else {
-          const pathPattern = supportSubPath ? this.getFullpathPattern() : this.getFilenamePattern() + "." + extendName;
-          path = this.buildPattern(pathPattern, downloadPage ? downloadPage : 0);
-          const filename = path.slice(path.lastIndexOf("/") + 1);
-          hooks = downloaderHooks.getHooks({ ...this.meta, pageCount: 1 }, "download", btn2);
-          source2 = {
-            ...this.meta,
-            pageCount: 1,
-            filename,
-            order: downloadPage ?? 0
-          };
-        }
-        const downloadConfig = {
-          taskId,
-          src: imgSrc,
-          path,
-          source: source2,
+    createMulti(option) {
+      if (!this.isStringArray(this.src)) throw new Error(`Artwork ${this.id} only have one media.`);
+      const { filenameTemplate, folderTemplate, setProgress, useTranslatedTags } = option;
+      const taskId = this.getTaskId();
+      const headers = this.getHeaders();
+      const onFileSaved = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
+      const overwriteData = useTranslatedTags ? {
+        tags: this.translatedTags.map((tag) => this.normalizeString(tag)).filter(Boolean).join("_")
+      } : {};
+      return this.src.map((src, i) => {
+        return {
           headers,
-          timeout: this.timeout,
-          ...hooks
+          taskId,
+          src,
+          path: this.getSavePath(
+            folderTemplate,
+            filenameTemplate,
+            this.getExt(i),
+            this.getTemplateData({
+              ...overwriteData,
+              page: String(i)
+            })
+          ),
+          timeout: this.getDownloadTimeout(),
+          onFileSaved
         };
-        downloadConfigs.push(downloadConfig);
-      } else {
-        const pathPatternNoExt = supportSubPath ? this.getFullpathPattern().slice(0, -4) : this.getFilenamePattern();
-        if (this.needBundle()) {
-          const pathPattern = pathPatternNoExt + ".zip";
-          const filenamePattern = this.getFilenamePattern().includes("{page}") ? this.getFilenamePattern() + "." + extendName : this.getFilenamePattern() + "_{page}." + extendName;
-          let path;
-          let imgCount;
-          if (illustType === IllustType.ugoira) {
-            path = this.buildPattern(pathPattern, 0);
-            imgCount = this.meta.ugoiraMeta.frames.length;
-          } else {
-            path = this.buildPattern(pathPattern);
-            imgCount = pageCount;
-          }
-          const hooks = downloaderHooks.getHooks(
-            { ...this.meta, pageCount: imgCount },
-            "bundle",
-            btn2
-          );
-          for (let page = 0; page < imgCount; page++) {
-            const filename = this.buildPattern(filenamePattern, page);
-            const imgSrc = this.getImgSrc(page);
-            const source2 = {
-              ...this.meta,
-              pageCount: imgCount,
-              extendName: "zip",
-              filename,
-              order: page
-            };
-            const downloadConfig = {
-              taskId,
-              src: imgSrc,
-              path,
-              source: source2,
-              headers,
-              timeout: this.timeout,
-              ...hooks
-            };
-            downloadConfigs.push(downloadConfig);
-          }
-        } else if (this.needConvert()) {
-          const ext = this.getConvertFormat();
-          const pathPattern = pathPatternNoExt + "." + ext;
-          const path = this.buildPattern(pathPattern, 0);
-          const filename = path.slice(path.lastIndexOf("/") + 1);
-          const imgCount = this.meta.ugoiraMeta.frames.length;
-          const hooks = downloaderHooks.getHooks(
-            { ...this.meta, pageCount: imgCount },
-            "convert",
-            btn2
-          );
-          for (let page = 0; page < imgCount; page++) {
-            const imgSrc = this.getImgSrc(page);
-            const source2 = {
-              ...this.meta,
-              pageCount: imgCount,
-              extendName: ext,
-              filename,
-              order: page
-            };
-            const downloadConfig = {
-              taskId,
-              src: imgSrc,
-              path,
-              source: source2,
-              headers,
-              timeout: this.timeout,
-              ...hooks
-            };
-            downloadConfigs.push(downloadConfig);
-          }
-        } else {
-          const pathPattern = pathPatternNoExt + "." + extendName;
-          const hooks = downloaderHooks.getHooks(this.meta, "download", btn2);
-          for (let page = 0; page < pageCount; page++) {
-            const path = this.buildPattern(pathPattern, page);
-            const filename = path.slice(path.lastIndexOf("/") + 1);
-            const imgSrc = this.getImgSrc(page);
-            const source2 = {
-              ...this.meta,
-              filename,
-              order: page
-            };
-            const downloadConfig = {
-              taskId,
-              src: imgSrc,
-              path,
-              source: source2,
-              headers,
-              timeout: this.timeout,
-              ...hooks
-            };
-            downloadConfigs.push(downloadConfig);
-          }
+      });
+    }
+    createBundle(option) {
+      if (!this.isStringArray(this.src)) throw new Error(`Artwork ${this.id} only have one media.`);
+      const { filenameTemplate, folderTemplate, setProgress, useTranslatedTags } = option;
+      const taskId = this.getTaskId();
+      const headers = this.getHeaders();
+      const onXhrLoaded = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
+      const overwriteData = useTranslatedTags ? {
+        tags: this.translatedTags.map((tag) => this.normalizeString(tag)).filter(Boolean).join("_")
+      } : {};
+      const path = this.getSavePath(
+        folderTemplate,
+        filenameTemplate,
+        "zip",
+        this.getTemplateData({ ...overwriteData, page: String(this.src.length) })
+      );
+      const filenameTemplateWithPage = filenameTemplate.includes(`{${SupportedTemplate.PAGE}}`) ? filenameTemplate : filenameTemplate + `_{${SupportedTemplate.PAGE}}`;
+      const filenames = this.src.map((_, i) => {
+        return this.getSavePath(
+          "",
+          filenameTemplateWithPage,
+          this.getExt(i),
+          this.getTemplateData({
+            ...overwriteData,
+            page: String(i)
+          })
+        );
+      });
+      return this.src.map((src, i) => {
+        return {
+          headers,
+          taskId,
+          src,
+          path,
+          timeout: this.getDownloadTimeout(i),
+          onXhrLoaded,
+          beforeFileSave: this.handleBundleFactory(filenames),
+          onError: this.handleBundleErrorFactory(),
+          onAbort: this.handleBundleAbortFactory()
+        };
+      });
+    }
+    createConvert(option) {
+      if (!this.isStringArray(this.src)) throw new Error(`Artwork ${this.id} only have one media.`);
+      const { filenameTemplate, folderTemplate, setProgress, convertFormat, useTranslatedTags } = option;
+      const taskId = this.getTaskId();
+      const headers = this.getHeaders();
+      const onXhrLoaded = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
+      const beforeFileSave = this.handleConvertFactory(convertFormat, setProgress);
+      const templateData = this.getTemplateData(
+        useTranslatedTags ? {
+          tags: this.translatedTags.map((tag) => this.normalizeString(tag)).filter(Boolean).join("_"),
+          page: String(0)
+        } : {
+          page: String(0)
         }
-      }
-      !this.downloadAll && (this.downloadAll = true);
-      return downloadConfigs;
+      );
+      const path = this.getSavePath(folderTemplate, filenameTemplate, convertFormat, templateData);
+      return this.src.map((src, i) => {
+        return {
+          headers,
+          taskId,
+          src,
+          path,
+          timeout: this.getDownloadTimeout(i),
+          onXhrLoaded,
+          beforeFileSave
+        };
+      });
     }
-  }
-  function getSelfId() {
-    var _a, _b;
-    return ((_b = (_a = _unsafeWindow.dataLayer) == null ? undefined : _a[0]) == null ? undefined : _b.user_id) ?? "";
-  }
-  function getIllustId(node) {
-    const isLinkToArtworksPage = regexp.artworksPage.exec(node.getAttribute("href") || "");
-    if (isLinkToArtworksPage) {
-      if (node.getAttribute("data-gtm-value") || [
-        "gtm-illust-recommend-node-node",
-        "gtm-discover-user-recommend-node",
-        "work",
-        "_history-item",
-        "_history-related-item"
-      ].some((className) => node.classList.contains(className))) {
-        return isLinkToArtworksPage[1];
-      }
-    } else if (node instanceof HTMLSpanElement && node.className.includes("_history-item")) {
-      const img = node.querySelector("img");
-      if (!img) return "";
-      const matchPid = regexp.historyThumbnailsId.exec(img.src);
-      if (matchPid) return matchPid[0];
-    } else {
-      const isActivityThumb = regexp.activityHref.exec(node.getAttribute("href") || "");
-      if (isActivityThumb && node.classList.contains("work")) {
-        return isActivityThumb[1];
-      }
+    createSeasonalEffect(option) {
+      const { filenameTemplate, folderTemplate, setProgress, convertFormat, useTranslatedTags } = option;
+      const index2 = "index" in option ? option.index : 0;
+      const templateData = this.getTemplateData(
+        useTranslatedTags ? {
+          tags: this.translatedTags.map((tag) => this.normalizeString(tag)).filter(Boolean).join("_"),
+          page: String(index2)
+        } : {
+          page: String(index2)
+        }
+      );
+      return {
+        headers: this.getHeaders(),
+        taskId: this.getTaskId(),
+        src: this.getSrc(index2),
+        path: this.getSavePath(folderTemplate, filenameTemplate, convertFormat, templateData),
+        timeout: this.getDownloadTimeout(index2),
+        onProgress: setProgress,
+        beforeFileSave: this.handleSeasonalEffectFactory(convertFormat, setProgress)
+      };
     }
-    return "";
   }
   async function addBookmark(illustId, token, optionalParams) {
     const { btn: btn2, tags, restrict } = optionalParams;
@@ -16126,463 +16652,6 @@
     likeBtn.disabled = true;
     likeBtn.style.color = "#0096fa";
     likeBtn.style.cursor = "default";
-  }
-  async function downloadArtwork(btn2) {
-    downloader.dirHandleCheck();
-    const { id, page, unlistedId } = btn2.dataset;
-    const tagLang = config.get("tagLang");
-    let pixivMeta;
-    if (!unlistedId) {
-      const shouldAddBookmark = config.get("addBookmark");
-      const shouldLikeIllust = config.get("likeIllust");
-      if (shouldAddBookmark || shouldLikeIllust) {
-        pixivMeta = await pixivParser.parse(id, { tagLang, type: "html" });
-        const { bookmarkData, token, tags: tags2, likeData } = pixivMeta;
-        if (!bookmarkData && shouldAddBookmark) {
-          const addedTags = config.get("addBookmarkWithTags") ? tags2 : undefined;
-          const restrict = config.get("privateR18") && tags2.includes("R-18") ? BookmarkRestrict.private : BookmarkRestrict.public;
-          addBookmark(id, token, { btn: btn2, tags: addedTags, restrict });
-        }
-        if (!likeData && shouldLikeIllust) {
-          likeIllust(id, token);
-        }
-      } else {
-        pixivMeta = await pixivParser.parse(id, { tagLang, type: "api" });
-      }
-    } else {
-      pixivMeta = await pixivParser.parse(unlistedId, { tagLang, type: "unlisted" });
-    }
-    const downloadConfigs = new PixivDownloadConfig(pixivMeta).getDownloadConfig(btn2);
-    await downloader.download(downloadConfigs, { priority: 1 });
-    const { comment: comment2, tags, artist, userId, title } = pixivMeta;
-    const historyData = {
-      pid: Number(id),
-      user: artist,
-      userId: Number(userId),
-      title,
-      comment: comment2,
-      tags
-    };
-    if (page !== undefined) {
-      historyData.page = Number(page);
-    }
-    if (unlistedId) {
-      historyData.unlistedId = unlistedId;
-    }
-    historyDb.add(historyData);
-  }
-  function createThumbnailBtn(nodes) {
-    let isSelfBookmark = false;
-    const inBookmarkPage = regexp.bookmarkPage.exec(location.pathname);
-    inBookmarkPage && inBookmarkPage[1] === getSelfId() && (isSelfBookmark = true);
-    nodes.forEach((e) => {
-      let illustId;
-      let type;
-      if ((e.childElementCount !== 0 || e.className.includes("_history-item") || e.className.includes("_history-related-item")) && !e.querySelector(ThumbnailButton.tagNameLowerCase) && (illustId = getIllustId(e))) {
-        if (isSelfBookmark) {
-          type = ThumbnailBtnType.PixivMyBookmark;
-        } else if (e.className.includes("_history-related-item")) {
-          e.style.position = "relative";
-          type = ThumbnailBtnType.PixivHistory;
-        } else if (e.className.includes("_history-item")) {
-          type = ThumbnailBtnType.PixivHistory;
-        }
-        const btn2 = new ThumbnailButton({
-          id: illustId,
-          type,
-          onClick: downloadArtwork
-        });
-        e.appendChild(btn2);
-      }
-    });
-  }
-  function fixPixivPreviewer(nodes) {
-    if (!regexp.searchPage.test(location.pathname)) return;
-    nodes.forEach((node) => {
-      var _a;
-      (_a = node.querySelector(ThumbnailButton.tagNameLowerCase)) == null ? undefined : _a.remove();
-    });
-  }
-  function createToolbarBtn(id) {
-    const toolbar = document.querySelector("main section section");
-    if (!toolbar || toolbar.querySelector(ThumbnailButton.tagNameLowerCase)) return;
-    const btn2 = new ThumbnailButton({
-      id,
-      type: ThumbnailBtnType.PixivToolbar,
-      onClick: downloadArtwork
-    });
-    const pdlBtnWrap = toolbar.lastElementChild.cloneNode();
-    pdlBtnWrap.appendChild(btn2);
-    toolbar.appendChild(pdlBtnWrap);
-  }
-  function createWorkExpanedViewBtn(id, unlistedId) {
-    const works = document.querySelectorAll(
-      "figure a.gtm-expand-full-size-illust"
-    );
-    if (works.length < 2) return;
-    works.forEach((work, idx) => {
-      var _a;
-      const container = (_a = work.parentElement) == null ? undefined : _a.parentElement;
-      if (!container || container.querySelector(ArtworkButton.tagNameLowerCase)) return;
-      container.appendChild(
-        new ArtworkButton({
-          id,
-          page: idx,
-          extraData: unlistedId ? { unlistedId } : undefined,
-          onClick: downloadArtwork
-        })
-      );
-    });
-  }
-  let observer;
-  let btn;
-  function createPresentationBtn(id, unlistedId) {
-    const containers = document.querySelector("body > [role='presentation'] > div");
-    if (!containers) {
-      if (observer) {
-        observer.disconnect();
-        observer = null;
-        btn = null;
-      }
-      return;
-    }
-    if (containers.querySelector(ThumbnailButton.tagNameLowerCase)) return;
-    const img = containers.querySelector("div > img");
-    if (!img) return;
-    const isOriginImg = regexp.originSrcPageNum.exec(img.src);
-    if (!isOriginImg) return;
-    const [pageNum] = isOriginImg;
-    btn = new ThumbnailButton({
-      id,
-      type: ThumbnailBtnType.PixivPresentation,
-      page: Number(pageNum),
-      extraData: unlistedId ? { unlistedId } : undefined,
-      onClick: downloadArtwork
-    });
-    containers.appendChild(btn);
-    observer = new MutationObserver((mutationList) => {
-      const newImg = mutationList[1]["addedNodes"][0];
-      const [pageNum2] = regexp.originSrcPageNum.exec(newImg.src) ?? [];
-      if (!pageNum2) return logger.throw("Invalid image element.");
-      btn == null ? undefined : btn.remove();
-      btn = new ThumbnailButton({
-        id,
-        type: ThumbnailBtnType.PixivPresentation,
-        page: Number(pageNum2),
-        extraData: unlistedId ? { unlistedId } : undefined,
-        onClick: downloadArtwork
-      });
-      containers.appendChild(btn);
-    });
-    observer.observe(img.parentElement, { childList: true, subtree: true });
-  }
-  function createPreviewModalBtn(id, unlistedId) {
-    var _a;
-    const illustModalBtn = document.querySelector(
-      ".gtm-manga-viewer-preview-modal-open:not(.pdl-listened)"
-    );
-    const mangaModalBtn = document.querySelector(".gtm-manga-viewer-open-preview:not(.pdl-listened)");
-    const mangaViewerModalBtn = (_a = document.querySelectorAll(
-      ".gtm-manga-viewer-close-icon:not(.pdl-listened)"
-    )) == null ? undefined : _a[1];
-    if (!illustModalBtn && !mangaModalBtn && !mangaViewerModalBtn) return;
-    [illustModalBtn, mangaModalBtn, mangaViewerModalBtn].forEach((node) => {
-      if (node) {
-        node.classList.add("pdl-listened");
-        node.addEventListener("click", () => {
-          handleModalClick(id, unlistedId);
-        });
-      }
-    });
-  }
-  function handleModalClick(id, unlistedId) {
-    const timer = setInterval(() => {
-      logger.info("Start to find modal.");
-      const ulList = document.querySelectorAll("ul");
-      const previewList = ulList[ulList.length - 1];
-      if (getComputedStyle(previewList).display !== "grid") return;
-      clearInterval(timer);
-      previewList.childNodes.forEach((node, idx) => {
-        node.style.position = "relative";
-        node.appendChild(
-          new ThumbnailButton({
-            id,
-            page: idx,
-            extraData: unlistedId ? { unlistedId } : undefined,
-            onClick: downloadArtwork
-          })
-        );
-      });
-    }, 300);
-  }
-  function createMangaViewerBtn(id, unlistedId) {
-    const mangaViewerBackBtn = document.querySelector(".gtm-manga-viewer-close-icon");
-    if (!mangaViewerBackBtn) return;
-    const container = mangaViewerBackBtn.parentElement;
-    if (!container || container.querySelector(ThumbnailButton.tagNameLowerCase)) return;
-    container.appendChild(
-      new ThumbnailButton({
-        id,
-        type: ThumbnailBtnType.PixivMangaViewer,
-        extraData: unlistedId ? { unlistedId } : undefined,
-        onClick: downloadArtwork
-      })
-    );
-  }
-  const toolbarStyle = ".button-wrapper{display:flex;justify-content:flex-end;align-items:center;height:32px;padding:8px 12px}";
-  class UnlistedArtworkToolbar extends HTMLElement {
-    constructor(props) {
-      super();
-      __publicField(this, "props");
-      this.props = props;
-    }
-    static get tagNameLowerCase() {
-      return "pdl-unlisted-artwork-toolbar";
-    }
-    render() {
-      if (this.shadowRoot) return;
-      const shadowRoot = this.attachShadow({ mode: "open" });
-      shadowRoot.innerHTML = `<style>${toolbarStyle}</style><div class="button-wrapper"></div>`;
-      const thumbnailButton = new ThumbnailButton({
-        ...this.props,
-        type: ThumbnailBtnType.PixivToolbar
-      });
-      const wrapper = shadowRoot.querySelector(".button-wrapper");
-      wrapper.appendChild(thumbnailButton);
-    }
-    connectedCallback() {
-      this.render();
-    }
-  }
-  customElements.define(UnlistedArtworkToolbar.tagNameLowerCase, UnlistedArtworkToolbar);
-  function createUnlistedToolbar(id, unlistedId) {
-    const toolbar = document.querySelector(UnlistedArtworkToolbar.tagNameLowerCase);
-    if (toolbar) return;
-    const container = document.querySelector('div[style^="transform: translateY"]');
-    if (!container) return;
-    const el = new UnlistedArtworkToolbar({
-      id,
-      onClick: downloadArtwork,
-      extraData: {
-        unlistedId
-      }
-    });
-    container.appendChild(el);
-    const showAllBtn = container.querySelector(
-      'button[type="button"]:not([style])'
-    );
-    showAllBtn && (showAllBtn.style.bottom = "48px");
-  }
-  class TagListButton extends HTMLElement {
-    constructor(tagUrl, downloading, handleDownload) {
-      super();
-      __publicField(this, "btn");
-      __publicField(this, "unsubscriber");
-      this.tagUrl = tagUrl;
-      this.downloading = downloading;
-      this.handleDownload = handleDownload;
-      this.dispatchDownload = this.dispatchDownload.bind(this);
-    }
-    static get tagNameLowerCase() {
-      return "pdl-tag-list-button";
-    }
-    async render() {
-      if (this.shadowRoot) return;
-      const shadowRoot = this.attachShadow({ mode: "open" });
-      addStyleToShadow(shadowRoot);
-      shadowRoot.innerHTML = ` 
-  <div class=" flex items-center">    
-    <hr class="!border-t-0 border-l h-6 ml-4 mr-2" />
-    <button class=" h-[38px] w-[38px] btn-icon [&:not([disabled])]:hover:bg-slate-400/30 disabled:cursor-wait disabled:opacity-70">
-      <i class="text-sm w-6 fill-current mx-2">
-      ${downloadSvg}
-      </i>
-    </button>
-  </div>
-  `;
-    }
-    getTagProps() {
-      const url = new URL(this.tagUrl);
-      const { searchParams, pathname } = url;
-      const extractUrlMatch = regexp.userPageTags.exec(pathname);
-      if (!extractUrlMatch) throw new Error(`Could not extract tag props from: ${pathname}`);
-      const [, userId, urlCategory, tag] = extractUrlMatch;
-      if (!tag) throw new Error(`Could not extract tag from: ${pathname}`);
-      let category;
-      if (urlCategory === "illustrations" || urlCategory === "artworks") {
-        category = "illusts";
-      } else {
-        category = urlCategory;
-      }
-      return {
-        userId,
-        category,
-        tag,
-        rest: searchParams.get("rest") === "hide" ? "hide" : "show"
-      };
-    }
-    dispatchDownload(evt) {
-      evt == null ? undefined : evt.preventDefault();
-      this.handleDownload(this.getTagProps()).catch(logger.error);
-    }
-    connectedCallback() {
-      this.render();
-      this.btn ?? (this.btn = this.shadowRoot.querySelector("button"));
-      this.btn.addEventListener("click", this.dispatchDownload);
-      this.unsubscriber = this.downloading.subscribe((val) => {
-        if (val) {
-          this.setAttribute("disabled", "");
-        } else {
-          this.removeAttribute("disabled");
-        }
-      });
-    }
-    disconnectedCallback() {
-      var _a, _b;
-      (_a = this.unsubscriber) == null ? undefined : _a.call(this);
-      (_b = this.btn) == null ? undefined : _b.removeEventListener("click", this.dispatchDownload);
-    }
-    static get observedAttributes() {
-      return ["disabled"];
-    }
-    attributeChangedCallback(name, oldValue, newValue) {
-      var _a, _b;
-      if (typeof newValue === "string") {
-        (_a = this.btn) == null ? undefined : _a.setAttribute("disabled", "");
-      } else {
-        (_b = this.btn) == null ? undefined : _b.removeAttribute("disabled");
-      }
-    }
-  }
-  customElements.define(TagListButton.tagNameLowerCase, TagListButton);
-  function createTagListBtn(downloading, handleDownload) {
-    var _a;
-    const listContainer = document.querySelector('div[style*="position: relative"]');
-    if (!listContainer) return;
-    const modalRoot = listContainer == null ? undefined : listContainer.closest('div[role="presentation"], div[class="charcoal-token"]');
-    const closeBtn = (_a = modalRoot == null ? undefined : modalRoot.querySelector("svg")) == null ? undefined : _a.parentElement;
-    const tagElements = listContainer.querySelectorAll(
-      'div[style*="position: absolute"] a'
-    );
-    tagElements.forEach((ele) => {
-      if (ele.querySelector(TagListButton.tagNameLowerCase)) return;
-      const btn2 = new TagListButton(ele.href, downloading, (props) => {
-        closeBtn == null ? undefined : closeBtn.click();
-        return handleDownload(props);
-      });
-      ele.appendChild(btn2);
-    });
-  }
-  class ArtworkTagButton extends HTMLElement {
-    constructor(tagElement, downloading, handleDownload) {
-      super();
-      __publicField(this, "btn");
-      __publicField(this, "ob");
-      __publicField(this, "unsubscriber");
-      this.tagElement = tagElement;
-      this.downloading = downloading;
-      this.handleDownload = handleDownload;
-      this.dispatchDownload = this.dispatchDownload.bind(this);
-      this.ob = new MutationObserver(() => {
-        this.changeBtnColor();
-      });
-    }
-    static get tagNameLowerCase() {
-      return "pdl-artwork-tag";
-    }
-    // 为了美观
-    resetTagStyle() {
-      this.tagElement.style.borderTopRightRadius = "0px";
-      this.tagElement.style.borderBottomRightRadius = "0px";
-    }
-    changeBtnColor() {
-      if (!this.btn) return;
-      const { color, backgroundColor } = getComputedStyle(this.tagElement);
-      this.btn.style.color = color;
-      this.btn.style.backgroundColor = backgroundColor;
-    }
-    async render() {
-      if (this.shadowRoot) return;
-      const shadowRoot = this.attachShadow({ mode: "open" });
-      addStyleToShadow(shadowRoot);
-      shadowRoot.innerHTML = `  <button class="flex h-full items-center pr-2 rounded-e-[4px] disabled:cursor-wait disabled:opacity-70">
-    <hr class="!border-t-0 border-l h-6 pr-2" />
-    <i class="text-sm w-6 fill-current">
-      ${downloadSvg}
-    </i>
-  </button>`;
-      this.resetTagStyle();
-    }
-    getTagProps() {
-      const tagTitles = this.tagElement.querySelectorAll("div[title]");
-      const tagStr = tagTitles[tagTitles.length - 1].getAttribute("title");
-      const tag = tagStr.startsWith("#") ? tagStr.slice(1) : "未分類";
-      const url = new URL(this.tagElement.href);
-      const { searchParams, pathname } = url;
-      const extractUrlMatch = regexp.userPageTags.exec(pathname);
-      if (!extractUrlMatch) throw new Error(`Could not extract tag props from: ${pathname}`);
-      const [, userId, urlCategory] = extractUrlMatch;
-      let category;
-      if (urlCategory === "illustrations" || urlCategory === "artworks") {
-        category = "illusts";
-      } else {
-        category = urlCategory;
-      }
-      return {
-        userId,
-        category,
-        tag,
-        rest: searchParams.get("rest") === "hide" ? "hide" : "show"
-      };
-    }
-    dispatchDownload() {
-      this.handleDownload(this.getTagProps()).catch(logger.error);
-    }
-    connectedCallback() {
-      this.render();
-      this.btn ?? (this.btn = this.shadowRoot.querySelector("button"));
-      this.changeBtnColor();
-      this.btn.addEventListener("click", this.dispatchDownload);
-      this.unsubscriber = this.downloading.subscribe((val) => {
-        if (val) {
-          this.setAttribute("disabled", "");
-        } else {
-          this.removeAttribute("disabled");
-        }
-      });
-      this.ob.observe(this.tagElement, {
-        attributes: true,
-        attributeFilter: ["class"]
-      });
-    }
-    disconnectedCallback() {
-      var _a, _b;
-      (_a = this.unsubscriber) == null ? undefined : _a.call(this);
-      (_b = this.btn) == null ? undefined : _b.removeEventListener("click", this.dispatchDownload);
-      this.ob.disconnect();
-    }
-    static get observedAttributes() {
-      return ["disabled"];
-    }
-    attributeChangedCallback(name, oldValue, newValue) {
-      var _a, _b;
-      if (typeof newValue === "string") {
-        (_a = this.btn) == null ? undefined : _a.setAttribute("disabled", "");
-      } else {
-        (_b = this.btn) == null ? undefined : _b.removeAttribute("disabled");
-      }
-    }
-  }
-  customElements.define(ArtworkTagButton.tagNameLowerCase, ArtworkTagButton);
-  function createFrequentTagBtn(downloading, handleDownload) {
-    const tagsEles = Array.from(document.querySelectorAll("a[status]"));
-    if (!tagsEles.length) return;
-    tagsEles.forEach((ele) => {
-      var _a;
-      if (((_a = ele.nextElementSibling) == null ? undefined : _a.tagName.toLowerCase()) === ArtworkTagButton.tagNameLowerCase) return;
-      const artworkTagBtn = new ArtworkTagButton(ele, downloading, handleDownload);
-      ele.parentElement.appendChild(artworkTagBtn);
-    });
   }
   class Pixiv extends SiteInject {
     constructor() {
@@ -16752,9 +16821,9 @@
         parseMetaByArtworkId: (id) => {
           return pixivParser.parse(id, { tagLang: this.config.get("tagLang"), type: "api" });
         },
-        async downloadArtworkByMeta(meta, signal) {
+        downloadArtworkByMeta: async (meta, signal) => {
           downloader.dirHandleCheck();
-          const downloadConfigs = new PixivDownloadConfig(meta).getDownloadConfig();
+          const downloadConfigs = this.getDownloadConfig(meta);
           await downloader.download(downloadConfigs, { signal });
           const { comment: comment2, id, tags, artist, userId, title } = meta;
           const historyData = {
@@ -16774,6 +16843,7 @@
     }
     inject() {
       super.inject();
+      this.downloadArtwork = this.downloadArtwork.bind(this);
       new MutationObserver((records) => {
         this.injectThumbnailButtons(records);
         this.pageActions();
@@ -16788,8 +16858,8 @@
         filenamePattern: "{artist}_{title}_{id}_p{page}"
       };
     }
-    getFilenameTemplate() {
-      return ["{artist}", "{artistID}", "{title}", "{id}", "{page}", "{tags}", "{date}"];
+    getSupportedTemplate() {
+      return PixivDownloadConfig.supportedTemplate;
     }
     observeColorScheme() {
       const onThemeChange = () => {
@@ -16815,7 +16885,7 @@
       });
       if (!addedNodes.length) return;
       if (this.firstObserverCbRunFlag) {
-        createThumbnailBtn(document.querySelectorAll("a"));
+        createThumbnailBtn(document.querySelectorAll("a"), this.downloadArtwork);
         this.firstObserverCbRunFlag = false;
       } else {
         fixPixivPreviewer(addedNodes);
@@ -16824,7 +16894,7 @@
             current instanceof HTMLAnchorElement ? [current] : Array.from(current.querySelectorAll("a"))
           );
         }, []);
-        createThumbnailBtn(thumbnails);
+        createThumbnailBtn(thumbnails, this.downloadArtwork);
       }
     }
     pageActions() {
@@ -16834,11 +16904,11 @@
       switch (true) {
         case !!(param = regexp.artworksPage.exec(pathname)): {
           const id = param[1];
-          createToolbarBtn(id);
-          createWorkExpanedViewBtn(id);
-          createPresentationBtn(id);
-          createPreviewModalBtn(id);
-          createMangaViewerBtn(id);
+          createToolbarBtn(id, this.downloadArtwork);
+          createWorkExpanedViewBtn(id, this.downloadArtwork);
+          createPresentationBtn(id, this.downloadArtwork);
+          createPreviewModalBtn(id, this.downloadArtwork);
+          createMangaViewerBtn(id, this.downloadArtwork);
           break;
         }
         case regexp.userPageTags.test(pathname): {
@@ -16852,7 +16922,10 @@
           break;
         }
         case regexp.historyPage.test(pathname): {
-          createThumbnailBtn(document.querySelectorAll("span[style]._history-item"));
+          createThumbnailBtn(
+            document.querySelectorAll("span[style]._history-item"),
+            this.downloadArtwork
+          );
           break;
         }
         case !!(param = regexp.unlisted.exec(pathname)): {
@@ -16861,14 +16934,123 @@
           if (!canonicalUrl) return;
           const id = (_b = regexp.artworksPage.exec(canonicalUrl)) == null ? undefined : _b[1];
           if (!id) return;
-          createUnlistedToolbar(id, unlistedId);
-          createWorkExpanedViewBtn(id, unlistedId);
-          createPresentationBtn(id, unlistedId);
-          createPreviewModalBtn(id, unlistedId);
-          createMangaViewerBtn(id, unlistedId);
+          createUnlistedToolbar(id, this.downloadArtwork, unlistedId);
+          createWorkExpanedViewBtn(id, this.downloadArtwork, unlistedId);
+          createPresentationBtn(id, this.downloadArtwork, unlistedId);
+          createPreviewModalBtn(id, this.downloadArtwork, unlistedId);
+          createMangaViewerBtn(id, this.downloadArtwork, unlistedId);
           break;
         }
       }
+    }
+    isMultiImageMeta(meta) {
+      return Array.isArray(meta.src) && meta.src.length > 1;
+    }
+    getDownloadConfig(meta, setProgress, page) {
+      const folderTemplate = this.config.get("folderPattern");
+      const filenameTemplate = this.config.get("filenamePattern");
+      const ugoiraFormat = this.config.get("ugoiraFormat");
+      const bundleManga = this.config.get("bundleManga");
+      const bundleIllust = this.config.get("bundleIllusts");
+      const mixEffect = this.config.get("mixEffect");
+      const mixEffectFormat = ugoiraFormat === UgoiraFormat.ZIP ? UgoiraFormat.MP4 : ugoiraFormat;
+      const useTranslatedTags = this.config.get("tagLang") !== TagLanguage.JAPANESE;
+      const option = {
+        folderTemplate,
+        filenameTemplate,
+        useTranslatedTags,
+        setProgress
+      };
+      if ("ugoiraMeta" in meta) {
+        if (ugoiraFormat !== UgoiraFormat.ZIP) {
+          return new PixivDownloadConfig(meta).createConvert({
+            ...option,
+            convertFormat: ugoiraFormat
+          });
+        }
+        return new PixivDownloadConfig(meta).createBundle(option);
+      }
+      if (this.isMultiImageMeta(meta)) {
+        if (page !== undefined) {
+          if (mixEffect) {
+            return new PixivDownloadConfig(meta).createSeasonalEffect({
+              ...option,
+              index: page,
+              convertFormat: mixEffectFormat
+            });
+          }
+          return new PixivDownloadConfig(meta).create({
+            ...option,
+            index: page
+          });
+        }
+        if (meta.illustType === IllustType.manga && bundleManga || meta.illustType === IllustType.illusts && bundleIllust) {
+          return new PixivDownloadConfig(meta).createBundle(option);
+        }
+        return new PixivDownloadConfig(meta).createMulti(option);
+      }
+      if (mixEffect) {
+        return new PixivDownloadConfig(meta).createSeasonalEffect({
+          ...option,
+          convertFormat: mixEffectFormat
+        });
+      }
+      return new PixivDownloadConfig(meta).create(option);
+    }
+    async downloadArtwork(btn2) {
+      downloader.dirHandleCheck();
+      const { id, page, unlistedId } = btn2.dataset;
+      const pageNum = page !== undefined ? +page : undefined;
+      const tagLang = this.config.get("tagLang");
+      let pixivMeta;
+      if (!unlistedId) {
+        const shouldAddBookmark = this.config.get("addBookmark");
+        const shouldLikeIllust = this.config.get("likeIllust");
+        if (shouldAddBookmark || shouldLikeIllust) {
+          pixivMeta = await pixivParser.parse(id, { tagLang, type: "html" });
+          const { bookmarkData, token, tags: tags2, likeData } = pixivMeta;
+          if (!bookmarkData && shouldAddBookmark) {
+            const addedTags = this.config.get("addBookmarkWithTags") ? tags2 : undefined;
+            const restrict = this.config.get("privateR18") && tags2.includes("R-18") ? BookmarkRestrict.private : BookmarkRestrict.public;
+            addBookmark(id, token, { btn: btn2, tags: addedTags, restrict });
+          }
+          if (!likeData && shouldLikeIllust) {
+            likeIllust(id, token);
+          }
+        } else {
+          pixivMeta = await pixivParser.parse(id, { tagLang, type: "api" });
+        }
+      } else {
+        pixivMeta = await pixivParser.parse(unlistedId, { tagLang, type: "unlisted" });
+      }
+      const downloadConfigs = this.getDownloadConfig(
+        pixivMeta,
+        (progress) => {
+          if (progress > 0) {
+            btn2.setProgress(progress);
+          } else {
+            btn2.setStatus(ThumbnailBtnStatus.Loading);
+          }
+        },
+        pageNum
+      );
+      await downloader.download(downloadConfigs, { priority: 1 });
+      const { comment: comment2, tags, artist, userId, title } = pixivMeta;
+      const historyData = {
+        pid: Number(id),
+        user: artist,
+        userId: Number(userId),
+        title,
+        comment: comment2,
+        tags
+      };
+      if (page !== undefined) {
+        historyData.page = Number(page);
+      }
+      if (unlistedId) {
+        historyData.unlistedId = unlistedId;
+      }
+      historyDb.add(historyData);
     }
   }
   class MoebooruParser extends ParserBase {
@@ -16886,7 +17068,7 @@
     }
     buildMeta(data, tagType) {
       if (data.status === "deleted") throw new Error(`Post ${data.id} is deleted.`);
-      const { id, file_url, md5, created_at, source: source2, rating } = data;
+      const { id, file_url, md5, created_at, source: source2, rating, score } = data;
       const file_ext = this.isLatestData(data) ? data.file_ext : file_url.match(/\.(\w+)$/)[1];
       const artists = [];
       const characters = [];
@@ -16909,6 +17091,7 @@
         tags,
         createDate: new Date(created_at * 1e3).toISOString(),
         rating,
+        score,
         source: source2
       };
     }
@@ -16990,40 +17173,6 @@
       };
     });
   };
-  function artworkProgressFactory$1(btn2) {
-    if (!btn2) return;
-    return function onArtworkProgress(progress) {
-      btn2.setProgress(progress);
-    };
-  }
-  class MoebooruDownloadConfig extends DownloadConfigBuilder {
-    constructor(meta) {
-      var _a;
-      super(meta);
-      __privateAdd(this, _headers2);
-      this.meta = meta;
-      const cf_clearance = (_a = config.get("auth")) == null ? undefined : _a.cf_clearance;
-      __privateSet(this, _headers2, cf_clearance ? {
-        cookie: `cf_clearance=${cf_clearance}`
-      } : undefined);
-    }
-    getDownloadConfig(btn2) {
-      return {
-        headers: __privateGet(this, _headers2),
-        taskId: this.generateTaskId(),
-        src: this.meta.src,
-        path: this.buildFilePath(),
-        source: this.meta,
-        timeout: this.isImage() ? 6e4 : undefined,
-        onProgress: artworkProgressFactory$1(btn2)
-      };
-    }
-    buildFilePath() {
-      const path = super.buildFilePath();
-      return path.replaceAll("{character}", this.normalizeString(this.meta.character));
-    }
-  }
-  _headers2 = new WeakMap();
   class MoebooruApi extends ApiBase {
     isBadResponse(obj) {
       return "success" in obj && !obj.success;
@@ -17157,18 +17306,21 @@
             filterInGenerator: true,
             fn: (pageRange, checkValidity, tags) => {
               tags ?? (tags = new URLSearchParams(location.search).get("tags") ?? "");
-              const POSTS_PER_PAGE = 40;
               const getPostData = async (page) => {
+                const POSTS_PER_PAGE = 40;
                 const htmlText = await this.api.getPostsHtml(tags, page);
                 const { posts, tags: tagType } = this.parser.parsePostsList(htmlText);
-                return posts.map((post) => ({ ...post, tagType }));
+                const data = posts.map((post) => ({ ...post, tagType }));
+                return {
+                  lastPage: data.length < POSTS_PER_PAGE,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 pageRange,
-                POSTS_PER_PAGE,
                 getPostData,
-                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity),
-                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this)
+                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this),
+                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity)
               );
             }
           },
@@ -17179,10 +17331,9 @@
             fn: (_, checkValidity) => {
               return this.parser.paginationGenerator(
                 [1, 1],
-                Number.POSITIVE_INFINITY,
                 __privateMethod(this, _Moebooru_instances, getPopularDataFactory_fn).call(this, "1d"),
-                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity),
-                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this)
+                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this),
+                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity)
               );
             }
           },
@@ -17193,10 +17344,9 @@
             fn: (_, checkValidity) => {
               return this.parser.paginationGenerator(
                 [1, 1],
-                Number.POSITIVE_INFINITY,
                 __privateMethod(this, _Moebooru_instances, getPopularDataFactory_fn).call(this, "1w"),
-                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity),
-                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this)
+                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this),
+                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity)
               );
             }
           },
@@ -17207,10 +17357,9 @@
             fn: (_, checkValidity) => {
               return this.parser.paginationGenerator(
                 [1, 1],
-                Number.POSITIVE_INFINITY,
                 __privateMethod(this, _Moebooru_instances, getPopularDataFactory_fn).call(this, "1m"),
-                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity),
-                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this)
+                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this),
+                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity)
               );
             }
           },
@@ -17221,10 +17370,9 @@
             fn: (_, checkValidity) => {
               return this.parser.paginationGenerator(
                 [1, 1],
-                Number.POSITIVE_INFINITY,
                 __privateMethod(this, _Moebooru_instances, getPopularDataFactory_fn).call(this, "1y"),
-                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity),
-                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this)
+                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this),
+                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity)
               );
             }
           },
@@ -17251,14 +17399,17 @@
               const getPopularData = async () => {
                 const htmlText = await this.api.getPopularHtmlByDate(params);
                 const { posts, tags: tagType } = this.parser.parsePostsList(htmlText);
-                return posts.map((post) => ({ ...post, tagType }));
+                const data = posts.map((post) => ({ ...post, tagType }));
+                return {
+                  lastPage: true,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 [1, 1],
-                Number.POSITIVE_INFINITY,
                 getPopularData,
-                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity),
-                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this)
+                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this),
+                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity)
               );
             }
           },
@@ -17271,14 +17422,17 @@
               const getPoolData = async () => {
                 const htmlText = await this.api.getPoolHtml(poolId);
                 const { posts, tags: tagType } = this.parser.parsePostAndPool(htmlText);
-                return posts.map((post) => ({ ...post, tagType }));
+                const data = posts.map((post) => ({ ...post, tagType }));
+                return {
+                  lastPage: true,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 [1, 1],
-                Number.POSITIVE_INFINITY,
                 getPoolData,
-                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity),
-                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this)
+                __privateMethod(this, _Moebooru_instances, buildMetaByGeneratorData_fn).bind(this),
+                __privateMethod(this, _Moebooru_instances, validityCallbackFactory_fn).call(this, checkValidity)
               );
             }
           }
@@ -17288,11 +17442,16 @@
           const { posts, tags } = this.parser.parsePostAndPool(htmlText);
           return this.parser.buildMeta(posts[0], tags);
         },
-        async downloadArtworkByMeta(meta, signal) {
+        downloadArtworkByMeta: async (meta, signal) => {
+          var _a;
           downloader.dirHandleCheck();
+          const downloadConfig = new BooruDownloadConfig(meta).create({
+            folderTemplate: this.config.get("folderPattern"),
+            filenameTemplate: this.config.get("filenamePattern"),
+            cfClearance: (_a = this.config.get("auth")) == null ? undefined : _a.cf_clearance
+          });
+          await downloader.download(downloadConfig, { signal });
           const { id, tags, artist, title, rating, source: source2 } = meta;
-          const downloadConfigs = new MoebooruDownloadConfig(meta).getDownloadConfig();
-          await downloader.download(downloadConfigs, { signal });
           historyDb.add({
             pid: Number(id),
             user: artist,
@@ -17307,8 +17466,8 @@
         }
       }));
     }
-    getFilenameTemplate() {
-      return ["{artist}", "{character}", "{id}", "{date}"];
+    getSupportedTemplate() {
+      return BooruDownloadConfig.supportedTemplate;
     }
     createThumbnailBtn(containers) {
       if (!containers.length) return;
@@ -17436,22 +17595,34 @@
     return async () => {
       const htmlText = await this.api.getPopularHtmlByPeriod(period);
       const { posts, tags: tagType } = this.parser.parsePostsList(htmlText);
-      return posts.map((post) => ({ ...post, tagType }));
+      const data = posts.map((post) => ({ ...post, tagType }));
+      return {
+        lastPage: true,
+        data
+      };
     };
   };
   downloadArtwork_fn = async function(btn2) {
+    var _a;
     downloader.dirHandleCheck();
     const id = btn2.dataset.id;
     const htmlText = await this.api.getPostHtml(id);
     const { posts, tags: tagType, votes } = this.parser.parsePostAndPool(htmlText);
     const mediaMeta = this.parser.buildMeta(posts[0], tagType);
-    const { tags, artist, title, rating, source: source2 } = mediaMeta;
-    const downloadConfigs = new MoebooruDownloadConfig(mediaMeta).getDownloadConfig(btn2);
+    const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
+      folderTemplate: this.config.get("folderPattern"),
+      filenameTemplate: this.config.get("filenamePattern"),
+      cfClearance: (_a = this.config.get("auth")) == null ? undefined : _a.cf_clearance,
+      setProgress: (progress) => {
+        btn2.setProgress(progress);
+      }
+    });
     if (this.config.get("addBookmark") && !this.parser.isFavorite(id, votes)) {
       const token = this.parser.parseCsrfToken();
       this.api.addFavorite(id, token).catch(logger.error);
     }
-    await downloader.download(downloadConfigs, { priority: 1 });
+    await downloader.download(downloadConfig, { priority: 1 });
+    const { tags, artist, title, rating, source: source2 } = mediaMeta;
     historyDb.add({
       pid: Number(id),
       user: artist,
@@ -17713,7 +17884,7 @@
       super(option);
       __privateAdd(this, _authParams);
       const [username, apiKey] = option.authorization;
-      const UA = `Pixiv Downloader/${"1.7.1"} (by drunkg00se on e621)`;
+      const UA = `Pixiv Downloader/${"1.8.0"} (by drunkg00se on e621)`;
       __privateSet(this, _authParams, new URLSearchParams({ username, apiKey, _client: UA }));
     }
     updateAuthIfNeeded(username, apiKey) {
@@ -17779,6 +17950,7 @@
         created_at,
         rating,
         sources,
+        score,
         is_favorited: isFavorited
       } = postData;
       const { ext, url, md5 } = file;
@@ -17797,6 +17969,7 @@
         comment: description,
         tags,
         createDate: created_at,
+        score: score.total,
         source: sources.join("\n"),
         rating,
         isFavorited
@@ -17809,32 +17982,6 @@
     parseCurrentUserId() {
       var _a;
       return (_a = document.head.querySelector('meta[name="current-user-id"]')) == null ? undefined : _a.content;
-    }
-  }
-  function artworkProgressFactory(btn2) {
-    if (!btn2) return;
-    return function onArtworkProgress(progress) {
-      btn2.setProgress(progress);
-    };
-  }
-  class E621ngMetaDownloadConfig extends DownloadConfigBuilder {
-    constructor(meta) {
-      super(meta);
-      this.meta = meta;
-    }
-    getDownloadConfig(btn2) {
-      return {
-        taskId: this.generateTaskId(),
-        src: this.meta.src,
-        path: this.buildFilePath(),
-        source: this.meta,
-        timeout: this.isImage() ? 6e4 : undefined,
-        onProgress: artworkProgressFactory(btn2)
-      };
-    }
-    buildFilePath() {
-      const path = super.buildFilePath();
-      return path.replaceAll("{character}", this.normalizeString(this.meta.character));
     }
   }
   class E621ng extends SiteInject {
@@ -17891,19 +18038,23 @@
               var _a;
               const poolId = (_a = new RegExp("(?<=\\/pools\\/)[0-9]+").exec(location.pathname)) == null ? undefined : _a[0];
               if (!poolId) throw new Error("Invalid pool id");
+              const postsPerPage = this.profile.per_page;
               const getPostsMetaByPage = async (page) => {
-                return (await this.api.getPosts({
-                  limit: this.profile.per_page,
+                const data = (await this.api.getPosts({
+                  limit: postsPerPage,
                   page,
-                  tags: `pool:${poolId}`
+                  tags: `pool:${poolId} order:id`
                 })).posts;
+                return {
+                  lastPage: data.length < postsPerPage,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 pageRange,
-                this.profile.per_page,
                 getPostsMetaByPage,
-                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity),
-                (data) => this.parser.buildMeta(data)
+                (data) => this.parser.buildMeta(data),
+                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity)
               );
             }
           },
@@ -17914,20 +18065,23 @@
             fn: (pageRange, checkValidity) => {
               const searchParam = new URLSearchParams(new URL(location.href).search);
               const tags = searchParam.get("tags") || "";
-              const limit = searchParam.get("limit") || this.profile.per_page;
+              const limit = +(searchParam.get("limit") || this.profile.per_page);
               const getPostsMetaByPage = async (page) => {
-                return (await this.api.getPosts({
-                  limit: +limit,
+                const data = (await this.api.getPosts({
+                  limit,
                   page,
                   tags
                 })).posts;
+                return {
+                  lastPage: data.length < limit,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 pageRange,
-                this.profile.per_page,
                 getPostsMetaByPage,
-                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity),
-                (data) => this.parser.buildMeta(data)
+                (data) => this.parser.buildMeta(data),
+                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity)
               );
             }
           },
@@ -17937,22 +18091,25 @@
             filterInGenerator: true,
             fn: (pageRange, checkValidity) => {
               const searchParam = new URLSearchParams(new URL(location.href).search);
-              const limit = searchParam.get("limit") || this.profile.per_page;
-              const userId = searchParam.get("user_id") || this.profile.id;
+              const limit = +(searchParam.get("limit") || this.profile.per_page);
+              const userId = +(searchParam.get("user_id") || this.profile.id);
               if (!userId) throw new Error("Cannot get user id.");
               const getPostsMetaByPage = async (page) => {
-                return (await this.api.getFavorites({
-                  limit: +limit,
+                const data = (await this.api.getFavorites({
+                  limit,
                   page,
-                  user_id: +userId
+                  user_id: userId
                 })).posts;
+                return {
+                  lastPage: data.length < limit,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 pageRange,
-                this.profile.per_page,
                 getPostsMetaByPage,
-                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity),
-                (data) => this.parser.buildMeta(data)
+                (data) => this.parser.buildMeta(data),
+                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity)
               );
             }
           },
@@ -17963,18 +18120,22 @@
             fn: (pageRange, checkValidity, poolId) => {
               if (!poolId) throw new Error("Invalid pool id");
               const getPostsMetaByPage = async (page) => {
-                return (await this.api.getPosts({
-                  limit: this.profile.per_page,
+                const limit = this.profile.per_page;
+                const data = (await this.api.getPosts({
+                  limit,
                   page,
                   tags: `pool:${poolId}`
                 })).posts;
+                return {
+                  lastPage: data.length < limit,
+                  data
+                };
               };
               return this.parser.paginationGenerator(
                 pageRange,
-                this.profile.per_page,
                 getPostsMetaByPage,
-                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity),
-                (data) => this.parser.buildMeta(data)
+                (data) => this.parser.buildMeta(data),
+                __privateMethod(this, _E621ng_instances, validityCallbackFactory_fn2).call(this, checkValidity)
               );
             }
           },
@@ -17987,10 +18148,13 @@
           const { post } = await this.api.getPost(+id);
           return this.parser.buildMeta(post);
         },
-        async downloadArtworkByMeta(meta, signal) {
+        downloadArtworkByMeta: async (meta, signal) => {
           downloader.dirHandleCheck();
-          const downloadConfigs = new E621ngMetaDownloadConfig(meta).getDownloadConfig();
-          await downloader.download(downloadConfigs, { priority: 1, signal });
+          const downloadConfig = new BooruDownloadConfig(meta).create({
+            folderTemplate: this.config.get("folderPattern"),
+            filenameTemplate: this.config.get("filenamePattern")
+          });
+          await downloader.download(downloadConfig, { priority: 1, signal });
           const { tags, artist, title, comment: comment2, source: source2, rating } = meta;
           historyDb.add({
             pid: Number(meta.id),
@@ -18027,6 +18191,9 @@
     static get hostname() {
       return ["e621.net", "e926.net", "e6ai.net"];
     }
+    getSupportedTemplate() {
+      return BooruDownloadConfig.supportedTemplate;
+    }
     getCustomConfig() {
       return {
         folderPattern: "e621/{artist}",
@@ -18037,20 +18204,23 @@
         }
       };
     }
-    getFilenameTemplate() {
-      return ["{artist}", "{character}", "{id}", "{date}"];
-    }
     async downloadArtwork(btn2) {
       __privateMethod(this, _E621ng_instances, throwIfNotAuthorized_fn).call(this);
       downloader.dirHandleCheck();
       const id = +btn2.dataset.id;
       const { post } = await this.api.getPost(id);
       const mediaMeta = this.parser.buildMeta(post);
-      const downloadConfigs = new E621ngMetaDownloadConfig(mediaMeta).getDownloadConfig(btn2);
+      const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
+        folderTemplate: this.config.get("folderPattern"),
+        filenameTemplate: this.config.get("filenamePattern"),
+        setProgress: (progress) => {
+          btn2.setProgress(progress);
+        }
+      });
       if (this.config.get("addBookmark") && !post.is_favorited) {
         __privateMethod(this, _E621ng_instances, addFavorites_fn).call(this, id);
       }
-      await downloader.download(downloadConfigs, { priority: 1 });
+      await downloader.download(downloadConfig, { priority: 1 });
       const { tags, artist, title, comment: comment2, source: source2, rating } = mediaMeta;
       historyDb.add({
         pid: id,
@@ -18181,6 +18351,882 @@
       logger.error(error);
     }
   };
+  class NijieParser extends ParserBase {
+    constructor() {
+      super(...arguments);
+      __privateAdd(this, _NijieParser_instances);
+    }
+    buildMetaByView(id, doc) {
+      var _a, _b, _c, _d;
+      const [title, artist] = (((_a = doc.querySelector('meta[property="og:title"]')) == null ? undefined : _a.content) ?? "").split(" | ");
+      const comment2 = ((_b = doc.querySelector(
+        "#illust_text p, #dojin_text p:not(.title), #view-honbun > p.m-bottom15:not(.gray)"
+      )) == null ? undefined : _b.textContent) ?? "";
+      const src = doc.querySelector(
+        "#img_filter :is(img, video), p.image img, #gallery_new img#view_img"
+      ).src;
+      const userId = (_d = (_c = doc.querySelector('a[href*="members_illust"]')) == null ? undefined : _c.href.match(new RegExp("(?<=id=)[0-9]+$"))) == null ? undefined : _d[0];
+      if (!title || !artist || !src || !userId) throw new Error("Can not parse necessary data");
+      const matchExt = src.match(new RegExp("(?<=\\.)[a-z0-9]{3,4}$", "i"));
+      if (!matchExt) throw new Error("Can not parse ext.");
+      const postDateMatch = /[0-9:\- ]+$/.exec(
+        doc.querySelector("#view-honbun > p, #created").textContent
+      );
+      const goodCount = doc.querySelector("#good_cnt").textContent ?? 0;
+      const tags = Array.from(doc.querySelectorAll("[tag_id].tag .tag_name")).map(
+        (el) => el.textContent
+      );
+      const isBookmarked = !!doc.querySelector('a[href*="bookmark_edit"]');
+      return {
+        id,
+        userId,
+        src,
+        extendName: matchExt[0],
+        artist,
+        title,
+        tags,
+        createDate: postDateMatch[0],
+        comment: comment2,
+        score: +goodCount,
+        isBookmarked
+      };
+    }
+    parseDiffSrcByDoc(doc) {
+      return Array.from(
+        doc.querySelectorAll(
+          '#img_filter :is(img[src*="pic.nijie.net"], video)'
+        )
+      ).map((el) => {
+        const src = el.src;
+        const matchExt = src.match(new RegExp("(?<=\\.)[a-z0-9]{3,4}$", "i"));
+        if (!matchExt) throw new Error("Can not parse ext.");
+        return {
+          src,
+          extendName: matchExt[0]
+        };
+      });
+    }
+    mergeImageDiff(meta, diffs) {
+      const src = [];
+      const extendName = [];
+      for (const diff of diffs) {
+        src.push(diff.src);
+        extendName.push(diff.extendName);
+      }
+      return {
+        ...meta,
+        src,
+        extendName
+      };
+    }
+    parseUserPageArtworkIdByDoc(doc) {
+      const thumbnails = doc.querySelectorAll(
+        '.mem-index .nijiedao > a[href^="/view.php?id="]'
+      );
+      return __privateMethod(this, _NijieParser_instances, parseIdByAnchors_fn).call(this, Array.from(thumbnails));
+    }
+    parseUserFeedArtworkIdByDoc(doc) {
+      const thumbnails = doc.querySelectorAll(
+        '#main-left-main [illust_id] .picture > a[href^="/view.php?id="]'
+      );
+      return __privateMethod(this, _NijieParser_instances, parseIdByAnchors_fn).call(this, Array.from(thumbnails));
+    }
+    parseHistoryIllustArtworkIdByDoc(doc) {
+      const thumbnails = doc.querySelectorAll(
+        '.history_block > .picture > a[href*="id="]:has(img)'
+      );
+      return __privateMethod(this, _NijieParser_instances, parseIdByAnchors_fn).call(this, Array.from(thumbnails));
+    }
+    parseHistoryNuitaArtworkIdByDoc(doc) {
+      const thumbnails = doc.querySelectorAll(
+        '#center_column div[illust_id].illust_list .picture a[href*="id="]:has(img)'
+      );
+      return __privateMethod(this, _NijieParser_instances, parseIdByAnchors_fn).call(this, Array.from(thumbnails));
+    }
+    parseOkiniiriArtworkIdByDoc(doc) {
+      const thumbnails = doc.querySelectorAll(
+        '#content_delete .picture a[href*="id="]:has(img)'
+      );
+      return __privateMethod(this, _NijieParser_instances, parseIdByAnchors_fn).call(this, Array.from(thumbnails));
+    }
+    parseSearchArtworkIdByDoc(doc) {
+      const thumbnails = doc.querySelectorAll(
+        '#main-left-main [illust_id] .picture a[href*="id="]:has(img)'
+      );
+      return __privateMethod(this, _NijieParser_instances, parseIdByAnchors_fn).call(this, Array.from(thumbnails));
+    }
+    docHasDiff(doc) {
+      return !!doc.querySelector('a[href*="#diff_"]');
+    }
+    docIsDojin(doc) {
+      return !!doc.querySelector("#dojin_left");
+    }
+    docHasNextPagination(doc) {
+      return !!doc.querySelector('.page_button > a[rel="next"]');
+    }
+  }
+  _NijieParser_instances = new WeakSet();
+  parseIdByAnchors_fn = function(elems) {
+    if (!elems.length) return [];
+    return elems.map((el) => {
+      const idMatch = new RegExp("(?<=id=)[0-9]+$").exec(el.href);
+      return idMatch[0];
+    });
+  };
+  class NijieApi extends ApiBase {
+    getViewDoc(id) {
+      return this.getDoc(`/view.php?id=${id}`);
+    }
+    getViewPopupDoc(id) {
+      return this.getDoc(`/view_popup.php?id=${id}`);
+    }
+    getUserIllustsDoc(id, page) {
+      return this.getDoc(`/members_illust.php?id=${id}&p=${page}`);
+    }
+    getUserDojinDoc(id) {
+      return this.getDoc(`/members_dojin.php?id=${id}`);
+    }
+    getUserBookmarkDoc(id, page) {
+      return this.getDoc(`/user_like_illust_view.php?p=${page}&id=${id}`);
+    }
+    getUserFeedDoc(page) {
+      return this.getDoc(`/like_user_view.php?p=${page}`);
+    }
+    getHistoryIllustDoc() {
+      return this.getDoc("/history_illust.php");
+    }
+    getHistoryNuitaDoc() {
+      return this.getDoc("/history_nuita.php");
+    }
+    /**
+     * @param id - The id of tag.
+     * @param page
+     * @param sort - 0: 新しくブクマした順; 1: 古くブクマした順
+     */
+    getOkiniiriDoc(id, page, sort) {
+      return this.getDoc(`/okiniiri.php?p=${page}&id=${id}&sort=${sort}`);
+    }
+    getIllustSearchDoc(params) {
+      const {
+        mode = 0,
+        type = "partial",
+        sort = 0,
+        illustType = 0,
+        period = 0,
+        userId = "0",
+        word,
+        page
+      } = params;
+      const searchParams = new URLSearchParams();
+      searchParams.append("mode", String(mode));
+      searchParams.append("type", String(type));
+      searchParams.append("sort", String(sort));
+      searchParams.append("illust_type", String(illustType));
+      searchParams.append("period", String(period));
+      searchParams.append("user_id", userId);
+      searchParams.append("word", word);
+      searchParams.append("p", String(page));
+      return this.getDoc(`/search.php?${searchParams.toString()}`);
+    }
+    async addBookmark(id, tags) {
+      const params = new URLSearchParams();
+      params.append("id", id);
+      params.append("tag", (tags == null ? undefined : tags.join(" ")) ?? "");
+      const url = "/bookmark_add.php";
+      const res = await this.fetch(url, {
+        method: "POST",
+        redirect: "manual",
+        body: params
+      });
+      if (res.type !== "opaqueredirect") throw new RequestError(url, res.status);
+    }
+  }
+  class NijieDownloadConfig extends MayBeMultiIllustsConfig {
+    constructor(meta) {
+      super(meta);
+      __publicField(this, "userId");
+      __publicField(this, "comment");
+      __publicField(this, "score");
+      this.userId = meta.userId;
+      this.comment = meta.comment;
+      this.score = meta.score;
+    }
+    static get supportedTemplate() {
+      return {
+        [SupportedTemplate.ID]: "{id}",
+        [SupportedTemplate.ARTIST]: "{artist}",
+        [SupportedTemplate.ARTISTID]: "{artistID}",
+        [SupportedTemplate.DATE]: "{date} {date(YYYY-MM-DD)}",
+        [SupportedTemplate.PAGE]: "{page}",
+        [SupportedTemplate.SCORE]: "{score}: likeCount",
+        [SupportedTemplate.TAGS]: "{tags}",
+        [SupportedTemplate.TITLE]: "{title}"
+      };
+    }
+    getZipComment() {
+      return this.comment;
+    }
+    getTemplateData(data) {
+      return {
+        id: this.id,
+        artist: this.normalizeString(this.artist) || this.userId,
+        artistID: this.userId,
+        date: this.createDate,
+        score: String(this.score),
+        title: this.normalizeString(this.title) || this.id,
+        tags: this.tags.map((tag) => this.normalizeString(tag)).filter(Boolean).join("_"),
+        ...data
+      };
+    }
+    create(option) {
+      const { filenameTemplate, folderTemplate, setProgress } = option;
+      const index2 = "index" in option ? option.index : 0;
+      return {
+        taskId: this.getTaskId(),
+        src: this.getSrc(index2),
+        path: this.getSavePath(
+          folderTemplate,
+          filenameTemplate,
+          this.getExt(index2),
+          this.getTemplateData({ page: String(index2) })
+        ),
+        timeout: this.getDownloadTimeout(index2),
+        onProgress: setProgress
+      };
+    }
+    createMulti(option) {
+      if (!this.isStringArray(this.src)) throw new Error(`Artwork ${this.id} only have one media.`);
+      const { filenameTemplate, folderTemplate, setProgress } = option;
+      const taskId = this.getTaskId();
+      const onFileSaved = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
+      return this.src.map((src, i) => {
+        return {
+          taskId,
+          src,
+          path: this.getSavePath(
+            folderTemplate,
+            filenameTemplate,
+            this.getExt(i),
+            this.getTemplateData({ page: String(i) })
+          ),
+          timeout: this.getDownloadTimeout(),
+          onFileSaved
+        };
+      });
+    }
+    createBundle(option) {
+      if (!this.isStringArray(this.src) || !this.isStringArray(this.ext))
+        throw new Error(`Artwork ${this.id} only have one media.`);
+      const { filenameTemplate, folderTemplate, setProgress } = option;
+      const taskId = this.getTaskId();
+      const onXhrLoaded = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
+      const path = this.getSavePath(
+        folderTemplate,
+        filenameTemplate,
+        "zip",
+        this.getTemplateData({
+          page: String(this.src.length)
+        })
+      );
+      const filenameTemplateWithPage = filenameTemplate.includes(`{${SupportedTemplate.PAGE}}`) ? filenameTemplate : filenameTemplate + `_{${SupportedTemplate.PAGE}}`;
+      const filenames = this.src.map((_, i) => {
+        return this.getSavePath(
+          "",
+          filenameTemplateWithPage,
+          this.getExt(i),
+          this.getTemplateData({ page: String(i) })
+        );
+      });
+      return this.src.map((src, i) => {
+        return {
+          taskId,
+          src,
+          path,
+          timeout: this.getDownloadTimeout(i),
+          onXhrLoaded,
+          beforeFileSave: this.handleBundleFactory(filenames),
+          onError: this.handleBundleErrorFactory(),
+          onAbort: this.handleBundleAbortFactory()
+        };
+      });
+    }
+  }
+  class Nijie extends SiteInject {
+    constructor() {
+      super(...arguments);
+      __privateAdd(this, _Nijie_instances);
+      __publicField(this, "parser", new NijieParser());
+      __publicField(this, "api", new NijieApi({ rateLimit: 3 }));
+      __privateAdd(this, _searchParams, new URLSearchParams(location.search));
+      __publicField(this, "useBatchDownload", this.app.initBatchDownloader({
+        metaType: {},
+        avatar: () => {
+          const userAvatarImg = document.querySelector(
+            'a[href*="members.php"].name img'
+          );
+          return userAvatarImg ? userAvatarImg.src : "/pic/icon/nijie.png";
+        },
+        filterOption: {
+          filters: [
+            {
+              id: "exclude_downloaded",
+              type: "exclude",
+              name: t("downloader.category.filter.exclude_downloaded"),
+              checked: false,
+              fn(meta) {
+                return !!meta.id && historyDb.has(meta.id);
+              }
+            },
+            // nijie post may contain both image and video.
+            {
+              id: "allow_image",
+              type: "include",
+              name: t("downloader.category.filter.image"),
+              checked: true,
+              fn(meta) {
+                if (meta.extendName === undefined) return false;
+                if (Array.isArray(meta.extendName)) {
+                  return meta.extendName.some((extendName) => regexp.imageExt.test(extendName));
+                }
+                return regexp.imageExt.test(meta.extendName);
+              }
+            },
+            {
+              id: "allow_video",
+              type: "include",
+              name: t("downloader.category.filter.video"),
+              checked: true,
+              fn(meta) {
+                if (meta.extendName === undefined) return false;
+                if (Array.isArray(meta.extendName)) {
+                  return meta.extendName.some((extendName) => regexp.videoExt.test(extendName));
+                }
+                return regexp.videoExt.test(meta.extendName);
+              }
+            }
+          ],
+          enableTagFilter: true
+        },
+        pageOption: {
+          illusts: {
+            name: "投稿イラスト",
+            match: (url) => __privateMethod(this, _Nijie_instances, isSupportedUserPage_fn).call(this, url),
+            filterInGenerator: false,
+            fn: (pageRange) => {
+              const id = __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this);
+              if (!id) throw new Error("Invalid user ID.");
+              const getIllustData = async (page) => {
+                const doc = await this.api.getUserIllustsDoc(id, page);
+                return {
+                  lastPage: !this.parser.docHasNextPagination(doc),
+                  data: this.parser.parseUserPageArtworkIdByDoc(doc)
+                };
+              };
+              return this.parser.paginationGenerator(pageRange, getIllustData, (data) => data);
+            }
+          },
+          // dojin only have one page
+          dojin: {
+            name: "同人",
+            match: (url) => __privateMethod(this, _Nijie_instances, isSupportedUserPage_fn).call(this, url),
+            filterInGenerator: false,
+            fn: () => {
+              const id = __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this);
+              if (!id) throw new Error("Invalid user ID.");
+              return this.parser.paginationGenerator(
+                [1, 1],
+                async () => {
+                  const doc = await this.api.getUserDojinDoc(id);
+                  return {
+                    lastPage: true,
+                    data: this.parser.parseUserPageArtworkIdByDoc(doc)
+                  };
+                },
+                (data) => data
+              );
+            }
+          },
+          // user_like_illust_view may not always have 48 illusts per page.
+          bookmark: {
+            name: "ブックマーク",
+            match: (url) => __privateMethod(this, _Nijie_instances, isSupportedUserPage_fn).call(this, url),
+            filterInGenerator: false,
+            fn: (pageRange) => {
+              const id = __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this);
+              if (!id) throw new Error("Invalid user ID.");
+              return this.parser.paginationGenerator(
+                pageRange,
+                async (page) => {
+                  const doc = await this.api.getUserBookmarkDoc(id, page);
+                  return {
+                    lastPage: !this.parser.docHasNextPagination(doc),
+                    data: this.parser.parseUserPageArtworkIdByDoc(doc)
+                  };
+                },
+                (data) => data
+              );
+            }
+          },
+          feed: {
+            name: "新着2次絵",
+            match: /like_user_view\.php/,
+            filterInGenerator: false,
+            fn: (pageRange) => {
+              return this.parser.paginationGenerator(
+                pageRange,
+                async (page) => {
+                  const doc = await this.api.getUserFeedDoc(page);
+                  return {
+                    lastPage: !this.parser.docHasNextPagination(doc),
+                    data: this.parser.parseUserFeedArtworkIdByDoc(doc)
+                  };
+                },
+                (data) => data
+              );
+            }
+          },
+          nuita: {
+            name: "抜いた",
+            match: (url) => __privateMethod(this, _Nijie_instances, isSupportedHistoryPage_fn).call(this, url),
+            filterInGenerator: false,
+            fn: () => {
+              return this.parser.paginationGenerator(
+                [1, 1],
+                async () => {
+                  const doc = await this.api.getHistoryNuitaDoc();
+                  return {
+                    lastPage: true,
+                    data: this.parser.parseHistoryNuitaArtworkIdByDoc(doc)
+                  };
+                },
+                (data) => data
+              );
+            }
+          },
+          history: {
+            name: "閲覧",
+            match: (url) => __privateMethod(this, _Nijie_instances, isSupportedHistoryPage_fn).call(this, url),
+            filterInGenerator: false,
+            fn: () => {
+              return this.parser.paginationGenerator(
+                [1, 1],
+                async () => {
+                  const doc = await this.api.getHistoryIllustDoc();
+                  return {
+                    lastPage: true,
+                    data: this.parser.parseHistoryIllustArtworkIdByDoc(doc)
+                  };
+                },
+                (data) => data
+              );
+            }
+          },
+          okiniiri: {
+            name: "お気に入り",
+            match: /okiniiri\.php/,
+            filterInGenerator: false,
+            fn: (pageRange) => {
+              const tagId = __privateGet(this, _searchParams).get("id") ?? "0";
+              const sort = __privateGet(this, _searchParams).get("sort") ?? "0";
+              if (sort !== "0" && sort !== "1")
+                throw new RangeError('Invalid sort params, must be "0" or "1"');
+              return this.parser.paginationGenerator(
+                pageRange,
+                async (page) => {
+                  const doc = await this.api.getOkiniiriDoc(tagId, String(page), sort);
+                  return {
+                    lastPage: !this.parser.docHasNextPagination(doc),
+                    data: this.parser.parseOkiniiriArtworkIdByDoc(doc)
+                  };
+                },
+                (data) => data
+              );
+            }
+          },
+          userIllustTagSearch: {
+            name: "イラスト検索",
+            match: /search\.php.+user_id=[0-9]+/,
+            filterInGenerator: false,
+            fn: (pageRange) => {
+              const mode = Number(__privateGet(this, _searchParams).get("mode"));
+              const type = __privateGet(this, _searchParams).get("type") || undefined;
+              const sort = Number(__privateGet(this, _searchParams).get("sort"));
+              const illustType = Number(
+                __privateGet(this, _searchParams).get("illust_type")
+              );
+              const period = Number(__privateGet(this, _searchParams).get("p"));
+              const userId = __privateGet(this, _searchParams).get("user_id");
+              const word = __privateGet(this, _searchParams).get("word") ?? "";
+              if (!userId) throw new Error("User id is required.");
+              return this.parser.paginationGenerator(
+                pageRange,
+                async (page) => {
+                  const doc = await this.api.getIllustSearchDoc({
+                    mode,
+                    type,
+                    sort,
+                    illustType,
+                    period,
+                    userId,
+                    word,
+                    page
+                  });
+                  return {
+                    lastPage: !this.parser.docHasNextPagination(doc),
+                    data: this.parser.parseSearchArtworkIdByDoc(doc)
+                  };
+                },
+                (data) => data
+              );
+            }
+          }
+        },
+        parseMetaByArtworkId: async (id) => {
+          const viewDoc = await this.api.getViewDoc(id);
+          const meta = this.parser.buildMetaByView(id, viewDoc);
+          if (this.parser.docHasDiff(viewDoc)) {
+            const popupDoc = await this.api.getViewPopupDoc(id);
+            const imgDiffSrcs = this.parser.parseDiffSrcByDoc(popupDoc);
+            return this.parser.mergeImageDiff(meta, imgDiffSrcs);
+          }
+          return meta;
+        },
+        downloadArtworkByMeta: async (meta, signal) => {
+          downloader.dirHandleCheck();
+          const folderTemplate = this.config.get("folderPattern");
+          const filenameTemplate = this.config.get("filenamePattern");
+          const bundleIllusts = this.config.get("bundleIllusts");
+          let downloadConfig;
+          const option = { folderTemplate, filenameTemplate };
+          if (Array.isArray(meta.src)) {
+            downloadConfig = bundleIllusts ? new NijieDownloadConfig(meta).createBundle(option) : new NijieDownloadConfig(meta).createMulti(option);
+          } else {
+            downloadConfig = new NijieDownloadConfig(meta).create(option);
+          }
+          await downloader.download(downloadConfig, { signal });
+          const { id, artist, userId, title, comment: comment2, tags } = meta;
+          const historyData = {
+            pid: Number(id),
+            user: artist,
+            userId: Number(userId),
+            title,
+            comment: comment2,
+            tags
+          };
+          historyDb.add(historyData);
+        }
+      }));
+    }
+    static get hostname() {
+      return "nijie.info";
+    }
+    getCustomConfig() {
+      return {
+        folderPattern: "nijie/{artist}",
+        filenamePattern: "{artist}_{title}_{id}_p{page}"
+      };
+    }
+    getSupportedTemplate() {
+      return NijieDownloadConfig.supportedTemplate;
+    }
+    observeColorScheme() {
+      document.querySelector('link[type="text/css"][href*="night_mode"]') && this.setAppDarkMode();
+    }
+    async downloadArtwork(btn2) {
+      downloader.dirHandleCheck();
+      const { id, page } = btn2.dataset;
+      let viewDoc;
+      let popupDoc;
+      if (__privateMethod(this, _Nijie_instances, isViewPage_fn).call(this) && id === __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this)) {
+        viewDoc = document;
+      } else {
+        viewDoc = await this.api.getViewDoc(id);
+      }
+      const meta = this.parser.buildMetaByView(id, viewDoc);
+      const { userId, comment: comment2, tags, artist, title, isBookmarked } = meta;
+      if (!isBookmarked && this.config.get("addBookmark")) {
+        __privateMethod(this, _Nijie_instances, addBookmark_fn2).call(this, id, this.config.get("addBookmarkWithTags") ? tags : undefined);
+      }
+      let downloadConfig;
+      const folderTemplate = this.config.get("folderPattern");
+      const filenameTemplate = this.config.get("filenamePattern");
+      const bundleIllusts = this.config.get("bundleIllusts");
+      const pageNum = page ? +page : undefined;
+      const setProgress = (progress) => {
+        btn2.setProgress(progress);
+      };
+      const option = { folderTemplate, filenameTemplate, setProgress };
+      if (pageNum === 0 || !this.parser.docHasDiff(viewDoc)) {
+        downloadConfig = new NijieDownloadConfig(meta).create(option);
+      } else {
+        if (__privateMethod(this, _Nijie_instances, isViewPopupPage_fn).call(this) && id === __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this)) {
+          popupDoc = document;
+        } else {
+          popupDoc = await this.api.getViewPopupDoc(id);
+        }
+        const imgDiffSrcs = this.parser.parseDiffSrcByDoc(popupDoc);
+        const diffMeta = this.parser.mergeImageDiff(meta, imgDiffSrcs);
+        if (pageNum) {
+          downloadConfig = new NijieDownloadConfig(diffMeta).create({
+            ...option,
+            index: pageNum
+          });
+        } else {
+          downloadConfig = bundleIllusts ? new NijieDownloadConfig(diffMeta).createBundle(option) : new NijieDownloadConfig(diffMeta).createMulti(option);
+        }
+      }
+      await downloader.download(downloadConfig, { priority: 1 });
+      const historyData = {
+        pid: Number(id),
+        user: artist,
+        userId: Number(userId),
+        title,
+        comment: comment2,
+        tags
+      };
+      if (page !== undefined) {
+        historyData.page = Number(page);
+      }
+      historyDb.add(historyData);
+    }
+    createThumbnailBtn() {
+      const btnStyle2 = {
+        thumbnails: { selector: "p.nijiedao:has(> img.ngtag)", setStyle: undefined, diff: undefined },
+        memberAndHotImage: {
+          selector: "p.nijiedao > a:has(img.ngtag)",
+          setStyle: (el) => {
+            el.style.display = "inline-block";
+          },
+          diff: undefined
+        },
+        imgDiff: {
+          selector: 'a[href*="#diff_"]:has(img.ngtag:not([data-original]))',
+          // :not([data-original]): exclude dojin thumbnails
+          setStyle: (el) => {
+            const img = el.querySelector("img");
+            const margin = getComputedStyle(img).margin;
+            img.style.margin = "0px";
+            el.style.display = "inline-block";
+            el.style.margin = margin;
+          },
+          diff: (el) => {
+            var _a;
+            return (_a = new RegExp("(?<=#diff_)[0-9]+$").exec(el.href)) == null ? undefined : _a[0];
+          }
+        },
+        dojinDiff: {
+          selector: 'a[href*="#diff_"]:has(img[data-original].ngtag)',
+          setStyle: (el) => {
+            const img = el.querySelector("img");
+            img.style.width = "auto";
+            el.style.display = "inline-block";
+          },
+          diff: (el) => {
+            var _a;
+            return (_a = new RegExp("(?<=#diff_)[0-9]+$").exec(el.href)) == null ? undefined : _a[0];
+          }
+        },
+        otherDojin: {
+          selector: 'a[href*="id="]:has(>.other_dojin_block)',
+          setStyle: (el) => {
+            el.style.display = "block";
+          },
+          diff: undefined
+        },
+        similar: { selector: "#nuitahito li:has(img.ngtag)", setStyle: undefined, diff: undefined },
+        // nuitahito
+        // okazu
+        rank: {
+          selector: "p.illust:has(> img.ngtag)",
+          setStyle: (el) => {
+            const okazuThumbnailIcon = el.previousElementSibling;
+            if (!okazuThumbnailIcon) return;
+            okazuThumbnailIcon.style.zIndex = "1";
+          },
+          diff: undefined
+        },
+        dictionary: {
+          selector: 'a[href*="id="]:has(> :is(img.tagsimage, img.mozamoza:not([illust_id])))',
+          // .tagsimage: dictionary block in 'search.php'
+          setStyle: (el) => {
+            const img = el.querySelector("img");
+            const width = getComputedStyle(img).width;
+            el.style.width = width;
+            img.style.width = "100%";
+            el.style.display = "inline-block";
+          },
+          diff: undefined
+        },
+        responseOdai: {
+          selector: '#response_odai li a[href*="id="]:has(img)',
+          setStyle: (el) => {
+            el.style.display = "inline-block";
+          },
+          diff: undefined
+        },
+        historyIllust: {
+          selector: '.history_block > .picture > a[href*="id="]:has(img)',
+          setStyle: (el) => {
+            el.style.display = "inline-block";
+          },
+          diff: undefined
+        }
+      };
+      for (const { selector, setStyle, diff } of Object.values(btnStyle2)) {
+        const btnContainers = document.querySelectorAll(selector);
+        if (!btnContainers.length) continue;
+        btnContainers.forEach((container) => {
+          if (container.querySelector(ThumbnailButton.tagNameLowerCase)) return;
+          let id;
+          if (container instanceof HTMLAnchorElement) {
+            id = new RegExp("(?<=id=)[0-9]+").exec(container.href)[0];
+          } else {
+            const img = container.querySelector("img.ngtag");
+            id = img.getAttribute("illust_id");
+          }
+          const page = diff == null ? undefined : diff(container);
+          setStyle == null ? undefined : setStyle(container);
+          container.style.position = "relative";
+          container.appendChild(
+            new ThumbnailButton({ id, page: page ? +page : undefined, onClick: this.downloadArtwork })
+          );
+        });
+      }
+    }
+    createIllustSettingBtn() {
+      const id = __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this);
+      const container = document.querySelector("#illust_setting");
+      if (!id || !container) return;
+      container.appendChild(
+        new ThumbnailButton({
+          id,
+          type: ThumbnailBtnType.NijieIllust,
+          onClick: this.downloadArtwork
+        })
+      );
+    }
+    // sticky button does not work properly on 'view.php' due to `overflow: hidden` on ancestor `#main-center-none`
+    createImgFilterBtn() {
+      const id = __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this);
+      const containers = document.querySelectorAll("#img_filter");
+      if (!id || !containers.length) return;
+      if (containers.length === 1) {
+        if (containers[0].dataset.index) return;
+        if (!document.querySelector('#img_diff > a[href*="diff_"]')) return;
+      }
+      containers.forEach((container, idx) => {
+        const media = container.querySelector(
+          'img[src*="pic.nijie.net"], video'
+        );
+        if (!media) return;
+        const { marginBottom } = getComputedStyle(media);
+        container.style.marginBottom = marginBottom;
+        media.style.marginBottom = "0px";
+        const filterImg = container.querySelector("img.filter");
+        filterImg && (filterImg.style.zIndex = "auto");
+        container.appendChild(new ArtworkButton({ id, page: idx, onClick: this.downloadArtwork }));
+      });
+    }
+    createDojinHeaderBtn() {
+      const container = document.querySelector("#dojin_header > .right > ul");
+      const id = __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this);
+      if (!container || !id) return;
+      container.appendChild(
+        new ThumbnailButton({ id, type: ThumbnailBtnType.NijieIllust, onClick: this.downloadArtwork })
+      );
+    }
+    createDojinCoverBtn() {
+      const container = document.querySelector(
+        '#dojin_left .image > a[href*="view_popup"]'
+      );
+      const id = __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this);
+      if (!container || !id) return;
+      container.style.display = "inline-block";
+      container.style.position = "relative";
+      container.style.width = "fit-content";
+      container.appendChild(new ArtworkButton({ id, page: 0, onClick: this.downloadArtwork }));
+    }
+    createOdaiBtn() {
+      const id = __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this);
+      const container = document.querySelector(
+        "#gallery_new > p > a:has(img#view_img)"
+      );
+      if (!id || !container) return;
+      const img = container.querySelector("img:not(.filter)");
+      const { marginBottom } = getComputedStyle(img);
+      img.style.marginBottom = "0px";
+      container.style.marginBottom = marginBottom;
+      container.style.display = "inline-block";
+      container.style.position = "relative";
+      container.appendChild(new ArtworkButton({ id, page: 0, onClick: this.downloadArtwork }));
+    }
+    observeOzakuListChange() {
+      const ozakuList = document.querySelector("#okazu_list");
+      if (!ozakuList) return;
+      const observer2 = new MutationObserver(() => this.createThumbnailBtn());
+      observer2.observe(ozakuList, { subtree: true, childList: true });
+    }
+    inject() {
+      super.inject();
+      this.downloadArtwork = this.downloadArtwork.bind(this);
+      this.createThumbnailBtn();
+      if (__privateMethod(this, _Nijie_instances, isViewPage_fn).call(this)) {
+        this.createIllustSettingBtn();
+        this.createImgFilterBtn();
+        this.createDojinHeaderBtn();
+        this.createDojinCoverBtn();
+        this.createOdaiBtn();
+      } else if (__privateMethod(this, _Nijie_instances, isViewPopupPage_fn).call(this)) {
+        this.createIllustSettingBtn();
+        this.createImgFilterBtn();
+      } else if (__privateMethod(this, _Nijie_instances, isOkazuPage_fn).call(this)) {
+        this.observeOzakuListChange();
+      }
+    }
+  }
+  _searchParams = new WeakMap();
+  _Nijie_instances = new WeakSet();
+  isViewPage_fn = function() {
+    return location.pathname === "/view.php";
+  };
+  isViewPopupPage_fn = function() {
+    return location.pathname === "/view_popup.php";
+  };
+  isOkazuPage_fn = function() {
+    return location.pathname === "/okazu.php";
+  };
+  isSupportedUserPage_fn = function(url) {
+    return /members\.php|members_illust\.php|members_dojin\.php|user_like_illust_view\.php/.test(
+      url
+    );
+  };
+  isSupportedHistoryPage_fn = function(url) {
+    return /history_nuita\.php|history_illust\.php/.test(url);
+  };
+  getSearchId_fn = function() {
+    return __privateGet(this, _searchParams).get("id");
+  };
+  addBookmark_fn2 = async function(id, tags) {
+    var _a;
+    try {
+      await this.api.addBookmark(id, tags);
+      if ((__privateMethod(this, _Nijie_instances, isViewPage_fn).call(this) || __privateMethod(this, _Nijie_instances, isViewPopupPage_fn).call(this)) && __privateMethod(this, _Nijie_instances, getSearchId_fn).call(this) === id) {
+        const bookmarkBtn = document.querySelector("a#bukuma-do");
+        if (!bookmarkBtn) return;
+        bookmarkBtn.id = "bukuma";
+        bookmarkBtn.setAttribute(
+          "href",
+          bookmarkBtn.getAttribute("href").replace("bookmark.php", "bookmark_edit.php")
+        );
+        (_a = bookmarkBtn.lastChild) == null ? void 0 : _a.remove();
+        const text2 = document.createElement("span");
+        text2.textContent = "ブックマーク編集";
+        bookmarkBtn.appendChild(text2);
+      }
+    } catch (error) {
+      logger.error(error);
+    }
+  };
   function getSiteInjector() {
     const sitesAdapters = [
       Pixiv,
@@ -18192,7 +19238,8 @@
       Sakugabooru,
       Safebooru,
       Gelbooru,
-      E621ng
+      E621ng,
+      Nijie
     ];
     const hostname = location.hostname;
     for (const sites of sitesAdapters) {
