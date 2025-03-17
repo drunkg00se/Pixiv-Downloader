@@ -24,6 +24,7 @@ import { PixivDownloadConfig } from './downloadConfig';
 import { addBookmark } from './helpers/addBookmark';
 import { likeIllust } from './helpers/likeIllust';
 import { TagLanguage, UgoiraFormat } from '@/lib/config';
+import type { TemplateData } from '../base/downloadConfig';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -260,8 +261,8 @@ export class Pixiv extends SiteInject {
     };
   }
 
-  protected getFilenameTemplate(): string[] {
-    return ['{artist}', '{artistID}', '{title}', '{id}', '{page}', '{tags}', '{date}'];
+  protected getSupportedTemplate(): Partial<TemplateData> {
+    return PixivDownloadConfig.supportedTemplate;
   }
 
   protected observeColorScheme() {

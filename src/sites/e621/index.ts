@@ -11,7 +11,7 @@ import { logger } from '@/lib/logger';
 import { unsafeWindow } from '$';
 import t from '@/lib/lang';
 import { PostValidState } from '../base/parser';
-import { BooruDownloadConfig } from '../base/downloadConfig';
+import { BooruDownloadConfig, type TemplateData } from '../base/downloadConfig';
 
 export class E621ng extends SiteInject {
   static get hostname(): string[] {
@@ -42,6 +42,10 @@ export class E621ng extends SiteInject {
     });
   }
 
+  protected getSupportedTemplate(): Partial<TemplateData> {
+    return BooruDownloadConfig.supportedTemplate;
+  }
+
   protected getCustomConfig(): Partial<ConfigData> | void {
     return {
       folderPattern: 'e621/{artist}',
@@ -51,10 +55,6 @@ export class E621ng extends SiteInject {
         apiKey: ''
       }
     };
-  }
-
-  protected getFilenameTemplate(): string[] {
-    return ['{artist}', '{character}', '{id}', '{date}'];
   }
 
   #notice(msg: string) {

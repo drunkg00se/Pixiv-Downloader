@@ -11,11 +11,12 @@
   import type { MediaMeta } from '@/sites/base/parser';
   import type { Config as ConfigStore } from '../config';
   import Config from './Modal/Config/Config.svelte';
+  import type { TemplateData } from '@/sites/base/downloadConfig';
 
   interface Props extends Record<string, unknown> {
     dark?: boolean;
     config: ConfigStore;
-    filenameTemplate?: string[];
+    supportedTemplate?: Partial<TemplateData>;
     downloaderConfig?: BatchDownloadConfig<MediaMeta<string | string[]>>;
     useBatchDownload?: BatchDownloadDefinition<MediaMeta<string | string[]>>;
   }
@@ -23,12 +24,12 @@
   let {
     dark = false,
     config,
-    filenameTemplate = [],
+    supportedTemplate = {},
     downloaderConfig,
     useBatchDownload
   }: Props = $props();
 
-  setContext('filenameTemplate', filenameTemplate);
+  setContext('supportedTemplate', supportedTemplate);
   setContext('store', config);
 
   initializeStores();

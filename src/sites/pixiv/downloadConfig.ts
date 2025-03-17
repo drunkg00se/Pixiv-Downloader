@@ -40,8 +40,16 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     this.translatedTags = mediaMeta.tagsTranslated;
   }
 
-  static supportedTemplate(): string[] {
-    return ['{artist}', '{artistID}', '{title}', '{id}', '{page}', '{tags}', '{date}'];
+  static get supportedTemplate() {
+    return {
+      [SupportedTemplate.ID]: '{id}',
+      [SupportedTemplate.ARTIST]: '{artist}',
+      [SupportedTemplate.ARTISTID]: '{artistID}',
+      [SupportedTemplate.DATE]: '{date} {date(YYYY-MM-DD)}',
+      [SupportedTemplate.PAGE]: '{page}',
+      [SupportedTemplate.TAGS]: '{tags}',
+      [SupportedTemplate.TITLE]: '{title}'
+    };
   }
 
   getHeaders() {
@@ -58,7 +66,9 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     return this.comment + '\n' + JSON.stringify(delays);
   }
 
-  protected getTemplateData(data: Partial<TemplateData> & { page: string }): Partial<TemplateData> {
+  protected getTemplateData(
+    data: Partial<typeof PixivDownloadConfig.supportedTemplate> & { page: string }
+  ): typeof PixivDownloadConfig.supportedTemplate {
     return {
       id: this.id,
       artist: this.normalizeString(this.artist) || this.userId,

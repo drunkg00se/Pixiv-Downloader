@@ -60,6 +60,10 @@ export abstract class MediaDownloadConfig<T extends string | string[] = string> 
     this.downloaded = 0;
   }
 
+  static get supportedTemplate(): Partial<TemplateData> {
+    throw new Error('Should be overwritten by a subclass');
+  }
+
   protected normalizeString(str: string): string {
     return replaceInvalidChar(unescapeHtml(str));
   }
@@ -226,13 +230,23 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
     this.character = meta.character;
   }
 
+  static get supportedTemplate() {
+    return {
+      [SupportedTemplate.ID]: '{id}',
+      [SupportedTemplate.ARTIST]: '{artist}',
+      [SupportedTemplate.CHARACTER]: '{character}',
+      [SupportedTemplate.DATE]: '{date}, {date(YYYY-MM-DD)}',
+      [SupportedTemplate.TITLE]: '{title}'
+    };
+  }
+
   protected getHeaders(cfClearance: string): Record<string, string> {
     return {
       cookie: `cf_clearance=${cfClearance}`
     };
   }
 
-  protected getTemplateData(): Partial<TemplateData> {
+  protected getTemplateData(): typeof BooruDownloadConfig.supportedTemplate {
     return {
       id: this.id,
       artist: this.artist,
@@ -258,9 +272,5 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
       timeout: this.getDownloadTimeout(),
       onProgress: setProgress
     };
-  }
-
-  static supportedTemplate() {
-    return ['{artist}', '{title}', '{character}', '{id}', '{date}'];
   }
 }

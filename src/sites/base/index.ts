@@ -5,6 +5,7 @@ import { PdlApp } from '@/lib/components/App';
 import { useHistoryBackup } from '@/lib/components/Modal/Config/useHistoryBackup';
 import type { BatchDownloadDefinition } from '@/lib/components/Downloader/useBatchDownload';
 import type { MediaMeta } from './parser';
+import type { TemplateData } from './downloadConfig';
 
 export abstract class SiteInject {
   protected app: InstanceType<typeof PdlApp>;
@@ -25,7 +26,7 @@ export abstract class SiteInject {
   private createApp() {
     return new PdlApp({
       config: this.config,
-      filenameTemplate: this.getFilenameTemplate()
+      supportedTemplate: this.getSupportedTemplate()
     });
   }
 
@@ -87,5 +88,5 @@ export abstract class SiteInject {
 
   protected abstract getCustomConfig(): Partial<ConfigData> | void;
 
-  protected abstract getFilenameTemplate(): string[];
+  protected abstract getSupportedTemplate(): Partial<TemplateData>;
 }

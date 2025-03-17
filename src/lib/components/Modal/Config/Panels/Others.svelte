@@ -13,7 +13,7 @@
     rounded = 'rounded-container-token *:!rounded-none',
     sectionSpace = `space-y-4`,
     sectionTitle = 'font-bold',
-    descritionText = 'text-sm text-surface-400',
+    descriptionText = 'text-sm text-surface-400',
     class: UlClass = ''
   } = $props();
 
@@ -50,7 +50,7 @@
       <li>
         <div class="flex-auto">
           <p>{t('setting.others.options.like_illust_when_downloading')}</p>
-          <p class={descritionText}>
+          <p class={descriptionText}>
             {t('setting.others.options.option_does_not_apply_to_batch_download')}
           </p>
         </div>
@@ -63,7 +63,7 @@
       <div class="flex items-center">
         <div class="flex-auto">
           <p>{t('setting.others.options.add_bookmark_when_downloading')}</p>
-          <p class={descritionText}>
+          <p class={descriptionText}>
             {t('setting.others.options.option_does_not_apply_to_batch_download')}
           </p>
         </div>
@@ -105,7 +105,7 @@
         <li>
           <div class="flex-auto">
             <p>为单页插图增加 #pixivGlow2024 效果</p>
-            <p class="{descritionText} !text-error-500">
+            <p class="{descriptionText} !text-error-500">
               * 转换至动图格式。如果插图尺寸过大，可能占用大量内存 / 转换失败
             </p>
           </div>

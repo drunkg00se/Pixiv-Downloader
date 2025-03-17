@@ -3,8 +3,7 @@ import {
   MayBeMultiIllustsConfig,
   SupportedTemplate,
   type IndexOption,
-  type OptionBase,
-  type TemplateData
+  type OptionBase
 } from '../base/downloadConfig';
 import type { DownloadConfig } from '@/lib/downloader';
 
@@ -18,15 +17,25 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
     this.comment = meta.comment;
   }
 
-  static supportedTemplate() {
-    return ['{artist}', '{artistID}', '{title}', '{id}', '{page}', '{tags}', '{date}'];
+  static get supportedTemplate() {
+    return {
+      [SupportedTemplate.ID]: '{id}',
+      [SupportedTemplate.ARTIST]: '{artist}',
+      [SupportedTemplate.ARTISTID]: '{artistID}',
+      [SupportedTemplate.DATE]: '{date} {date(YYYY-MM-DD)}',
+      [SupportedTemplate.PAGE]: '{page}',
+      [SupportedTemplate.TAGS]: '{tags}',
+      [SupportedTemplate.TITLE]: '{title}'
+    };
   }
 
   protected getZipComment(): string {
     return this.comment;
   }
 
-  protected getTemplateData(data: Partial<TemplateData> & { page: string }): Partial<TemplateData> {
+  protected getTemplateData(
+    data: Partial<typeof NijieDownloadConfig.supportedTemplate> & { page: string }
+  ): typeof NijieDownloadConfig.supportedTemplate {
     return {
       id: this.id,
       artist: this.normalizeString(this.artist) || this.userId,

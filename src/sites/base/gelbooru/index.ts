@@ -8,7 +8,7 @@ import t from '@/lib/lang';
 import type { GelbooruApiV020 } from './api';
 import { unsafeWindow } from '$';
 import { PostValidState } from '../parser';
-import { BooruDownloadConfig } from '../downloadConfig';
+import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
 
 export abstract class GelbooruV020 extends SiteInject {
   protected abstract api: GelbooruApiV020;
@@ -17,6 +17,10 @@ export abstract class GelbooruV020 extends SiteInject {
   protected abstract getThumbnailSelector(): string;
 
   protected searchParams = new URLSearchParams(location.search);
+
+  protected getSupportedTemplate(): Partial<TemplateData> {
+    return BooruDownloadConfig.supportedTemplate;
+  }
 
   protected getAvatar() {
     return '/favicon.ico';
@@ -252,10 +256,6 @@ export abstract class GelbooruV020 extends SiteInject {
         onClick: this.downloadArtwork.bind(this)
       })
     );
-  }
-
-  protected getFilenameTemplate(): string[] {
-    return ['{artist}', '{character}', '{id}', '{date}'];
   }
 
   protected isPostsList() {

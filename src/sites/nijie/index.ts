@@ -10,6 +10,7 @@ import { historyDb, type HistoryData } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import t from '@/lib/lang';
 import { regexp } from '@/lib/regExp';
+import type { TemplateData } from '../base/downloadConfig';
 
 export class Nijie extends SiteInject {
   protected parser = new NijieParser();
@@ -28,8 +29,8 @@ export class Nijie extends SiteInject {
     };
   }
 
-  protected getFilenameTemplate(): string[] {
-    return ['{artist}', '{artistID}', '{title}', '{id}', '{page}', '{tags}', '{date}'];
+  protected getSupportedTemplate(): Partial<TemplateData> {
+    return NijieDownloadConfig.supportedTemplate;
   }
 
   #isViewPage() {

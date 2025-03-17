@@ -13,7 +13,7 @@ import {
 } from './api';
 import { logger } from '@/lib/logger';
 import { PostValidState } from '../parser';
-import { BooruDownloadConfig } from '../downloadConfig';
+import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
 
 type MoebooruGeneratorPostData = PossibleMoebooruPostData & {
   tagType: Record<string, string>;
@@ -27,8 +27,8 @@ export abstract class Moebooru extends SiteInject {
 
   protected blacklist: MoebooruBlacklistItem[] | null = null;
 
-  protected getFilenameTemplate(): string[] {
-    return ['{artist}', '{character}', '{id}', '{date}'];
+  protected getSupportedTemplate(): Partial<TemplateData> {
+    return BooruDownloadConfig.supportedTemplate;
   }
 
   /**

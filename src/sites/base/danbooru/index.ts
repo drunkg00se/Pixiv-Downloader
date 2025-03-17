@@ -13,7 +13,7 @@ import { unsafeWindow } from '$';
 import { evalScript } from '@/lib/util';
 import { logger } from '@/lib/logger';
 import { PostValidState } from '../parser';
-import { BooruDownloadConfig } from '../downloadConfig';
+import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
 
 export abstract class AbstractDanbooru extends SiteInject {
   protected abstract api: DanbooruApi;
@@ -24,8 +24,8 @@ export abstract class AbstractDanbooru extends SiteInject {
 
   protected abstract getAvatar(): string;
 
-  protected getFilenameTemplate(): string[] {
-    return ['{artist}', '{character}', '{id}', '{date}'];
+  protected getSupportedTemplate(): Partial<TemplateData> {
+    return BooruDownloadConfig.supportedTemplate;
   }
 
   protected async getPostAndComment(id: string) {

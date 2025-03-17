@@ -8,9 +8,10 @@ import {
 } from './Downloader/useBatchDownload';
 import { create_custom_element } from 'svelte/internal/client';
 import type { Config } from '../config';
+import type { TemplateData } from '@/sites/base/downloadConfig';
 
 type PdlAppProps = {
-  filenameTemplate: string[];
+  supportedTemplate: Partial<TemplateData>;
   config: Config;
 };
 
@@ -19,7 +20,7 @@ export const PdlApp = create_custom_element(
   {
     dark: { type: 'Boolean' },
     config: {},
-    filenameTemplate: {},
+    supportedTemplate: {},
     downloaderConfig: {},
     useBatchDownload: {}
   },
@@ -29,7 +30,7 @@ export const PdlApp = create_custom_element(
   (customElementConstructor) => {
     return class extends customElementConstructor {
       //@ts-expect-error no_unsed_var
-      private filenameTemplate: string[];
+      private supportedTemplate: Partial<TemplateData>;
 
       //@ts-expect-error no_unsed_var
       private config: Config;
@@ -43,7 +44,7 @@ export const PdlApp = create_custom_element(
       constructor(props: PdlAppProps) {
         super();
 
-        this.filenameTemplate = props.filenameTemplate;
+        this.supportedTemplate = props.supportedTemplate;
 
         this.config = props.config;
       }

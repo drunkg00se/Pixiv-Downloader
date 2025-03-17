@@ -10,7 +10,6 @@
     rounded = 'rounded-container-token *:!rounded-none',
     sectionSpace = `space-y-4`,
     sectionTitle = 'font-bold',
-    // descritionText = 'text-sm text-surface-400',
     class: UlClass = ''
   } = $props();
 

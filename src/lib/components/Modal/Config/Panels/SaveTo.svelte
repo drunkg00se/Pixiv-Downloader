@@ -9,6 +9,7 @@
   import { env } from '@/lib/env';
   import { downloader } from '@/lib/downloader';
   import { getContext, tick } from 'svelte';
+  import type { TemplateData } from '@/sites/base/downloadConfig';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -20,8 +21,8 @@
     sectionTitle = 'font-bold',
     class: UlClass = '',
 
-    templates = getContext('filenameTemplate'),
-    descritionText = 'text-sm text-surface-400'
+    templates = getContext('supportedTemplate') as Partial<TemplateData>,
+    descriptionText = 'text-sm text-surface-400'
   } = $props();
 
   const configStore: Config = getContext('store');
@@ -163,14 +164,14 @@
           </button>
         </div>
 
-        <div class=" self-start space-x-2">
-          {#each templates as template}
+        <div class=" flex flex-wrap self-start gap-y-1 gap-x-2">
+          {#each Object.entries(templates) as [template, description]}
             <button
               class="chip variant-soft hover:variant-filled"
               disabled={!subDirectoryAvailable}
-              onclick={insertDirTemplateAtCursor(template)}
+              onclick={insertDirTemplateAtCursor(`{${template}}`)}
             >
-              <span>{template}</span>
+              <span>{description}</span>
             </button>
           {/each}
         </div>
@@ -263,13 +264,13 @@
           </button>
         </div>
 
-        <div class=" self-start space-x-2">
-          {#each templates as template}
+        <div class=" flex flex-wrap self-start gap-y-1 gap-x-2">
+          {#each Object.entries(templates) as [template, description]}
             <button
               class="chip variant-soft hover:variant-filled"
-              onclick={insertFilenameTemplateAtCursor(template)}
+              onclick={insertFilenameTemplateAtCursor(`{${template}}`)}
             >
-              <span>{template}</span>
+              <span>{description}</span>
             </button>
           {/each}
         </div>
@@ -279,7 +280,7 @@
         <li>
           <div class="flex-auto">
             <p>{t('setting.save_to.options.tag_language')}</p>
-            <p class={descritionText}>{t('setting.save_to.options.tag_language_tips')}</p>
+            <p class={descriptionText}>{t('setting.save_to.options.tag_language_tips')}</p>
           </div>
 
           <RadioGroup class=" shrink-0">
