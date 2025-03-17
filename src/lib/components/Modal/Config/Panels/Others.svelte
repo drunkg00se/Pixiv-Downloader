@@ -33,12 +33,15 @@
       ></SlideToggle>
     </li>
 
-    {#if env.isPixiv()}
+    {#if env.isPixiv() || env.isNijie()}
       <li>
         <p class="flex-auto">{t('setting.others.options.bundle_multipage_illust')}</p>
         <SlideToggle name="bundle-illusts" bind:checked={$configStore.bundleIllusts} size="sm"
         ></SlideToggle>
       </li>
+    {/if}
+
+    {#if env.isPixiv()}
       <li>
         <p class="flex-auto">{t('setting.others.options.bundle_manga')}</p>
         <SlideToggle name="bundle-manga" bind:checked={$configStore.bundleManga} size="sm"

@@ -5,7 +5,7 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { downloader, type DownloadConfig } from '@/lib/downloader';
 import { NijieParser, type NijieMeta } from './parser';
 import { NijieApi, type IllustSearchParams } from './api';
-import { NijieDownloadConfig } from './downloadConfigBuilder';
+import { NijieDownloadConfig } from './downloadConfig';
 import { historyDb, type HistoryData } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import t from '@/lib/lang';
@@ -331,19 +331,17 @@ export class Nijie extends SiteInject {
 
       const folderTemplate = this.config.get('folderPattern');
       const filenameTemplate = this.config.get('filenamePattern');
+      const bundleIllusts = this.config.get('bundleIllusts');
 
       let downloadConfig: DownloadConfig | DownloadConfig[];
+      const option = { folderTemplate, filenameTemplate };
 
       if (Array.isArray(meta.src)) {
-        downloadConfig = new NijieDownloadConfig(meta).createMulti({
-          folderTemplate,
-          filenameTemplate
-        });
+        downloadConfig = bundleIllusts
+          ? new NijieDownloadConfig(meta).createBundle(option)
+          : new NijieDownloadConfig(meta).createMulti(option);
       } else {
-        downloadConfig = new NijieDownloadConfig(meta).create({
-          folderTemplate,
-          filenameTemplate
-        });
+        downloadConfig = new NijieDownloadConfig(meta).create(option);
       }
 
       await downloader.download(downloadConfig, { signal });
@@ -415,18 +413,19 @@ export class Nijie extends SiteInject {
 
     const folderTemplate = this.config.get('folderPattern');
     const filenameTemplate = this.config.get('filenamePattern');
+    const bundleIllusts = this.config.get('bundleIllusts');
+
     const pageNum = page ? +page : undefined;
+
     const setProgress = (progress: number) => {
       btn.setProgress(progress);
     };
 
+    const option = { folderTemplate, filenameTemplate, setProgress };
+
     // downloading the first page or illust doesn't have diff
     if (pageNum === 0 || !this.parser.docHasDiff(viewDoc)) {
-      downloadConfig = new NijieDownloadConfig(meta).create({
-        folderTemplate,
-        filenameTemplate,
-        setProgress
-      });
+      downloadConfig = new NijieDownloadConfig(meta).create(option);
     } else {
       if (this.#isViewPopupPage() && id === this.#getSearchId()) {
         popupDoc = document;
@@ -439,17 +438,13 @@ export class Nijie extends SiteInject {
 
       if (pageNum) {
         downloadConfig = new NijieDownloadConfig(diffMeta).create({
-          folderTemplate,
-          filenameTemplate,
-          index: pageNum,
-          setProgress
+          ...option,
+          index: pageNum
         });
       } else {
-        downloadConfig = new NijieDownloadConfig(diffMeta).createMulti({
-          folderTemplate,
-          filenameTemplate,
-          setProgress
-        });
+        downloadConfig = bundleIllusts
+          ? new NijieDownloadConfig(diffMeta).createBundle(option)
+          : new NijieDownloadConfig(diffMeta).createMulti(option);
       }
     }
 

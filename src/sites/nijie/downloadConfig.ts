@@ -32,7 +32,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
       artist: this.normalizeString(this.artist) || this.userId,
       artistID: this.userId,
       date: this.createDate,
-      title: this.normalizeString(this.title),
+      title: this.normalizeString(this.title) || this.id,
       tags: this.tags
         .map((tag) => this.normalizeString(tag))
         .filter(Boolean)
@@ -41,12 +41,17 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
     });
   }
 
-  protected getSavePath(folderTemplate: string, filenameTemplate: string, index = 0): string {
+  protected getSavePath(
+    folderTemplate: string,
+    filenameTemplate: string,
+    ext?: string,
+    index = 0
+  ): string {
     const path = this.renderTemplate(this.getPathTemplate(folderTemplate, filenameTemplate), {
       page: String(index)
     });
 
-    return `${path}.${Array.isArray(this.ext) ? this.ext[index] : this.ext}`;
+    return `${path}.${ext || (Array.isArray(this.ext) ? this.ext[index] : this.ext)}`;
   }
 
   create(option: OptionBase | IndexOption): DownloadConfig {
@@ -56,7 +61,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
     return {
       taskId: this.getTaskId(),
       src: this.getSrc(index),
-      path: this.getSavePath(folderTemplate, filenameTemplate, index),
+      path: this.getSavePath(folderTemplate, filenameTemplate, undefined, index),
       timeout: this.getDownloadTimeout(index),
       onProgress: setProgress
     };
@@ -73,7 +78,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
       return {
         taskId,
         src,
-        path: this.getSavePath(folderTemplate, filenameTemplate, i),
+        path: this.getSavePath(folderTemplate, filenameTemplate, undefined, i),
         timeout: this.getDownloadTimeout(),
         onFileSaved
       };
@@ -86,9 +91,8 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
     const { filenameTemplate, folderTemplate, setProgress } = option;
 
     const taskId = this.getTaskId();
+    const path = this.getSavePath(folderTemplate, filenameTemplate, 'zip', this.src.length);
     const onXhrLoaded = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
-
-    const path = this.getSavePath(folderTemplate, filenameTemplate, this.src.length);
 
     // always add {page} when bundling
     const filenameTemplateWithPage = filenameTemplate.includes(`{${SupportedTemplate.PAGE}}`)
@@ -96,7 +100,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
       : filenameTemplate + `_{${SupportedTemplate.PAGE}}`;
 
     const filenames = this.src.map((_, i) => {
-      return this.getSavePath('', filenameTemplateWithPage, i);
+      return this.getSavePath('', filenameTemplateWithPage, undefined, i);
     });
 
     return this.src.map((src, i) => {
