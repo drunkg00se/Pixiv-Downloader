@@ -11,6 +11,7 @@ export const enum SupportedTemplate {
   ARTISTID = 'artistID',
   CHARACTER = 'character',
   DATE = 'date',
+  SCORE = 'score',
   TAGS = 'tags',
   TITLE = 'title',
   PAGE = 'page'
@@ -111,6 +112,7 @@ export abstract class MediaDownloadConfig<T extends string | string[] = string> 
         `${SupportedTemplate.CHARACTER}|` +
         `${SupportedTemplate.ID}|` +
         `${SupportedTemplate.PAGE}|` +
+        `${SupportedTemplate.SCORE}|` +
         `${SupportedTemplate.TAGS}|` +
         `${SupportedTemplate.TITLE})}`,
       'g'
@@ -224,10 +226,12 @@ interface BooruOption extends OptionBase {
 
 export class BooruDownloadConfig extends MediaDownloadConfig {
   protected character: string;
+  protected score: number;
 
   constructor(meta: BooruMeta) {
     super(meta);
     this.character = meta.character;
+    this.score = meta.score;
   }
 
   static get supportedTemplate() {
@@ -236,7 +240,8 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
       [SupportedTemplate.ARTIST]: '{artist}',
       [SupportedTemplate.CHARACTER]: '{character}',
       [SupportedTemplate.DATE]: '{date}, {date(YYYY-MM-DD)}',
-      [SupportedTemplate.TITLE]: '{title}'
+      [SupportedTemplate.TITLE]: '{title}',
+      [SupportedTemplate.SCORE]: '{score}'
     };
   }
 
@@ -252,7 +257,8 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
       artist: this.artist,
       character: this.character,
       date: this.createDate,
-      title: this.title
+      title: this.title,
+      score: String(this.score)
     };
   }
 

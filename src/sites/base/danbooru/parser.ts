@@ -176,10 +176,12 @@ export class DanbooruParser extends ParserBase implements IDanbooruParser {
 
     const imageContainer = doc.querySelector<HTMLElement>('section.image-container')!;
     const {
+      score = '0',
       source = '',
       rating = '',
       id
     } = imageContainer.dataset as {
+      score: string;
       source: string;
       rating: Rating;
       id: string;
@@ -197,6 +199,7 @@ export class DanbooruParser extends ParserBase implements IDanbooruParser {
       comment,
       tags,
       createDate: postDate,
+      score: +score,
       source,
       rating
     };
@@ -214,6 +217,7 @@ export class DanbooruParser extends ParserBase implements IDanbooruParser {
       tag_string_copyright,
       tag_string_general,
       tag_string_meta,
+      score,
       source,
       rating
     } = post;
@@ -247,6 +251,7 @@ export class DanbooruParser extends ParserBase implements IDanbooruParser {
       tags,
       createDate: created_at,
       rating: rating ?? '',
+      score,
       source
     };
   }

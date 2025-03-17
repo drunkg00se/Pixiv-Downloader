@@ -17,6 +17,7 @@ export class E621ngParser extends ParserBase {
       created_at,
       rating,
       sources,
+      score,
       is_favorited: isFavorited
     } = postData;
 
@@ -39,6 +40,7 @@ export class E621ngParser extends ParserBase {
       comment: description,
       tags,
       createDate: created_at,
+      score: score.total,
       source: sources.join('\n'),
       rating,
       isFavorited

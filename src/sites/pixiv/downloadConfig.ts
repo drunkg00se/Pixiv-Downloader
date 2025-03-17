@@ -29,6 +29,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
   protected userId: string;
   protected comment: string;
   protected translatedTags: string[];
+  protected bookmarkCount: number;
 
   constructor(mediaMeta: PixivMeta) {
     super(mediaMeta);
@@ -38,6 +39,8 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     this.userId = mediaMeta.userId;
     this.comment = mediaMeta.comment;
     this.translatedTags = mediaMeta.tagsTranslated;
+    this.bookmarkCount = mediaMeta.bookmarkCount;
+    console.log(mediaMeta);
   }
 
   static get supportedTemplate() {
@@ -47,6 +50,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       [SupportedTemplate.ARTISTID]: '{artistID}',
       [SupportedTemplate.DATE]: '{date} {date(YYYY-MM-DD)}',
       [SupportedTemplate.PAGE]: '{page}',
+      [SupportedTemplate.SCORE]: '{score}: bookmarkCount',
       [SupportedTemplate.TAGS]: '{tags}',
       [SupportedTemplate.TITLE]: '{title}'
     };
@@ -74,6 +78,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       artist: this.normalizeString(this.artist) || this.userId,
       artistID: this.userId,
       date: this.createDate,
+      score: String(this.bookmarkCount),
       title: this.normalizeString(this.title) || this.id,
       tags: this.tags
         .map((tag) => this.normalizeString(tag))

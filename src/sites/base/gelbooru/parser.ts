@@ -89,8 +89,12 @@ export class GelbooruParserV020 extends ParserBase implements IGelbooruParserV02
       .exec(doc.documentElement.innerHTML)![1]
       .toLowerCase() as GelbooruPostDataV020['rating'];
 
+    const score = doc.querySelector('span[id^=psc]')?.textContent;
+    if (!score) throw new Error('Cannot parse score');
+
     return {
       postDate,
+      score: +score,
       source,
       rating
     };
@@ -100,7 +104,7 @@ export class GelbooruParserV020 extends ParserBase implements IGelbooruParserV02
     const src = this.parseArtworkSrc(doc);
     const [title, extendName] = this.parseArtworkNameBySrc(src);
     const { artist, character, tags } = this.parseTags(doc);
-    const { postDate, source, rating } = this.parseStatistics(doc);
+    const { postDate, source, rating, score } = this.parseStatistics(doc);
 
     return {
       id,
@@ -111,6 +115,7 @@ export class GelbooruParserV020 extends ParserBase implements IGelbooruParserV02
       title,
       tags,
       createDate: postDate,
+      score,
       source,
       rating
     };

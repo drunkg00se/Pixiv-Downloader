@@ -29,6 +29,7 @@ interface PixivMetaBase<T extends string | string[]> extends MediaMeta<T> {
   token: string;
   bookmarkData: ArtworkDetail['bookmarkData'];
   likeData: boolean;
+  bookmarkCount: number;
 }
 
 export interface PixivIllustMeta<T extends string | string[] = string> extends PixivMetaBase<T> {
@@ -129,7 +130,8 @@ export const pixivParser: PixivParser = {
       createDate,
       urls,
       bookmarkData,
-      likeData
+      likeData,
+      bookmarkCount
     } = illustData;
 
     const tagsArr: string[] = [];
@@ -160,7 +162,8 @@ export const pixivParser: PixivParser = {
       bookmarkData,
       createDate,
       likeData,
-      token
+      token,
+      bookmarkCount
     };
 
     if (illustType === IllustType.ugoira) {

@@ -104,7 +104,7 @@ export class MoebooruParser extends ParserBase {
   ): MoebooruMeta {
     if (data.status === 'deleted') throw new Error(`Post ${data.id} is deleted.`);
 
-    const { id, file_url, md5, created_at, source, rating } = data;
+    const { id, file_url, md5, created_at, source, rating, score } = data;
 
     const file_ext = this.isLatestData(data) ? data.file_ext : file_url.match(/\.(\w+)$/)![1];
 
@@ -133,6 +133,7 @@ export class MoebooruParser extends ParserBase {
       tags,
       createDate: new Date(created_at * 1000).toISOString(),
       rating,
+      score,
       source
     };
   }

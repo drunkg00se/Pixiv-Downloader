@@ -10,11 +10,13 @@ import type { DownloadConfig } from '@/lib/downloader';
 export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
   protected userId: string;
   protected comment: string;
+  protected score: number;
 
   constructor(meta: NijieMeta<string | string[]>) {
     super(meta);
     this.userId = meta.userId;
     this.comment = meta.comment;
+    this.score = meta.score;
   }
 
   static get supportedTemplate() {
@@ -24,6 +26,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
       [SupportedTemplate.ARTISTID]: '{artistID}',
       [SupportedTemplate.DATE]: '{date} {date(YYYY-MM-DD)}',
       [SupportedTemplate.PAGE]: '{page}',
+      [SupportedTemplate.SCORE]: '{score}: likeCount',
       [SupportedTemplate.TAGS]: '{tags}',
       [SupportedTemplate.TITLE]: '{title}'
     };
@@ -41,6 +44,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
       artist: this.normalizeString(this.artist) || this.userId,
       artistID: this.userId,
       date: this.createDate,
+      score: String(this.score),
       title: this.normalizeString(this.title) || this.id,
       tags: this.tags
         .map((tag) => this.normalizeString(tag))
