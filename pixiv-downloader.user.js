@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.8.0
+// @version            1.8.1
 // @author             ruaruarua
 // @description        一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info
 // @description:zh-TW  一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info
@@ -1336,7 +1336,7 @@
   function loadConfig(customConfig = {}) {
     if (config) throw new Error("`config` has already been defined.");
     const defaultConfig = Object.freeze({
-      version: "1.8.0",
+      version: "1.8.1",
       ugoiraFormat: "zip",
       folderPattern: "",
       filenamePattern: "{id}",
@@ -8900,7 +8900,7 @@
   }
   delegate(["click"]);
   var on_click$2 = (_, showCreditCode) => set(showCreditCode, !get$1(showCreditCode));
-  var root_1$7 = /* @__PURE__ */ template(`<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><h4 class=" text-xl mt-2">新增</h4> <ul class="list-disc list-inside leading-loose"><li>支持新网站：Nijie.info。</li> <li>添加文件名模板：<code class=" code">&#123;score&#125;</code>。注：Pixiv中为收藏数，Nijie中为点赞数。</li></ul> <h4 class=" text-xl mt-2">修复</h4> <ul class="list-disc list-inside leading-loose"><li>修复未按正确顺序下载E621 pool的问题。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`, 1);
+  var root_1$7 = /* @__PURE__ */ template(`<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><h4 class=" text-xl mt-2">修复</h4> <ul class="list-disc list-inside leading-loose"><li>无法正常下载E6ai的问题。<a href="https://github.com/drunkg00se/Pixiv-Downloader/issues/33" target="_blank" class=" anchor">(#33)</a></li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`, 1);
   function Changelog($$anchor, $$props) {
     push($$props, true);
     const anchorFocus = `focus:!outline-none focus:decoration-wavy`;
@@ -8914,7 +8914,7 @@
       children: ($$anchor2, $$slotProps) => {
         var fragment_1 = root_1$7();
         var header = first_child(fragment_1);
-        header.textContent = `Pixiv Downloader ${"1.8.0"}`;
+        header.textContent = `Pixiv Downloader ${"1.8.1"}`;
         var footer = sibling(header, 4);
         var div = child(footer);
         var button = child(div);
@@ -17884,7 +17884,7 @@
       super(option);
       __privateAdd(this, _authParams);
       const [username, apiKey] = option.authorization;
-      const UA = `Pixiv Downloader/${"1.8.0"} (by drunkg00se on e621)`;
+      const UA = `Pixiv Downloader/${"1.8.1"} (by drunkg00se on e621)`;
       __privateSet(this, _authParams, new URLSearchParams({ username, apiKey, _client: UA }));
     }
     updateAuthIfNeeded(username, apiKey) {
@@ -17963,7 +17963,7 @@
         id: String(id),
         src: url,
         extendName: ext,
-        artist: fullTags.artist.join(",") || "UnknownArtist",
+        artist: ("artist" in fullTags ? fullTags.artist : fullTags.director).join(",") || "UnknownArtist",
         character: fullTags.character.join(",") || "UnknownCharacter",
         title: md5,
         comment: description,
