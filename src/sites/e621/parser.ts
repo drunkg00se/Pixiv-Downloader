@@ -34,7 +34,8 @@ export class E621ngParser extends ParserBase {
       id: String(id),
       src: url,
       extendName: ext,
-      artist: fullTags.artist.join(',') || 'UnknownArtist',
+      artist:
+        ('artist' in fullTags ? fullTags.artist : fullTags.director).join(',') || 'UnknownArtist',
       character: fullTags.character.join(',') || 'UnknownCharacter',
       title: md5,
       comment: description,

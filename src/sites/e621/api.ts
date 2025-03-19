@@ -55,16 +55,31 @@ export interface E621Post {
     down: number;
     total: number;
   };
-  tags: {
-    general: string[];
-    artist: string[];
-    copyright: string[];
-    character: string[];
-    species: string[];
-    invalid: string[];
-    meta: string[];
-    lore: string[];
-  };
+  tags: /**
+   * https://github.com/e621ng/e621ng/blob/master/app/logical/tag_category.rb
+   */
+  | {
+        general: string[];
+        artist: string[];
+        contributor: string[];
+        copyright: string[];
+        character: string[];
+        species: string[];
+        invalid: string[];
+        meta: string[];
+        lore: string[];
+      }
+    /** E6ai */
+    | {
+        general: string[];
+        director: string[];
+        /** The original series or company a character or game is owned by. */
+        franchise: string[];
+        character: string[];
+        species: string[];
+        invalid: string[];
+        meta: string[];
+      };
   locked_tags: string[] | null;
   change_seq: number;
   flags: {
