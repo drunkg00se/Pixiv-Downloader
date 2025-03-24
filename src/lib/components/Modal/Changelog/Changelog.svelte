@@ -1,7 +1,7 @@
 <script lang="ts">
   import creditCode from '@/assets/credit.png';
   import ModalWrapper from '../ModalWrapper.svelte';
-  import t from '@/lib/lang';
+  import { t } from '@/lib/i18n.svelte';
 
   interface Props {
     parent: { onClose: () => void };

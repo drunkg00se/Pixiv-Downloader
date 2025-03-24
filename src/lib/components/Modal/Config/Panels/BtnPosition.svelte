@@ -1,6 +1,5 @@
 <script lang="ts">
   import { RangeSlider } from '@skeletonlabs/skeleton';
-  import t from '@/lib/lang';
   import { env } from '@/lib/env';
   import {
     ThumbnailBtnStatus,
@@ -9,6 +8,7 @@
   } from '@/lib/components/Button/thumbnailButton';
   import { getContext, onMount } from 'svelte';
   import type { Config } from '@/lib/config';
+  import { t } from '@/lib/i18n.svelte';
 
   type BtnPosProp =
     | 'pdl-btn-self-bookmark-left'

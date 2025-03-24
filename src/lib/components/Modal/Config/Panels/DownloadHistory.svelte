@@ -1,12 +1,12 @@
 <script lang="ts">
   import { historyDb } from '@/lib/db';
   import { FileButton, ProgressRadial } from '@skeletonlabs/skeleton';
-  import t from '@/lib/lang';
   import { useHistoryBackup } from '../useHistoryBackup';
   import { HistoryBackupInterval, type Config } from '@/lib/config';
   import { logger } from '@/lib/logger';
   import { writable } from 'svelte/store';
   import { getContext } from 'svelte';
+  import { t } from '@/lib/i18n.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',

@@ -9,9 +9,9 @@ import { E621ngParser, type E621ngMeta } from './parser';
 import { historyDb } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { unsafeWindow } from '$';
-import t from '@/lib/lang';
 import { PostValidState } from '../base/parser';
 import { BooruDownloadConfig, type TemplateData } from '../base/downloadConfig';
+import { t } from '@/lib/i18n.svelte';
 
 export class E621ng extends SiteInject {
   static get hostname(): string[] {
@@ -130,7 +130,7 @@ export class E621ng extends SiteInject {
         {
           id: 'exclude_downloaded',
           type: 'exclude',
-          name: t('downloader.category.filter.exclude_downloaded'),
+          name: () => t('downloader.category.filter.exclude_downloaded'),
           checked: false,
           fn(meta) {
             return !!meta.id && historyDb.has(meta.id);
@@ -139,7 +139,7 @@ export class E621ng extends SiteInject {
         {
           id: 'allow_image',
           type: 'include',
-          name: t('downloader.category.filter.image'),
+          name: () => t('downloader.category.filter.image'),
           checked: true,
           fn(meta) {
             return (
@@ -151,7 +151,7 @@ export class E621ng extends SiteInject {
         {
           id: 'allow_video',
           type: 'include',
-          name: t('downloader.category.filter.video'),
+          name: () => t('downloader.category.filter.video'),
           checked: true,
           fn(meta) {
             return (

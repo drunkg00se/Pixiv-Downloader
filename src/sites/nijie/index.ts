@@ -8,9 +8,9 @@ import { NijieApi, type IllustSearchParams } from './api';
 import { NijieDownloadConfig } from './downloadConfig';
 import { historyDb, type HistoryData } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import t from '@/lib/lang';
 import { regexp } from '@/lib/regExp';
 import type { TemplateData } from '../base/downloadConfig';
+import { t } from '@/lib/i18n.svelte';
 
 export class Nijie extends SiteInject {
   protected parser = new NijieParser();
@@ -78,7 +78,7 @@ export class Nijie extends SiteInject {
         {
           id: 'exclude_downloaded',
           type: 'exclude',
-          name: t('downloader.category.filter.exclude_downloaded'),
+          name: () => t('downloader.category.filter.exclude_downloaded'),
           checked: false,
           fn(meta) {
             return !!meta.id && historyDb.has(meta.id);
@@ -88,7 +88,7 @@ export class Nijie extends SiteInject {
         {
           id: 'allow_image',
           type: 'include',
-          name: t('downloader.category.filter.image'),
+          name: () => t('downloader.category.filter.image'),
           checked: true,
           fn(meta) {
             if (meta.extendName === undefined) return false;
@@ -103,7 +103,7 @@ export class Nijie extends SiteInject {
         {
           id: 'allow_video',
           type: 'include',
-          name: t('downloader.category.filter.video'),
+          name: () => t('downloader.category.filter.video'),
           checked: true,
           fn(meta) {
             if (meta.extendName === undefined) return false;

@@ -5,13 +5,13 @@
   import Changelog from './Modal/Changelog/Changelog.svelte';
   import Downloader from './Downloader/Downloader.svelte';
   import cog from '@/assets/cog.svg?src';
-  import t from '../lang';
   import type { ModalComponent } from '@skeletonlabs/skeleton';
   import type { BatchDownloadConfig, BatchDownloadDefinition } from './Downloader/useBatchDownload';
   import type { MediaMeta } from '@/sites/base/parser';
   import type { Config as ConfigStore } from '../config';
   import Config from './Modal/Config/Config.svelte';
   import type { TemplateData } from '@/sites/base/downloadConfig';
+  import { t } from '../i18n.svelte';
 
   interface Props extends Record<string, unknown> {
     dark?: boolean;

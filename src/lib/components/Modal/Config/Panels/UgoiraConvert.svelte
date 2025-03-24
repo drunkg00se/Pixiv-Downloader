@@ -1,10 +1,10 @@
 <script lang="ts">
   import { RadioGroup, RadioItem, SlideToggle } from '@skeletonlabs/skeleton';
   import { UgoiraFormat, type Config } from '@/lib/config';
-  import t from '@/lib/lang';
   import { env } from '@/lib/env';
   import { nonNegativeInt } from '@/lib/components/Actions/nonNegativeInt';
   import { getContext } from 'svelte';
+  import { t } from '@/lib/i18n.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',

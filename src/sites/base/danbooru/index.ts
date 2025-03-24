@@ -2,7 +2,6 @@ import { SiteInject } from '../../base';
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { DanbooruParser, type DanbooruBlacklistItem, type DanbooruMeta } from './parser';
-import t from '@/lib/lang';
 import { historyDb } from '@/lib/db';
 import { downloader } from '@/lib/downloader';
 import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton';
@@ -14,6 +13,7 @@ import { evalScript } from '@/lib/util';
 import { logger } from '@/lib/logger';
 import { PostValidState } from '../parser';
 import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
+import { t } from '@/lib/i18n.svelte';
 
 export abstract class AbstractDanbooru extends SiteInject {
   protected abstract api: DanbooruApi;
@@ -88,7 +88,7 @@ export abstract class AbstractDanbooru extends SiteInject {
         {
           id: 'exclude_downloaded',
           type: 'exclude',
-          name: t('downloader.category.filter.exclude_downloaded'),
+          name: () => t('downloader.category.filter.exclude_downloaded'),
           checked: false,
           fn(meta) {
             return !!meta.id && historyDb.has(meta.id);
@@ -97,7 +97,7 @@ export abstract class AbstractDanbooru extends SiteInject {
         {
           id: 'exclude_blacklist',
           type: 'exclude',
-          name: t('downloader.category.filter.exclude_blacklist'),
+          name: () => t('downloader.category.filter.exclude_blacklist'),
           checked: true,
           fn: async (meta) => {
             return (
@@ -109,7 +109,7 @@ export abstract class AbstractDanbooru extends SiteInject {
         {
           id: 'allow_image',
           type: 'include',
-          name: t('downloader.category.filter.image'),
+          name: () => t('downloader.category.filter.image'),
           checked: true,
           fn(meta) {
             return (
@@ -120,7 +120,7 @@ export abstract class AbstractDanbooru extends SiteInject {
         {
           id: 'allow_video',
           type: 'include',
-          name: t('downloader.category.filter.video'),
+          name: () => t('downloader.category.filter.video'),
           checked: true,
           fn(meta) {
             return (

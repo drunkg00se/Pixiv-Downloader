@@ -1,9 +1,9 @@
 <script lang="ts">
   import { SlideToggle } from '@skeletonlabs/skeleton';
-  import t from '@/lib/lang';
   import { env } from '@/lib/env';
   import { getContext } from 'svelte';
   import type { Config } from '@/lib/config';
+  import { t } from '@/lib/i18n.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',

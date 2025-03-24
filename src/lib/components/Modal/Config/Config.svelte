@@ -9,12 +9,12 @@
   import Others from './Panels/Others.svelte';
   import FeedBack from './Panels/FeedBack.svelte';
   import Auth from './Panels/Auth.svelte';
-  import t from '@/lib/lang';
 
   import menuOpen from '@/assets/menu-open.svg?src';
   import menuClose from '@/assets/menu-close.svg?src';
   import { getContext } from 'svelte';
   import type { Config } from '@/lib/config';
+  import { t } from '@/lib/i18n.svelte';
 
   interface Props {
     parent: { onClose: () => void };
@@ -30,33 +30,33 @@
 
   const optionList = [
     {
-      name: t('setting.save_to.title'),
+      name: () => t('setting.save_to.title'),
       component: SaveTo
     },
     {
-      name: t('setting.ugoira.title'),
+      name: () => t('setting.ugoira.title'),
       component: UgoiraConvert,
       show: env.isPixiv()
     },
     {
-      name: t('setting.history.title'),
+      name: () => t('setting.history.title'),
       component: DownloadHistory
     },
     {
-      name: t('setting.button_position.title'),
+      name: () => t('setting.button_position.title'),
       component: BtnPosition
     },
     {
-      name: t('setting.others.title'),
+      name: () => t('setting.others.title'),
       component: Others
     },
     {
-      name: t('setting.authorization.title'),
+      name: () => t('setting.authorization.title'),
       component: Auth,
       show: !!$configStore.auth
     },
     {
-      name: t('setting.feedback.title'),
+      name: () => t('setting.feedback.title'),
       component: FeedBack
     }
   ];
@@ -85,7 +85,7 @@
       {#each optionList as option, idx}
         {#if !('show' in option) || option.show}
           <ListBoxItem bind:group={slected} name="option" value={idx} class="rounded-token"
-            >{option.name}</ListBoxItem
+            >{option.name()}</ListBoxItem
           >
         {/if}
       {/each}
@@ -111,7 +111,7 @@
           </i>
         </button>
       {/snippet}
-      <h3 class="h3">{optionList[slected].name || '设置'}</h3>
+      <h3 class="h3">{optionList[slected].name()}</h3>
     </AppBar>
 
     <div

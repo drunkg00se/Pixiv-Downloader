@@ -42,7 +42,7 @@ export type ArtworkGenerator<RestArgs = undefined> = (
   | AsyncGenerator<YieldArtwork<string>, void, undefined>;
 
 interface GeneratorOptionBase {
-  name: string;
+  name: string | (() => string);
   match: string | ((url: string) => boolean) | RegExp;
   beforeDownload?(): void | Promise<void>;
   afterDownload?(): void;
@@ -127,7 +127,7 @@ export interface BatchDownloadConfig<
     filters: {
       id: string;
       type: 'include' | 'exclude';
-      name: string;
+      name: string | (() => string);
       checked: boolean;
       fn: FilterFn<ArtworkMeta>;
     }[];

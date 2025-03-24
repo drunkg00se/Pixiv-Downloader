@@ -4,7 +4,6 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { MoebooruParser, type MoebooruBlacklistItem, type MoebooruMeta } from './parser';
 import { downloader } from '@/lib/downloader';
 import { historyDb } from '@/lib/db';
-import t from '@/lib/lang';
 import {
   MoebooruApi,
   type PopularPeriod,
@@ -14,6 +13,7 @@ import {
 import { logger } from '@/lib/logger';
 import { PostValidState } from '../parser';
 import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
+import { t } from '@/lib/i18n.svelte';
 
 type MoebooruGeneratorPostData = PossibleMoebooruPostData & {
   tagType: Record<string, string>;
@@ -75,7 +75,7 @@ export abstract class Moebooru extends SiteInject {
         {
           id: 'exclude_downloaded',
           type: 'exclude',
-          name: t('downloader.category.filter.exclude_downloaded'),
+          name: () => t('downloader.category.filter.exclude_downloaded'),
           checked: false,
           fn(meta) {
             return !!meta.id && historyDb.has(meta.id);
@@ -84,7 +84,7 @@ export abstract class Moebooru extends SiteInject {
         {
           id: 'exclude_blacklist',
           type: 'exclude',
-          name: t('downloader.category.filter.exclude_blacklist'),
+          name: () => t('downloader.category.filter.exclude_blacklist'),
           checked: true,
           fn: async (meta) => {
             if (!meta.tags) return false;
@@ -95,7 +95,7 @@ export abstract class Moebooru extends SiteInject {
         {
           id: 'allow_image',
           type: 'include',
-          name: t('downloader.category.filter.image'),
+          name: () => t('downloader.category.filter.image'),
           checked: true,
           fn() {
             return true;
@@ -108,7 +108,7 @@ export abstract class Moebooru extends SiteInject {
 
     pageOption: {
       posts: {
-        name: t('downloader.download_type.moebooru_posts'),
+        name: () => t('downloader.download_type.moebooru_posts'),
         match: () => location.pathname === '/post',
         filterInGenerator: true,
         fn: (pageRange, checkValidity, tags?: string | string[]) => {
@@ -136,7 +136,7 @@ export abstract class Moebooru extends SiteInject {
       },
 
       popular_1d: {
-        name: t('downloader.download_type.moebooru_popular_1d'),
+        name: () => t('downloader.download_type.moebooru_popular_1d'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
         fn: (_, checkValidity) => {
@@ -150,7 +150,7 @@ export abstract class Moebooru extends SiteInject {
       },
 
       popular_1w: {
-        name: t('downloader.download_type.moebooru_popular_1w'),
+        name: () => t('downloader.download_type.moebooru_popular_1w'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
         fn: (_, checkValidity) => {
@@ -164,7 +164,7 @@ export abstract class Moebooru extends SiteInject {
       },
 
       popular_1m: {
-        name: t('downloader.download_type.moebooru_popular_1m'),
+        name: () => t('downloader.download_type.moebooru_popular_1m'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
         fn: (_, checkValidity) => {
@@ -178,7 +178,7 @@ export abstract class Moebooru extends SiteInject {
       },
 
       popular_1y: {
-        name: t('downloader.download_type.moebooru_popular_1y'),
+        name: () => t('downloader.download_type.moebooru_popular_1y'),
         match: () => location.pathname === '/post/popular_recent',
         filterInGenerator: true,
         fn: (_, checkValidity) => {
@@ -192,7 +192,7 @@ export abstract class Moebooru extends SiteInject {
       },
 
       popular_by_date: {
-        name: t('downloader.download_type.moebooru_popular_date'),
+        name: () => t('downloader.download_type.moebooru_popular_date'),
         match: /\/post\/popular_by_(day|week|month)/,
         filterInGenerator: true,
         fn: (_, checkValidity) => {
@@ -239,7 +239,7 @@ export abstract class Moebooru extends SiteInject {
       },
 
       pool: {
-        name: t('downloader.download_type.moebooru_pool'),
+        name: () => t('downloader.download_type.moebooru_pool'),
         match: /\/pool\/show\//,
         filterInGenerator: true,
         fn: (_, checkValidity, poolId?: string) => {

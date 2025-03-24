@@ -6,7 +6,6 @@ import { downloader, type DownloadConfig } from '@/lib/downloader';
 import { getSelfId } from './helpers/getSelfId';
 import { regexp } from '@/lib/regExp';
 import { pixivApi } from './api';
-import t from '@/lib/lang';
 import { logger } from '@/lib/logger';
 import { createThumbnailBtn } from './observerCB/createThumbnailBtn';
 import { fixPixivPreviewer } from './helpers/fixPixivPreviewer';
@@ -25,6 +24,7 @@ import { addBookmark } from './helpers/addBookmark';
 import { likeIllust } from './helpers/likeIllust';
 import { TagLanguage, UgoiraFormat } from '@/lib/config';
 import type { TemplateData } from '../base/downloadConfig';
+import { t } from '@/lib/i18n.svelte';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -59,7 +59,7 @@ export class Pixiv extends SiteInject {
         {
           id: 'exclude_downloaded',
           type: 'exclude',
-          name: t('downloader.category.filter.exclude_downloaded'),
+          name: () => t('downloader.category.filter.exclude_downloaded'),
           checked: false,
           fn(meta) {
             return !!meta.id && historyDb.has(meta.id);
@@ -68,7 +68,7 @@ export class Pixiv extends SiteInject {
         {
           id: 'illust',
           type: 'include',
-          name: t('downloader.category.filter.pixiv_illust'),
+          name: () => t('downloader.category.filter.pixiv_illust'),
           checked: true,
           fn(meta) {
             return meta.illustType === IllustType.illusts;
@@ -77,7 +77,7 @@ export class Pixiv extends SiteInject {
         {
           id: 'manga',
           type: 'include',
-          name: t('downloader.category.filter.pixiv_manga'),
+          name: () => t('downloader.category.filter.pixiv_manga'),
           checked: true,
           fn(meta) {
             return meta.illustType === IllustType.manga;
@@ -86,7 +86,7 @@ export class Pixiv extends SiteInject {
         {
           id: 'ugoira',
           type: 'include',
-          name: t('downloader.category.filter.pixiv_ugoira'),
+          name: () => t('downloader.category.filter.pixiv_ugoira'),
           checked: true,
           fn(meta) {
             return meta.illustType === IllustType.ugoira;
@@ -98,7 +98,7 @@ export class Pixiv extends SiteInject {
 
     pageOption: {
       self_bookmark_public: {
-        name: t('downloader.download_type.pixiv_bookmark_public'),
+        name: () => t('downloader.download_type.pixiv_bookmark_public'),
         match(url) {
           const userIdMatch = regexp.userPage.exec(url);
           if (!userIdMatch) return false;
@@ -113,7 +113,7 @@ export class Pixiv extends SiteInject {
       },
 
       self_bookmark_private: {
-        name: t('downloader.download_type.pixiv_bookmark_private'),
+        name: () => t('downloader.download_type.pixiv_bookmark_private'),
         match(url) {
           const userIdMatch = regexp.userPage.exec(url);
           if (!userIdMatch) return false;
@@ -128,7 +128,7 @@ export class Pixiv extends SiteInject {
       },
 
       user_page_works: {
-        name: t('downloader.download_type.pixiv_works'),
+        name: () => t('downloader.download_type.pixiv_works'),
         match: regexp.userPage,
         filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
@@ -140,7 +140,7 @@ export class Pixiv extends SiteInject {
       },
 
       user_page_bookmark: {
-        name: t('downloader.download_type.pixiv_bookmark'),
+        name: () => t('downloader.download_type.pixiv_bookmark'),
         match: regexp.userPage,
         filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
@@ -152,7 +152,7 @@ export class Pixiv extends SiteInject {
       },
 
       follow_latest_all: {
-        name: t('downloader.download_type.pixiv_follow_latest_all'),
+        name: () => t('downloader.download_type.pixiv_follow_latest_all'),
         match: regexp.followLatest,
         filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
@@ -161,7 +161,7 @@ export class Pixiv extends SiteInject {
       },
 
       follow_latest_r18: {
-        name: t('downloader.download_type.pixiv_follow_latest_r18'),
+        name: () => t('downloader.download_type.pixiv_follow_latest_r18'),
         match: regexp.followLatest,
         filterInGenerator: true,
         fn: (pageRange, checkValidity) => {
@@ -170,7 +170,7 @@ export class Pixiv extends SiteInject {
       },
 
       series: {
-        name: t('downloader.download_type.pixiv_series'),
+        name: () => t('downloader.download_type.pixiv_series'),
         match: regexp.series,
         filterInGenerator: true,
         fn: (pageRange, checkValidity) => {

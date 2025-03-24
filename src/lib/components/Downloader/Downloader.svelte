@@ -13,7 +13,6 @@
   import { logger } from '@/lib/logger';
   import { nonNegativeInt } from '../Actions/nonNegativeInt';
   import optionStore from './store';
-  import t from '@/lib/lang';
 
   import downloadSvg from '@/assets/download.svg?src';
   import stopSvg from '@/assets/close.svg?src';
@@ -27,6 +26,7 @@
     PageOption
   } from './useBatchDownload';
   import type { MediaMeta } from '@/sites/base/parser';
+  import { t } from '@/lib/i18n.svelte';
 
   interface Props {
     downloaderConfig: BatchDownloadConfig<MediaMeta<string | string[]>>;
@@ -269,7 +269,7 @@
                         <div class="w-0 h-0 overflow-hidden hidden">
                           <input type="checkbox" bind:group={$selectedFilters} value={id} />
                         </div>
-                        <div class="!m-0">{name}</div>
+                        <div class="!m-0">{typeof name === 'function' ? name() : name}</div>
                       </label>
                     {/each}
                   </div>
@@ -405,7 +405,7 @@
                     <i class="w-5">
                       {@html downloadSvg}
                     </i>
-                    <span>{item.name}</span>
+                    <span>{typeof item.name === 'function' ? item.name() : item.name}</span>
                   </button>
                 {/if}
               {/each}
@@ -420,7 +420,11 @@
               <i class="w-5">
                 {@html downloadSvg}
               </i>
-              <span>{batchDownloadEntries[0][1].name}</span>
+              <span
+                >{typeof batchDownloadEntries[0][1].name === 'function'
+                  ? batchDownloadEntries[0][1].name()
+                  : batchDownloadEntries[0][1].name}</span
+              >
             </button>
           {/if}
         </div>

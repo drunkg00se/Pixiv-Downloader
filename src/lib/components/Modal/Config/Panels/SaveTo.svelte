@@ -5,11 +5,11 @@
   import { RadioGroup, RadioItem, SlideToggle } from '@skeletonlabs/skeleton';
   import { FilenameConfigAction, TagLanguage, type Config } from '@/lib/config';
   import { replaceInvalidChar } from '@/lib/util';
-  import t from '@/lib/lang';
   import { env } from '@/lib/env';
   import { downloader } from '@/lib/downloader';
   import { getContext, tick } from 'svelte';
   import type { TemplateData } from '@/sites/base/downloadConfig';
+  import { t } from '@/lib/i18n.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',

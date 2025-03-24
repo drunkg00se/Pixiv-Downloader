@@ -4,11 +4,11 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { GelbooruParserV020, type GelbooruHtmlPostDataV020, type GelbooruMeta } from './parser';
 import { downloader } from '@/lib/downloader';
 import { historyDb } from '@/lib/db';
-import t from '@/lib/lang';
 import type { GelbooruApiV020 } from './api';
 import { unsafeWindow } from '$';
 import { PostValidState } from '../parser';
 import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
+import { t } from '@/lib/i18n.svelte';
 
 export abstract class GelbooruV020 extends SiteInject {
   protected abstract api: GelbooruApiV020;
@@ -45,7 +45,7 @@ export abstract class GelbooruV020 extends SiteInject {
         {
           id: 'exclude_downloaded',
           type: 'exclude',
-          name: t('downloader.category.filter.exclude_downloaded'),
+          name: () => t('downloader.category.filter.exclude_downloaded'),
           checked: false,
           fn(meta) {
             return !!meta.id && historyDb.has(meta.id);
@@ -54,7 +54,7 @@ export abstract class GelbooruV020 extends SiteInject {
         {
           id: 'allow_image',
           type: 'include',
-          name: t('downloader.category.filter.image'),
+          name: () => t('downloader.category.filter.image'),
           checked: true,
           fn(meta) {
             return !!meta.tags && !meta.tags.includes('video');
@@ -64,7 +64,7 @@ export abstract class GelbooruV020 extends SiteInject {
         {
           id: 'allow_video',
           type: 'include',
-          name: t('downloader.category.filter.video'),
+          name: () => t('downloader.category.filter.video'),
           checked: true,
           fn(meta) {
             return !!meta.tags && meta.tags.includes('video');
