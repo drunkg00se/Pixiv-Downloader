@@ -47,7 +47,14 @@ export abstract class SiteInject {
   }
 
   protected runScheduledTask() {
-    useHistoryBackup().scheduleBackup();
+    const result = useHistoryBackup().backup(
+      this.config.get('lastHistoryBackup'),
+      this.config.get('historyBackupInterval')
+    );
+
+    if (result[0]) {
+      this.config.update((val) => ({ ...val, lastHistoryBackup: result[1] }));
+    }
   }
 
   protected setAppDarkMode() {
