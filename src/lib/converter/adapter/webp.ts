@@ -1,7 +1,6 @@
 import { logger } from '@/lib/logger';
 import webpWorkerFragment from '../worker/webpWorkerFragment?rawjs';
 import webpWasm from '../wasm/toWebpWorker?raw';
-import { config } from '@/lib/config';
 
 const workerUrl = URL.createObjectURL(
   new Blob([webpWasm + webpWorkerFragment], { type: 'text/javascript' })
@@ -12,6 +11,9 @@ const freeWebpWorkers: Worker[] = [];
 export async function webp(
   frames: Blob[] | ImageBitmap[],
   delays: number[],
+  lossless: boolean,
+  quality: number,
+  method: number,
   signal?: AbortSignal,
   onProgress?: (val: number) => void
 ): Promise<Blob> {
@@ -61,9 +63,9 @@ export async function webp(
     {
       frames,
       delays,
-      lossless: Number(config.get('losslessWebp')),
-      quality: config.get('webpQuality'),
-      method: config.get('webpMehtod')
+      lossless: Number(lossless),
+      quality,
+      method
     },
     frames[0] instanceof ImageBitmap ? (frames as ImageBitmap[]) : []
   );

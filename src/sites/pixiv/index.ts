@@ -25,6 +25,7 @@ import { likeIllust } from './helpers/likeIllust';
 import { TagLanguage, UgoiraFormat } from '@/lib/config';
 import type { TemplateData } from '../base/downloadConfig';
 import { t } from '@/lib/i18n.svelte';
+import { ConvertFormat, type QualityOption } from '@/lib/converter/adapter';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -380,16 +381,60 @@ export class Pixiv extends SiteInject {
     return Array.isArray(meta.src) && meta.src.length > 1;
   }
 
+  protected getConvertQualityOption(
+    ugoiraFormat: Exclude<UgoiraFormat, UgoiraFormat.ZIP>
+  ): QualityOption;
+  protected getConvertQualityOption(): QualityOption | void;
+  protected getConvertQualityOption(
+    ugoiraFormat?: Exclude<UgoiraFormat, UgoiraFormat.ZIP>
+  ): QualityOption | void {
+    const format = ugoiraFormat || this.config.get('ugoiraFormat');
+
+    switch (format) {
+      case UgoiraFormat.GIF:
+        return {
+          format: ConvertFormat.GIF,
+          quality: this.config.get('gifQuality')
+        };
+      case UgoiraFormat.PNG:
+        return {
+          format: ConvertFormat.PNG,
+          cnum: this.config.get('pngColor')
+        };
+      case UgoiraFormat.WEBM:
+        return {
+          format: ConvertFormat.WEBM,
+          bitrate: this.config.get('webmBitrate')
+        };
+      case UgoiraFormat.WEBP:
+        return {
+          format: ConvertFormat.WEBP,
+          lossless: this.config.get('losslessWebp'),
+          quality: this.config.get('webpQuality'),
+          method: this.config.get('webpMehtod')
+        };
+      case UgoiraFormat.MP4:
+        return {
+          format: ConvertFormat.MP4,
+          bitrate: this.config.get('mp4Bitrate')
+        };
+      default:
+        return;
+    }
+  }
+
   protected getDownloadConfig(
     meta: PixivMeta,
     setProgress?: (progress: number) => void,
     page?: number
   ): DownloadConfig | DownloadConfig[] {
-    const ugoiraFormat = this.config.get('ugoiraFormat');
     const bundleManga = this.config.get('bundleManga');
     const bundleIllust = this.config.get('bundleIllusts');
+
     const mixEffect = this.config.get('mixEffect');
-    const mixEffectFormat = ugoiraFormat === UgoiraFormat.ZIP ? UgoiraFormat.MP4 : ugoiraFormat;
+    const defaultFormat = UgoiraFormat.MP4;
+
+    const qualityOption = this.getConvertQualityOption();
 
     const option = {
       folderTemplate: this.config.get('folderPattern'),
@@ -401,10 +446,10 @@ export class Pixiv extends SiteInject {
     };
 
     if ('ugoiraMeta' in meta) {
-      if (ugoiraFormat !== UgoiraFormat.ZIP) {
+      if (qualityOption) {
         return new PixivDownloadConfig(meta).createConvert({
           ...option,
-          convertFormat: ugoiraFormat
+          qualityOption
         });
       }
 
@@ -417,7 +462,7 @@ export class Pixiv extends SiteInject {
           return new PixivDownloadConfig(meta).createSeasonalEffect({
             ...option,
             index: page,
-            convertFormat: mixEffectFormat
+            qualityOption: qualityOption || this.getConvertQualityOption(defaultFormat)
           });
         }
 
@@ -440,7 +485,7 @@ export class Pixiv extends SiteInject {
     if (mixEffect) {
       return new PixivDownloadConfig(meta).createSeasonalEffect({
         ...option,
-        convertFormat: mixEffectFormat
+        qualityOption: qualityOption || this.getConvertQualityOption(defaultFormat)
       });
     }
 

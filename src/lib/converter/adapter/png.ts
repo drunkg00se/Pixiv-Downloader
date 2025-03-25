@@ -2,7 +2,6 @@ import { logger } from '@/lib/logger';
 import pngWorkerFragment from '../worker/pngWorkerFragment?rawjs';
 import UPNG from 'upng-js?raw';
 import pako from 'pako/dist/pako.js?raw';
-import { config } from '@/lib/config';
 
 export type EncodeApngConfig = {
   frames: Blob[] | ImageBitmap[];
@@ -38,6 +37,7 @@ const freeApngWorkers: Worker[] = [];
 export async function png(
   frames: Blob[] | ImageBitmap[],
   delays: number[],
+  cnum: number,
   signal?: AbortSignal
 ): Promise<Blob> {
   signal?.throwIfAborted();
@@ -81,7 +81,7 @@ export async function png(
     resolveConvert(pngBlob);
   };
 
-  const cfg: EncodeApngConfig = { frames, delays, cnum: config.get('pngColor') };
+  const cfg: EncodeApngConfig = { frames, delays, cnum };
 
   worker.postMessage(
     cfg,

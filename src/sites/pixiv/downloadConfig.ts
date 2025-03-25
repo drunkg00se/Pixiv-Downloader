@@ -7,9 +7,10 @@ import {
   type TemplateData
 } from '@/sites/base/downloadConfig';
 import { IllustType, type UgoiraMeta } from './types';
-import { type ConvertFormat, converter } from '@/lib/converter';
+import { converter } from '@/lib/converter';
 import { GM_xmlhttpRequest } from '$';
 import { historyDb } from '@/lib/db';
+import type { QualityOption } from '@/lib/converter/adapter';
 
 interface PixivOptionBase extends OptionBase {
   useTranslatedTags: boolean;
@@ -20,7 +21,7 @@ interface PixivIndexOption extends PixivOptionBase {
 }
 
 interface PixivConvertOption extends PixivOptionBase {
-  convertFormat: ConvertFormat;
+  qualityOption: QualityOption;
 }
 
 export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
@@ -87,7 +88,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     };
   }
 
-  handleConvertFactory(convertFormat: ConvertFormat, setProgress?: (progress: number) => void) {
+  handleConvertFactory(qualityOption: QualityOption, setProgress?: (progress: number) => void) {
     return (this.handleBeforeSaveCb ??= async (
       imgBlob: Blob,
       config: DownloadConfig,
@@ -118,7 +119,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
 
       return await converter.convert({
         id: taskId,
-        format: convertFormat,
+        qualityOption,
         onProgress: setProgress,
         signal
       });
@@ -126,7 +127,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
   }
 
   handleSeasonalEffectFactory(
-    convertFormat: ConvertFormat,
+    qualityOption: QualityOption,
     onProgress?: (progress: number) => void
   ) {
     return (this.handleBeforeSaveCb ??= async (
@@ -146,7 +147,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
         const { data } = effectData;
         const blob = await converter.appendPixivEffect({
           id: taskId,
-          format: convertFormat,
+          qualityOption,
           illust: imgBlob,
           seasonalEffect: data,
           onProgress,
@@ -172,7 +173,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
 
         const blob = await converter.appendPixivEffect({
           id: taskId,
-          format: convertFormat,
+          qualityOption,
           illust: imgBlob,
           // seasonalEffect will be transfered to worker
           seasonalEffect: await effctBlob.arrayBuffer(),
@@ -348,7 +349,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       filenameTemplate,
       folderTemplate,
       setProgress,
-      convertFormat,
+      qualityOption,
       useTranslatedTags,
       useFileSystemAccessApi,
       filenameConflictAction
@@ -357,7 +358,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     const taskId = this.getTaskId();
     const headers = this.getHeaders();
     const onXhrLoaded = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
-    const beforeFileSave = this.handleConvertFactory(convertFormat, setProgress);
+    const beforeFileSave = this.handleConvertFactory(qualityOption, setProgress);
 
     const templateData = this.getTemplateData(
       useTranslatedTags
@@ -373,7 +374,12 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
           }
     );
 
-    const path = this.getSavePath(folderTemplate, filenameTemplate, convertFormat, templateData);
+    const path = this.getSavePath(
+      folderTemplate,
+      filenameTemplate,
+      qualityOption.format,
+      templateData
+    );
 
     return this.src.map((src, i) => {
       return {
@@ -397,7 +403,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       filenameTemplate,
       folderTemplate,
       setProgress,
-      convertFormat,
+      qualityOption,
       useTranslatedTags,
       useFileSystemAccessApi,
       filenameConflictAction
@@ -423,10 +429,10 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       headers: this.getHeaders(),
       taskId: this.getTaskId(),
       src: this.getSrc(index),
-      path: this.getSavePath(folderTemplate, filenameTemplate, convertFormat, templateData),
+      path: this.getSavePath(folderTemplate, filenameTemplate, qualityOption.format, templateData),
       timeout: this.getDownloadTimeout(index),
       onProgress: setProgress,
-      beforeFileSave: this.handleSeasonalEffectFactory(convertFormat, setProgress),
+      beforeFileSave: this.handleSeasonalEffectFactory(qualityOption, setProgress),
       useFileSystemAccessApi,
       filenameConflictAction
     };

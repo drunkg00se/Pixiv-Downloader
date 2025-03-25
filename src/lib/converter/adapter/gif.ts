@@ -1,6 +1,5 @@
 import GIF from 'gif.js';
 import gifWorker from 'gif.js/dist/gif.worker?raw';
-import { config } from '@/lib/config';
 
 const workerUrl = URL.createObjectURL(new Blob([gifWorker], { type: 'text/javascript' }));
 
@@ -11,6 +10,7 @@ function isBlobArray(frames: Blob[] | ImageBitmap[]): frames is Blob[] {
 export async function gif(
   frames: Blob[] | ImageBitmap[],
   delays: number[],
+  quality: number,
   signal?: AbortSignal,
   onProgress?: (val: number) => void
 ): Promise<Blob> {
@@ -37,7 +37,7 @@ export async function gif(
 
   const gif = new GIF({
     workers: 2,
-    quality: config.get('gifQuality'),
+    quality,
     width,
     height,
     workerScript: workerUrl

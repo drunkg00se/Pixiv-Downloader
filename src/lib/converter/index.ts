@@ -1,43 +1,42 @@
 import { logger } from '@/lib/logger';
-import { type ConvertFormat, convertAdapter } from './adapter';
+import { type QualityOption, convertAdapter } from './adapter';
 import PQueue from 'p-queue';
-export { type ConvertFormat } from './adapter';
 
 type UgoiraFramesData = {
   ugoiraFrames: Blob[];
   delays: number[];
 };
 
-type AddFrameOptions = {
+type AddFrameOption = {
   id: string;
   frame: Blob;
   delay: number;
   order?: number;
 };
 
-type ConvertOptions = {
+type ConvertOption = {
   id: string;
-  format: ConvertFormat;
+  qualityOption: QualityOption;
   onProgress?: (val: number) => void;
   signal?: AbortSignal;
 };
 
-type ProcessConvertOptions = ConvertOptions & {
+type ProcessConvertOption = ConvertOption & {
   frames: Blob[] | ImageBitmap[];
   delays: number[];
 };
 
-type AppendEffectOptions = ConvertOptions & {
+type AppendEffectOption = ConvertOption & {
   illust: Blob;
   seasonalEffect: ArrayBuffer;
 };
 
 interface IConverter {
-  addFrame(addFrameOptions: AddFrameOptions): void;
+  addFrame(addFrameOption: AddFrameOption): void;
   clearFrames(taskId: string): void;
-  convert(convertOptions: ConvertOptions): Promise<Blob>;
+  convert(convertOption: ConvertOption): Promise<Blob>;
   framesCount(taskId: string): number;
-  appendPixivEffect(appendEffectOptions: AppendEffectOptions): Promise<Blob>;
+  appendPixivEffect(appendEffectOption: AppendEffectOption): Promise<Blob>;
 }
 
 class Converter implements IConverter {
@@ -45,12 +44,12 @@ class Converter implements IConverter {
 
   #queue = new PQueue({ concurrency: 2 });
 
-  async #processConvert(processConvertOptions: ProcessConvertOptions): Promise<Blob> {
-    const { id, format, frames, delays, signal, onProgress } = processConvertOptions;
+  async #processConvert(processConvertOption: ProcessConvertOption): Promise<Blob> {
+    const { id, qualityOption, frames, delays, signal, onProgress } = processConvertOption;
 
     logger.info('Start convert:', id);
 
-    const adapter = convertAdapter.getAdapter(format);
+    const adapter = convertAdapter.getAdapter(qualityOption);
 
     const t0 = performance.now();
 
@@ -63,8 +62,8 @@ class Converter implements IConverter {
     return result;
   }
 
-  addFrame(addFrameOptions: AddFrameOptions): void {
-    const { id, frame, delay, order } = addFrameOptions;
+  addFrame(addFrameOption: AddFrameOption): void {
+    const { id, frame, delay, order } = addFrameOption;
 
     this.#ugoiraFramesData[id] ??= {
       ugoiraFrames: [],
@@ -93,8 +92,8 @@ class Converter implements IConverter {
       : 0;
   }
 
-  async convert(convertOptions: ConvertOptions): Promise<Blob> {
-    const { id, signal, onProgress } = convertOptions;
+  async convert(convertOption: ConvertOption): Promise<Blob> {
+    const { id, signal, onProgress } = convertOption;
 
     signal?.throwIfAborted();
 
@@ -117,7 +116,7 @@ class Converter implements IConverter {
         onProgress?.(0);
 
         return this.#processConvert({
-          ...convertOptions,
+          ...convertOption,
           frames: ugoiraFrames,
           delays
         });
@@ -130,8 +129,8 @@ class Converter implements IConverter {
     return result;
   }
 
-  async appendPixivEffect(options: AppendEffectOptions): Promise<Blob> {
-    const { id, signal, illust, seasonalEffect, onProgress } = options;
+  async appendPixivEffect(option: AppendEffectOption): Promise<Blob> {
+    const { id, signal, illust, seasonalEffect, onProgress } = option;
 
     signal?.throwIfAborted();
 
@@ -154,7 +153,7 @@ class Converter implements IConverter {
         logger.info(`Effect appended: ${id} ${t1 - t0}ms.`);
 
         return this.#processConvert({
-          ...options,
+          ...option,
           frames,
           delays,
           signal

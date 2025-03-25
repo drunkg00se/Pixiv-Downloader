@@ -1,6 +1,5 @@
 import { Muxer, ArrayBufferTarget } from 'mp4-muxer';
 import { logger } from '@/lib/logger';
-import { config } from '@/lib/config';
 
 function isBlobArray(frames: Blob[] | ImageBitmap[]): frames is Blob[] {
   return frames[0] instanceof Blob;
@@ -9,6 +8,7 @@ function isBlobArray(frames: Blob[] | ImageBitmap[]): frames is Blob[] {
 export async function mp4(
   frames: Blob[] | ImageBitmap[],
   delays: number[],
+  bitrate: number,
   signal?: AbortSignal
 ): Promise<Blob> {
   signal?.throwIfAborted();
@@ -46,7 +46,7 @@ export async function mp4(
     codec: 'avc1.420034',
     width,
     height,
-    bitrate: config.get('mp4Bitrate') * 1e6
+    bitrate: bitrate * 1e6
   });
 
   let timestamp = 0;

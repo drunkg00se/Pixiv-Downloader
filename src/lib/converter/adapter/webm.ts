@@ -1,4 +1,3 @@
-import { config } from '@/lib/config';
 import { Muxer, ArrayBufferTarget } from 'webm-muxer';
 import { logger } from '@/lib/logger';
 
@@ -9,6 +8,7 @@ function isBlobArray(frames: Blob[] | ImageBitmap[]): frames is Blob[] {
 export async function webm(
   frames: Blob[] | ImageBitmap[],
   delays: number[],
+  bitrate: number,
   signal?: AbortSignal
 ): Promise<Blob> {
   signal?.throwIfAborted();
@@ -41,7 +41,7 @@ export async function webm(
     codec: 'vp09.00.51.08.01.01.01.01.00',
     width,
     height,
-    bitrate: config.get('webmBitrate') * 1e6
+    bitrate: bitrate * 1e6
   });
 
   let timestamp = 0;
