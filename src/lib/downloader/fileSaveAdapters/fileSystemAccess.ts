@@ -20,7 +20,7 @@ type DirHandleEventArgsMap = {
   [DirHandleStatus.PICKING]: never;
 };
 
-type FilenameConflictAction = 'uniquify' | 'overwrite' | 'prompt';
+export type FilenameConflictAction = 'uniquify' | 'overwrite' | 'prompt';
 
 class FileSystemAccessHandler {
   private filenameConflictAction: FilenameConflictAction = 'uniquify';
@@ -258,7 +258,7 @@ class FileSystemAccessHandler {
   }
 
   public setFilenameConflictAction(action: FilenameConflictAction) {
-    this.filenameConflictAction = action;
+    this.filenameConflictAction !== action && (this.filenameConflictAction = action);
   }
 
   public async saveFile(blob: Blob, path: string, signal?: AbortSignal): Promise<void> {

@@ -4,6 +4,7 @@ import { replaceInvalidChar, unescapeHtml } from '@/lib/util';
 import dayjs from 'dayjs';
 import { regexp } from '@/lib/regExp';
 import { compressor } from '@/lib/compressor';
+import type { FilenameConflictAction } from '@/lib/downloader/fileSaveAdapters/fileSystemAccess';
 
 export const enum SupportedTemplate {
   ID = 'id',
@@ -24,6 +25,8 @@ export type TemplateData = {
 export interface OptionBase {
   folderTemplate: string;
   filenameTemplate: string;
+  useFileSystemAccessApi: boolean;
+  filenameConflictAction: FilenameConflictAction;
   setProgress?: (progress: number) => void;
 }
 
@@ -263,7 +266,14 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
   }
 
   create(option: BooruOption): DownloadConfig {
-    const { filenameTemplate, folderTemplate, setProgress, cfClearance } = option;
+    const {
+      filenameTemplate,
+      folderTemplate,
+      setProgress,
+      cfClearance,
+      useFileSystemAccessApi,
+      filenameConflictAction
+    } = option;
 
     return {
       headers: cfClearance ? this.getHeaders(cfClearance) : undefined,
@@ -276,7 +286,9 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
         this.getTemplateData()
       ),
       timeout: this.getDownloadTimeout(),
-      onProgress: setProgress
+      onProgress: setProgress,
+      useFileSystemAccessApi,
+      filenameConflictAction
     };
   }
 }

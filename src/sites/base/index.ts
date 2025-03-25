@@ -6,6 +6,7 @@ import type { BatchDownloadDefinition } from '@/lib/components/Downloader/useBat
 import type { MediaMeta } from './parser';
 import type { TemplateData } from './downloadConfig';
 import { t } from '@/lib/i18n.svelte';
+import { downloader } from '@/lib/downloader';
 
 export abstract class SiteInject {
   protected app: InstanceType<typeof PdlApp>;
@@ -44,6 +45,10 @@ export abstract class SiteInject {
         document.documentElement.style.setProperty('--' + key, val as string);
       }
     });
+  }
+
+  protected getFileHandleIfNeeded() {
+    this.config.get('useFileSystemAccess') && downloader.dirHandleCheck();
   }
 
   protected runScheduledTask() {

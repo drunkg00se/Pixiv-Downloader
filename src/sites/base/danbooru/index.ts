@@ -278,9 +278,11 @@ export abstract class AbstractDanbooru extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      downloader.dirHandleCheck();
+      this.getFileHandleIfNeeded();
 
       const downloadConfig = new BooruDownloadConfig(meta).create({
+        useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+        filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
         folderTemplate: this.config.get('folderPattern'),
         filenameTemplate: this.config.get('filenamePattern')
       });
@@ -355,12 +357,14 @@ export abstract class AbstractDanbooru extends SiteInject {
   }
 
   protected async downloadArtwork(btn: ThumbnailButton) {
-    downloader.dirHandleCheck();
+    this.getFileHandleIfNeeded();
 
     const id = btn.dataset.id!;
 
     const mediaMeta = await this.getMetaByPostId(id);
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
+      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
       folderTemplate: this.config.get('folderPattern'),
       filenameTemplate: this.config.get('filenamePattern'),
       setProgress: (progress: number) => {

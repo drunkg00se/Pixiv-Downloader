@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { CancelError, RequestError, TimoutError } from '@/lib/error';
 import { fileSaveAdapters } from './fileSaveAdapters';
 import PQueue from 'p-queue';
+import type { FilenameConflictAction } from './fileSaveAdapters/fileSystemAccess';
 
 type XhrResult = [Error, null] | [null, Blob];
 
@@ -23,14 +24,18 @@ export type DownloaderHooks = {
 
 export type DownloadConfig = {
   taskId: string;
+  useFileSystemAccessApi: boolean;
   src: string;
   path: string;
   timeout?: number;
   headers?: Record<string, string>;
+  /**
+   * @default 'uniquify'
+   */
+  filenameConflictAction?: FilenameConflictAction;
 } & DownloaderHooks;
 
 interface IDownloader {
-  fileSystemAccessEnabled: Readonly<boolean>;
   dirHandleCheck: () => void;
   updateDirHandle: () => Promise<string>;
   getCurrentFsaDirName: () => string;
@@ -41,10 +46,6 @@ class Downloader implements IDownloader {
   #DOWNLOAD_RETRY = 3;
 
   #downloadQueue = new PQueue({ concurrency: 5, interval: 1000, intervalCap: 4 });
-
-  get fileSystemAccessEnabled() {
-    return fileSaveAdapters.isFileSystemAccessEnable();
-  }
 
   /**
    * 下载触发后应该先弹窗选择文件保存位置，避免下载/转换用时过长导致错误
@@ -128,7 +129,7 @@ class Downloader implements IDownloader {
     signal?: AbortSignal
   ): Promise<void> {
     try {
-      const { src, taskId, path } = config;
+      const { src, taskId, path, useFileSystemAccessApi, filenameConflictAction } = config;
 
       const result = await this.#downloadQueue.add(
         async ({ signal }) => {
@@ -169,7 +170,7 @@ class Downloader implements IDownloader {
 
       config.onXhrLoaded?.(config);
 
-      const saveFile = fileSaveAdapters.getAdapter();
+      const saveFile = fileSaveAdapters.getAdapter(useFileSystemAccessApi, filenameConflictAction);
 
       // 存在beforeFileSave函数时，返回该函数的返回值。
       // 若无返回值，则不保存文件。

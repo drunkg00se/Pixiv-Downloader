@@ -217,7 +217,7 @@ export class Pixiv extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      downloader.dirHandleCheck();
+      this.getFileHandleIfNeeded();
 
       const downloadConfigs = this.getDownloadConfig(meta);
 
@@ -385,20 +385,18 @@ export class Pixiv extends SiteInject {
     setProgress?: (progress: number) => void,
     page?: number
   ): DownloadConfig | DownloadConfig[] {
-    const folderTemplate = this.config.get('folderPattern');
-    const filenameTemplate = this.config.get('filenamePattern');
     const ugoiraFormat = this.config.get('ugoiraFormat');
     const bundleManga = this.config.get('bundleManga');
     const bundleIllust = this.config.get('bundleIllusts');
     const mixEffect = this.config.get('mixEffect');
     const mixEffectFormat = ugoiraFormat === UgoiraFormat.ZIP ? UgoiraFormat.MP4 : ugoiraFormat;
 
-    const useTranslatedTags = this.config.get('tagLang') !== TagLanguage.JAPANESE;
-
     const option = {
-      folderTemplate,
-      filenameTemplate,
-      useTranslatedTags,
+      folderTemplate: this.config.get('folderPattern'),
+      filenameTemplate: this.config.get('filenamePattern'),
+      useTranslatedTags: this.config.get('tagLang') !== TagLanguage.JAPANESE,
+      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
       setProgress
     };
 
@@ -450,7 +448,7 @@ export class Pixiv extends SiteInject {
   }
 
   protected async downloadArtwork(btn: ThumbnailButton) {
-    downloader.dirHandleCheck();
+    this.getFileHandleIfNeeded();
 
     const { id, page, unlistedId } = btn.dataset as {
       id: string;

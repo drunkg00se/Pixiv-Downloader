@@ -328,14 +328,17 @@ export class Nijie extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      downloader.dirHandleCheck();
-
-      const folderTemplate = this.config.get('folderPattern');
-      const filenameTemplate = this.config.get('filenamePattern');
-      const bundleIllusts = this.config.get('bundleIllusts');
+      this.getFileHandleIfNeeded();
 
       let downloadConfig: DownloadConfig | DownloadConfig[];
-      const option = { folderTemplate, filenameTemplate };
+      const option = {
+        folderTemplate: this.config.get('folderPattern'),
+        filenameTemplate: this.config.get('filenamePattern'),
+        useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+        filenameConflictAction: this.config.get('fileSystemFilenameConflictAction')
+      };
+
+      const bundleIllusts = this.config.get('bundleIllusts');
 
       if (Array.isArray(meta.src)) {
         downloadConfig = bundleIllusts
@@ -389,7 +392,7 @@ export class Nijie extends SiteInject {
   }
 
   protected async downloadArtwork(btn: ThumbnailButton) {
-    downloader.dirHandleCheck();
+    this.getFileHandleIfNeeded();
 
     const { id, page } = btn.dataset as { id: string; page?: string };
 
@@ -410,19 +413,18 @@ export class Nijie extends SiteInject {
       this.#addBookmark(id, this.config.get('addBookmarkWithTags') ? tags : undefined);
     }
 
-    let downloadConfig: DownloadConfig | DownloadConfig[];
-
-    const folderTemplate = this.config.get('folderPattern');
-    const filenameTemplate = this.config.get('filenamePattern');
-    const bundleIllusts = this.config.get('bundleIllusts');
-
-    const pageNum = page ? +page : undefined;
-
-    const setProgress = (progress: number) => {
-      btn.setProgress(progress);
+    const option = {
+      folderTemplate: this.config.get('folderPattern'),
+      filenameTemplate: this.config.get('filenamePattern'),
+      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
+      setProgress: (progress: number) => {
+        btn.setProgress(progress);
+      }
     };
 
-    const option = { folderTemplate, filenameTemplate, setProgress };
+    const pageNum = page ? +page : undefined;
+    let downloadConfig: DownloadConfig | DownloadConfig[];
 
     // downloading the first page or illust doesn't have diff
     if (pageNum === 0 || !this.parser.docHasDiff(viewDoc)) {
@@ -443,6 +445,7 @@ export class Nijie extends SiteInject {
           index: pageNum
         });
       } else {
+        const bundleIllusts = this.config.get('bundleIllusts');
         downloadConfig = bundleIllusts
           ? new NijieDownloadConfig(diffMeta).createBundle(option)
           : new NijieDownloadConfig(diffMeta).createMulti(option);

@@ -311,9 +311,11 @@ export class E621ng extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      downloader.dirHandleCheck();
+      this.getFileHandleIfNeeded();
 
       const downloadConfig = new BooruDownloadConfig(meta).create({
+        useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+        filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
         folderTemplate: this.config.get('folderPattern'),
         filenameTemplate: this.config.get('filenamePattern')
       });
@@ -362,12 +364,14 @@ export class E621ng extends SiteInject {
   protected async downloadArtwork(btn: ThumbnailButton) {
     this.#throwIfNotAuthorized();
 
-    downloader.dirHandleCheck();
-    const id = +btn.dataset.id!;
+    this.getFileHandleIfNeeded();
 
+    const id = +btn.dataset.id!;
     const { post } = await this.api.getPost(id);
     const mediaMeta = this.parser.buildMeta(post);
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
+      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
       folderTemplate: this.config.get('folderPattern'),
       filenameTemplate: this.config.get('filenamePattern'),
       setProgress: (progress: number) => {

@@ -273,9 +273,11 @@ export abstract class Moebooru extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      downloader.dirHandleCheck();
+      this.getFileHandleIfNeeded();
 
       const downloadConfig = new BooruDownloadConfig(meta).create({
+        useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+        filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
         folderTemplate: this.config.get('folderPattern'),
         filenameTemplate: this.config.get('filenamePattern'),
         cfClearance: this.config.get('auth')?.cf_clearance
@@ -300,14 +302,16 @@ export abstract class Moebooru extends SiteInject {
   });
 
   async #downloadArtwork(btn: ThumbnailButton) {
-    downloader.dirHandleCheck();
-    const id = btn.dataset.id!;
+    this.getFileHandleIfNeeded();
 
+    const id = btn.dataset.id!;
     const htmlText = await this.api.getPostHtml(id);
     const { posts, tags: tagType, votes } = this.parser.parsePostAndPool(htmlText);
     const mediaMeta = this.parser.buildMeta(posts[0], tagType);
 
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
+      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
       folderTemplate: this.config.get('folderPattern'),
       filenameTemplate: this.config.get('filenamePattern'),
       cfClearance: this.config.get('auth')?.cf_clearance,

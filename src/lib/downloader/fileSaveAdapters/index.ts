@@ -1,9 +1,8 @@
 import { env } from '@/lib/env';
-import { fsaHandler } from './fileSystemAccess';
+import { fsaHandler, type FilenameConflictAction } from './fileSystemAccess';
 import { gmDownload } from './gmDownload';
 import { logger } from '@/lib/logger';
 import { aDownload } from './aDownload';
-import { config } from '@/lib/config';
 import { GM_info } from '$';
 import { gmDownloadDataUrl } from './gmDownloadDataUrl';
 
@@ -13,11 +12,11 @@ type FileSaveFn =
 
 let saveFile: FileSaveFn;
 
-const blobAvaliable = env.isBlobDlAvaliable();
-const subPathAvaliable = env.isSupportSubpath();
+const blobAvailable = env.isBlobDlAvaliable();
+const subPathAvailable = env.isSupportSubpath();
 
-if (subPathAvaliable) {
-  if (!blobAvaliable) {
+if (subPathAvailable) {
+  if (!blobAvailable) {
     // firefox + Tampermonkey
     // 将动图格式转换至dataUrl以实现保存到子文件夹
     saveFile = gmDownloadDataUrl;
@@ -31,37 +30,35 @@ if (subPathAvaliable) {
 }
 
 export const fileSaveAdapters = {
-  getAdapter(): FileSaveFn {
-    if (this.isFileSystemAccessEnable()) {
-      fsaHandler.setFilenameConflictAction(config.get('fileSystemFilenameConflictAction'));
+  isFileSystemAccessAvailable: env.isFileSystemAccessAvaliable(),
+
+  getAdapter(
+    useFileSystemAccessApi: boolean,
+    filenameConflictAction: FilenameConflictAction = 'uniquify'
+  ): FileSaveFn {
+    if (this.isFileSystemAccessAvailable && useFileSystemAccessApi) {
+      fsaHandler.setFilenameConflictAction(filenameConflictAction);
       return fsaHandler.saveFile.bind(fsaHandler);
     } else {
       return saveFile;
     }
   },
 
-  isFileSystemAccessEnable(): boolean {
-    return env.isFileSystemAccessAvaliable() && config.get('useFileSystemAccess');
-  },
-
   dirHandleCheck(): void {
-    if (this.isFileSystemAccessEnable() && fsaHandler.isDirHandleNotSet())
+    if (this.isFileSystemAccessAvailable && fsaHandler.isDirHandleNotSet())
       fsaHandler.updateDirHandle();
   },
 
   async updateDirHandle(): Promise<string> {
-    if (this.isFileSystemAccessEnable()) {
-      await fsaHandler.updateDirHandle();
-      return fsaHandler.getCurrentDirName();
-    }
-    return '';
+    if (!this.isFileSystemAccessAvailable) return '';
+
+    await fsaHandler.updateDirHandle();
+    return fsaHandler.getCurrentDirName();
   },
 
   getFsaDirName(): string {
-    if (this.isFileSystemAccessEnable()) {
-      return fsaHandler.getCurrentDirName();
-    } else {
-      return '';
-    }
+    if (!this.isFileSystemAccessAvailable) return '';
+
+    return fsaHandler.getCurrentDirName();
   }
 };

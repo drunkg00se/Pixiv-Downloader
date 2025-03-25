@@ -163,9 +163,11 @@ export abstract class GelbooruV020 extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      downloader.dirHandleCheck();
+      this.getFileHandleIfNeeded();
 
       const downloadConfigs = new BooruDownloadConfig(meta).create({
+        useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+        filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
         folderTemplate: this.config.get('folderPattern'),
         filenameTemplate: this.config.get('filenamePattern'),
         cfClearance: this.config.get('auth')?.cf_clearance
@@ -190,13 +192,15 @@ export abstract class GelbooruV020 extends SiteInject {
   }
 
   protected async downloadArtwork(btn: ThumbnailButton) {
-    downloader.dirHandleCheck();
+    this.getFileHandleIfNeeded();
 
     const id = btn.dataset.id!;
 
     const doc = await this.api.getPostDoc(id);
     const mediaMeta = this.parser.buildMeta(id, doc);
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
+      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
+      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
       folderTemplate: this.config.get('folderPattern'),
       filenameTemplate: this.config.get('filenamePattern'),
       cfClearance: this.config.get('auth')?.cf_clearance,

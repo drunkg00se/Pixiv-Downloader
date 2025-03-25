@@ -55,7 +55,13 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
   }
 
   create(option: OptionBase | IndexOption): DownloadConfig {
-    const { filenameTemplate, folderTemplate, setProgress } = option;
+    const {
+      filenameTemplate,
+      folderTemplate,
+      setProgress,
+      useFileSystemAccessApi,
+      filenameConflictAction
+    } = option;
     const index = 'index' in option ? option.index : 0;
 
     return {
@@ -68,14 +74,22 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
         this.getTemplateData({ page: String(index) })
       ),
       timeout: this.getDownloadTimeout(index),
-      onProgress: setProgress
+      onProgress: setProgress,
+      useFileSystemAccessApi,
+      filenameConflictAction
     };
   }
 
   createMulti(option: OptionBase): DownloadConfig[] {
     if (!this.isStringArray(this.src)) throw new Error(`Artwork ${this.id} only have one media.`);
 
-    const { filenameTemplate, folderTemplate, setProgress } = option;
+    const {
+      filenameTemplate,
+      folderTemplate,
+      setProgress,
+      useFileSystemAccessApi,
+      filenameConflictAction
+    } = option;
     const taskId = this.getTaskId();
     const onFileSaved = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
 
@@ -90,7 +104,9 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
           this.getTemplateData({ page: String(i) })
         ),
         timeout: this.getDownloadTimeout(),
-        onFileSaved
+        onFileSaved,
+        useFileSystemAccessApi,
+        filenameConflictAction
       };
     });
   }
@@ -99,7 +115,13 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
     if (!this.isStringArray(this.src) || !this.isStringArray(this.ext))
       throw new Error(`Artwork ${this.id} only have one media.`);
 
-    const { filenameTemplate, folderTemplate, setProgress } = option;
+    const {
+      filenameTemplate,
+      folderTemplate,
+      setProgress,
+      useFileSystemAccessApi,
+      filenameConflictAction
+    } = option;
 
     const taskId = this.getTaskId();
     const onXhrLoaded = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
@@ -136,7 +158,9 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
         onXhrLoaded,
         beforeFileSave: this.handleBundleFactory(filenames),
         onError: this.handleBundleErrorFactory(),
-        onAbort: this.handleBundleAbortFactory()
+        onAbort: this.handleBundleAbortFactory(),
+        useFileSystemAccessApi,
+        filenameConflictAction
       };
     });
   }

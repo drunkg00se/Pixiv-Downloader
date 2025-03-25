@@ -191,7 +191,14 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
   }
 
   create(option: PixivOptionBase | PixivIndexOption): DownloadConfig {
-    const { filenameTemplate, folderTemplate, setProgress, useTranslatedTags } = option;
+    const {
+      filenameTemplate,
+      folderTemplate,
+      setProgress,
+      useTranslatedTags,
+      useFileSystemAccessApi,
+      filenameConflictAction
+    } = option;
     const index = 'index' in option ? option.index : 0;
     const headers = this.getHeaders();
 
@@ -215,14 +222,23 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       src: this.getSrc(index),
       path: this.getSavePath(folderTemplate, filenameTemplate, this.getExt(index), templateData),
       timeout: this.getDownloadTimeout(index),
-      onProgress: setProgress
+      onProgress: setProgress,
+      useFileSystemAccessApi,
+      filenameConflictAction
     };
   }
 
   createMulti(option: PixivOptionBase): DownloadConfig[] {
     if (!this.isStringArray(this.src)) throw new Error(`Artwork ${this.id} only have one media.`);
 
-    const { filenameTemplate, folderTemplate, setProgress, useTranslatedTags } = option;
+    const {
+      filenameTemplate,
+      folderTemplate,
+      setProgress,
+      useTranslatedTags,
+      useFileSystemAccessApi,
+      filenameConflictAction
+    } = option;
     const taskId = this.getTaskId();
     const headers = this.getHeaders();
 
@@ -252,7 +268,9 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
           })
         ),
         timeout: this.getDownloadTimeout(),
-        onFileSaved
+        onFileSaved,
+        useFileSystemAccessApi,
+        filenameConflictAction
       };
     });
   }
@@ -260,7 +278,14 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
   createBundle(option: PixivOptionBase): DownloadConfig[] {
     if (!this.isStringArray(this.src)) throw new Error(`Artwork ${this.id} only have one media.`);
 
-    const { filenameTemplate, folderTemplate, setProgress, useTranslatedTags } = option;
+    const {
+      filenameTemplate,
+      folderTemplate,
+      setProgress,
+      useTranslatedTags,
+      useFileSystemAccessApi,
+      filenameConflictAction
+    } = option;
 
     const taskId = this.getTaskId();
     const headers = this.getHeaders();
@@ -309,7 +334,9 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
         onXhrLoaded,
         beforeFileSave: this.handleBundleFactory(filenames),
         onError: this.handleBundleErrorFactory(),
-        onAbort: this.handleBundleAbortFactory()
+        onAbort: this.handleBundleAbortFactory(),
+        useFileSystemAccessApi,
+        filenameConflictAction
       };
     });
   }
@@ -317,8 +344,15 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
   createConvert(option: PixivConvertOption): DownloadConfig[] {
     if (!this.isStringArray(this.src)) throw new Error(`Artwork ${this.id} only have one media.`);
 
-    const { filenameTemplate, folderTemplate, setProgress, convertFormat, useTranslatedTags } =
-      option;
+    const {
+      filenameTemplate,
+      folderTemplate,
+      setProgress,
+      convertFormat,
+      useTranslatedTags,
+      useFileSystemAccessApi,
+      filenameConflictAction
+    } = option;
 
     const taskId = this.getTaskId();
     const headers = this.getHeaders();
@@ -349,7 +383,9 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
         path,
         timeout: this.getDownloadTimeout(i),
         onXhrLoaded,
-        beforeFileSave
+        beforeFileSave,
+        useFileSystemAccessApi,
+        filenameConflictAction
       };
     });
   }
@@ -357,8 +393,15 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
   createSeasonalEffect(
     option: PixivConvertOption | (PixivConvertOption & { index: number })
   ): DownloadConfig {
-    const { filenameTemplate, folderTemplate, setProgress, convertFormat, useTranslatedTags } =
-      option;
+    const {
+      filenameTemplate,
+      folderTemplate,
+      setProgress,
+      convertFormat,
+      useTranslatedTags,
+      useFileSystemAccessApi,
+      filenameConflictAction
+    } = option;
 
     const index: number | undefined = 'index' in option ? option.index : 0;
 
@@ -383,7 +426,9 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       path: this.getSavePath(folderTemplate, filenameTemplate, convertFormat, templateData),
       timeout: this.getDownloadTimeout(index),
       onProgress: setProgress,
-      beforeFileSave: this.handleSeasonalEffectFactory(convertFormat, setProgress)
+      beforeFileSave: this.handleSeasonalEffectFactory(convertFormat, setProgress),
+      useFileSystemAccessApi,
+      filenameConflictAction
     };
   }
 }
