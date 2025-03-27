@@ -666,3 +666,766 @@ export interface SeriesData {
   extraData: ExtraDataCommon;
   zoneConfig: ZoneDataCommon;
 }
+
+export interface PreloadedState {
+  ads: {
+    config: object;
+    flags: object;
+  };
+  api: {
+    token: string;
+    services: {
+      booth: string;
+      sketch: string;
+      vroidHub: string;
+      accounts: string;
+    };
+    language: string;
+  };
+  booth: {
+    items: object;
+  };
+  feedback: {
+    open: boolean;
+    page: string;
+  };
+  isDevelopment: boolean;
+  meta: {
+    config: {
+      Illust: object;
+      IllustUnlisted: object;
+      IllustSeries: object;
+      Profile: object;
+      Novel: object;
+      NovelUnlisted: object;
+      NovelSeriesContent: object;
+      NovelSeries: object;
+      NovelSeriesGlossaryDetail: object;
+      Search: object;
+      Dashboard: object;
+      Preview: object;
+      FollowLatest: object;
+      Discovery: object;
+      UserEvents: object;
+      About: object;
+      Top: {
+        default: {
+          title: string;
+          description: boolean;
+        };
+      };
+    };
+    error: boolean;
+    lang: string;
+  };
+  misc: {
+    consent: {
+      gdpr: boolean;
+    };
+    policyRevision: boolean;
+    grecaptcha: {
+      recaptchaEnterpriseScoreSiteKey: string;
+    };
+    info: {
+      id: string;
+      title: string;
+      createDate: string;
+    };
+    isSmartphone: boolean;
+    oneSignalAppId: string;
+  };
+  mute: {
+    tags: unknown[];
+    userIds: unknown[];
+    modal: {
+      items: unknown[];
+    };
+  };
+  search: {
+    tag: {
+      tagData: object;
+      translation: object;
+      loaded: {
+        tag_search: string;
+      };
+    };
+    work: {
+      works: object;
+      popular: object;
+      relatedTags: object;
+    };
+  };
+  tag: {
+    popular: {
+      illust: {
+        all: unknown[];
+        r18: unknown[];
+      };
+      novel: {
+        all: unknown[];
+        r18: unknown[];
+      };
+      manga: {
+        all: unknown[];
+        r18: unknown[];
+      };
+    };
+    recommend: {
+      illust: {
+        all: unknown[];
+        r18: unknown[];
+      };
+    };
+    recommendBy: {
+      illust: {
+        all: unknown[];
+        r18: unknown[];
+      };
+    };
+    loaded: {
+      search_suggestion: {
+        all: string;
+        r18: string;
+      };
+    };
+    myFavorite: unknown[];
+    genre: {
+      manga: {
+        all: unknown[];
+        r18: unknown[];
+      };
+    };
+    randomSeed: number;
+  };
+  task: {
+    busy: object;
+  };
+  test: {
+    ab: {
+      commission_send_and_accept_confirmation: boolean;
+      ab_manga_each_lang_populer_works: boolean;
+      ab_touch_manga_new_viewer: boolean;
+      novel_12th_premium_covers: boolean;
+      novel_reading_status: boolean;
+      novel_upload_next_js: boolean;
+      novel_mod_next_js: boolean;
+      novel_reserve_mod_next_js: boolean;
+      posted_novel_cover_edit: boolean;
+      premium_dmm_lp_update_202502: boolean;
+      recommend_tutorial_20191213: boolean;
+      www_premium_link_text: boolean;
+      www_tags_link_to_en_dic: boolean;
+      www_illust_edit_next_js_desktop: boolean;
+      www_illust_reserve_edit_next_js_desktop: boolean;
+      www_illust_reupload_next_js_desktop: boolean;
+      next_js_cardiac_transplant: boolean;
+    };
+    toggle: {
+      toggle_commission_limitation_countermeasure_202403: boolean;
+      toggle_commission_lp_renewal: boolean;
+      toggle_commission_coupon: boolean;
+      toggle_enquete: boolean;
+      toggle_manga_thumbnail_crop: boolean;
+      toggle_novel_reading_status_show_release_modal: boolean;
+      toggle_novel_reading_status_read_next_novel: boolean;
+      toggle_premium_contract_update_retry_from_api: boolean;
+      toggle_premium_error_next_js: boolean;
+      toggle_premium_direct_overseas_users_to_gmo_flow: boolean;
+      toggle_premium_edit_term_next_js: boolean;
+      toggle_save_feedback: boolean;
+      toggle_seasonal_effect_tag_release: boolean;
+      toggle_seasonal_effect_tag_show_release_modal: boolean;
+      toggle_seasonal_effect_tag_enable_manga_novel: boolean;
+      toggle_mybestpixiv_release: boolean;
+      toggle_new_logo_2025: boolean;
+    };
+  };
+  thumbnail: {
+    illust: object;
+    novel: object;
+    drafts: {
+      illust: object;
+      novel: object;
+    };
+    series: {
+      manga: object;
+      novel: object;
+    };
+  };
+  userData: {
+    pAbDId: number;
+    self: {
+      id: string;
+      pixivId: string;
+      name: string;
+      profileImg: string;
+      profileImgBig: string;
+      premium: boolean;
+      xRestrict: number;
+      adult: boolean;
+      illustCreator: boolean;
+      novelCreator: boolean;
+      hideAiWorks: boolean;
+      readingStatusEnabled: boolean;
+      illustMaskRules: unknown[];
+      location: string;
+      isSensitiveViewable: boolean;
+    };
+    users: object;
+    follow: object;
+    mypixiv: object;
+    block: object;
+    acceptRequest: object;
+    subscribedReopenNotification: object;
+    loaded: {
+      self: string;
+    };
+  };
+  webpush: {
+    pixivWebpushPermission: null;
+  };
+  work: {
+    bookmark: {
+      bookmark: {
+        illust: object;
+        novel: object;
+      };
+      bookmarkable: {
+        illust: object;
+        novel: object;
+      };
+      manualBookmarks: {
+        illust: null;
+        novel: null;
+      };
+    };
+    booth: {
+      widget: object;
+      items: object;
+      workBoothIds: {
+        illust: object;
+        novel: object;
+      };
+    };
+    contest: {
+      banners: {
+        illust: object;
+        novel: object;
+      };
+      data: {
+        illust: object;
+        novel: object;
+      };
+    };
+    request: {
+      data: {
+        illust: object;
+        novel: object;
+      };
+    };
+    data: {
+      secret: {
+        illust: object;
+        novel: object;
+      };
+      illust: object;
+      novel: object;
+      seriesContent: {
+        illust: object;
+        novel: object;
+      };
+    };
+    discovery: {
+      illust: object;
+      novel: object;
+    };
+    like: {
+      illust: object;
+      novel: object;
+    };
+    noLogin: {
+      illust: object;
+      novel: object;
+    };
+    poll: {
+      illust: object;
+      novel: object;
+    };
+    promotion: {
+      comic: {
+        illust: object;
+        novel: object;
+      };
+      fanbox: {
+        illust: object;
+        novel: object;
+      };
+    };
+    recommend: {
+      illust: object;
+      novel: object;
+    };
+    response: {
+      outData: {
+        illust: {
+          items: object;
+          references: object;
+        };
+        novel: {
+          items: object;
+          references: object;
+        };
+      };
+      inData: {
+        illust: {
+          items: object;
+          references: object;
+          count: object;
+        };
+        novel: {
+          items: object;
+          references: object;
+          count: object;
+        };
+      };
+    };
+    sensitiveVisibility: {
+      illust: object;
+      novel: object;
+    };
+    series: {
+      series: {
+        byId: {
+          illust: object;
+          novel: object;
+        };
+        detailById: {
+          manga: object;
+          novel: object;
+        };
+        content: {
+          illust: object;
+          novel: object;
+        };
+        contentTitles: {
+          manga: object;
+          novel: object;
+        };
+        glossary: {
+          manga: object;
+          novel: object;
+        };
+      };
+      seriesEditor: {
+        novel: {
+          seriesContentsById: object;
+          nonSeriesWorks: {
+            works: object;
+            hasMore: boolean;
+          };
+          deletedWorks: object;
+          ordersByDesc: unknown[];
+          editFirstOrder: number;
+          unsaved: boolean;
+          validationMessages: {
+            title: unknown[];
+            caption: unknown[];
+            xRestrict: unknown[];
+            aiType: unknown[];
+            genre: unknown[];
+            cover: unknown[];
+          };
+          seriesContentCount: number;
+        };
+      };
+      watch: {
+        manga: object;
+        novel: object;
+      };
+      notify: {
+        manga: object;
+        novel: object;
+      };
+    };
+    spoiler: {
+      illust: object;
+      novel: object;
+    };
+    tags: {
+      byId: {
+        illust: object;
+        novel: object;
+      };
+      history: {
+        illust: object;
+        novel: object;
+      };
+    };
+    userWorks: object;
+    youtube: {
+      workYoutubeIds: {
+        illust: object;
+        novel: object;
+      };
+    };
+    newPost: {
+      illust: {
+        entries: unknown[];
+        lastId: string;
+      };
+      r18_illust: {
+        entries: unknown[];
+        lastId: string;
+      };
+      manga: {
+        entries: unknown[];
+        lastId: string;
+      };
+      r18_manga: {
+        entries: unknown[];
+        lastId: string;
+      };
+      novel: {
+        entries: unknown[];
+        lastId: string;
+      };
+      r18_novel: {
+        entries: unknown[];
+        lastId: string;
+      };
+    };
+  };
+  pageCommission: {
+    requests: object;
+    userList: object;
+    userListDesktop: object;
+    paymentServiceStatus: unknown[];
+    page: {
+      manageRequests: {
+        info: null;
+        requestList: null;
+        recentUpdate: null;
+      };
+      managePlanSettingsEdit: null;
+      managePlanSettingsNew: null;
+      requestsDetails: {
+        requestThread: null;
+        creator: null;
+        recommendedUserIds: null;
+        inProgressRequestIds: null;
+        completeRequestIds: null;
+        confettiModalStatus: {
+          inProgressFan: boolean;
+          inProgressCreator: boolean;
+          completeFanOrCollaborateUser: boolean;
+        };
+        alreadyRequestCollaborate: null;
+        platformFeeCampaignLabel: null;
+        eligibleCampaignList: null;
+        isUnlisted: boolean;
+        ogp: object;
+        locationMask: boolean;
+      };
+      requestSend: {
+        creator: null;
+        plan: null;
+        planCoverImage: {
+          selectableIllustsId: unknown[];
+          fetchRanges: number[][];
+        };
+        inProgressRequestIds: unknown[];
+        completeRequestIds: unknown[];
+        recommendedTags: unknown[];
+        ogp: object;
+        progressCampaignList: unknown[];
+        locationMask: boolean;
+      };
+      requestLegal: null;
+      request: null;
+      requestCreatorRecommendPost: {
+        illust: object;
+        manga: object;
+        ugoira: object;
+        novels: object;
+      };
+      requestCreators: {
+        illust: object;
+        manga: object;
+        ugoira: object;
+        novels: object;
+      };
+      requestInProgress: {
+        all: object;
+        illust: object;
+        manga: object;
+        ugoira: object;
+        novels: object;
+      };
+      requestComplete: {
+        illust: object;
+        manga: object;
+        ugoira: object;
+        novels: object;
+      };
+      requestAbout: null;
+      manageSales: null;
+      manageTransfer: null;
+      manageTransferSettings: null;
+      manageLegalSettings: null;
+      managePayment: null;
+    };
+  };
+  pageNovelEditorsPicks: {
+    data: unknown[];
+  };
+  premium: null;
+  illust: {
+    page: {
+      currentPage: number;
+      pages: object;
+      hasBookmarked: boolean;
+      expanded: boolean;
+      openViewer: string;
+    };
+  };
+  illustSeries: {
+    series: object;
+    seriesEditData: object;
+    userAllMangaWorkIds: unknown[];
+    loaded: {
+      userAllMangaWorkIds: string;
+    };
+  };
+  pageFollowLatest: {
+    followUserWorks: object;
+    mypixivUserWorks: object;
+    folderTags: {
+      follow: null;
+      mypixiv: null;
+    };
+  };
+  tagTranslationSuggestion: {
+    isModalOpen: boolean;
+  };
+  ssr: {
+    time: number;
+    location: {
+      host: string;
+      href: string;
+      origin: string;
+      search: string;
+    };
+  };
+  recommendUsers: {
+    analizedUserId: null;
+    users: null;
+    seedUserId: null;
+    followedUserIds: unknown[];
+    usersWithoutUserId: unknown[];
+  };
+  profile: {
+    bookmarks: {
+      bookmarkWorks: object;
+      bookmarkTags: {
+        illust: object;
+        novel: object;
+      };
+      bookmarkTagRenaming: {
+        isInProgress: boolean;
+      };
+    };
+    external: {
+      sketch: object;
+      vroidHub: object;
+      enabled: object;
+    };
+    pickup: {
+      pickup: object;
+      pickupEditor: {
+        unsaved: boolean;
+      };
+    };
+    series: object;
+    tag: {
+      workTags: object;
+      frequentTags: object;
+      bookmarkTags: object;
+    };
+    uploadComplete: object;
+    userList: {
+      following: object;
+      mypixiv: object;
+      followers: object;
+      folder: {
+        tags: unknown[];
+      };
+      workData: object;
+    };
+    work: {
+      works: object;
+      filtered: object;
+    };
+    requests: {
+      postWorkIds: object;
+      plans: object;
+    };
+    request: {
+      tabStatus: object;
+      page: {
+        request: null;
+        requestSent: null;
+      };
+    };
+    shouldShowSensitiveNotice: {
+      shouldShowSensitiveNotice: object;
+    };
+  };
+  pageDashboard: {
+    home: {
+      achievement: null;
+      contests: unknown[];
+      hotWorks: {
+        today: null;
+      };
+      recentUploadWorks: unknown[];
+      userCountSummary: object;
+      yearBestWork: {
+        work: null;
+      };
+      todayAnniversary: null;
+    };
+    works: {
+      userWorks: unknown[];
+      userSeries: unknown[];
+      userDrafts: unknown[];
+      userReservedWorks: unknown[];
+    };
+    reactions: {
+      recentUploadWorks: {
+        illust: object;
+        novel: object;
+      };
+    };
+    loaded: {
+      reactions: string;
+      works: string;
+      worksUpToDate: string;
+      home: string;
+    };
+  };
+  pageTop: {
+    illust: object;
+    novel: object;
+    manga: object;
+  };
+  readingStatus: {
+    novel: object;
+    manga: object;
+    novelSeries: object;
+    mangaSeries: object;
+    visibleReadingProgressBar: boolean;
+  };
+  street: {
+    main: unknown[];
+    discover: unknown[];
+    recommend_tags: null;
+    forYou: unknown[];
+    latest: {
+      data: null;
+      isLoading: boolean;
+    };
+    subColumn: unknown[];
+    loadCount: {
+      main: number;
+      discover: number;
+    };
+    contentIndex: number;
+    isNewUserToStreet: boolean;
+  };
+  spa: boolean;
+  page: object;
+  router: {
+    location: null;
+  };
+}
+
+export interface NextData {
+  props: {
+    pageProps: {
+      forceLegacyNonResponsivePage: boolean;
+      meta: {
+        title: string;
+        description: string;
+        canonical: string;
+        ogp: {
+          title: string;
+          type: string;
+          image: string;
+          description: string;
+        };
+        twitter: {
+          card: string;
+          description: string;
+          image: string;
+          site: string;
+          title: string;
+          url?: string;
+          'app:name:iphone'?: string;
+          'app:id:iphone'?: string;
+          'app:url:iphone'?: string;
+          'app:name:ipad'?: string;
+          'app:id:ipad'?: string;
+          'app:url:ipad'?: string;
+          'app:name:googleplay?': string;
+          'app:id:googleplay'?: string;
+          'app:url:googleplay'?: string;
+        };
+        alternateLanguages: {
+          ja: string;
+          en: string;
+        };
+        referrerContentOrigin: boolean;
+        ratingContent: string;
+        robots: string;
+        oembedJsonUrl: string;
+      };
+      lang: 'ja' | 'en' | 'ko' | 'zh' | 'zh_tw';
+      isLoggedIn: boolean;
+      gaUserData: {
+        login: boolean;
+        userAgent: string;
+        gender: number;
+        userId: string;
+        illustUploadFlg: string;
+        premium: boolean;
+        lang: string;
+        abTestDeviceId: number;
+        premiumRegisterFirstMonthFreeCampaign: boolean;
+      };
+      forceTheme: null;
+      serverSerializedPreloadedState: string;
+      dehydratedState: {
+        mutations: unknown[];
+        queries: unknown[];
+      };
+      _sentryTraceData: string;
+      _sentryBaggage: string;
+    };
+    /**
+     * route
+     * @example "/users/[user_id]/bookmarks/[type]/[tag]"
+     */
+    page: string;
+    /** route query
+     * @example { tag: "空崎ヒナ", type: artworks, user_id: "4787668" }
+     */
+    query: Record<string, string>;
+    buildId: string;
+    assetPrefix: string;
+    isFallback: boolean;
+    isExperimentalCompile: boolean;
+    dynamicIds: number[];
+    gip: boolean;
+    scriptLoader: unknown[];
+  };
+}

@@ -8,13 +8,14 @@ import type {
   Category,
   BookmarksRest,
   FollowLatestMode,
-  ArtworkDetail
+  ArtworkDetail,
+  NextData,
+  PreloadedState
 } from './types';
 import type { MediaMeta } from '@/sites/base/parser';
 import { getElementText } from '@/lib/util';
 import { IllustType } from './types';
 import { pixivApi } from '@/sites/pixiv/api';
-import { regexp } from '@/lib/regExp';
 import { logger } from '@/lib/logger';
 import type {
   ValidatedArtworkGenerator,
@@ -103,19 +104,26 @@ export const pixivParser: PixivParser = {
       illustData = await pixivApi.getUnlistedArtworkDetail(illustId, tagLang);
       token = '';
     } else {
-      const htmlText = await pixivApi.getArtworkHtml(illustId, tagLang);
+      const doc = await pixivApi.getArtworkDoc(illustId, tagLang);
+      const preloadDataEl = doc.querySelector<HTMLMetaElement>('meta[name="preload-data"]');
+      const globalDataEl = doc.querySelector<HTMLMetaElement>('meta[name="global-data"]');
 
-      const preloadDataText = htmlText.match(regexp.preloadData);
-      if (!preloadDataText) throw new Error('Fail to parse preload data: ' + illustId);
+      if (preloadDataEl && globalDataEl) {
+        illustData = (JSON.parse(preloadDataEl.content) as PreloadData).illust[illustId];
+        token = (JSON.parse(globalDataEl.content) as GlobalData).token;
+      } else {
+        // next version of pixiv
+        const nextDataEL = doc.querySelector('script#__NEXT_DATA__');
+        if (!nextDataEL) throw new Error('Cannot get csrf token.');
 
-      const globalDataText = htmlText.match(regexp.globalData);
-      if (!globalDataText) throw new Error('Fail to parse global data: ' + illustId);
+        const nextData = JSON.parse(nextDataEL.textContent!) as NextData;
+        const preloadState = JSON.parse(
+          nextData.props.pageProps.serverSerializedPreloadedState
+        ) as PreloadedState;
 
-      const preloadData = JSON.parse(preloadDataText[1]) as PreloadData;
-      const globalData = JSON.parse(globalDataText[1]) as GlobalData;
-
-      illustData = preloadData.illust[illustId];
-      token = globalData.token;
+        token = preloadState.api.token;
+        illustData = await pixivApi.getArtworkDetail(illustId, tagLang);
+      }
     }
 
     const {

@@ -28,6 +28,10 @@ class PixivApi extends ApiBase {
     return await res.text();
   }
 
+  getArtworkDoc(illustId: string, lang: TagLanguage): Promise<Document> {
+    return this.getDoc(`/artworks/${illustId}?lang=${lang}`);
+  }
+
   getArtworkDetail(illustId: string, lang: TagLanguage): Promise<ArtworkDetail> {
     return this.getJSON<ArtworkDetail>(`/ajax/illust/${illustId}?lang=${lang}`);
   }
