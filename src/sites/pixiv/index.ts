@@ -351,10 +351,16 @@ export class Pixiv extends SiteInject {
       }
       case !!(param = regexp.unlisted.exec(pathname)): {
         const unlistedId = param[0];
-        const canonicalUrl = document.querySelector('link[rel="canonical"]')?.getAttribute('href');
-        if (!canonicalUrl) return;
+        const canonicalUrlEL =
+          document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]') ||
+          document.head.querySelector<HTMLLinkElement>(
+            'link[data-next-head][href^="https://www.pixiv.net/artworks/"]'
+          );
+        const canonicalUrl = canonicalUrlEL?.getAttribute('href');
+
+        if (!canonicalUrl) throw new Error(`Cannot get canonical url for ${unlistedId}`);
         const id = regexp.artworksPage.exec(canonicalUrl)?.[1];
-        if (!id) return;
+        if (!id) throw new Error(`Cannot get artwork id for ${unlistedId}`);
 
         createUnlistedToolbar(id, this.downloadArtwork, unlistedId);
         createWorkExpanedViewBtn(id, this.downloadArtwork, unlistedId);

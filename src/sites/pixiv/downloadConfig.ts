@@ -40,7 +40,6 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     this.comment = mediaMeta.comment;
     this.translatedTags = mediaMeta.tagsTranslated;
     this.bookmarkCount = mediaMeta.bookmarkCount;
-    console.log(mediaMeta);
   }
 
   static get supportedTemplate() {

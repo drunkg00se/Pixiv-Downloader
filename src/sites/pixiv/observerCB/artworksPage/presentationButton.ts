@@ -12,7 +12,7 @@ export function createPresentationBtn(
   unlistedId?: string
 ) {
   //侧边栏也符合选择符匹配
-  const containers = document.querySelector("body > [role='presentation'] > div");
+  const containers = document.querySelector("body > [role='presentation'] div[class]");
 
   if (!containers) {
     if (observer) {
