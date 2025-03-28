@@ -57,7 +57,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
   create(option: OptionBase | IndexOption): DownloadConfig {
     const {
       filenameTemplate,
-      folderTemplate,
+      directoryTemplate,
       setProgress,
       useFileSystemAccessApi,
       filenameConflictAction
@@ -68,7 +68,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
       taskId: this.getTaskId(),
       src: this.getSrc(index),
       path: this.getSavePath(
-        folderTemplate,
+        directoryTemplate,
         filenameTemplate,
         this.getExt(index),
         this.getTemplateData({ page: String(index) })
@@ -85,7 +85,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
 
     const {
       filenameTemplate,
-      folderTemplate,
+      directoryTemplate,
       setProgress,
       useFileSystemAccessApi,
       filenameConflictAction
@@ -98,7 +98,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
         taskId,
         src,
         path: this.getSavePath(
-          folderTemplate,
+          directoryTemplate,
           filenameTemplate,
           this.getExt(i),
           this.getTemplateData({ page: String(i) })
@@ -117,7 +117,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
 
     const {
       filenameTemplate,
-      folderTemplate,
+      directoryTemplate,
       setProgress,
       useFileSystemAccessApi,
       filenameConflictAction
@@ -127,7 +127,7 @@ export class NijieDownloadConfig extends MayBeMultiIllustsConfig {
     const onXhrLoaded = setProgress ? this.getMultipleMediaDownloadCB(setProgress) : undefined;
 
     const path = this.getSavePath(
-      folderTemplate,
+      directoryTemplate,
       filenameTemplate,
       'zip',
       this.getTemplateData({

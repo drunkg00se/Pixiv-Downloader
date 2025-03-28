@@ -14,6 +14,7 @@ import { logger } from '@/lib/logger';
 import { PostValidState } from '../parser';
 import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
 import { t } from '@/lib/i18n.svelte';
+import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 
 export abstract class AbstractDanbooru extends SiteInject {
   protected abstract api: DanbooruApi;
@@ -281,10 +282,7 @@ export abstract class AbstractDanbooru extends SiteInject {
       this.getFileHandleIfNeeded();
 
       const downloadConfig = new BooruDownloadConfig(meta).create({
-        useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
-        filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
-        folderTemplate: this.config.get('folderPattern'),
-        filenameTemplate: this.config.get('filenamePattern')
+        ...downloadSetting.current
       });
 
       await downloader.download(downloadConfig, { signal });
@@ -360,13 +358,10 @@ export abstract class AbstractDanbooru extends SiteInject {
     this.getFileHandleIfNeeded();
 
     const id = btn.dataset.id!;
-
     const mediaMeta = await this.getMetaByPostId(id);
+
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
-      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
-      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
-      folderTemplate: this.config.get('folderPattern'),
-      filenameTemplate: this.config.get('filenamePattern'),
+      ...downloadSetting.current,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }

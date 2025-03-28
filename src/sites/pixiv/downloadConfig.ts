@@ -194,7 +194,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
   create(option: PixivOptionBase | PixivIndexOption): DownloadConfig {
     const {
       filenameTemplate,
-      folderTemplate,
+      directoryTemplate,
       setProgress,
       useTranslatedTags,
       useFileSystemAccessApi,
@@ -221,7 +221,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       headers,
       taskId: this.getTaskId(),
       src: this.getSrc(index),
-      path: this.getSavePath(folderTemplate, filenameTemplate, this.getExt(index), templateData),
+      path: this.getSavePath(directoryTemplate, filenameTemplate, this.getExt(index), templateData),
       timeout: this.getDownloadTimeout(index),
       onProgress: setProgress,
       useFileSystemAccessApi,
@@ -234,7 +234,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
 
     const {
       filenameTemplate,
-      folderTemplate,
+      directoryTemplate,
       setProgress,
       useTranslatedTags,
       useFileSystemAccessApi,
@@ -260,7 +260,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
         taskId,
         src,
         path: this.getSavePath(
-          folderTemplate,
+          directoryTemplate,
           filenameTemplate,
           this.getExt(i),
           this.getTemplateData({
@@ -281,7 +281,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
 
     const {
       filenameTemplate,
-      folderTemplate,
+      directoryTemplate,
       setProgress,
       useTranslatedTags,
       useFileSystemAccessApi,
@@ -302,7 +302,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       : {};
 
     const path = this.getSavePath(
-      folderTemplate,
+      directoryTemplate,
       filenameTemplate,
       'zip',
       this.getTemplateData({ ...overwriteData, page: String(this.src.length) })
@@ -347,7 +347,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
 
     const {
       filenameTemplate,
-      folderTemplate,
+      directoryTemplate,
       setProgress,
       qualityOption,
       useTranslatedTags,
@@ -375,7 +375,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     );
 
     const path = this.getSavePath(
-      folderTemplate,
+      directoryTemplate,
       filenameTemplate,
       qualityOption.format,
       templateData
@@ -401,7 +401,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
   ): DownloadConfig {
     const {
       filenameTemplate,
-      folderTemplate,
+      directoryTemplate,
       setProgress,
       qualityOption,
       useTranslatedTags,
@@ -429,7 +429,12 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       headers: this.getHeaders(),
       taskId: this.getTaskId(),
       src: this.getSrc(index),
-      path: this.getSavePath(folderTemplate, filenameTemplate, qualityOption.format, templateData),
+      path: this.getSavePath(
+        directoryTemplate,
+        filenameTemplate,
+        qualityOption.format,
+        templateData
+      ),
       timeout: this.getDownloadTimeout(index),
       onProgress: setProgress,
       beforeFileSave: this.handleSeasonalEffectFactory(qualityOption, setProgress),

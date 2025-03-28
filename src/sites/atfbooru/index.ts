@@ -3,6 +3,7 @@ import type { DanbooruMeta } from '../base/danbooru/parser';
 import { AbstractDanbooru } from '../base/danbooru';
 import { DanbooruApi } from '../base/danbooru/api';
 import { DanbooruParser } from '../base/danbooru/parser';
+import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 
 export class ATFbooru extends AbstractDanbooru {
   protected api = new DanbooruApi();
@@ -14,11 +15,15 @@ export class ATFbooru extends AbstractDanbooru {
     return 'booru.allthefallen.moe';
   }
 
+  constructor() {
+    downloadSetting.setDirectoryTemplate('ATFbooru/{artist}');
+    downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+
+    super();
+  }
+
   protected getCustomConfig() {
-    return {
-      folderPattern: 'ATFbooru/{artist}',
-      filenamePattern: '{id}_{artist}_{character}'
-    };
+    return undefined;
   }
 
   protected getAvatar() {

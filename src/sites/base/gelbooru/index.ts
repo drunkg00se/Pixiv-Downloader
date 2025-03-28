@@ -9,6 +9,7 @@ import { unsafeWindow } from '$';
 import { PostValidState } from '../parser';
 import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
 import { t } from '@/lib/i18n.svelte';
+import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 
 export abstract class GelbooruV020 extends SiteInject {
   protected abstract api: GelbooruApiV020;
@@ -166,10 +167,7 @@ export abstract class GelbooruV020 extends SiteInject {
       this.getFileHandleIfNeeded();
 
       const downloadConfigs = new BooruDownloadConfig(meta).create({
-        useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
-        filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
-        folderTemplate: this.config.get('folderPattern'),
-        filenameTemplate: this.config.get('filenamePattern'),
+        ...downloadSetting.current,
         cfClearance: this.config.get('auth')?.cf_clearance
       });
 
@@ -199,10 +197,7 @@ export abstract class GelbooruV020 extends SiteInject {
     const doc = await this.api.getPostDoc(id);
     const mediaMeta = this.parser.buildMeta(id, doc);
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
-      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
-      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
-      folderTemplate: this.config.get('folderPattern'),
-      filenameTemplate: this.config.get('filenamePattern'),
+      ...downloadSetting.current,
       cfClearance: this.config.get('auth')?.cf_clearance,
       setProgress: (progress: number) => {
         btn.setProgress(progress);

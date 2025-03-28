@@ -2,6 +2,7 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { GelbooruV020 } from '../base/gelbooru';
 import { GelbooruParserV020 } from '../base/gelbooru/parser';
 import { GelbooruApiV025 } from './api';
+import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 
 export class Gelbooru extends GelbooruV020 {
   protected api = new GelbooruApiV025();
@@ -11,11 +12,14 @@ export class Gelbooru extends GelbooruV020 {
     return 'gelbooru.com';
   }
 
+  constructor() {
+    downloadSetting.setDirectoryTemplate('gelbooru/{artist}');
+    downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+    super();
+  }
+
   protected getCustomConfig() {
-    return {
-      folderPattern: 'gelbooru/{artist}',
-      filenamePattern: '{id}_{artist}_{character}'
-    };
+    return undefined;
   }
 
   protected getAvatar(): string {

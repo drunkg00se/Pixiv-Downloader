@@ -6,15 +6,9 @@
     ThumbnailBtnType,
     ThumbnailButton
   } from '@/lib/components/Button/thumbnailButton';
-  import { getContext, onMount } from 'svelte';
-  import type { Config } from '@/lib/config';
+  import { onMount } from 'svelte';
   import { t } from '@/lib/i18n.svelte';
-
-  type BtnPosProp =
-    | 'pdl-btn-self-bookmark-left'
-    | 'pdl-btn-self-bookmark-top'
-    | 'pdl-btn-left'
-    | 'pdl-btn-top';
+  import { buttonPosition, ButtonStyleVariable } from '@/lib/store/buttonPosition.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -27,8 +21,6 @@
     class: UlClass = ''
   } = $props();
 
-  const configStore: Config = getContext('store');
-
   const ulClasses = $derived(
     `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
   );
@@ -36,15 +28,32 @@
   const max = 100;
   const step = 4;
 
-  let btnLeft = $state($configStore['pdl-btn-left']);
-  let btnTop = $state($configStore['pdl-btn-top']);
-  let bookmarkBtnLeft = $state($configStore['pdl-btn-self-bookmark-left']);
-  let bookmarkBtnTop = $state($configStore['pdl-btn-self-bookmark-top']);
+  $effect(() =>
+    buttonPosition.update(
+      ButtonStyleVariable.LEFT,
+      buttonPosition.current[ButtonStyleVariable.LEFT]
+    )
+  );
 
-  $effect(() => changeCssProp('--pdl-btn-left', btnLeft));
-  $effect(() => changeCssProp('--pdl-btn-top', btnTop));
-  $effect(() => changeCssProp('--pdl-btn-self-bookmark-left', bookmarkBtnLeft));
-  $effect(() => changeCssProp('--pdl-btn-self-bookmark-top', bookmarkBtnTop));
+  $effect(() =>
+    buttonPosition.update(ButtonStyleVariable.TOP, buttonPosition.current[ButtonStyleVariable.TOP])
+  );
+
+  if (env.isPixiv()) {
+    $effect(() =>
+      buttonPosition.update(
+        ButtonStyleVariable.PIXIV_BOOKMARK_LEFT,
+        buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]
+      )
+    );
+
+    $effect(() =>
+      buttonPosition.update(
+        ButtonStyleVariable.PIXIV_BOOKMARK_TOP,
+        buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_TOP]
+      )
+    );
+  }
 
   // 预览按钮
   let buttonContainer: HTMLDivElement;
@@ -72,14 +81,6 @@
 
     buttonContainer.appendChild(sampleBookmarkBtn);
   });
-
-  function updateBtnPosConfig(key: BtnPosProp, val: number) {
-    $configStore[key] = val;
-  }
-
-  function changeCssProp(key: string, value: number) {
-    document.documentElement.style.setProperty(key, String(value));
-  }
 </script>
 
 <div class={sectionSpace}>
@@ -100,12 +101,11 @@
           {max}
           ticked
           class="flex-grow"
-          bind:value={btnLeft}
-          on:change={() => updateBtnPosConfig('pdl-btn-left', btnLeft)}
+          bind:value={buttonPosition.current[ButtonStyleVariable.LEFT]}
         >
           <div class="flex justify-between items-center">
             <p>{t('setting.button_position.options.horizon_position')}</p>
-            <div class="text-xs">{btnLeft} / {max}</div>
+            <div class="text-xs">{buttonPosition.current[ButtonStyleVariable.LEFT]} / {max}</div>
           </div>
         </RangeSlider>
         <RangeSlider
@@ -114,12 +114,11 @@
           {max}
           ticked
           class="flex-grow"
-          bind:value={btnTop}
-          on:change={() => updateBtnPosConfig('pdl-btn-top', btnTop)}
+          bind:value={buttonPosition.current[ButtonStyleVariable.TOP]}
         >
           <div class="flex justify-between items-center">
             <p>{t('setting.button_position.options.vertical_position')}</p>
-            <div class="text-xs">{btnTop} / {max}</div>
+            <div class="text-xs">{buttonPosition.current[ButtonStyleVariable.TOP]} / {max}</div>
           </div>
         </RangeSlider>
       </li>
@@ -137,12 +136,13 @@
             {max}
             ticked
             class="flex-grow"
-            bind:value={bookmarkBtnLeft}
-            on:change={() => updateBtnPosConfig('pdl-btn-self-bookmark-left', bookmarkBtnLeft)}
+            bind:value={buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]}
           >
             <div class="flex justify-between items-center">
               <p>{t('setting.button_position.options.horizon_position')}</p>
-              <div class="text-xs">{bookmarkBtnLeft} / {max}</div>
+              <div class="text-xs">
+                {buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]} / {max}
+              </div>
             </div>
           </RangeSlider>
           <RangeSlider
@@ -151,12 +151,13 @@
             {max}
             ticked
             class="flex-grow"
-            bind:value={bookmarkBtnTop}
-            on:change={() => updateBtnPosConfig('pdl-btn-self-bookmark-top', bookmarkBtnTop)}
+            bind:value={buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_TOP]}
           >
             <div class="flex justify-between items-center">
               <p>{t('setting.button_position.options.vertical_position')}</p>
-              <div class="text-xs">{bookmarkBtnTop} / {max}</div>
+              <div class="text-xs">
+                {buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_TOP]} / {max}
+              </div>
             </div>
           </RangeSlider>
         </li>

@@ -7,6 +7,7 @@ import type { MediaMeta } from './parser';
 import type { TemplateData } from './downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { downloader } from '@/lib/downloader';
+import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 
 export abstract class SiteInject {
   protected app: InstanceType<typeof PdlApp>;
@@ -31,24 +32,8 @@ export abstract class SiteInject {
     });
   }
 
-  private injectStyle() {
-    (
-      [
-        'pdl-btn-self-bookmark-left',
-        'pdl-btn-self-bookmark-top',
-        'pdl-btn-left',
-        'pdl-btn-top'
-      ] as (keyof ConfigData)[]
-    ).forEach((key) => {
-      let val;
-      if ((val = this.config.get(key)) !== undefined) {
-        document.documentElement.style.setProperty('--' + key, val as string);
-      }
-    });
-  }
-
   protected getFileHandleIfNeeded() {
-    this.config.get('useFileSystemAccess') && downloader.dirHandleCheck();
+    downloadSetting.current.useFileSystemAccessApi && downloader.dirHandleCheck();
   }
 
   protected runScheduledTask() {
@@ -82,7 +67,6 @@ export abstract class SiteInject {
 
   public inject(): void {
     this.observeColorScheme();
-    this.injectStyle();
     GM_registerMenuCommand(
       t('button.setting'),
       () => {

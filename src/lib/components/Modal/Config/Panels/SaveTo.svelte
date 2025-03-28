@@ -4,12 +4,12 @@
   import fileSvg from '@/assets/file.svg?src';
   import { RadioGroup, RadioItem, SlideToggle } from '@skeletonlabs/skeleton';
   import { FilenameConfigAction, TagLanguage, type Config } from '@/lib/config';
-  import { replaceInvalidChar } from '@/lib/util';
   import { env } from '@/lib/env';
   import { downloader } from '@/lib/downloader';
   import { getContext, tick } from 'svelte';
   import type { TemplateData } from '@/sites/base/downloadConfig';
   import { t } from '@/lib/i18n.svelte';
+  import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -34,31 +34,12 @@
   let directoryRef: HTMLInputElement;
   let filenameRef: HTMLInputElement;
 
-  let directory = $state($configStore.folderPattern);
-  let filename = $state($configStore.filenamePattern);
+  let directory = $state(downloadSetting.current.directoryTemplate);
+  let filename = $state(downloadSetting.current.filenameTemplate);
   let fsaDirectory = $state(downloader.getCurrentFsaDirName());
 
-  function updateDirectory() {
-    const newDirectory = directory
-      .split('/')
-      .map(replaceInvalidChar)
-      .filter((path: string) => !!path)
-      .join('/');
-
-    $configStore.folderPattern = directory = newDirectory;
-  }
-
-  function updateFilename() {
-    const newFilename = replaceInvalidChar(filename);
-    if (newFilename === '') {
-      filename = $configStore.filenamePattern;
-    } else {
-      $configStore.filenamePattern = filename = newFilename;
-    }
-  }
-
   async function resetFolder() {
-    directory = $configStore.folderPattern;
+    directory = downloadSetting.current.directoryTemplate;
 
     // Chromium sets `selectionStart` and `selectionEnd` to 0 after changing `input.value`
     await tick();
@@ -68,7 +49,7 @@
   }
 
   async function resetFilename() {
-    filename = $configStore.filenamePattern;
+    filename = downloadSetting.current.filenameTemplate;
 
     await tick();
     const pos = filename.length;
@@ -76,6 +57,7 @@
     filenameRef.setSelectionRange(pos, pos);
   }
 
+  // TODO: reactivity
   async function updatefsaDir() {
     fsaDirectory = await downloader.updateDirHandle();
   }
@@ -106,16 +88,12 @@
     };
   }
 
-  const subDirectoryAvailable = $derived(
-    $configStore.useFileSystemAccess || env.isSupportSubpath()
-  );
+  const folderBtnDisabled = $derived(directory === downloadSetting.current.directoryTemplate);
 
-  const folderBtnDisabled = $derived(directory === $configStore.folderPattern);
-
-  const filenameBtnDisabled = $derived(filename === $configStore.filenamePattern);
+  const filenameBtnDisabled = $derived(filename === downloadSetting.current.filenameTemplate);
 
   const directoryPlaceholder = $derived(
-    subDirectoryAvailable
+    downloadSetting.isSubpathSupported
       ? t('setting.save_to.placeholder.sub_directory_unused')
       : env.isViolentmonkey()
         ? t('setting.save_to.placeholder.vm_not_supported')
@@ -141,7 +119,7 @@
             </i>
           </button>
 
-          {#if subDirectoryAvailable}
+          {#if downloadSetting.isSubpathSupported}
             <input
               type="text"
               placeholder={directoryPlaceholder}
@@ -156,7 +134,7 @@
             type="button"
             class="variant-soft-surface [&:not([disabled])]:variant-soft-primary"
             disabled={folderBtnDisabled}
-            onclick={updateDirectory}
+            onclick={() => (directory = downloadSetting.setDirectoryTemplate(directory))}
           >
             <i class=" w-6 fill-current">
               {@html check}
@@ -168,7 +146,7 @@
           {#each Object.entries(templates) as [template, description]}
             <button
               class="chip variant-soft hover:variant-filled"
-              disabled={!subDirectoryAvailable}
+              disabled={!downloadSetting.isSubpathSupported}
               onclick={insertDirTemplateAtCursor(`{${template}}`)}
             >
               <span>{description}</span>
@@ -183,11 +161,11 @@
           size="sm"
           name="fsa-enable"
           disabled={!env.isFileSystemAccessAvaliable()}
-          bind:checked={$configStore.useFileSystemAccess}
+          bind:checked={downloadSetting.current.useFileSystemAccessApi}
         ></SlideToggle>
       </li>
 
-      {#if $configStore.useFileSystemAccess}
+      {#if downloadSetting.current.useFileSystemAccessApi}
         <li>
           <p class="flex-auto">{t('setting.save_to.options.fsa_directory')}</p>
 
@@ -203,21 +181,21 @@
             <RadioItem
               name="filenameConfigAction"
               class="text-sm"
-              bind:group={$configStore.fileSystemFilenameConflictAction}
+              bind:group={downloadSetting.current.filenameConflictAction}
               value={FilenameConfigAction.UNIQUIFY}
               >{t('setting.save_to.radio.filename_conflict_option_uniquify')}</RadioItem
             >
             <RadioItem
               name="filenameConfigAction"
               class="text-sm"
-              bind:group={$configStore.fileSystemFilenameConflictAction}
+              bind:group={downloadSetting.current.filenameConflictAction}
               value={FilenameConfigAction.OVERWRITE}
               >{t('setting.save_to.radio.filename_conflict_option_overwrite')}</RadioItem
             >
             <RadioItem
               name="filenameConfigAction"
               class="text-sm"
-              bind:group={$configStore.fileSystemFilenameConflictAction}
+              bind:group={downloadSetting.current.filenameConflictAction}
               value={FilenameConfigAction.PROMPT}
               >{t('setting.save_to.radio.filename_conflict_option_prompt')}</RadioItem
             >
@@ -256,7 +234,7 @@
             type="button"
             class="variant-soft-surface dark:variant-fill-surface [&:not([disabled])]:variant-soft-primary"
             disabled={filenameBtnDisabled}
-            onclick={updateFilename}
+            onclick={() => (filename = downloadSetting.setFilenameTemplate(filename))}
           >
             <i class=" w-6 fill-current">
               {@html check}

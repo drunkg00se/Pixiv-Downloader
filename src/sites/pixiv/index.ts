@@ -26,6 +26,7 @@ import { TagLanguage, UgoiraFormat } from '@/lib/config';
 import type { TemplateData } from '../base/downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { ConvertFormat, type QualityOption } from '@/lib/converter/adapter';
+import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -237,6 +238,12 @@ export class Pixiv extends SiteInject {
     }
   });
 
+  constructor() {
+    downloadSetting.setDirectoryTemplate('pixiv/{artist}');
+    downloadSetting.setFilenameTemplate('{artist}_{title}_{id}_p{page}');
+    super();
+  }
+
   static get hostname(): string {
     return 'www.pixiv.net';
   }
@@ -256,10 +263,7 @@ export class Pixiv extends SiteInject {
   }
 
   protected getCustomConfig() {
-    return {
-      folderPattern: 'pixiv/{artist}',
-      filenamePattern: '{artist}_{title}_{id}_p{page}'
-    };
+    return undefined;
   }
 
   protected getSupportedTemplate(): Partial<TemplateData> {
@@ -437,11 +441,8 @@ export class Pixiv extends SiteInject {
     const qualityOption = this.getConvertQualityOption();
 
     const option = {
-      folderTemplate: this.config.get('folderPattern'),
-      filenameTemplate: this.config.get('filenamePattern'),
+      ...downloadSetting.current,
       useTranslatedTags: this.config.get('tagLang') !== TagLanguage.JAPANESE,
-      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
-      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
       setProgress
     };
 

@@ -1,3 +1,4 @@
+import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { Moebooru } from '../base/moebooru';
 import { MoebooruApi } from '../base/moebooru/api';
 import { MoebooruParser, type MoebooruBlacklistItem } from '../base/moebooru/parser';
@@ -6,6 +7,12 @@ import { MoebooruParser, type MoebooruBlacklistItem } from '../base/moebooru/par
 export class Konachan extends Moebooru {
   protected api = new MoebooruApi();
   protected parser = new MoebooruParser();
+
+  constructor() {
+    downloadSetting.setDirectoryTemplate('konachan/{artist}');
+    downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+    super();
+  }
 
   protected async getBlacklist(): Promise<MoebooruBlacklistItem[]> {
     return this.parser.parseBlacklistByCookie();
@@ -17,8 +24,6 @@ export class Konachan extends Moebooru {
 
   protected getCustomConfig() {
     return {
-      folderPattern: 'konachan/{artist}',
-      filenamePattern: '{id}_{artist}_{character}',
       auth: {
         cf_clearance: ''
       }

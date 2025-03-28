@@ -1,3 +1,4 @@
+import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { AbstractDanbooru } from '../base/danbooru';
 import { DanbooruApi } from '../base/danbooru/api';
 import { DanbooruParser } from '../base/danbooru/parser';
@@ -10,14 +11,18 @@ export class Danbooru extends AbstractDanbooru {
     return 'danbooru.donmai.us';
   }
 
+  constructor() {
+    downloadSetting.setDirectoryTemplate('danbooru/{artist}');
+    downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+
+    super();
+  }
+
   protected getAvatar() {
     return '/packs/static/danbooru-logo-128x128-ea111b6658173e847734.png';
   }
 
   protected getCustomConfig() {
-    return {
-      folderPattern: 'danbooru/{artist}',
-      filenamePattern: '{id}_{artist}_{character}'
-    };
+    return undefined;
   }
 }

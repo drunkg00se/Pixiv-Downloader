@@ -11,6 +11,7 @@ import { logger } from '@/lib/logger';
 import { regexp } from '@/lib/regExp';
 import type { TemplateData } from '../base/downloadConfig';
 import { t } from '@/lib/i18n.svelte';
+import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 
 export class Nijie extends SiteInject {
   protected parser = new NijieParser();
@@ -18,15 +19,18 @@ export class Nijie extends SiteInject {
 
   #searchParams = new URLSearchParams(location.search);
 
+  constructor() {
+    downloadSetting.setDirectoryTemplate('nijie/{artist}');
+    downloadSetting.setFilenameTemplate('{artist}_{title}_{id}_p{page}');
+    super();
+  }
+
   static get hostname() {
     return 'nijie.info';
   }
 
   protected getCustomConfig(): Partial<ConfigData> | void {
-    return {
-      folderPattern: 'nijie/{artist}',
-      filenamePattern: '{artist}_{title}_{id}_p{page}'
-    };
+    return undefined;
   }
 
   protected getSupportedTemplate(): Partial<TemplateData> {
@@ -331,12 +335,7 @@ export class Nijie extends SiteInject {
       this.getFileHandleIfNeeded();
 
       let downloadConfig: DownloadConfig | DownloadConfig[];
-      const option = {
-        folderTemplate: this.config.get('folderPattern'),
-        filenameTemplate: this.config.get('filenamePattern'),
-        useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
-        filenameConflictAction: this.config.get('fileSystemFilenameConflictAction')
-      };
+      const option = { ...downloadSetting.current };
 
       const bundleIllusts = this.config.get('bundleIllusts');
 
@@ -414,10 +413,7 @@ export class Nijie extends SiteInject {
     }
 
     const option = {
-      folderTemplate: this.config.get('folderPattern'),
-      filenameTemplate: this.config.get('filenamePattern'),
-      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
-      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
+      ...downloadSetting.current,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }

@@ -12,17 +12,17 @@ import { unsafeWindow } from '$';
 import { PostValidState } from '../base/parser';
 import { BooruDownloadConfig, type TemplateData } from '../base/downloadConfig';
 import { t } from '@/lib/i18n.svelte';
+import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 
 export class E621ng extends SiteInject {
-  static get hostname(): string[] {
-    return ['e621.net', 'e926.net', 'e6ai.net'];
-  }
-
   protected api: E621ngApi;
   protected parser: E621ngParser;
   protected profile: E621FullCurrentUser | null;
 
   constructor() {
+    downloadSetting.setDirectoryTemplate('e621/{artist}');
+    downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+
     super();
 
     const { username, apiKey } = this.config.get('auth')!;
@@ -42,14 +42,16 @@ export class E621ng extends SiteInject {
     });
   }
 
+  static get hostname(): string[] {
+    return ['e621.net', 'e926.net', 'e6ai.net'];
+  }
+
   protected getSupportedTemplate(): Partial<TemplateData> {
     return BooruDownloadConfig.supportedTemplate;
   }
 
   protected getCustomConfig(): Partial<ConfigData> | void {
     return {
-      folderPattern: 'e621/{artist}',
-      filenamePattern: '{id}_{artist}_{character}',
       auth: {
         username: '',
         apiKey: ''
@@ -314,10 +316,7 @@ export class E621ng extends SiteInject {
       this.getFileHandleIfNeeded();
 
       const downloadConfig = new BooruDownloadConfig(meta).create({
-        useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
-        filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
-        folderTemplate: this.config.get('folderPattern'),
-        filenameTemplate: this.config.get('filenamePattern')
+        ...downloadSetting.current
       });
 
       await downloader.download(downloadConfig, { priority: 1, signal });
@@ -370,10 +369,7 @@ export class E621ng extends SiteInject {
     const { post } = await this.api.getPost(id);
     const mediaMeta = this.parser.buildMeta(post);
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
-      useFileSystemAccessApi: this.config.get('useFileSystemAccess'),
-      filenameConflictAction: this.config.get('fileSystemFilenameConflictAction'),
-      folderTemplate: this.config.get('folderPattern'),
-      filenameTemplate: this.config.get('filenamePattern'),
+      ...downloadSetting.current,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }
