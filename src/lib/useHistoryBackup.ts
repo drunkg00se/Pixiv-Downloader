@@ -1,4 +1,3 @@
-import { HistoryBackupInterval } from '@/lib/config';
 import { historyDb, type HistoryImportObject } from '@/lib/db';
 import { aDownload } from '@/lib/util';
 
@@ -41,24 +40,10 @@ function exportAsCSV() {
   });
 }
 
-function backup(lastBackup: number, backupInterval: number): [false, null] | [true, number] {
-  if (backupInterval === HistoryBackupInterval.NEVER) return [false, null];
-
-  const timestamp = new Date().getTime();
-
-  if (!lastBackup || lastBackup + backupInterval * 1000 < timestamp) {
-    exportAsJSON();
-    return [true, timestamp];
-  }
-
-  return [false, null];
-}
-
 export function useHistoryBackup() {
   return {
     importJSON,
     exportAsJSON,
-    exportAsCSV,
-    backup
+    exportAsCSV
   };
 }

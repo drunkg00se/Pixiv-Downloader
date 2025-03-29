@@ -2,9 +2,10 @@
   import { RadioGroup, RadioItem, SlideToggle } from '@skeletonlabs/skeleton';
   import { UgoiraFormat, type Config } from '@/lib/config';
   import { env } from '@/lib/env';
-  import { nonNegativeInt } from '@/lib/components/Actions/nonNegativeInt';
   import { getContext } from 'svelte';
   import { t } from '@/lib/i18n.svelte';
+  import { convertSetting } from '@/lib/store/convertSetting.svelte';
+  import { inputValidation } from '@/lib/components/Actions/inputValidation.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -91,11 +92,18 @@
         <input
           type="number"
           class="input {inputClasses}"
+          required
           min="1"
           max="120"
           step="1"
-          use:nonNegativeInt={{ store: configStore, key: 'webmBitrate' }}
-          bind:value={$configStore.webmBitrate}
+          use:inputValidation={{
+            get() {
+              return convertSetting.current.webmBitrate;
+            },
+            set(value) {
+              convertSetting.current.webmBitrate = value;
+            }
+          }}
         />
       </li>
       <li>
@@ -106,11 +114,18 @@
         <input
           type="number"
           class="input {inputClasses}"
+          required
           min="1"
           max="99"
           step="1"
-          use:nonNegativeInt={{ store: configStore, key: 'mp4Bitrate' }}
-          bind:value={$configStore.mp4Bitrate}
+          use:inputValidation={{
+            get() {
+              return convertSetting.current.mp4Bitrate;
+            },
+            set(value) {
+              convertSetting.current.mp4Bitrate = value;
+            }
+          }}
         />
       </li>
       <li class="flex-col !items-stretch">
@@ -118,7 +133,10 @@
         <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
           <li class="items-center">
             <p class="flex-auto">{t('setting.ugoira.options.webp_lossy')}</p>
-            <SlideToggle name="lossless-webp" bind:checked={$configStore.losslessWebp} size="sm"
+            <SlideToggle
+              name="lossless-webp"
+              bind:checked={convertSetting.current.losslessWebp}
+              size="sm"
             ></SlideToggle>
           </li>
 
@@ -130,11 +148,18 @@
             <input
               type="number"
               class="input {inputClasses}"
+              required
               min="0"
               max="100"
               step="1"
-              use:nonNegativeInt={{ store: configStore, key: 'webpQuality' }}
-              bind:value={$configStore.webpQuality}
+              use:inputValidation={{
+                get() {
+                  return convertSetting.current.webpQuality;
+                },
+                set(value) {
+                  convertSetting.current.webpQuality = value;
+                }
+              }}
             />
           </li>
           <li class="items-center">
@@ -143,7 +168,7 @@
               <p class={descriptionText}>{t('setting.ugoira.options.webp_method_tips')}</p>
             </div>
 
-            <select class="select {inputClasses}" bind:value={$configStore.webpMehtod}>
+            <select class="select {inputClasses}" bind:value={convertSetting.current.webpMehtod}>
               {#each Array.from({ length: 7 }, (_, idx) => idx) as quality}
                 <option value={quality}>{quality}</option>
               {/each}
@@ -158,7 +183,7 @@
             {t('setting.ugoira.options.gif_tips')}
           </p>
         </div>
-        <select class="select {inputClasses}" bind:value={$configStore.gifQuality}>
+        <select class="select {inputClasses}" bind:value={convertSetting.current.gifQuality}>
           {#each Array.from({ length: 20 }, (_, idx) => idx) as quality}
             <option value={quality + 1}>{quality + 1}</option>
           {/each}
@@ -172,11 +197,18 @@
         <input
           type="number"
           class="input {inputClasses}"
+          required
           min="0"
           max="256"
           step="1"
-          use:nonNegativeInt={{ store: configStore, key: 'pngColor' }}
-          bind:value={$configStore.pngColor}
+          use:inputValidation={{
+            get() {
+              return convertSetting.current.pngColor;
+            },
+            set(value) {
+              convertSetting.current.pngColor = value;
+            }
+          }}
         />
       </li>
     </ul>

@@ -20,10 +20,14 @@ type DirHandleEventArgsMap = {
   [DirHandleStatus.PICKING]: never;
 };
 
-export type FilenameConflictAction = 'uniquify' | 'overwrite' | 'prompt';
+export const enum FilenameConflictAction {
+  UNIQUIFY = 'uniquify',
+  OVERWRITE = 'overwrite',
+  PROMPT = 'prompt'
+}
 
 class FileSystemAccessHandler {
-  private filenameConflictAction: FilenameConflictAction = 'uniquify';
+  private filenameConflictAction: FilenameConflictAction = FilenameConflictAction.UNIQUIFY;
 
   private dirHandle: FileSystemDirectoryHandle | undefined = undefined;
 

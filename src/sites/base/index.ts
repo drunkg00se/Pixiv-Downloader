@@ -1,13 +1,14 @@
 import { GM_registerMenuCommand } from '$';
 import { type ConfigData, loadConfig } from '@/lib/config';
 import { PdlApp } from '@/lib/components/App';
-import { useHistoryBackup } from '@/lib/components/Modal/Config/useHistoryBackup';
+import { useHistoryBackup } from '@/lib/useHistoryBackup';
 import type { BatchDownloadDefinition } from '@/lib/components/Downloader/useBatchDownload';
 import type { MediaMeta } from './parser';
 import type { TemplateData } from './downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { downloader } from '@/lib/downloader';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
+import { BackupInterval, backupSetting } from '@/lib/store/backupSetting.svelte';
 
 export abstract class SiteInject {
   protected app: InstanceType<typeof PdlApp>;
@@ -19,6 +20,8 @@ export abstract class SiteInject {
   constructor() {
     this.config = loadConfig(this.getCustomConfig() || undefined);
     this.app = this.createApp();
+
+    this.backupIfNeeded();
   }
 
   static get hostname(): string | string[] {
@@ -36,15 +39,18 @@ export abstract class SiteInject {
     downloadSetting.current.useFileSystemAccessApi && downloader.dirHandleCheck();
   }
 
-  protected runScheduledTask() {
-    const result = useHistoryBackup().backup(
-      this.config.get('lastHistoryBackup'),
-      this.config.get('historyBackupInterval')
-    );
+  protected backupIfNeeded() {
+    const { interval, lastTimestamp } = backupSetting.current;
 
-    if (result[0]) {
-      this.config.update((val) => ({ ...val, lastHistoryBackup: result[1] }));
-    }
+    if (interval === BackupInterval.NEVER) return;
+
+    const timestamp = new Date().getTime();
+
+    if (lastTimestamp + interval > timestamp) return;
+
+    useHistoryBackup().exportAsJSON();
+
+    backupSetting.current.lastTimestamp = timestamp;
   }
 
   protected setAppDarkMode() {
@@ -79,7 +85,6 @@ export abstract class SiteInject {
     );
 
     document.body.append(this.app);
-    this.runScheduledTask();
   }
 
   protected abstract getCustomConfig(): Partial<ConfigData> | void;

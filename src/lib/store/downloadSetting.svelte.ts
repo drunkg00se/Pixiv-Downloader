@@ -1,4 +1,4 @@
-import type { FilenameConflictAction } from '../downloader/fileSaveAdapters/fileSystemAccess';
+import { FilenameConflictAction } from '../downloader/fileSaveAdapters/fileSystemAccess';
 import { env } from '../env';
 import { replaceInvalidChar } from '../util';
 import { LocalStorage } from './storage.svelte';
@@ -16,7 +16,7 @@ class DownloadSettingStore extends LocalStorage<DownloadSettingState> {
       directoryTemplate: '',
       filenameTemplate: '{id}',
       useFileSystemAccessApi: false,
-      filenameConflictAction: 'uniquify'
+      filenameConflictAction: FilenameConflictAction.UNIQUIFY
     });
   }
 

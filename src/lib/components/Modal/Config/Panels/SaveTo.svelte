@@ -3,13 +3,14 @@
   import folderSvg from '@/assets/folder.svg?src';
   import fileSvg from '@/assets/file.svg?src';
   import { RadioGroup, RadioItem, SlideToggle } from '@skeletonlabs/skeleton';
-  import { FilenameConfigAction, TagLanguage, type Config } from '@/lib/config';
+  import { TagLanguage, type Config } from '@/lib/config';
   import { env } from '@/lib/env';
   import { downloader } from '@/lib/downloader';
   import { getContext, tick } from 'svelte';
   import type { TemplateData } from '@/sites/base/downloadConfig';
   import { t } from '@/lib/i18n.svelte';
   import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
+  import { FilenameConflictAction } from '@/lib/downloader/fileSaveAdapters/fileSystemAccess';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -179,24 +180,24 @@
           <p class="flex-auto">{t('setting.save_to.options.fsa_filename_conflict')}</p>
           <RadioGroup class="shrink-0">
             <RadioItem
-              name="filenameConfigAction"
+              name="FilenameConflictAction"
               class="text-sm"
               bind:group={downloadSetting.current.filenameConflictAction}
-              value={FilenameConfigAction.UNIQUIFY}
+              value={FilenameConflictAction.UNIQUIFY}
               >{t('setting.save_to.radio.filename_conflict_option_uniquify')}</RadioItem
             >
             <RadioItem
-              name="filenameConfigAction"
+              name="FilenameConflictAction"
               class="text-sm"
               bind:group={downloadSetting.current.filenameConflictAction}
-              value={FilenameConfigAction.OVERWRITE}
+              value={FilenameConflictAction.OVERWRITE}
               >{t('setting.save_to.radio.filename_conflict_option_overwrite')}</RadioItem
             >
             <RadioItem
-              name="filenameConfigAction"
+              name="FilenameConflictAction"
               class="text-sm"
               bind:group={downloadSetting.current.filenameConflictAction}
-              value={FilenameConfigAction.PROMPT}
+              value={FilenameConflictAction.PROMPT}
               >{t('setting.save_to.radio.filename_conflict_option_prompt')}</RadioItem
             >
           </RadioGroup>

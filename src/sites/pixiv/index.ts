@@ -27,6 +27,7 @@ import type { TemplateData } from '../base/downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { ConvertFormat, type QualityOption } from '@/lib/converter/adapter';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
+import { convertSetting } from '@/lib/store/convertSetting.svelte';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -398,29 +399,35 @@ export class Pixiv extends SiteInject {
       case UgoiraFormat.GIF:
         return {
           format: ConvertFormat.GIF,
-          quality: this.config.get('gifQuality')
+          quality: convertSetting.current.gifQuality
         };
       case UgoiraFormat.PNG:
         return {
           format: ConvertFormat.PNG,
-          cnum: this.config.get('pngColor')
+          cnum: convertSetting.current.pngColor
         };
       case UgoiraFormat.WEBM:
         return {
           format: ConvertFormat.WEBM,
-          bitrate: this.config.get('webmBitrate')
+          bitrate: convertSetting.current.webmBitrate
         };
-      case UgoiraFormat.WEBP:
+      case UgoiraFormat.WEBP: {
+        const {
+          losslessWebp: lossless,
+          webpQuality: quality,
+          webpMehtod: method
+        } = convertSetting.current;
         return {
           format: ConvertFormat.WEBP,
-          lossless: this.config.get('losslessWebp'),
-          quality: this.config.get('webpQuality'),
-          method: this.config.get('webpMehtod')
+          lossless,
+          quality,
+          method
         };
+      }
       case UgoiraFormat.MP4:
         return {
           format: ConvertFormat.MP4,
-          bitrate: this.config.get('mp4Bitrate')
+          bitrate: convertSetting.current.mp4Bitrate
         };
       default:
         return;

@@ -1,12 +1,11 @@
 <script lang="ts">
   import { historyDb } from '@/lib/db';
   import { FileButton, ProgressRadial } from '@skeletonlabs/skeleton';
-  import { useHistoryBackup } from '../useHistoryBackup';
-  import { HistoryBackupInterval, type Config } from '@/lib/config';
+  import { useHistoryBackup } from '@/lib/useHistoryBackup';
   import { logger } from '@/lib/logger';
   import { writable } from 'svelte/store';
-  import { getContext } from 'svelte';
   import { t } from '@/lib/i18n.svelte';
+  import { BackupInterval, backupSetting } from '@/lib/store/backupSetting.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -20,8 +19,6 @@
     inputWidth = 'w-32',
     class: UlClass = ''
   } = $props();
-
-  const configStore: Config = getContext('store');
 
   const ulClasses = $derived(
     `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
@@ -79,17 +76,17 @@
     <ul class={ulClasses}>
       <li>
         <p class="flex-auto">{t('setting.history.options.scheduled_backups')}</p>
-        <select class="select {inputClasses}" bind:value={$configStore.historyBackupInterval}>
-          <option value={HistoryBackupInterval.NEVER}
+        <select class="select {inputClasses}" bind:value={backupSetting.current.interval}>
+          <option value={BackupInterval.NEVER}
             >{t('setting.history.select.backup_interval_never')}</option
           >
-          <option value={HistoryBackupInterval.EVERY_DAY}
+          <option value={BackupInterval.EVERY_DAY}
             >{t('setting.history.select.backup_interval_every_day')}</option
           >
-          <option value={HistoryBackupInterval.EVERY_7_DAY}
+          <option value={BackupInterval.EVERY_7_DAY}
             >{t('setting.history.select.backup_interval_every_7_day')}</option
           >
-          <option value={HistoryBackupInterval.EVERY_30_DAY}
+          <option value={BackupInterval.EVERY_30_DAY}
             >{t('setting.history.select.backup_interval_every_30_day')}</option
           >
         </select>
@@ -102,7 +99,14 @@
     <ul class={ulClasses}>
       <li>
         <p class="flex-auto">{t('setting.history.options.export_as_json')}</p>
-        <button disabled={$exportJsonPending} class="btn variant-filled" onclick={wrapExportAsJSON}>
+        <button
+          disabled={$exportJsonPending}
+          class="btn variant-filled"
+          onclick={async () => {
+            await wrapExportAsJSON();
+            backupSetting.current.lastTimestamp = new Date().getTime();
+          }}
+        >
           {#if $exportJsonPending}
             <ProgressRadial
               stroke={80}
