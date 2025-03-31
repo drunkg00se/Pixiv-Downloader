@@ -21,14 +21,16 @@ export class Nijie extends SiteInject {
   #searchParams = new URLSearchParams(location.search);
 
   constructor() {
-    downloadSetting.setDirectoryTemplate('nijie/{artist}');
-    downloadSetting.setFilenameTemplate('{artist}_{title}_{id}_p{page}');
+    if (clientSetting.current.version === null) {
+      downloadSetting.setDirectoryTemplate('nijie/{artist}');
+      downloadSetting.setFilenameTemplate('{artist}_{title}_{id}_p{page}');
 
-    siteFeature.patch((state) => {
-      state.compressMultiIllusts ??= false;
-      state.addBookmark ??= false;
-      state.bookmarkWithTags ??= false;
-    });
+      siteFeature.patch((state) => {
+        state.compressMultiIllusts ??= false;
+        state.addBookmark ??= false;
+        state.bookmarkWithTags ??= false;
+      });
+    }
 
     clientSetting.setThemeWatcher({
       get current() {

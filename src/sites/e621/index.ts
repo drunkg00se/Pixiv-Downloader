@@ -14,6 +14,7 @@ import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { siteFeature } from '@/lib/store/siteFeature.svelte';
 import { userAuthentication } from '@/lib/store/auth.svelte';
+import { clientSetting } from '@/lib/store/clientSetting.svelte';
 
 export class E621ng extends SiteInject {
   protected api: E621ngApi = new E621ngApi({
@@ -27,17 +28,19 @@ export class E621ng extends SiteInject {
   protected profile: E621FullCurrentUser | null = null;
 
   constructor() {
-    downloadSetting.setDirectoryTemplate('e621/{artist}');
-    downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+    if (clientSetting.current.version === null) {
+      downloadSetting.setDirectoryTemplate('e621/{artist}');
+      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
 
-    siteFeature.patch((state) => {
-      state.addBookmark ??= false;
-    });
+      siteFeature.patch((state) => {
+        state.addBookmark ??= false;
+      });
 
-    userAuthentication.patch((state) => {
-      state.apiKey ??= '';
-      state.username ??= '';
-    });
+      userAuthentication.patch((state) => {
+        state.apiKey ??= '';
+        state.username ??= '';
+      });
+    }
 
     super();
 

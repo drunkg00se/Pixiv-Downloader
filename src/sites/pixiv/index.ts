@@ -243,20 +243,22 @@ export class Pixiv extends SiteInject {
   });
 
   constructor() {
-    downloadSetting.setDirectoryTemplate('pixiv/{artist}');
-    downloadSetting.setFilenameTemplate('{artist}_{title}_{id}_p{page}');
+    if (clientSetting.current.version === null) {
+      downloadSetting.setDirectoryTemplate('pixiv/{artist}');
+      downloadSetting.setFilenameTemplate('{artist}_{title}_{id}_p{page}');
 
-    siteFeature.patch((state) => {
-      state.ugoiraFormat ??= 'zip';
-      state.mixSeasonalEffect ??= false;
-      state.tagLocale ??= PixivTagLocale.JAPANESE;
-      state.compressMultiIllusts ??= false;
-      state.compressManga ??= false;
-      state.addBookmark ??= false;
-      state.bookmarkWithTags ??= false;
-      state.privateBookmarkIfR18 ??= false;
-      state.likeIllustWhenDownloading ??= false;
-    });
+      siteFeature.patch((state) => {
+        state.ugoiraFormat ??= 'zip';
+        state.mixSeasonalEffect ??= false;
+        state.tagLocale ??= PixivTagLocale.JAPANESE;
+        state.compressMultiIllusts ??= false;
+        state.compressManga ??= false;
+        state.addBookmark ??= false;
+        state.bookmarkWithTags ??= false;
+        state.privateBookmarkIfR18 ??= false;
+        state.likeIllustWhenDownloading ??= false;
+      });
+    }
 
     const themeWatcher = new ReactiveValue<boolean>(
       () => (document.documentElement.getAttribute('data-theme') as 'default' | 'dark') === 'dark',

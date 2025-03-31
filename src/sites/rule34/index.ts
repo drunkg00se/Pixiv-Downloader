@@ -15,12 +15,14 @@ export class Rule34 extends GelbooruV020 {
   }
 
   constructor() {
-    downloadSetting.setDirectoryTemplate('rule34/{artist}');
-    downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+    if (clientSetting.current.version === null) {
+      downloadSetting.setDirectoryTemplate('rule34/{artist}');
+      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
 
-    userAuthentication.patch((state) => {
-      state.cf_clearance ??= '';
-    });
+      userAuthentication.patch((state) => {
+        state.cf_clearance ??= '';
+      });
+    }
 
     clientSetting.setThemeWatcher({
       get current() {

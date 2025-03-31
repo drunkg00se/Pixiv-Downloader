@@ -3,18 +3,21 @@ import { GelbooruV020 } from '../base/gelbooru';
 import { GelbooruApiV020 } from '../base/gelbooru/api';
 import { GelbooruParserV020 } from '../base/gelbooru/parser';
 import { userAuthentication } from '@/lib/store/auth.svelte';
+import { clientSetting } from '@/lib/store/clientSetting.svelte';
 
 export class Safebooru extends GelbooruV020 {
   protected api = new GelbooruApiV020();
   protected parser = new GelbooruParserV020();
 
   constructor() {
-    downloadSetting.setDirectoryTemplate('safebooru/{artist}');
-    downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+    if (clientSetting.current.version === null) {
+      downloadSetting.setDirectoryTemplate('safebooru/{artist}');
+      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
 
-    userAuthentication.patch((state) => {
-      state.cf_clearance ??= '';
-    });
+      userAuthentication.patch((state) => {
+        state.cf_clearance ??= '';
+      });
+    }
 
     super();
   }

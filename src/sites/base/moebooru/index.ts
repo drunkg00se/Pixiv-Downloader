@@ -17,6 +17,7 @@ import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { siteFeature } from '@/lib/store/siteFeature.svelte';
 import { userAuthentication } from '@/lib/store/auth.svelte';
+import { clientSetting } from '@/lib/store/clientSetting.svelte';
 
 type MoebooruGeneratorPostData = PossibleMoebooruPostData & {
   tagType: Record<string, string>;
@@ -31,9 +32,12 @@ export abstract class Moebooru extends SiteInject {
   protected blacklist: MoebooruBlacklistItem[] | null = null;
 
   constructor() {
-    siteFeature.patch((state) => {
-      state.addBookmark ??= false;
-    });
+    if (clientSetting.current.version === null) {
+      siteFeature.patch((state) => {
+        state.addBookmark ??= false;
+      });
+    }
+
     super();
   }
 

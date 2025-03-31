@@ -14,8 +14,10 @@ export class Gelbooru extends GelbooruV020 {
   }
 
   constructor() {
-    downloadSetting.setDirectoryTemplate('gelbooru/{artist}');
-    downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+    if (clientSetting.current.version === null) {
+      downloadSetting.setDirectoryTemplate('gelbooru/{artist}');
+      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+    }
 
     clientSetting.setThemeWatcher({
       get current() {

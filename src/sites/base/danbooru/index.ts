@@ -26,9 +26,11 @@ export abstract class AbstractDanbooru extends SiteInject {
   protected blacklist: DanbooruBlacklistItem[] | null = null;
 
   constructor() {
-    siteFeature.patch((state) => {
-      state.addBookmark ??= false;
-    });
+    if (clientSetting.current.version === null) {
+      siteFeature.patch((state) => {
+        state.addBookmark ??= false;
+      });
+    }
 
     const userTheme = document.body.getAttribute('data-current-user-theme') as
       | 'auto'

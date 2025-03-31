@@ -12,6 +12,7 @@ import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { siteFeature } from '@/lib/store/siteFeature.svelte';
 import { userAuthentication } from '@/lib/store/auth.svelte';
+import { clientSetting } from '@/lib/store/clientSetting.svelte';
 
 export abstract class GelbooruV020 extends SiteInject {
   protected abstract api: GelbooruApiV020;
@@ -22,9 +23,11 @@ export abstract class GelbooruV020 extends SiteInject {
   protected searchParams = new URLSearchParams(location.search);
 
   constructor() {
-    siteFeature.patch((state) => {
-      state.addBookmark ??= false;
-    });
+    if (clientSetting.current.version === null) {
+      siteFeature.patch((state) => {
+        state.addBookmark ??= false;
+      });
+    }
 
     super();
   }

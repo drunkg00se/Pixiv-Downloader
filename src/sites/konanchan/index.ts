@@ -3,6 +3,7 @@ import { Moebooru } from '../base/moebooru';
 import { MoebooruApi } from '../base/moebooru/api';
 import { MoebooruParser, type MoebooruBlacklistItem } from '../base/moebooru/parser';
 import { userAuthentication } from '@/lib/store/auth.svelte';
+import { clientSetting } from '@/lib/store/clientSetting.svelte';
 
 // FIXME: svelte5 is borken in dev server.
 export class Konachan extends Moebooru {
@@ -10,12 +11,14 @@ export class Konachan extends Moebooru {
   protected parser = new MoebooruParser();
 
   constructor() {
-    downloadSetting.setDirectoryTemplate('konachan/{artist}');
-    downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+    if (clientSetting.current.version === null) {
+      downloadSetting.setDirectoryTemplate('konachan/{artist}');
+      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
 
-    userAuthentication.patch((state) => {
-      state.cf_clearance ??= '';
-    });
+      userAuthentication.patch((state) => {
+        state.cf_clearance ??= '';
+      });
+    }
 
     super();
   }
