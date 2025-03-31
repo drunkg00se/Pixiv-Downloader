@@ -1,9 +1,10 @@
 import { MediaQuery } from 'svelte/reactivity';
 import { LocalStorage } from './storage.svelte';
+import { locale, setlocale, type Locale } from '../i18n.svelte';
 
 type ClientSettingState = {
   theme: 'light' | 'dark' | 'auto';
-  // locale: string;
+  locale: Locale;
   version: string | null;
   showPopupButton: boolean;
 };
@@ -19,9 +20,13 @@ class ClientSettingStore extends LocalStorage<ClientSettingState> {
   constructor() {
     super('pdl-client-state', {
       theme: 'auto',
-      // locale: 'en',
+      locale: locale.current,
       version: null,
       showPopupButton: true
+    });
+
+    this.subscribe((state) => {
+      setlocale(state.locale);
     });
   }
 

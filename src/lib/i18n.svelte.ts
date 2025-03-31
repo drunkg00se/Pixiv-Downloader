@@ -1,17 +1,17 @@
 import en from '@/locales/en.json';
 import zh from '@/locales/zh-CN.json';
 
-export type MessageType<T, Message = string> = T extends string
+type MessageType<T, Message = string> = T extends string
   ? string
   : T extends Record<string, unknown>
     ? MessageDictionary<T, Message>
     : T;
 
-export type MessageDictionary<T, Message = string> = {
+type MessageDictionary<T, Message = string> = {
   [K in keyof T]: MessageType<T[K], Message>;
 };
 
-export type MessageValue<Message = string> = MessageDictionary<any, Message> | string;
+type MessageValue<Message = string> = MessageDictionary<any, Message> | string;
 
 type Message<Message = string> = Record<string, MessageValue<Message>>;
 
@@ -32,6 +32,7 @@ function createI18n<Schema extends Message, Locale extends string>(
   let locale = $state<Locale>(option.locale);
 
   const setlocale = (newlocale: Locale) => {
+    if (newlocale === locale || !Object.keys(option.message).includes(newlocale)) return;
     locale = newlocale;
   };
 
@@ -47,34 +48,32 @@ function createI18n<Schema extends Message, Locale extends string>(
     return msg as string;
   };
 
-  return function useI18n() {
-    return {
-      t,
-      setlocale,
+  return {
+    t,
+    setlocale,
 
-      locale: {
-        get current() {
-          return locale;
-        }
-      },
-
-      get availableLocales() {
-        return Object.keys(option.message);
+    locale: {
+      get current() {
+        return locale;
       }
-    };
+    },
+
+    get availableLocales() {
+      return Object.keys(option.message);
+    }
   };
 }
 
 const message = {
-  'zh-CN': zh,
-  'zh-TW': zh,
   zh,
   en
 };
 
-const useI18n = createI18n<typeof zh, keyof typeof message>({
-  locale: navigator.language in message ? (navigator.language as keyof typeof message) : 'en',
+export type Locale = keyof typeof message;
+
+const browserLocale = navigator.language.split('-')[0];
+
+export const { t, setlocale, locale, availableLocales } = createI18n<typeof zh, Locale>({
+  locale: browserLocale in message ? (browserLocale as keyof typeof message) : 'en',
   message
 });
-
-export const { t, setlocale, locale, availableLocales } = useI18n();
