@@ -48,26 +48,7 @@ export abstract class SiteInject {
     backupSetting.current.lastTimestamp = timestamp;
   }
 
-  protected setAppDarkMode() {
-    this.app.setAttribute('dark', '');
-  }
-
-  protected setAppLightMode() {
-    this.app.removeAttribute('dark');
-  }
-
-  protected observeColorScheme() {
-    const query = window.matchMedia('(prefers-color-scheme: dark)');
-
-    query.matches && this.setAppDarkMode();
-
-    query.addEventListener('change', (e) => {
-      e.matches ? this.setAppDarkMode() : this.setAppLightMode();
-    });
-  }
-
   public inject(): void {
-    this.observeColorScheme();
     GM_registerMenuCommand(
       t('button.setting'),
       () => {

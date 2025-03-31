@@ -14,23 +14,25 @@
   import { clientSetting } from '../store/clientSetting.svelte';
 
   interface Props extends Record<string, unknown> {
-    dark?: boolean;
     supportedTemplate?: Partial<TemplateData>;
     downloaderConfig?: BatchDownloadConfig<MediaMeta<string | string[]>>;
     useBatchDownload?: BatchDownloadDefinition<MediaMeta<string | string[]>>;
   }
 
-  let {
-    dark = false,
-    supportedTemplate = {},
-    downloaderConfig,
-    useBatchDownload
-  }: Props = $props();
+  let { supportedTemplate = {}, downloaderConfig, useBatchDownload }: Props = $props();
 
   setContext('supportedTemplate', supportedTemplate);
 
   initializeStores();
   const modalStore = getModalStore();
+
+  const dark = $derived.by(() => {
+    if (clientSetting.current.theme === 'auto') {
+      return clientSetting.autoTheme === 'dark';
+    }
+
+    return clientSetting.current.theme === 'dark';
+  });
 
   let root: HTMLDivElement;
 
@@ -105,8 +107,7 @@
   onmousedowncapture={preventBackDropClick}
   onmouseupcapture={preventBackDropClick}
   data-theme="skeleton"
-  class="contents"
-  class:dark
+  class={{ contents: true, dark }}
 >
   <Modal {components} class="!p-0" />
 

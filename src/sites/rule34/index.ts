@@ -4,6 +4,7 @@ import { GelbooruApiV020 } from '../base/gelbooru/api';
 import { Rule34Parser } from './parser';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { userAuthentication } from '@/lib/store/auth.svelte';
+import { clientSetting } from '@/lib/store/clientSetting.svelte';
 
 export class Rule34 extends GelbooruV020 {
   protected api = new GelbooruApiV020();
@@ -19,6 +20,12 @@ export class Rule34 extends GelbooruV020 {
 
     userAuthentication.patch((state) => {
       state.cf_clearance ??= '';
+    });
+
+    clientSetting.setThemeWatcher({
+      get current() {
+        return !!document.head.querySelector('link[href*="dark.css"]');
+      }
     });
 
     super();

@@ -3,6 +3,7 @@ import { GelbooruV020 } from '../base/gelbooru';
 import { GelbooruParserV020 } from '../base/gelbooru/parser';
 import { GelbooruApiV025 } from './api';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
+import { clientSetting } from '@/lib/store/clientSetting.svelte';
 
 export class Gelbooru extends GelbooruV020 {
   protected api = new GelbooruApiV025();
@@ -15,6 +16,13 @@ export class Gelbooru extends GelbooruV020 {
   constructor() {
     downloadSetting.setDirectoryTemplate('gelbooru/{artist}');
     downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+
+    clientSetting.setThemeWatcher({
+      get current() {
+        return !!document.head.querySelector('link[href*="dark.css"]');
+      }
+    });
+
     super();
   }
 

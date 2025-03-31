@@ -28,6 +28,8 @@ import { ConvertFormat, type QualityOption } from '@/lib/converter/adapter';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { convertSetting } from '@/lib/store/convertSetting.svelte';
 import { PixivTagLocale, siteFeature, type UgoiraFormat } from '@/lib/store/siteFeature.svelte';
+import { ReactiveValue } from '@/lib/reactiveValue.svelte';
+import { clientSetting } from '@/lib/store/clientSetting.svelte';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -256,6 +258,27 @@ export class Pixiv extends SiteInject {
       state.likeIllustWhenDownloading ??= false;
     });
 
+    const themeWatcher = new ReactiveValue<boolean>(
+      () => (document.documentElement.getAttribute('data-theme') as 'default' | 'dark') === 'dark',
+      (update) => {
+        const observer = new MutationObserver((records) => {
+          const isThemeChanged = records.some((record) => record.attributeName === 'data-theme');
+          isThemeChanged && update();
+        });
+        observer.observe(document.documentElement, {
+          attributes: true,
+          childList: false,
+          subtree: false
+        });
+
+        return () => {
+          observer.disconnect();
+        };
+      }
+    );
+
+    clientSetting.setThemeWatcher(themeWatcher);
+
     super();
   }
 
@@ -279,23 +302,6 @@ export class Pixiv extends SiteInject {
 
   protected getSupportedTemplate(): Partial<TemplateData> {
     return PixivDownloadConfig.supportedTemplate;
-  }
-
-  protected observeColorScheme() {
-    const onThemeChange = () => {
-      const sitePreferDark = document.documentElement.getAttribute('data-theme') as
-        | 'default'
-        | 'dark';
-      sitePreferDark === 'dark' ? this.setAppDarkMode() : this.setAppLightMode();
-    };
-
-    new MutationObserver(onThemeChange).observe(document.documentElement, {
-      attributes: true,
-      childList: false,
-      subtree: false
-    });
-
-    onThemeChange();
   }
 
   private injectThumbnailButtons(records: MutationRecord[]) {

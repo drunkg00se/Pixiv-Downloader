@@ -16,8 +16,6 @@ type PdlAppProps = {
 export const PdlApp = create_custom_element(
   App,
   {
-    dark: { type: 'Boolean' },
-    config: {},
     supportedTemplate: {},
     downloaderConfig: {},
     useBatchDownload: {}

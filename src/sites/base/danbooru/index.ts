@@ -16,6 +16,7 @@ import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { siteFeature } from '@/lib/store/siteFeature.svelte';
+import { clientSetting } from '@/lib/store/clientSetting.svelte';
 
 export abstract class AbstractDanbooru extends SiteInject {
   protected abstract api: DanbooruApi;
@@ -28,6 +29,20 @@ export abstract class AbstractDanbooru extends SiteInject {
     siteFeature.patch((state) => {
       state.addBookmark ??= false;
     });
+
+    const userTheme = document.body.getAttribute('data-current-user-theme') as
+      | 'auto'
+      | 'dark'
+      | 'light';
+
+    if (userTheme !== 'auto') {
+      clientSetting.setThemeWatcher({
+        get current() {
+          return userTheme === 'dark';
+        }
+      });
+    }
+
     super();
   }
 
@@ -319,28 +334,6 @@ export abstract class AbstractDanbooru extends SiteInject {
       this.blacklist = null;
     }
   });
-
-  protected observeColorScheme() {
-    const query = window.matchMedia('(prefers-color-scheme: dark)');
-    let uaPreferDark = query.matches;
-
-    const siteSetting = document.body.getAttribute('data-current-user-theme') as
-      | 'dark'
-      | 'auto'
-      | 'light';
-    const sitePreferDark = siteSetting === 'dark';
-
-    if (sitePreferDark || (siteSetting === 'auto' && uaPreferDark)) {
-      this.setAppDarkMode();
-    }
-
-    if (siteSetting === 'auto') {
-      query.addEventListener('change', (e) => {
-        uaPreferDark = e.matches;
-        uaPreferDark ? this.setAppDarkMode() : this.setAppLightMode();
-      });
-    }
-  }
 
   protected async addBookmark(id: string) {
     try {

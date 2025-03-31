@@ -12,6 +12,7 @@ import type { TemplateData } from '../base/downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { siteFeature } from '@/lib/store/siteFeature.svelte';
+import { clientSetting } from '@/lib/store/clientSetting.svelte';
 
 export class Nijie extends SiteInject {
   protected parser = new NijieParser();
@@ -27,6 +28,12 @@ export class Nijie extends SiteInject {
       state.compressMultiIllusts ??= false;
       state.addBookmark ??= false;
       state.bookmarkWithTags ??= false;
+    });
+
+    clientSetting.setThemeWatcher({
+      get current() {
+        return !!document.querySelector('link[type="text/css"][href*="night_mode"]');
+      }
     });
 
     super();
@@ -64,10 +71,6 @@ export class Nijie extends SiteInject {
 
   #getSearchId() {
     return this.#searchParams.get('id');
-  }
-
-  protected observeColorScheme() {
-    document.querySelector('link[type="text/css"][href*="night_mode"]') && this.setAppDarkMode();
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
