@@ -13,6 +13,7 @@ import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { siteFeature } from '@/lib/store/siteFeature.svelte';
 import { clientSetting } from '@/lib/store/clientSetting.svelte';
+import { legacyConfig } from '@/lib/store/legacyConfig';
 
 export class Nijie extends SiteInject {
   protected parser = new NijieParser();
@@ -22,13 +23,15 @@ export class Nijie extends SiteInject {
 
   constructor() {
     if (clientSetting.current.version === null) {
-      downloadSetting.setDirectoryTemplate('nijie/{artist}');
-      downloadSetting.setFilenameTemplate('{artist}_{title}_{id}_p{page}');
+      downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'nijie/{artist}');
+      downloadSetting.setFilenameTemplate(
+        legacyConfig.filenamePattern ?? '{artist}_{title}_{id}_p{page}'
+      );
 
       siteFeature.patch((state) => {
-        state.compressMultiIllusts ??= false;
+        state.compressMultiIllusts ??= legacyConfig.bundleIllusts ?? false;
         state.addBookmark ??= false;
-        state.bookmarkWithTags ??= false;
+        state.bookmarkWithTags ??= legacyConfig.addBookmarkWithTags ?? false;
       });
     }
 

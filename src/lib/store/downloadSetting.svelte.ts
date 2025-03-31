@@ -1,6 +1,7 @@
 import { FilenameConflictAction } from '../downloader/fileSaveAdapters/fileSystemAccess';
 import { env } from '../env';
 import { replaceInvalidChar } from '../util';
+import { legacyConfig } from './legacyConfig';
 import { LocalStorage } from './storage.svelte';
 
 export type DownloadSettingState = {
@@ -13,10 +14,11 @@ export type DownloadSettingState = {
 class DownloadSettingStore extends LocalStorage<DownloadSettingState> {
   constructor() {
     super('pdl-download-setting', {
-      directoryTemplate: '',
-      filenameTemplate: '{id}',
-      useFileSystemAccessApi: false,
-      filenameConflictAction: FilenameConflictAction.UNIQUIFY
+      directoryTemplate: legacyConfig.folderPattern ?? '',
+      filenameTemplate: legacyConfig.filenamePattern ?? '{id}',
+      useFileSystemAccessApi: legacyConfig.useFileSystemAccess ?? false,
+      filenameConflictAction:
+        legacyConfig.fileSystemFilenameConflictAction ?? FilenameConflictAction.UNIQUIFY
     });
   }
 

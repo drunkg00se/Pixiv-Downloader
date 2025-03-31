@@ -5,6 +5,7 @@ import { Rule34Parser } from './parser';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { userAuthentication } from '@/lib/store/auth.svelte';
 import { clientSetting } from '@/lib/store/clientSetting.svelte';
+import { legacyConfig } from '@/lib/store/legacyConfig';
 
 export class Rule34 extends GelbooruV020 {
   protected api = new GelbooruApiV020();
@@ -16,8 +17,10 @@ export class Rule34 extends GelbooruV020 {
 
   constructor() {
     if (clientSetting.current.version === null) {
-      downloadSetting.setDirectoryTemplate('rule34/{artist}');
-      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+      downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'rule34/{artist}');
+      downloadSetting.setFilenameTemplate(
+        legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'
+      );
 
       userAuthentication.patch((state) => {
         state.cf_clearance ??= '';

@@ -3,6 +3,7 @@ import { Moebooru } from '../base/moebooru';
 import { MoebooruApi } from '../base/moebooru/api';
 import { MoebooruParser, type MoebooruBlacklistItem } from '../base/moebooru/parser';
 import { clientSetting } from '@/lib/store/clientSetting.svelte';
+import { legacyConfig } from '@/lib/store/legacyConfig';
 
 export class Yande extends Moebooru {
   protected api = new MoebooruApi();
@@ -10,8 +11,10 @@ export class Yande extends Moebooru {
 
   constructor() {
     if (clientSetting.current.version === null) {
-      downloadSetting.setDirectoryTemplate('yande/{artist}');
-      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+      downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'yande/{artist}');
+      downloadSetting.setFilenameTemplate(
+        legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'
+      );
     }
 
     super();

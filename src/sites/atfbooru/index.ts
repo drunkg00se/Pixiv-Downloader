@@ -5,6 +5,7 @@ import { DanbooruApi } from '../base/danbooru/api';
 import { DanbooruParser } from '../base/danbooru/parser';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { clientSetting } from '@/lib/store/clientSetting.svelte';
+import { legacyConfig } from '@/lib/store/legacyConfig';
 
 export class ATFbooru extends AbstractDanbooru {
   protected api = new DanbooruApi();
@@ -18,8 +19,10 @@ export class ATFbooru extends AbstractDanbooru {
 
   constructor() {
     if (clientSetting.current.version === null) {
-      downloadSetting.setDirectoryTemplate('ATFbooru/{artist}');
-      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+      downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'ATFbooru/{artist}');
+      downloadSetting.setFilenameTemplate(
+        legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'
+      );
     }
 
     super();

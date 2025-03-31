@@ -1,3 +1,4 @@
+import { legacyConfig } from './legacyConfig';
 import { LocalStorage } from './storage.svelte';
 
 export type AuthState = {
@@ -9,9 +10,9 @@ export type AuthState = {
 class AuthStore extends LocalStorage<AuthState> {
   constructor() {
     super('pdl-auth-state', {
-      cf_clearance: null,
-      username: null,
-      apiKey: null
+      cf_clearance: legacyConfig.auth?.cf_clearance ?? null,
+      username: legacyConfig.auth?.username ?? null,
+      apiKey: legacyConfig.auth?.apiKey ?? null
     });
   }
 }

@@ -1,3 +1,4 @@
+import { legacyConfig } from './legacyConfig';
 import { LocalStorage } from './storage.svelte';
 
 type ConvertSettingState = {
@@ -15,13 +16,13 @@ type ConvertSettingState = {
 class ConvertSettingStore extends LocalStorage<ConvertSettingState> {
   constructor() {
     super('pdl-convert-setting', {
-      mp4Bitrate: 20,
-      webmBitrate: 20,
-      gifQuality: 10,
-      pngColor: 256,
-      losslessWebp: false,
-      webpQuality: 95,
-      webpMehtod: 4
+      mp4Bitrate: legacyConfig.mp4Bitrate ?? 20,
+      webmBitrate: legacyConfig.webmBitrate ?? 20,
+      gifQuality: legacyConfig.gifQuality ?? 10,
+      pngColor: legacyConfig.pngColor ?? 256,
+      losslessWebp: legacyConfig.losslessWebp ?? false,
+      webpQuality: legacyConfig.webpQuality ?? 95,
+      webpMehtod: legacyConfig.webpMehtod ?? 4
     });
   }
 }

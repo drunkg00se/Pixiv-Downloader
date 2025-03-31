@@ -30,6 +30,7 @@ import { convertSetting } from '@/lib/store/convertSetting.svelte';
 import { PixivTagLocale, siteFeature, type UgoiraFormat } from '@/lib/store/siteFeature.svelte';
 import { ReactiveValue } from '@/lib/reactiveValue.svelte';
 import { clientSetting } from '@/lib/store/clientSetting.svelte';
+import { legacyConfig } from '@/lib/store/legacyConfig';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -244,19 +245,22 @@ export class Pixiv extends SiteInject {
 
   constructor() {
     if (clientSetting.current.version === null) {
-      downloadSetting.setDirectoryTemplate('pixiv/{artist}');
-      downloadSetting.setFilenameTemplate('{artist}_{title}_{id}_p{page}');
+      downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'pixiv/{artist}');
+      downloadSetting.setFilenameTemplate(
+        legacyConfig.filenamePattern ?? '{artist}_{title}_{id}_p{page}'
+      );
 
       siteFeature.patch((state) => {
-        state.ugoiraFormat ??= 'zip';
-        state.mixSeasonalEffect ??= false;
-        state.tagLocale ??= PixivTagLocale.JAPANESE;
-        state.compressMultiIllusts ??= false;
-        state.compressManga ??= false;
+        state.ugoiraFormat ??= legacyConfig.ugoiraFormat ?? 'zip';
+        state.mixSeasonalEffect ??= legacyConfig.mixEffect ?? false;
+        state.tagLocale ??=
+          (legacyConfig.tagLang as PixivTagLocale | undefined) ?? PixivTagLocale.JAPANESE;
+        state.compressMultiIllusts ??= legacyConfig.bundleIllusts ?? false;
+        state.compressManga ??= legacyConfig.bundleManga ?? false;
         state.addBookmark ??= false;
-        state.bookmarkWithTags ??= false;
-        state.privateBookmarkIfR18 ??= false;
-        state.likeIllustWhenDownloading ??= false;
+        state.bookmarkWithTags ??= legacyConfig.addBookmarkWithTags ?? false;
+        state.privateBookmarkIfR18 ??= legacyConfig.privateR18 ?? false;
+        state.likeIllustWhenDownloading ??= legacyConfig.likeIllust ?? false;
       });
     }
 

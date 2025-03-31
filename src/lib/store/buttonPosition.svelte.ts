@@ -1,3 +1,4 @@
+import { legacyConfig } from './legacyConfig';
 import { LocalStorage } from './storage.svelte';
 
 export enum ButtonStyleVariable {
@@ -15,10 +16,10 @@ class ButtonPositionStore extends LocalStorage<ButtonPositionState> {
   constructor() {
     const storeKey = 'pdl-button-position';
     const initial: ButtonPositionState = {
-      [ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]: 100,
-      [ButtonStyleVariable.PIXIV_BOOKMARK_TOP]: 76,
-      [ButtonStyleVariable.LEFT]: 0,
-      [ButtonStyleVariable.TOP]: 100
+      [ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]: legacyConfig['pdl-btn-self-bookmark-left'] ?? 100,
+      [ButtonStyleVariable.PIXIV_BOOKMARK_TOP]: legacyConfig['pdl-btn-self-bookmark-top'] ?? 76,
+      [ButtonStyleVariable.LEFT]: legacyConfig['pdl-btn-left'] ?? 0,
+      [ButtonStyleVariable.TOP]: legacyConfig['pdl-btn-top'] ?? 100
     };
 
     super(storeKey, initial);

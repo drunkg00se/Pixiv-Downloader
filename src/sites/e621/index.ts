@@ -15,6 +15,7 @@ import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { siteFeature } from '@/lib/store/siteFeature.svelte';
 import { userAuthentication } from '@/lib/store/auth.svelte';
 import { clientSetting } from '@/lib/store/clientSetting.svelte';
+import { legacyConfig } from '@/lib/store/legacyConfig';
 
 export class E621ng extends SiteInject {
   protected api: E621ngApi = new E621ngApi({
@@ -29,8 +30,10 @@ export class E621ng extends SiteInject {
 
   constructor() {
     if (clientSetting.current.version === null) {
-      downloadSetting.setDirectoryTemplate('e621/{artist}');
-      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+      downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'e621/{artist}');
+      downloadSetting.setFilenameTemplate(
+        legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'
+      );
 
       siteFeature.patch((state) => {
         state.addBookmark ??= false;

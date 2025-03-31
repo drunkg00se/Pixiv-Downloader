@@ -4,6 +4,7 @@ import { GelbooruParserV020 } from '../base/gelbooru/parser';
 import { GelbooruApiV025 } from './api';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { clientSetting } from '@/lib/store/clientSetting.svelte';
+import { legacyConfig } from '@/lib/store/legacyConfig';
 
 export class Gelbooru extends GelbooruV020 {
   protected api = new GelbooruApiV025();
@@ -15,8 +16,10 @@ export class Gelbooru extends GelbooruV020 {
 
   constructor() {
     if (clientSetting.current.version === null) {
-      downloadSetting.setDirectoryTemplate('gelbooru/{artist}');
-      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+      downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'gelbooru/{artist}');
+      downloadSetting.setFilenameTemplate(
+        legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'
+      );
     }
 
     clientSetting.setThemeWatcher({

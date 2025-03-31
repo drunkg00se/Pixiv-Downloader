@@ -4,6 +4,7 @@ import { MoebooruApi } from '../base/moebooru/api';
 import { MoebooruParser, type MoebooruBlacklistItem } from '../base/moebooru/parser';
 import { userAuthentication } from '@/lib/store/auth.svelte';
 import { clientSetting } from '@/lib/store/clientSetting.svelte';
+import { legacyConfig } from '@/lib/store/legacyConfig';
 
 // FIXME: svelte5 is borken in dev server.
 export class Konachan extends Moebooru {
@@ -12,8 +13,10 @@ export class Konachan extends Moebooru {
 
   constructor() {
     if (clientSetting.current.version === null) {
-      downloadSetting.setDirectoryTemplate('konachan/{artist}');
-      downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+      downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'konachan/{artist}');
+      downloadSetting.setFilenameTemplate(
+        legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'
+      );
 
       userAuthentication.patch((state) => {
         state.cf_clearance ??= '';

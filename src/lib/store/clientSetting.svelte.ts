@@ -1,6 +1,7 @@
 import { MediaQuery } from 'svelte/reactivity';
 import { LocalStorage } from './storage.svelte';
 import { locale, setlocale, type Locale } from '../i18n.svelte';
+import { legacyConfig } from './legacyConfig';
 
 type ClientSettingState = {
   theme: 'light' | 'dark' | 'auto';
@@ -22,7 +23,7 @@ class ClientSettingStore extends LocalStorage<ClientSettingState> {
       theme: 'auto',
       locale: locale.current,
       version: null,
-      showPopupButton: true
+      showPopupButton: legacyConfig.showPopupButton ?? true
     });
 
     this.subscribe((state) => {

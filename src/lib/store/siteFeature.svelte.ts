@@ -1,4 +1,5 @@
 import { ConvertFormat } from '../converter/adapter';
+import { legacyConfig } from './legacyConfig';
 import { LocalStorage } from './storage.svelte';
 
 export const enum PixivTagLocale {
@@ -30,7 +31,7 @@ class SiteFeatureStore extends LocalStorage<SiteFeatureState> {
       tagLocale: null,
       compressMultiIllusts: null,
       compressManga: null,
-      addBookmark: null,
+      addBookmark: legacyConfig.addBookmark ?? null,
       bookmarkWithTags: null,
       privateBookmarkIfR18: null,
       likeIllustWhenDownloading: null
