@@ -1,6 +1,6 @@
 import { LocalStorage } from './storage.svelte';
 
-interface ConvertSettingState {
+type ConvertSettingState = {
   /** Mbps */
   mp4Bitrate: number;
   /** Mbps */
@@ -10,7 +10,7 @@ interface ConvertSettingState {
   losslessWebp: boolean;
   webpQuality: number;
   webpMehtod: number;
-}
+};
 
 class ConvertSettingStore extends LocalStorage<ConvertSettingState> {
   constructor() {

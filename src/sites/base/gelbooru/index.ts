@@ -10,6 +10,8 @@ import { PostValidState } from '../parser';
 import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
+import { siteFeature } from '@/lib/store/siteFeature.svelte';
+import { userAuthentication } from '@/lib/store/auth.svelte';
 
 export abstract class GelbooruV020 extends SiteInject {
   protected abstract api: GelbooruApiV020;
@@ -18,6 +20,14 @@ export abstract class GelbooruV020 extends SiteInject {
   protected abstract getThumbnailSelector(): string;
 
   protected searchParams = new URLSearchParams(location.search);
+
+  constructor() {
+    siteFeature.patch((state) => {
+      state.addBookmark ??= false;
+    });
+
+    super();
+  }
 
   protected getSupportedTemplate(): Partial<TemplateData> {
     return BooruDownloadConfig.supportedTemplate;
@@ -168,7 +178,7 @@ export abstract class GelbooruV020 extends SiteInject {
 
       const downloadConfigs = new BooruDownloadConfig(meta).create({
         ...downloadSetting.current,
-        cfClearance: this.config.get('auth')?.cf_clearance
+        cfClearance: userAuthentication.current.cf_clearance || undefined
       });
 
       await downloader.download(downloadConfigs, { signal });
@@ -198,14 +208,14 @@ export abstract class GelbooruV020 extends SiteInject {
     const mediaMeta = this.parser.buildMeta(id, doc);
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
       ...downloadSetting.current,
-      cfClearance: this.config.get('auth')?.cf_clearance,
+      cfClearance: userAuthentication.current.cf_clearance || undefined,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }
     });
 
     // TODO: check if post is already favorited.
-    this.config.get('addBookmark') && this.#addBookmark(id);
+    siteFeature.current.addBookmark && this.#addBookmark(id);
 
     await downloader.download(downloadConfig, { priority: 1 });
 

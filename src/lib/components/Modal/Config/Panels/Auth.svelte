@@ -1,6 +1,5 @@
 <script lang="ts">
-  import type { Config } from '@/lib/config';
-  import { getContext } from 'svelte';
+  import { userAuthentication, type AuthState } from '@/lib/store/auth.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -13,22 +12,27 @@
     class: UlClass = ''
   } = $props();
 
-  const store: Config = getContext('store');
-
   const blockClasses = $derived(`${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`);
+
+  const enabledAuth = Object.entries(userAuthentication.current)
+    .filter(([_, val]) => val !== null)
+    .map(([key, _]) => key);
 </script>
 
 <div class={sectionSpace}>
-  {#if $store.auth}
-    {#each Object.keys($store.auth) as key (key)}
-      <section>
-        <p class={sectionTitle}>{key.toUpperCase()}</p>
-        <div class={blockClasses}>
-          <div>
-            <input bind:value={$store.auth[key]} type="text" class="input" name="key" />
-          </div>
+  {#each enabledAuth as key (key)}
+    <section>
+      <p class={sectionTitle}>{key.toUpperCase()}</p>
+      <div class={blockClasses}>
+        <div>
+          <input
+            bind:value={userAuthentication.current[key as keyof AuthState]}
+            type="text"
+            class="input"
+            name={key}
+          />
         </div>
-      </section>
-    {/each}
-  {/if}
+      </div>
+    </section>
+  {/each}
 </div>

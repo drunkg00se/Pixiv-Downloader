@@ -7,10 +7,10 @@ export const enum BackupInterval {
   EVERY_30_DAY = 2_592_000_000
 }
 
-interface BackupState {
+type BackupState = {
   interval: BackupInterval;
   lastTimestamp: number;
-}
+};
 
 class BackupSettingStore extends LocalStorage<BackupState> {
   constructor() {

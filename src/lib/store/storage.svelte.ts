@@ -4,14 +4,34 @@
  */
 
 import { tick } from 'svelte';
+import { isPlainObject } from '../util';
 
-export class LocalStorage<T extends object> {
+type DeepPartial<T> = { [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K] };
+
+type LocalStorageBaseValueType =
+  | number
+  | string
+  | boolean
+  | null
+  | Array<LocalStorageBaseValueType>;
+
+type LocalStorageValueType = LocalStorageState | LocalStorageBaseValueType;
+
+type LocalStorageState = {
+  [k: string]: LocalStorageValueType;
+};
+
+type Subscriber<T> = (state: T) => void;
+
+export class LocalStorage<T extends LocalStorageState> {
   protected key: string;
   protected value: T;
   protected listeners = 0;
 
   #proxies = new WeakMap();
   #version = $state(0);
+
+  #subscriptions: Subscriber<T>[] = [];
 
   #handler = (e: StorageEvent) => {
     if (e.storageArea !== localStorage) return;
@@ -32,7 +52,7 @@ export class LocalStorage<T extends object> {
         this.value = initial;
         localStorage.setItem(key, JSON.stringify(initial));
       } else {
-        this.value = this.#mergeDefaultStore(JSON.parse(item), initial);
+        this.value = this.#mergeDeepState(JSON.parse(item), Object.assign({}, initial));
       }
     } else {
       this.value = initial;
@@ -45,24 +65,56 @@ export class LocalStorage<T extends object> {
     });
   }
 
-  #mergeDefaultStore<DefaultStore, BaseObject extends object>(
-    baseObject: BaseObject,
-    defaultStore: DefaultStore
-  ): DefaultStore {
-    const obj = Object.assign({}, defaultStore);
+  #mergeDeepState<T extends LocalStorageState>(patch: DeepPartial<T>, stateToPatch: T): T {
+    for (const key of Object.keys(patch)) {
+      // remove useless states when initializing.
+      if (!(key in stateToPatch)) continue;
 
-    for (const key in defaultStore) {
-      const baseVal = (baseObject as any)[key];
-      const defaultVal = obj[key];
+      const patchVal = patch[key];
+      const stateVal = stateToPatch[key];
 
-      if (typeof baseVal === 'object' && typeof defaultVal === 'object') {
-        this.#mergeDefaultStore(baseVal, defaultVal);
-      } else if (baseVal !== undefined) {
-        obj[key] = baseVal;
+      if (isPlainObject(patchVal) && isPlainObject(stateVal)) {
+        this.#mergeDeepState(
+          patchVal as DeepPartial<LocalStorageState>,
+          stateVal as LocalStorageState
+        );
+      } else if (patchVal !== undefined) {
+        (stateToPatch[key] as LocalStorageBaseValueType) = patchVal as LocalStorageBaseValueType;
       }
     }
 
-    return obj;
+    return stateToPatch;
+  }
+
+  public patch(patchStateOrFn: Partial<T> | Subscriber<T>) {
+    this.#version += 1;
+
+    if (typeof patchStateOrFn === 'function') {
+      patchStateOrFn(this.value);
+    } else {
+      this.#mergeDeepState(patchStateOrFn, this.value);
+    }
+
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(this.key, JSON.stringify(this.value));
+    }
+
+    this.#runSubscriptions();
+  }
+
+  #runSubscriptions() {
+    this.#subscriptions.slice().forEach((subscriber) => subscriber(this.value));
+  }
+
+  public subscribe(subscriber: Subscriber<T>) {
+    this.#subscriptions.push(subscriber);
+
+    return () => {
+      const idx = this.#subscriptions.indexOf(subscriber);
+      if (idx > -1) {
+        this.#subscriptions.splice(idx, 1);
+      }
+    };
   }
 
   #proxy(value: unknown) {
@@ -73,7 +125,7 @@ export class LocalStorage<T extends object> {
     let p = this.#proxies.get(value);
 
     if (!p) {
-      console.log('create new Proxy');
+      console.log('create new Proxy', value);
 
       p = new Proxy(value, {
         get: (target, property) => {
@@ -81,12 +133,17 @@ export class LocalStorage<T extends object> {
           return this.#proxy(Reflect.get(target, property));
         },
         set: (target, property, value) => {
+          $inspect.trace();
+
           this.#version += 1;
+
           Reflect.set(target, property, value);
 
           if (typeof localStorage !== 'undefined') {
             localStorage.setItem(this.key, JSON.stringify(this.value));
           }
+
+          this.#runSubscriptions();
 
           return true;
         }
@@ -109,6 +166,7 @@ export class LocalStorage<T extends object> {
         }
 
         this.listeners += 1;
+
         return () => {
           tick().then(() => {
             this.listeners -= 1;
@@ -125,12 +183,14 @@ export class LocalStorage<T extends object> {
   }
 
   set current(value) {
+    this.#version += 1;
+
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(this.key, JSON.stringify(value));
     }
 
     this.value = value;
 
-    this.#version += 1;
+    this.#runSubscriptions();
   }
 }

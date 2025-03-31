@@ -21,8 +21,4 @@ export class Danbooru extends AbstractDanbooru {
   protected getAvatar() {
     return '/packs/static/danbooru-logo-128x128-ea111b6658173e847734.png';
   }
-
-  protected getCustomConfig() {
-    return undefined;
-  }
 }

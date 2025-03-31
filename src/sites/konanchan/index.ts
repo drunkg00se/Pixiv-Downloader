@@ -2,6 +2,7 @@ import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { Moebooru } from '../base/moebooru';
 import { MoebooruApi } from '../base/moebooru/api';
 import { MoebooruParser, type MoebooruBlacklistItem } from '../base/moebooru/parser';
+import { userAuthentication } from '@/lib/store/auth.svelte';
 
 // FIXME: svelte5 is borken in dev server.
 export class Konachan extends Moebooru {
@@ -11,6 +12,11 @@ export class Konachan extends Moebooru {
   constructor() {
     downloadSetting.setDirectoryTemplate('konachan/{artist}');
     downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+
+    userAuthentication.patch((state) => {
+      state.cf_clearance ??= '';
+    });
+
     super();
   }
 
@@ -20,14 +26,6 @@ export class Konachan extends Moebooru {
 
   static get hostname(): string[] {
     return ['konachan.com', 'konachan.net'];
-  }
-
-  protected getCustomConfig() {
-    return {
-      auth: {
-        cf_clearance: ''
-      }
-    };
   }
 
   #fixPoolImageStyle() {

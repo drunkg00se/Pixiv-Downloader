@@ -2,8 +2,8 @@ import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { GelbooruV020 } from '../base/gelbooru';
 import { GelbooruApiV020 } from '../base/gelbooru/api';
 import { Rule34Parser } from './parser';
-import type { ConfigData } from '@/lib/config';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
+import { userAuthentication } from '@/lib/store/auth.svelte';
 
 export class Rule34 extends GelbooruV020 {
   protected api = new GelbooruApiV020();
@@ -16,6 +16,11 @@ export class Rule34 extends GelbooruV020 {
   constructor() {
     downloadSetting.setDirectoryTemplate('rule34/{artist}');
     downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
+
+    userAuthentication.patch((state) => {
+      state.cf_clearance ??= '';
+    });
+
     super();
   }
 
@@ -25,14 +30,6 @@ export class Rule34 extends GelbooruV020 {
 
   protected getThumbnailSelector(): string {
     return '.thumb > a:first-child:not(:has(.blacklist-img))';
-  }
-
-  protected getCustomConfig(): Partial<ConfigData> {
-    return {
-      auth: {
-        cf_clearance: ''
-      }
-    };
   }
 
   protected setThumbnailStyle(btnContainer: HTMLAnchorElement) {

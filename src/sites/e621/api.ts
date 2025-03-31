@@ -231,8 +231,19 @@ export class E621ngApi extends ApiBase {
     this.#authParams = new URLSearchParams({ username, apiKey, _client: UA });
   }
 
-  updateAuthIfNeeded(username: string, apiKey: string) {
+  get username() {
+    return this.#authParams.get('username')!;
+  }
+
+  set username(username: string) {
     username !== this.#authParams.get('username') && this.#authParams.set('username', username);
+  }
+
+  get apiKey() {
+    return this.#authParams.get('apiKey')!;
+  }
+
+  set apiKey(apiKey: string) {
     apiKey !== this.#authParams.get('apiKey') && this.#authParams.set('apiKey', apiKey);
   }
 

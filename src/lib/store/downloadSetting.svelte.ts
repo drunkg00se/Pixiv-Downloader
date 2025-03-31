@@ -3,12 +3,12 @@ import { env } from '../env';
 import { replaceInvalidChar } from '../util';
 import { LocalStorage } from './storage.svelte';
 
-export interface DownloadSettingState {
+export type DownloadSettingState = {
   directoryTemplate: string;
   filenameTemplate: string;
   useFileSystemAccessApi: boolean;
   filenameConflictAction: FilenameConflictAction;
-}
+};
 
 class DownloadSettingStore extends LocalStorage<DownloadSettingState> {
   constructor() {

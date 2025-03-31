@@ -21,8 +21,4 @@ export class Sakugabooru extends Moebooru {
   static get hostname(): string {
     return 'www.sakugabooru.com';
   }
-
-  protected getCustomConfig() {
-    return undefined;
-  }
 }

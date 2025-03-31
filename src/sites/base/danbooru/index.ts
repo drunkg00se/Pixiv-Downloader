@@ -15,6 +15,7 @@ import { PostValidState } from '../parser';
 import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
+import { siteFeature } from '@/lib/store/siteFeature.svelte';
 
 export abstract class AbstractDanbooru extends SiteInject {
   protected abstract api: DanbooruApi;
@@ -22,6 +23,13 @@ export abstract class AbstractDanbooru extends SiteInject {
 
   protected profile: DanbooruUserProfile | null = null;
   protected blacklist: DanbooruBlacklistItem[] | null = null;
+
+  constructor() {
+    siteFeature.patch((state) => {
+      state.addBookmark ??= false;
+    });
+    super();
+  }
 
   protected abstract getAvatar(): string;
 
@@ -367,7 +375,7 @@ export abstract class AbstractDanbooru extends SiteInject {
       }
     });
 
-    this.config.get('addBookmark') && this.addBookmark(id);
+    siteFeature.current.addBookmark && this.addBookmark(id);
 
     await downloader.download(downloadConfig, { priority: 1 });
 

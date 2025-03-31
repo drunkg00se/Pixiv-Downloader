@@ -18,10 +18,6 @@ export class Gelbooru extends GelbooruV020 {
     super();
   }
 
-  protected getCustomConfig() {
-    return undefined;
-  }
-
   protected getAvatar(): string {
     return '/user_avatars/honkonymous.png';
   }

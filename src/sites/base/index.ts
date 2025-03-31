@@ -1,5 +1,4 @@
 import { GM_registerMenuCommand } from '$';
-import { type ConfigData, loadConfig } from '@/lib/config';
 import { PdlApp } from '@/lib/components/App';
 import { useHistoryBackup } from '@/lib/useHistoryBackup';
 import type { BatchDownloadDefinition } from '@/lib/components/Downloader/useBatchDownload';
@@ -13,12 +12,9 @@ import { BackupInterval, backupSetting } from '@/lib/store/backupSetting.svelte'
 export abstract class SiteInject {
   protected app: InstanceType<typeof PdlApp>;
 
-  protected config: ReturnType<typeof loadConfig>;
-
   protected useBatchDownload?: BatchDownloadDefinition<MediaMeta<string | string[]>>;
 
   constructor() {
-    this.config = loadConfig(this.getCustomConfig() || undefined);
     this.app = this.createApp();
 
     this.backupIfNeeded();
@@ -30,7 +26,6 @@ export abstract class SiteInject {
 
   private createApp() {
     return new PdlApp({
-      config: this.config,
       supportedTemplate: this.getSupportedTemplate()
     });
   }
@@ -86,8 +81,6 @@ export abstract class SiteInject {
 
     document.body.append(this.app);
   }
-
-  protected abstract getCustomConfig(): Partial<ConfigData> | void;
 
   protected abstract getSupportedTemplate(): Partial<TemplateData>;
 }

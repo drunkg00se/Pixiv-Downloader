@@ -12,9 +12,8 @@
 
   import menuOpen from '@/assets/menu-open.svg?src';
   import menuClose from '@/assets/menu-close.svg?src';
-  import { getContext } from 'svelte';
-  import type { Config } from '@/lib/config';
   import { t } from '@/lib/i18n.svelte';
+  import { userAuthentication } from '@/lib/store/auth.svelte';
 
   interface Props {
     parent: { onClose: () => void };
@@ -25,8 +24,6 @@
   let slected = $state(0);
 
   let showListbox = $state(true);
-
-  const configStore: Config = getContext('store');
 
   const optionList = [
     {
@@ -53,7 +50,7 @@
     {
       name: () => t('setting.authorization.title'),
       component: Auth,
-      show: !!$configStore.auth
+      show: Object.values(userAuthentication.current).some((val) => val !== null)
     },
     {
       name: () => t('setting.feedback.title'),

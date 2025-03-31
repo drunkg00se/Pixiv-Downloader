@@ -15,6 +15,8 @@ import { PostValidState } from '../parser';
 import { BooruDownloadConfig, type TemplateData } from '../downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
+import { siteFeature } from '@/lib/store/siteFeature.svelte';
+import { userAuthentication } from '@/lib/store/auth.svelte';
 
 type MoebooruGeneratorPostData = PossibleMoebooruPostData & {
   tagType: Record<string, string>;
@@ -27,6 +29,13 @@ export abstract class Moebooru extends SiteInject {
   protected abstract getBlacklist(): Promise<MoebooruBlacklistItem[]>;
 
   protected blacklist: MoebooruBlacklistItem[] | null = null;
+
+  constructor() {
+    siteFeature.patch((state) => {
+      state.addBookmark ??= false;
+    });
+    super();
+  }
 
   protected getSupportedTemplate(): Partial<TemplateData> {
     return BooruDownloadConfig.supportedTemplate;
@@ -278,7 +287,7 @@ export abstract class Moebooru extends SiteInject {
 
       const downloadConfig = new BooruDownloadConfig(meta).create({
         ...downloadSetting.current,
-        cfClearance: this.config.get('auth')?.cf_clearance
+        cfClearance: userAuthentication.current.cf_clearance || undefined
       });
 
       await downloader.download(downloadConfig, { signal });
@@ -309,13 +318,13 @@ export abstract class Moebooru extends SiteInject {
 
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
       ...downloadSetting.current,
-      cfClearance: this.config.get('auth')?.cf_clearance,
+      cfClearance: userAuthentication.current.cf_clearance || undefined,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }
     });
 
-    if (this.config.get('addBookmark') && !this.parser.isFavorite(id, votes)) {
+    if (siteFeature.current.addBookmark && !this.parser.isFavorite(id, votes)) {
       const token = this.parser.parseCsrfToken();
       this.api.addFavorite(id, token).catch(logger.error);
     }

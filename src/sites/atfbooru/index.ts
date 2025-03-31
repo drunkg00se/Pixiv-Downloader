@@ -22,10 +22,6 @@ export class ATFbooru extends AbstractDanbooru {
     super();
   }
 
-  protected getCustomConfig() {
-    return undefined;
-  }
-
   protected getAvatar() {
     return '/favicon.svg';
   }

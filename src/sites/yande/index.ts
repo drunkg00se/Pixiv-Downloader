@@ -21,8 +21,4 @@ export class Yande extends Moebooru {
   static get hostname(): string {
     return 'yande.re';
   }
-
-  protected getCustomConfig() {
-    return undefined;
-  }
 }

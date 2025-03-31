@@ -21,7 +21,7 @@ import type {
   ValidatedArtworkGenerator,
   YieldArtwork
 } from '@/lib/components/Downloader/useBatchDownload';
-import { TagLanguage } from '@/lib/config';
+import type { PixivTagLocale } from '@/lib/store/siteFeature.svelte';
 
 interface PixivMetaBase<T extends string | string[]> extends MediaMeta<T> {
   userId: string;
@@ -46,7 +46,7 @@ export type PixivMeta = PixivIllustMeta<string | string[]> | PixivUgoiraMeta;
 
 interface PixivParam extends Record<string, string> {
   type: 'html' | 'api' | 'unlisted';
-  tagLang: TagLanguage;
+  tagLang: PixivTagLocale;
 }
 
 interface PixivParser {

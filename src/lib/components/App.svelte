@@ -8,14 +8,13 @@
   import type { ModalComponent } from '@skeletonlabs/skeleton';
   import type { BatchDownloadConfig, BatchDownloadDefinition } from './Downloader/useBatchDownload';
   import type { MediaMeta } from '@/sites/base/parser';
-  import type { Config as ConfigStore } from '../config';
   import Config from './Modal/Config/Config.svelte';
   import type { TemplateData } from '@/sites/base/downloadConfig';
   import { t } from '../i18n.svelte';
+  import { clientSetting } from '../store/clientSetting.svelte';
 
   interface Props extends Record<string, unknown> {
     dark?: boolean;
-    config: ConfigStore;
     supportedTemplate?: Partial<TemplateData>;
     downloaderConfig?: BatchDownloadConfig<MediaMeta<string | string[]>>;
     useBatchDownload?: BatchDownloadDefinition<MediaMeta<string | string[]>>;
@@ -23,14 +22,12 @@
 
   let {
     dark = false,
-    config,
     supportedTemplate = {},
     downloaderConfig,
     useBatchDownload
   }: Props = $props();
 
   setContext('supportedTemplate', supportedTemplate);
-  setContext('store', config);
 
   initializeStores();
   const modalStore = getModalStore();
@@ -93,8 +90,8 @@
     addStyleToShadow(shadow);
     shadow.host.setAttribute('style', 'position:fixed; z-index:99999');
 
-    if ($config.showMsg) {
-      $config.showMsg = false;
+    if (clientSetting.current.version !== __VERSION__) {
+      clientSetting.current.version = __VERSION__;
       showChangelog();
     }
   });
@@ -117,7 +114,7 @@
     <Downloader {downloaderConfig} {useBatchDownload} />
   {/if}
 
-  {#if $config.showPopupButton}
+  {#if clientSetting.current.showPopupButton}
     <button
       onclick={showSetting}
       type="button"

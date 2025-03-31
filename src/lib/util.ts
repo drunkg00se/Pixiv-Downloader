@@ -163,3 +163,22 @@ export function intersect(a: unknown[], b: unknown[]): unknown[] {
 
   return result;
 }
+
+export function isPlainObject(val: unknown): boolean {
+  if (typeof val !== 'object') return false;
+
+  if (Object.prototype.toString.call(val) !== '[object Object]') return false;
+
+  const proto = Object.getPrototypeOf(val);
+
+  if (proto === null) return true;
+
+  const valConstructor =
+    Object.prototype.hasOwnProperty.call(proto, 'constructor') && proto.constructor;
+
+  return (
+    typeof valConstructor === 'function' &&
+    valConstructor instanceof valConstructor &&
+    Function.prototype.toString.call(valConstructor) === Function.prototype.toString.call(Object)
+  );
+}

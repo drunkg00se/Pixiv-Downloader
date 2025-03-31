@@ -7,12 +7,10 @@ import {
   type PageOption
 } from './Downloader/useBatchDownload';
 import { create_custom_element } from 'svelte/internal/client';
-import type { Config } from '../config';
 import type { TemplateData } from '@/sites/base/downloadConfig';
 
 type PdlAppProps = {
   supportedTemplate: Partial<TemplateData>;
-  config: Config;
 };
 
 export const PdlApp = create_custom_element(
@@ -33,9 +31,6 @@ export const PdlApp = create_custom_element(
       private supportedTemplate: Partial<TemplateData>;
 
       //@ts-expect-error no_unsed_var
-      private config: Config;
-
-      //@ts-expect-error no_unsed_var
       private downloaderConfig?: BatchDownloadConfig<any, any>;
 
       //@ts-expect-error no_unsed_var
@@ -45,8 +40,6 @@ export const PdlApp = create_custom_element(
         super();
 
         this.supportedTemplate = props.supportedTemplate;
-
-        this.config = props.config;
       }
 
       initBatchDownloader<T extends MediaMeta<string | string[]>, P extends PageOption<T>>(

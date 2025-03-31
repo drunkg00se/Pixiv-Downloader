@@ -1,11 +1,11 @@
 <script lang="ts">
   import { RadioGroup, RadioItem, SlideToggle } from '@skeletonlabs/skeleton';
-  import { UgoiraFormat, type Config } from '@/lib/config';
   import { env } from '@/lib/env';
-  import { getContext } from 'svelte';
   import { t } from '@/lib/i18n.svelte';
   import { convertSetting } from '@/lib/store/convertSetting.svelte';
   import { inputValidation } from '@/lib/components/Actions/inputValidation.svelte';
+  import { siteFeature } from '@/lib/store/siteFeature.svelte';
+  import { ConvertFormat } from '@/lib/converter/adapter';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -21,8 +21,6 @@
     inputRounded = 'rounded-full',
     inputWidth = 'w-32'
   } = $props();
-
-  const configStore: Config = getContext('store');
 
   const ulClasses = $derived(
     `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
@@ -41,40 +39,40 @@
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={$configStore.ugoiraFormat}
-            value={UgoiraFormat.ZIP}>Zip</RadioItem
+            bind:group={siteFeature.current.ugoiraFormat}
+            value="zip">Zip</RadioItem
           >
 
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={$configStore.ugoiraFormat}
-            value={UgoiraFormat.WEBM}>Webm</RadioItem
+            bind:group={siteFeature.current.ugoiraFormat}
+            value={ConvertFormat.WEBM}>Webm</RadioItem
           >
           <RadioItem
             disabled={!env.videoFrameSupported()}
             class="text-sm"
-            bind:group={$configStore.ugoiraFormat}
+            bind:group={siteFeature.current.ugoiraFormat}
             name="ugoiraFormat"
-            value={UgoiraFormat.MP4}>Mp4</RadioItem
+            value={ConvertFormat.MP4}>Mp4</RadioItem
           >
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={$configStore.ugoiraFormat}
-            value={UgoiraFormat.WEBP}>Webp</RadioItem
+            bind:group={siteFeature.current.ugoiraFormat}
+            value={ConvertFormat.WEBP}>Webp</RadioItem
           >
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={$configStore.ugoiraFormat}
-            value={UgoiraFormat.GIF}>Gif</RadioItem
+            bind:group={siteFeature.current.ugoiraFormat}
+            value={ConvertFormat.GIF}>Gif</RadioItem
           >
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={$configStore.ugoiraFormat}
-            value={UgoiraFormat.PNG}>Png</RadioItem
+            bind:group={siteFeature.current.ugoiraFormat}
+            value={ConvertFormat.PNG}>Png</RadioItem
           >
         </RadioGroup>
       </li>

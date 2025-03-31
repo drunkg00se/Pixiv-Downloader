@@ -3,7 +3,6 @@
   import folderSvg from '@/assets/folder.svg?src';
   import fileSvg from '@/assets/file.svg?src';
   import { RadioGroup, RadioItem, SlideToggle } from '@skeletonlabs/skeleton';
-  import { TagLanguage, type Config } from '@/lib/config';
   import { env } from '@/lib/env';
   import { downloader } from '@/lib/downloader';
   import { getContext, tick } from 'svelte';
@@ -11,6 +10,7 @@
   import { t } from '@/lib/i18n.svelte';
   import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
   import { FilenameConflictAction } from '@/lib/downloader/fileSaveAdapters/fileSystemAccess';
+  import { PixivTagLocale, siteFeature } from '@/lib/store/siteFeature.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -25,8 +25,6 @@
     templates = getContext('supportedTemplate') as Partial<TemplateData>,
     descriptionText = 'text-sm text-surface-400'
   } = $props();
-
-  const configStore: Config = getContext('store');
 
   const ulClasses = $derived(
     `list *:items-center ${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`
@@ -266,26 +264,26 @@
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={$configStore.tagLang}
-              value={TagLanguage.JAPANESE}>日本語</RadioItem
+              bind:group={siteFeature.current.tagLocale}
+              value={PixivTagLocale.JAPANESE}>日本語</RadioItem
             >
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={$configStore.tagLang}
-              value={TagLanguage.CHINESE}>简中</RadioItem
+              bind:group={siteFeature.current.tagLocale}
+              value={PixivTagLocale.CHINESE}>简中</RadioItem
             >
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={$configStore.tagLang}
-              value={TagLanguage.TRADITIONAL_CHINESE}>繁中</RadioItem
+              bind:group={siteFeature.current.tagLocale}
+              value={PixivTagLocale.TRADITIONAL_CHINESE}>繁中</RadioItem
             >
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={$configStore.tagLang}
-              value={TagLanguage.ENGLISH}>En</RadioItem
+              bind:group={siteFeature.current.tagLocale}
+              value={PixivTagLocale.ENGLISH}>En</RadioItem
             >
           </RadioGroup>
         </li>

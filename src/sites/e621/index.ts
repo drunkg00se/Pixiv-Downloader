@@ -1,7 +1,6 @@
 import { ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { SiteInject } from '../base';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
-import type { ConfigData } from '@/lib/config';
 import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton';
 import { E621ngApi, type E621FullCurrentUser, type E621Post } from './api';
 import { downloader } from '@/lib/downloader';
@@ -13,32 +12,38 @@ import { PostValidState } from '../base/parser';
 import { BooruDownloadConfig, type TemplateData } from '../base/downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
+import { siteFeature } from '@/lib/store/siteFeature.svelte';
+import { userAuthentication } from '@/lib/store/auth.svelte';
 
 export class E621ng extends SiteInject {
-  protected api: E621ngApi;
-  protected parser: E621ngParser;
-  protected profile: E621FullCurrentUser | null;
+  protected api: E621ngApi = new E621ngApi({
+    rateLimit: 2,
+    authorization: [
+      userAuthentication.current.username ?? '',
+      userAuthentication.current.apiKey ?? ''
+    ]
+  });
+  protected parser: E621ngParser = new E621ngParser();
+  protected profile: E621FullCurrentUser | null = null;
 
   constructor() {
     downloadSetting.setDirectoryTemplate('e621/{artist}');
     downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
 
-    super();
-
-    const { username, apiKey } = this.config.get('auth')!;
-
-    this.api = new E621ngApi({
-      rateLimit: 2,
-      authorization: [username, apiKey]
+    siteFeature.patch((state) => {
+      state.addBookmark ??= false;
     });
 
-    this.parser = new E621ngParser();
+    userAuthentication.patch((state) => {
+      state.apiKey ??= '';
+      state.username ??= '';
+    });
 
-    this.profile = null;
+    super();
 
-    this.config.subscribe((configData) => {
-      const { username, apiKey } = configData.auth!;
-      this.api.updateAuthIfNeeded(username, apiKey);
+    userAuthentication.subscribe((state) => {
+      this.api.username = state.username!;
+      this.api.apiKey = state.apiKey!;
     });
   }
 
@@ -48,15 +53,6 @@ export class E621ng extends SiteInject {
 
   protected getSupportedTemplate(): Partial<TemplateData> {
     return BooruDownloadConfig.supportedTemplate;
-  }
-
-  protected getCustomConfig(): Partial<ConfigData> | void {
-    return {
-      auth: {
-        username: '',
-        apiKey: ''
-      }
-    };
   }
 
   #notice(msg: string) {
@@ -87,8 +83,7 @@ export class E621ng extends SiteInject {
   }
 
   #isAuthorized() {
-    const auth = this.config.get('auth');
-    return auth && auth.username && auth.apiKey;
+    return this.api.username && this.api.apiKey;
   }
 
   #throwIfNotAuthorized() {
@@ -375,7 +370,7 @@ export class E621ng extends SiteInject {
       }
     });
 
-    if (this.config.get('addBookmark') && !post.is_favorited) {
+    if (siteFeature.current.addBookmark && !post.is_favorited) {
       this.#addFavorites(id);
     }
 

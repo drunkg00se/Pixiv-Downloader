@@ -11,9 +11,9 @@ import type {
   LikeIllust
 } from './types';
 import { BookmarkRestrict } from './types';
-import { type TagLanguage } from '@/lib/config';
 import { RequestError, JsonDataError } from '@/lib/error';
 import { ApiBase } from '../base/api';
+import type { PixivTagLocale } from '@/lib/store/siteFeature.svelte';
 
 class PixivApi extends ApiBase {
   async getJSON<T>(url: string, init?: RequestInit): Promise<T> {
@@ -22,21 +22,21 @@ class PixivApi extends ApiBase {
     return data.body;
   }
 
-  async getArtworkHtml(illustId: string, lang: TagLanguage): Promise<string> {
+  async getArtworkHtml(illustId: string, lang: PixivTagLocale): Promise<string> {
     const res = await this.fetch(`/artworks/${illustId}?lang=${lang}`);
     if (!res.ok) throw new RequestError(res.url, res.status);
     return await res.text();
   }
 
-  getArtworkDoc(illustId: string, lang: TagLanguage): Promise<Document> {
+  getArtworkDoc(illustId: string, lang: PixivTagLocale): Promise<Document> {
     return this.getDoc(`/artworks/${illustId}?lang=${lang}`);
   }
 
-  getArtworkDetail(illustId: string, lang: TagLanguage): Promise<ArtworkDetail> {
+  getArtworkDetail(illustId: string, lang: PixivTagLocale): Promise<ArtworkDetail> {
     return this.getJSON<ArtworkDetail>(`/ajax/illust/${illustId}?lang=${lang}`);
   }
 
-  getUnlistedArtworkDetail(unlistedId: string, lang: TagLanguage): Promise<ArtworkDetail> {
+  getUnlistedArtworkDetail(unlistedId: string, lang: PixivTagLocale): Promise<ArtworkDetail> {
     return this.getJSON<ArtworkDetail>(`/ajax/illust/unlisted/${unlistedId}?lang=${lang}`);
   }
 

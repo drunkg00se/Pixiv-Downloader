@@ -1,4 +1,3 @@
-import type { ConfigData } from '@/lib/config';
 import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
@@ -12,6 +11,7 @@ import { regexp } from '@/lib/regExp';
 import type { TemplateData } from '../base/downloadConfig';
 import { t } from '@/lib/i18n.svelte';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
+import { siteFeature } from '@/lib/store/siteFeature.svelte';
 
 export class Nijie extends SiteInject {
   protected parser = new NijieParser();
@@ -22,15 +22,18 @@ export class Nijie extends SiteInject {
   constructor() {
     downloadSetting.setDirectoryTemplate('nijie/{artist}');
     downloadSetting.setFilenameTemplate('{artist}_{title}_{id}_p{page}');
+
+    siteFeature.patch((state) => {
+      state.compressMultiIllusts ??= false;
+      state.addBookmark ??= false;
+      state.bookmarkWithTags ??= false;
+    });
+
     super();
   }
 
   static get hostname() {
     return 'nijie.info';
-  }
-
-  protected getCustomConfig(): Partial<ConfigData> | void {
-    return undefined;
   }
 
   protected getSupportedTemplate(): Partial<TemplateData> {
@@ -337,7 +340,7 @@ export class Nijie extends SiteInject {
       let downloadConfig: DownloadConfig | DownloadConfig[];
       const option = { ...downloadSetting.current };
 
-      const bundleIllusts = this.config.get('bundleIllusts');
+      const bundleIllusts = siteFeature.current.compressMultiIllusts;
 
       if (Array.isArray(meta.src)) {
         downloadConfig = bundleIllusts
@@ -408,8 +411,8 @@ export class Nijie extends SiteInject {
     const { userId, comment, tags, artist, title, isBookmarked } = meta;
 
     // odai illust will be added every time since we cannot confirm whether it's bookmarked.
-    if (!isBookmarked && this.config.get('addBookmark')) {
-      this.#addBookmark(id, this.config.get('addBookmarkWithTags') ? tags : undefined);
+    if (!isBookmarked && siteFeature.current.addBookmark) {
+      this.#addBookmark(id, siteFeature.current.bookmarkWithTags ? tags : undefined);
     }
 
     const option = {
@@ -441,7 +444,7 @@ export class Nijie extends SiteInject {
           index: pageNum
         });
       } else {
-        const bundleIllusts = this.config.get('bundleIllusts');
+        const bundleIllusts = siteFeature.current.compressMultiIllusts;
         downloadConfig = bundleIllusts
           ? new NijieDownloadConfig(diffMeta).createBundle(option)
           : new NijieDownloadConfig(diffMeta).createMulti(option);
