@@ -68,7 +68,8 @@ export default defineConfig({
           'https://e621.net/*',
           'https://e926.net/*',
           'https://e6ai.net/*',
-          'https://nijie.info/*'
+          'https://nijie.info/*',
+          'https://rule34vault.com/*'
         ],
         noframes: true,
         connect: [
@@ -86,7 +87,9 @@ export default defineConfig({
           'e621.net',
           'e926.net',
           'e6ai.net',
-          'nijie.net'
+          'nijie.net',
+          'rule34vault.com',
+          'r34xyz.b-cdn.net'
         ],
         require: [
           'https://unpkg.com/dexie@3.2.7/dist/dexie.min.js',

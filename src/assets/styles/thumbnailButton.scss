@@ -116,6 +116,27 @@
     }
   }
 
+  :host([data-type='rule34vault-post-action']) & {
+    position: relative;
+    top: auto;
+    left: auto;
+
+    color: inherit;
+    background-color: inherit;
+
+    width: 4em;
+    height: 36px;
+
+    & > svg {
+      height: 28px;
+      width: 28px;
+    }
+
+    &:hover {
+      filter: brightness(1.2);
+    }
+  }
+
   :host([data-status]) & {
     color: #16a34a;
   }

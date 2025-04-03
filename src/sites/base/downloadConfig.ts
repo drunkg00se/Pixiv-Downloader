@@ -233,7 +233,7 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
     this.score = meta.score;
   }
 
-  static get supportedTemplate() {
+  static get supportedTemplate(): Partial<TemplateData> {
     return {
       [SupportedTemplate.ID]: '{id}',
       [SupportedTemplate.ARTIST]: '{artist}',
@@ -250,7 +250,7 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
     };
   }
 
-  protected getTemplateData(): typeof BooruDownloadConfig.supportedTemplate {
+  protected getTemplateData(): Partial<TemplateData> {
     return {
       id: this.id,
       artist: this.artist,

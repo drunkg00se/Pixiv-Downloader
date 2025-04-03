@@ -28,7 +28,8 @@ export const enum ThumbnailBtnType {
   PixivToolbar = 'pixiv-toolbar',
   PixivMangaViewer = 'pixiv-manga-viewer',
   YandeBrowse = 'yande-browse',
-  NijieIllust = 'nijie-illust'
+  NijieIllust = 'nijie-illust',
+  Rule34VaultPostAction = 'rule34vault-post-action'
 }
 
 export interface ThumbnailBtnProp {
@@ -145,6 +146,7 @@ export class ThumbnailButton extends HTMLElement {
     }
   }
 
+  // TODO: do not update download status if id is updateId when downloading
   private updateId(id: string | null) {
     try {
       if (id === null) throw new Error('Attribute "data-id" is required.');
