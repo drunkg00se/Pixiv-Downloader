@@ -76,7 +76,9 @@
 
   watchUrlChange();
 
-  onUrlChange(location.href);
+  $effect(() => {
+    onUrlChange(location.href);
+  });
 
   downloading.subscribe((val) => {
     if (val) {
