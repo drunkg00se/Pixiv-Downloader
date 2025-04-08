@@ -50,7 +50,7 @@
     {
       name: () => t('setting.authorization.title'),
       component: Auth,
-      show: Object.values(userAuthentication.current).some((val) => val !== null)
+      show: Object.values(userAuthentication).some((val) => val !== null)
     },
     {
       name: () => t('setting.feedback.title'),

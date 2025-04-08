@@ -20,34 +20,32 @@ import { legacyConfig } from '@/lib/store/legacyConfig';
 export class E621ng extends SiteInject {
   protected api: E621ngApi = new E621ngApi({
     rateLimit: 2,
-    authorization: [
-      userAuthentication.current.username ?? '',
-      userAuthentication.current.apiKey ?? ''
-    ]
+    authorization: [userAuthentication.username ?? '', userAuthentication.apiKey ?? '']
   });
   protected parser: E621ngParser = new E621ngParser();
   protected profile: E621FullCurrentUser | null = null;
 
   constructor() {
-    if (clientSetting.current.version === null) {
+    if (clientSetting.version === null) {
       downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'e621/{artist}');
       downloadSetting.setFilenameTemplate(
         legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'
       );
 
-      siteFeature.patch((state) => {
-        state.addBookmark ??= false;
-      });
+      siteFeature.addBookmark ??= false;
 
-      userAuthentication.patch((state) => {
-        state.apiKey ??= '';
-        state.username ??= '';
+      userAuthentication.$update((state) => {
+        return {
+          ...state,
+          apiKey: '',
+          username: ''
+        };
       });
     }
 
     super();
 
-    userAuthentication.subscribe((state) => {
+    userAuthentication.$subscribe((state) => {
       this.api.username = state.username!;
       this.api.apiKey = state.apiKey!;
     });
@@ -317,7 +315,7 @@ export class E621ng extends SiteInject {
       this.getFileHandleIfNeeded();
 
       const downloadConfig = new BooruDownloadConfig(meta).create({
-        ...downloadSetting.current
+        ...downloadSetting
       });
 
       await downloader.download(downloadConfig, { priority: 1, signal });
@@ -370,13 +368,13 @@ export class E621ng extends SiteInject {
     const { post } = await this.api.getPost(id);
     const mediaMeta = this.parser.buildMeta(post);
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
-      ...downloadSetting.current,
+      ...downloadSetting,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }
     });
 
-    if (siteFeature.current.addBookmark && !post.is_favorited) {
+    if (siteFeature.addBookmark && !post.is_favorited) {
       this.#addFavorites(id);
     }
 

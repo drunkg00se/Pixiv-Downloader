@@ -10,7 +10,7 @@ export class Sakugabooru extends Moebooru {
   protected parser = new MoebooruParser();
 
   constructor() {
-    if (clientSetting.current.version === null) {
+    if (clientSetting.version === null) {
       downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'sakugabooru/{artist}');
       downloadSetting.setFilenameTemplate(
         legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'

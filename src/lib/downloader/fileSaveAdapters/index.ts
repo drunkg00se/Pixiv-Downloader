@@ -1,5 +1,5 @@
 import { env } from '@/lib/env';
-import { fsaHandler, type FilenameConflictAction } from './fileSystemAccess';
+import { FilenameConflictAction, fsaHandler } from './fileSystemAccess';
 import { gmDownload } from './gmDownload';
 import { logger } from '@/lib/logger';
 import { aDownload } from './aDownload';
@@ -34,7 +34,7 @@ export const fileSaveAdapters = {
 
   getAdapter(
     useFileSystemAccessApi: boolean,
-    filenameConflictAction: FilenameConflictAction = 'uniquify'
+    filenameConflictAction: FilenameConflictAction = FilenameConflictAction.UNIQUIFY
   ): FileSaveFn {
     if (this.isFileSystemAccessAvailable && useFileSystemAccessApi) {
       fsaHandler.setFilenameConflictAction(filenameConflictAction);

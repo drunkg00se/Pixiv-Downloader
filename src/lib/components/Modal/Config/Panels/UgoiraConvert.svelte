@@ -39,39 +39,39 @@
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={siteFeature.current.ugoiraFormat}
+            bind:group={siteFeature.ugoiraFormat}
             value="zip">Zip</RadioItem
           >
 
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={siteFeature.current.ugoiraFormat}
+            bind:group={siteFeature.ugoiraFormat}
             value={ConvertFormat.WEBM}>Webm</RadioItem
           >
           <RadioItem
             disabled={!env.videoFrameSupported()}
             class="text-sm"
-            bind:group={siteFeature.current.ugoiraFormat}
+            bind:group={siteFeature.ugoiraFormat}
             name="ugoiraFormat"
             value={ConvertFormat.MP4}>Mp4</RadioItem
           >
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={siteFeature.current.ugoiraFormat}
+            bind:group={siteFeature.ugoiraFormat}
             value={ConvertFormat.WEBP}>Webp</RadioItem
           >
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={siteFeature.current.ugoiraFormat}
+            bind:group={siteFeature.ugoiraFormat}
             value={ConvertFormat.GIF}>Gif</RadioItem
           >
           <RadioItem
             name="ugoiraFormat"
             class="text-sm"
-            bind:group={siteFeature.current.ugoiraFormat}
+            bind:group={siteFeature.ugoiraFormat}
             value={ConvertFormat.PNG}>Png</RadioItem
           >
         </RadioGroup>
@@ -96,10 +96,10 @@
           step="1"
           use:inputValidation={{
             get() {
-              return convertSetting.current.webmBitrate;
+              return convertSetting.webmBitrate;
             },
             set(value) {
-              convertSetting.current.webmBitrate = value;
+              convertSetting.webmBitrate = value;
             }
           }}
         />
@@ -118,10 +118,10 @@
           step="1"
           use:inputValidation={{
             get() {
-              return convertSetting.current.mp4Bitrate;
+              return convertSetting.mp4Bitrate;
             },
             set(value) {
-              convertSetting.current.mp4Bitrate = value;
+              convertSetting.mp4Bitrate = value;
             }
           }}
         />
@@ -131,10 +131,7 @@
         <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
           <li class="items-center">
             <p class="flex-auto">{t('setting.ugoira.options.webp_lossy')}</p>
-            <SlideToggle
-              name="lossless-webp"
-              bind:checked={convertSetting.current.losslessWebp}
-              size="sm"
+            <SlideToggle name="lossless-webp" bind:checked={convertSetting.losslessWebp} size="sm"
             ></SlideToggle>
           </li>
 
@@ -152,10 +149,10 @@
               step="1"
               use:inputValidation={{
                 get() {
-                  return convertSetting.current.webpQuality;
+                  return convertSetting.webpQuality;
                 },
                 set(value) {
-                  convertSetting.current.webpQuality = value;
+                  convertSetting.webpQuality = value;
                 }
               }}
             />
@@ -166,7 +163,7 @@
               <p class={descriptionText}>{t('setting.ugoira.options.webp_method_tips')}</p>
             </div>
 
-            <select class="select {inputClasses}" bind:value={convertSetting.current.webpMehtod}>
+            <select class="select {inputClasses}" bind:value={convertSetting.webpMehtod}>
               {#each Array.from({ length: 7 }, (_, idx) => idx) as quality}
                 <option value={quality}>{quality}</option>
               {/each}
@@ -181,7 +178,7 @@
             {t('setting.ugoira.options.gif_tips')}
           </p>
         </div>
-        <select class="select {inputClasses}" bind:value={convertSetting.current.gifQuality}>
+        <select class="select {inputClasses}" bind:value={convertSetting.gifQuality}>
           {#each Array.from({ length: 20 }, (_, idx) => idx) as quality}
             <option value={quality + 1}>{quality + 1}</option>
           {/each}
@@ -201,10 +198,10 @@
           step="1"
           use:inputValidation={{
             get() {
-              return convertSetting.current.pngColor;
+              return convertSetting.pngColor;
             },
             set(value) {
-              convertSetting.current.pngColor = value;
+              convertSetting.pngColor = value;
             }
           }}
         />

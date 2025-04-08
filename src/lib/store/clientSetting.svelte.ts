@@ -1,5 +1,5 @@
 import { MediaQuery } from 'svelte/reactivity';
-import { LocalStorage } from './storage.svelte';
+import { createPersistedStore } from './storage.svelte';
 import { locale, setlocale, type Locale } from '../i18n.svelte';
 import { legacyConfig } from './legacyConfig';
 
@@ -14,32 +14,35 @@ type ReactiveTheme = {
   current: boolean;
 };
 
-class ClientSettingStore extends LocalStorage<ClientSettingState> {
-  #themeWatcher: ReactiveTheme = new MediaQuery('(prefers-color-scheme: dark)');
-  #themeVersion = $state(0);
+type ClientSettingProto = {
+  readonly autoTheme: 'light' | 'dark';
+  setThemeWatcher(watcher: ReactiveTheme): void;
+};
 
-  constructor() {
-    super('pdl-client-state', {
-      theme: 'auto',
-      locale: locale.current,
-      version: null,
-      showPopupButton: legacyConfig.showPopupButton ?? true
-    });
+let themeWatcher: ReactiveTheme = new MediaQuery('(prefers-color-scheme: dark)');
+let themeVersion = $state(0);
 
-    this.subscribe((state) => {
-      setlocale(state.locale);
-    });
+export const clientSetting = createPersistedStore<ClientSettingState, ClientSettingProto>(
+  'pdl-client-state',
+  {
+    theme: 'auto',
+    locale: locale.current,
+    version: null,
+    showPopupButton: legacyConfig.showPopupButton ?? true
+  },
+  {
+    get autoTheme(): 'light' | 'dark' {
+      themeVersion;
+      return themeWatcher.current ? 'dark' : 'light';
+    },
+
+    setThemeWatcher(watcher: ReactiveTheme) {
+      themeVersion += 1;
+      themeWatcher = watcher;
+    }
   }
+);
 
-  get autoTheme(): 'light' | 'dark' {
-    this.#themeVersion;
-    return this.#themeWatcher.current ? 'dark' : 'light';
-  }
-
-  setThemeWatcher(watcher: ReactiveTheme) {
-    this.#themeVersion += 1;
-    this.#themeWatcher = watcher;
-  }
-}
-
-export const clientSetting = new ClientSettingStore();
+$effect.root(() => {
+  $effect(() => setlocale(clientSetting.locale));
+});

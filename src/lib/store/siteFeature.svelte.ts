@@ -1,6 +1,6 @@
 import { ConvertFormat } from '../converter/adapter';
 import { legacyConfig } from './legacyConfig';
-import { LocalStorage } from './storage.svelte';
+import { createPersistedStore } from './storage.svelte';
 
 export const enum PixivTagLocale {
   JAPANESE = 'ja',
@@ -23,20 +23,14 @@ type SiteFeatureState = {
   likeIllustWhenDownloading: boolean | null;
 };
 
-class SiteFeatureStore extends LocalStorage<SiteFeatureState> {
-  constructor() {
-    super('pdl-site-state', {
-      ugoiraFormat: null,
-      mixSeasonalEffect: null,
-      tagLocale: null,
-      compressMultiIllusts: null,
-      compressManga: null,
-      addBookmark: legacyConfig.addBookmark ?? null,
-      bookmarkWithTags: null,
-      privateBookmarkIfR18: null,
-      likeIllustWhenDownloading: null
-    });
-  }
-}
-
-export const siteFeature = new SiteFeatureStore();
+export const siteFeature = createPersistedStore<SiteFeatureState>('pdl-site-state', {
+  ugoiraFormat: null,
+  mixSeasonalEffect: null,
+  tagLocale: null,
+  compressMultiIllusts: null,
+  compressManga: null,
+  addBookmark: legacyConfig.addBookmark ?? null,
+  bookmarkWithTags: null,
+  privateBookmarkIfR18: null,
+  likeIllustWhenDownloading: null
+});

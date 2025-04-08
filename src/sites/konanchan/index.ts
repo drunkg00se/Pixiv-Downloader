@@ -12,15 +12,13 @@ export class Konachan extends Moebooru {
   protected parser = new MoebooruParser();
 
   constructor() {
-    if (clientSetting.current.version === null) {
+    if (clientSetting.version === null) {
       downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'konachan/{artist}');
       downloadSetting.setFilenameTemplate(
         legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'
       );
 
-      userAuthentication.patch((state) => {
-        state.cf_clearance ??= '';
-      });
+      userAuthentication.cf_clearance ??= '';
     }
 
     super();

@@ -31,11 +31,11 @@ export abstract class SiteInject {
   }
 
   protected getFileHandleIfNeeded() {
-    downloadSetting.current.useFileSystemAccessApi && downloader.dirHandleCheck();
+    downloadSetting.useFileSystemAccessApi && downloader.dirHandleCheck();
   }
 
   protected backupIfNeeded() {
-    const { interval, lastTimestamp } = backupSetting.current;
+    const { interval, lastTimestamp } = backupSetting;
 
     if (interval === BackupInterval.NEVER) return;
 
@@ -45,7 +45,7 @@ export abstract class SiteInject {
 
     useHistoryBackup().exportAsJSON();
 
-    backupSetting.current.lastTimestamp = timestamp;
+    backupSetting.lastTimestamp = timestamp;
   }
 
   public inject(): void {

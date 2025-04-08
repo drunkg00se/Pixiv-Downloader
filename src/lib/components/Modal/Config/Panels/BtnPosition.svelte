@@ -28,33 +28,6 @@
   const max = 100;
   const step = 4;
 
-  $effect(() =>
-    buttonPosition.update(
-      ButtonStyleVariable.LEFT,
-      buttonPosition.current[ButtonStyleVariable.LEFT]
-    )
-  );
-
-  $effect(() =>
-    buttonPosition.update(ButtonStyleVariable.TOP, buttonPosition.current[ButtonStyleVariable.TOP])
-  );
-
-  if (env.isPixiv()) {
-    $effect(() =>
-      buttonPosition.update(
-        ButtonStyleVariable.PIXIV_BOOKMARK_LEFT,
-        buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]
-      )
-    );
-
-    $effect(() =>
-      buttonPosition.update(
-        ButtonStyleVariable.PIXIV_BOOKMARK_TOP,
-        buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_TOP]
-      )
-    );
-  }
-
   // 预览按钮
   let buttonContainer: HTMLDivElement;
 
@@ -101,11 +74,11 @@
           {max}
           ticked
           class="flex-grow"
-          bind:value={buttonPosition.current[ButtonStyleVariable.LEFT]}
+          bind:value={buttonPosition[ButtonStyleVariable.LEFT]}
         >
           <div class="flex justify-between items-center">
             <p>{t('setting.button_position.options.horizon_position')}</p>
-            <div class="text-xs">{buttonPosition.current[ButtonStyleVariable.LEFT]} / {max}</div>
+            <div class="text-xs">{buttonPosition[ButtonStyleVariable.LEFT]} / {max}</div>
           </div>
         </RangeSlider>
         <RangeSlider
@@ -114,11 +87,11 @@
           {max}
           ticked
           class="flex-grow"
-          bind:value={buttonPosition.current[ButtonStyleVariable.TOP]}
+          bind:value={buttonPosition[ButtonStyleVariable.TOP]}
         >
           <div class="flex justify-between items-center">
             <p>{t('setting.button_position.options.vertical_position')}</p>
-            <div class="text-xs">{buttonPosition.current[ButtonStyleVariable.TOP]} / {max}</div>
+            <div class="text-xs">{buttonPosition[ButtonStyleVariable.TOP]} / {max}</div>
           </div>
         </RangeSlider>
       </li>
@@ -136,12 +109,12 @@
             {max}
             ticked
             class="flex-grow"
-            bind:value={buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]}
+            bind:value={buttonPosition[ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]}
           >
             <div class="flex justify-between items-center">
               <p>{t('setting.button_position.options.horizon_position')}</p>
               <div class="text-xs">
-                {buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]} / {max}
+                {buttonPosition[ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]} / {max}
               </div>
             </div>
           </RangeSlider>
@@ -151,12 +124,12 @@
             {max}
             ticked
             class="flex-grow"
-            bind:value={buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_TOP]}
+            bind:value={buttonPosition[ButtonStyleVariable.PIXIV_BOOKMARK_TOP]}
           >
             <div class="flex justify-between items-center">
               <p>{t('setting.button_position.options.vertical_position')}</p>
               <div class="text-xs">
-                {buttonPosition.current[ButtonStyleVariable.PIXIV_BOOKMARK_TOP]} / {max}
+                {buttonPosition[ButtonStyleVariable.PIXIV_BOOKMARK_TOP]} / {max}
               </div>
             </div>
           </RangeSlider>

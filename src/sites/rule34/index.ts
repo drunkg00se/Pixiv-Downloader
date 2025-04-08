@@ -16,15 +16,13 @@ export class Rule34 extends GelbooruV020 {
   }
 
   constructor() {
-    if (clientSetting.current.version === null) {
+    if (clientSetting.version === null) {
       downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'rule34/{artist}');
       downloadSetting.setFilenameTemplate(
         legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'
       );
 
-      userAuthentication.patch((state) => {
-        state.cf_clearance ??= '';
-      });
+      userAuthentication.cf_clearance ??= '';
     }
 
     clientSetting.setThemeWatcher({

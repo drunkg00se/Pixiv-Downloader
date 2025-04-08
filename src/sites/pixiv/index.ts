@@ -219,7 +219,7 @@ export class Pixiv extends SiteInject {
       }
     },
     parseMetaByArtworkId: (id) => {
-      const tagLang = siteFeature.current.tagLocale ?? PixivTagLocale.JAPANESE;
+      const tagLang = siteFeature.tagLocale ?? PixivTagLocale.JAPANESE;
       return pixivParser.parse(id, { tagLang, type: 'api' });
     },
 
@@ -244,23 +244,26 @@ export class Pixiv extends SiteInject {
   });
 
   constructor() {
-    if (clientSetting.current.version === null) {
+    if (clientSetting.version === null) {
       downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'pixiv/{artist}');
       downloadSetting.setFilenameTemplate(
         legacyConfig.filenamePattern ?? '{artist}_{title}_{id}_p{page}'
       );
 
-      siteFeature.patch((state) => {
-        state.ugoiraFormat ??= legacyConfig.ugoiraFormat ?? 'zip';
-        state.mixSeasonalEffect ??= legacyConfig.mixEffect ?? false;
-        state.tagLocale ??=
-          (legacyConfig.tagLang as PixivTagLocale | undefined) ?? PixivTagLocale.JAPANESE;
-        state.compressMultiIllusts ??= legacyConfig.bundleIllusts ?? false;
-        state.compressManga ??= legacyConfig.bundleManga ?? false;
-        state.addBookmark ??= false;
-        state.bookmarkWithTags ??= legacyConfig.addBookmarkWithTags ?? false;
-        state.privateBookmarkIfR18 ??= legacyConfig.privateR18 ?? false;
-        state.likeIllustWhenDownloading ??= legacyConfig.likeIllust ?? false;
+      siteFeature.$update((state) => {
+        return {
+          ...state,
+          ugoiraFormat: legacyConfig.ugoiraFormat ?? 'zip',
+          mixSeasonalEffect: legacyConfig.mixEffect ?? false,
+          tagLocale:
+            (legacyConfig.tagLang as PixivTagLocale | undefined) ?? PixivTagLocale.JAPANESE,
+          compressMultiIllusts: legacyConfig.bundleIllusts ?? false,
+          compressManga: legacyConfig.bundleManga ?? false,
+          addBookmark: false,
+          bookmarkWithTags: legacyConfig.addBookmarkWithTags ?? false,
+          privateBookmarkIfR18: legacyConfig.privateR18 ?? false,
+          likeIllustWhenDownloading: legacyConfig.likeIllust ?? false
+        };
       });
     }
 
@@ -415,24 +418,20 @@ export class Pixiv extends SiteInject {
       case ConvertFormat.GIF:
         return {
           format: ConvertFormat.GIF,
-          quality: convertSetting.current.gifQuality
+          quality: convertSetting.gifQuality
         };
       case ConvertFormat.PNG:
         return {
           format: ConvertFormat.PNG,
-          cnum: convertSetting.current.pngColor
+          cnum: convertSetting.pngColor
         };
       case ConvertFormat.WEBM:
         return {
           format: ConvertFormat.WEBM,
-          bitrate: convertSetting.current.webmBitrate
+          bitrate: convertSetting.webmBitrate
         };
       case ConvertFormat.WEBP: {
-        const {
-          losslessWebp: lossless,
-          webpQuality: quality,
-          webpMehtod: method
-        } = convertSetting.current;
+        const { losslessWebp: lossless, webpQuality: quality, webpMehtod: method } = convertSetting;
         return {
           format: ConvertFormat.WEBP,
           lossless,
@@ -443,7 +442,7 @@ export class Pixiv extends SiteInject {
       case ConvertFormat.MP4:
         return {
           format: ConvertFormat.MP4,
-          bitrate: convertSetting.current.mp4Bitrate
+          bitrate: convertSetting.mp4Bitrate
         };
       default:
         return;
@@ -456,13 +455,13 @@ export class Pixiv extends SiteInject {
     page?: number
   ): DownloadConfig | DownloadConfig[] {
     const { compressManga, compressMultiIllusts, mixSeasonalEffect, ugoiraFormat, tagLocale } =
-      siteFeature.current;
+      siteFeature;
 
     const defaultFormat = ConvertFormat.MP4;
     const qualityOption = this.getConvertQualityOption(ugoiraFormat);
 
     const option = {
-      ...downloadSetting.current,
+      ...downloadSetting,
       useTranslatedTags: !!tagLocale && tagLocale !== PixivTagLocale.JAPANESE,
       setProgress
     };
@@ -524,22 +523,22 @@ export class Pixiv extends SiteInject {
     };
     const pageNum = page !== undefined ? +page : undefined;
 
-    const tagLang = siteFeature.current.tagLocale ?? PixivTagLocale.JAPANESE;
+    const tagLang = siteFeature.tagLocale ?? PixivTagLocale.JAPANESE;
 
     let pixivMeta: PixivMeta;
 
     if (!unlistedId) {
-      const shouldAddBookmark = siteFeature.current.addBookmark;
-      const shouldLikeIllust = siteFeature.current.likeIllustWhenDownloading;
+      const shouldAddBookmark = siteFeature.addBookmark;
+      const shouldLikeIllust = siteFeature.likeIllustWhenDownloading;
 
       if (shouldAddBookmark || shouldLikeIllust) {
         pixivMeta = await pixivParser.parse(id, { tagLang, type: 'html' });
         const { bookmarkData, token, tags, likeData } = pixivMeta;
 
         if (!bookmarkData && shouldAddBookmark) {
-          const addedTags = siteFeature.current.bookmarkWithTags ? tags : undefined;
+          const addedTags = siteFeature.bookmarkWithTags ? tags : undefined;
           const restrict =
-            siteFeature.current.privateBookmarkIfR18 && tags.includes('R-18')
+            siteFeature.privateBookmarkIfR18 && tags.includes('R-18')
               ? BookmarkRestrict.private
               : BookmarkRestrict.public;
           addBookmark(id, token, { btn, tags: addedTags, restrict });

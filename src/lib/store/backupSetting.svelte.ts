@@ -1,5 +1,5 @@
 import { legacyConfig } from './legacyConfig';
-import { LocalStorage } from './storage.svelte';
+import { createPersistedStore } from './storage.svelte';
 
 export const enum BackupInterval {
   NEVER = 0,
@@ -13,13 +13,7 @@ type BackupState = {
   lastTimestamp: number;
 };
 
-class BackupSettingStore extends LocalStorage<BackupState> {
-  constructor() {
-    super('pdl-backup-setting', {
-      interval: legacyConfig.historyBackupInterval ?? BackupInterval.NEVER,
-      lastTimestamp: legacyConfig.lastHistoryBackup ?? 0
-    });
-  }
-}
-
-export const backupSetting = new BackupSettingStore();
+export const backupSetting = createPersistedStore<BackupState>('pdl-backup-setting', {
+  interval: legacyConfig.historyBackupInterval ?? BackupInterval.NEVER,
+  lastTimestamp: legacyConfig.lastHistoryBackup ?? 0
+});

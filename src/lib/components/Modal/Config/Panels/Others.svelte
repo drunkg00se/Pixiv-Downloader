@@ -27,10 +27,7 @@
   <ul class={ulClasses}>
     <li>
       <p class="flex-auto">{t('setting.others.options.show_setting_button')}</p>
-      <SlideToggle
-        name="show-popup-button"
-        bind:checked={clientSetting.current.showPopupButton}
-        size="sm"
+      <SlideToggle name="show-popup-button" bind:checked={clientSetting.showPopupButton} size="sm"
       ></SlideToggle>
     </li>
 
@@ -39,7 +36,7 @@
         <p class="flex-auto">{t('setting.others.options.bundle_multipage_illust')}</p>
         <SlideToggle
           name="bundle-illusts"
-          bind:checked={siteFeature.current.compressMultiIllusts!}
+          bind:checked={siteFeature.compressMultiIllusts!}
           size="sm"
         ></SlideToggle>
       </li>
@@ -48,7 +45,7 @@
     {#if env.isPixiv()}
       <li>
         <p class="flex-auto">{t('setting.others.options.bundle_manga')}</p>
-        <SlideToggle name="bundle-manga" bind:checked={siteFeature.current.compressManga!} size="sm"
+        <SlideToggle name="bundle-manga" bind:checked={siteFeature.compressManga!} size="sm"
         ></SlideToggle>
       </li>
       <li>
@@ -60,7 +57,7 @@
         </div>
         <SlideToggle
           name="like-illust"
-          bind:checked={siteFeature.current.likeIllustWhenDownloading!}
+          bind:checked={siteFeature.likeIllustWhenDownloading!}
           size="sm"
         ></SlideToggle>
       </li>
@@ -74,18 +71,18 @@
             {t('setting.others.options.option_does_not_apply_to_batch_download')}
           </p>
         </div>
-        <SlideToggle name="add-bookmark" bind:checked={siteFeature.current.addBookmark!} size="sm"
+        <SlideToggle name="add-bookmark" bind:checked={siteFeature.addBookmark!} size="sm"
         ></SlideToggle>
       </div>
 
-      {#if siteFeature.current.addBookmark && (env.isPixiv() || env.isNijie())}
+      {#if siteFeature.addBookmark && (env.isPixiv() || env.isNijie())}
         <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
           <li>
             <label class="label flex flex-grow items-center justify-center">
               <p class="flex-auto">{t('setting.others.options.add_bookmark_with_tags')}</p>
               <SlideToggle
                 name="bookmark-with-tags"
-                bind:checked={siteFeature.current.bookmarkWithTags!}
+                bind:checked={siteFeature.bookmarkWithTags!}
                 size="sm"
               ></SlideToggle>
             </label>
@@ -97,7 +94,7 @@
                 <p class="flex-auto">{t('setting.others.options.add_bookmark_private_r18')}</p>
                 <SlideToggle
                   name="private-bookmark-if-r18"
-                  bind:checked={siteFeature.current.privateBookmarkIfR18!}
+                  bind:checked={siteFeature.privateBookmarkIfR18!}
                   size="sm"
                 ></SlideToggle>
               </label>
@@ -119,10 +116,7 @@
               * 转换至动图格式。如果插图尺寸过大，可能占用大量内存 / 转换失败
             </p>
           </div>
-          <SlideToggle
-            name="mix-effect"
-            bind:checked={siteFeature.current.mixSeasonalEffect!}
-            size="sm"
+          <SlideToggle name="mix-effect" bind:checked={siteFeature.mixSeasonalEffect!} size="sm"
           ></SlideToggle>
         </li>
       </ul>

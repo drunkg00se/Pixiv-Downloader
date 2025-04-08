@@ -15,7 +15,7 @@ export class Gelbooru extends GelbooruV020 {
   }
 
   constructor() {
-    if (clientSetting.current.version === null) {
+    if (clientSetting.version === null) {
       downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'gelbooru/{artist}');
       downloadSetting.setFilenameTemplate(
         legacyConfig.filenamePattern ?? '{id}_{artist}_{character}'

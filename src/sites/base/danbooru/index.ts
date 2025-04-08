@@ -26,10 +26,8 @@ export abstract class AbstractDanbooru extends SiteInject {
   protected blacklist: DanbooruBlacklistItem[] | null = null;
 
   constructor() {
-    if (clientSetting.current.version === null) {
-      siteFeature.patch((state) => {
-        state.addBookmark ??= false;
-      });
+    if (clientSetting.version === null) {
+      siteFeature.addBookmark ??= false;
     }
 
     const userTheme = document.body.getAttribute('data-current-user-theme') as
@@ -307,7 +305,7 @@ export abstract class AbstractDanbooru extends SiteInject {
       this.getFileHandleIfNeeded();
 
       const downloadConfig = new BooruDownloadConfig(meta).create({
-        ...downloadSetting.current
+        ...downloadSetting
       });
 
       await downloader.download(downloadConfig, { signal });
@@ -364,13 +362,13 @@ export abstract class AbstractDanbooru extends SiteInject {
     const mediaMeta = await this.getMetaByPostId(id);
 
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
-      ...downloadSetting.current,
+      ...downloadSetting,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }
     });
 
-    siteFeature.current.addBookmark && this.addBookmark(id);
+    siteFeature.addBookmark && this.addBookmark(id);
 
     await downloader.download(downloadConfig, { priority: 1 });
 

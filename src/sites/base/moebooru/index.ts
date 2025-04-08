@@ -32,10 +32,8 @@ export abstract class Moebooru extends SiteInject {
   protected blacklist: MoebooruBlacklistItem[] | null = null;
 
   constructor() {
-    if (clientSetting.current.version === null) {
-      siteFeature.patch((state) => {
-        state.addBookmark ??= false;
-      });
+    if (clientSetting.version === null) {
+      siteFeature.addBookmark ??= false;
     }
 
     super();
@@ -290,8 +288,8 @@ export abstract class Moebooru extends SiteInject {
       this.getFileHandleIfNeeded();
 
       const downloadConfig = new BooruDownloadConfig(meta).create({
-        ...downloadSetting.current,
-        cfClearance: userAuthentication.current.cf_clearance || undefined
+        ...downloadSetting,
+        cfClearance: userAuthentication.cf_clearance || undefined
       });
 
       await downloader.download(downloadConfig, { signal });
@@ -321,14 +319,14 @@ export abstract class Moebooru extends SiteInject {
     const mediaMeta = this.parser.buildMeta(posts[0], tagType);
 
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
-      ...downloadSetting.current,
-      cfClearance: userAuthentication.current.cf_clearance || undefined,
+      ...downloadSetting,
+      cfClearance: userAuthentication.cf_clearance || undefined,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }
     });
 
-    if (siteFeature.current.addBookmark && !this.parser.isFavorite(id, votes)) {
+    if (siteFeature.addBookmark && !this.parser.isFavorite(id, votes)) {
       const token = this.parser.parseCsrfToken();
       this.api.addFavorite(id, token).catch(logger.error);
     }

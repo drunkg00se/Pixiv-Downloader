@@ -14,7 +14,7 @@
 
   const blockClasses = $derived(`${padding} ${margin} ${border} ${bg} ${rounded} ${UlClass}`);
 
-  const enabledAuth = Object.entries(userAuthentication.current)
+  const enabledAuth = Object.entries(userAuthentication)
     .filter(([_, val]) => val !== null)
     .map(([key, _]) => key);
 </script>
@@ -26,7 +26,7 @@
       <div class={blockClasses}>
         <div>
           <input
-            bind:value={userAuthentication.current[key as keyof AuthState]}
+            bind:value={userAuthentication[key as keyof AuthState]}
             type="text"
             class="input"
             name={key}

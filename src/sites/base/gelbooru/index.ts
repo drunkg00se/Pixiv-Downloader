@@ -23,10 +23,8 @@ export abstract class GelbooruV020 extends SiteInject {
   protected searchParams = new URLSearchParams(location.search);
 
   constructor() {
-    if (clientSetting.current.version === null) {
-      siteFeature.patch((state) => {
-        state.addBookmark ??= false;
-      });
+    if (clientSetting.version === null) {
+      siteFeature.addBookmark ??= false;
     }
 
     super();
@@ -180,8 +178,8 @@ export abstract class GelbooruV020 extends SiteInject {
       this.getFileHandleIfNeeded();
 
       const downloadConfigs = new BooruDownloadConfig(meta).create({
-        ...downloadSetting.current,
-        cfClearance: userAuthentication.current.cf_clearance || undefined
+        ...downloadSetting,
+        cfClearance: userAuthentication.cf_clearance || undefined
       });
 
       await downloader.download(downloadConfigs, { signal });
@@ -210,15 +208,15 @@ export abstract class GelbooruV020 extends SiteInject {
     const doc = await this.api.getPostDoc(id);
     const mediaMeta = this.parser.buildMeta(id, doc);
     const downloadConfig = new BooruDownloadConfig(mediaMeta).create({
-      ...downloadSetting.current,
-      cfClearance: userAuthentication.current.cf_clearance || undefined,
+      ...downloadSetting,
+      cfClearance: userAuthentication.cf_clearance || undefined,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }
     });
 
     // TODO: check if post is already favorited.
-    siteFeature.current.addBookmark && this.#addBookmark(id);
+    siteFeature.addBookmark && this.#addBookmark(id);
 
     await downloader.download(downloadConfig, { priority: 1 });
 

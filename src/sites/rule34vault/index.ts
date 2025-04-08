@@ -44,16 +44,19 @@ export class Rule34Vault extends SiteInject {
   ];
 
   constructor() {
-    if (clientSetting.current.version === null) {
+    if (clientSetting.version === null) {
       downloadSetting.setDirectoryTemplate('Rule34Vault/{artist}');
       downloadSetting.setFilenameTemplate('{id}_{artist}_{character}');
 
-      buttonPosition.patch((state) => {
-        state['--pdl-btn-left'] = 100;
-        state['--pdl-btn-top'] = 76;
+      buttonPosition.$update((state) => {
+        return {
+          ...state,
+          '--pdl-btn-left': 100,
+          '--pdl-btn-top': 76
+        };
       });
 
-      siteFeature.current.addBookmark = false;
+      siteFeature.addBookmark ??= false;
     }
 
     super();
@@ -358,7 +361,7 @@ export class Rule34Vault extends SiteInject {
       this.getFileHandleIfNeeded();
 
       const downloadConfig = new Rule34VaultDownloadConfig(meta).create({
-        ...downloadSetting.current
+        ...downloadSetting
       });
 
       await downloader.download(downloadConfig, { signal });
@@ -382,14 +385,14 @@ export class Rule34Vault extends SiteInject {
     const postData = await this.api.getPostData(id);
     const mediaMeta = this.parser.buildMeta(postData);
     const downloadConfig = new Rule34VaultDownloadConfig(mediaMeta).create({
-      ...downloadSetting.current,
+      ...downloadSetting,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }
     });
 
     const token = this.parser.getCurrentUserToken();
-    if (siteFeature.current.addBookmark && token) {
+    if (siteFeature.addBookmark && token) {
       this.api.addBookmark(id, token).catch(logger.error);
     }
 

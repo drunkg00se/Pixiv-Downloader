@@ -33,12 +33,12 @@
   let directoryRef: HTMLInputElement;
   let filenameRef: HTMLInputElement;
 
-  let directory = $state(downloadSetting.current.directoryTemplate);
-  let filename = $state(downloadSetting.current.filenameTemplate);
+  let directory = $state(downloadSetting.directoryTemplate);
+  let filename = $state(downloadSetting.filenameTemplate);
   let fsaDirectory = $state(downloader.getCurrentFsaDirName());
 
   async function resetFolder() {
-    directory = downloadSetting.current.directoryTemplate;
+    directory = downloadSetting.directoryTemplate;
 
     // Chromium sets `selectionStart` and `selectionEnd` to 0 after changing `input.value`
     await tick();
@@ -48,7 +48,7 @@
   }
 
   async function resetFilename() {
-    filename = downloadSetting.current.filenameTemplate;
+    filename = downloadSetting.filenameTemplate;
 
     await tick();
     const pos = filename.length;
@@ -87,9 +87,9 @@
     };
   }
 
-  const folderBtnDisabled = $derived(directory === downloadSetting.current.directoryTemplate);
+  const folderBtnDisabled = $derived(directory === downloadSetting.directoryTemplate);
 
-  const filenameBtnDisabled = $derived(filename === downloadSetting.current.filenameTemplate);
+  const filenameBtnDisabled = $derived(filename === downloadSetting.filenameTemplate);
 
   const directoryPlaceholder = $derived(
     downloadSetting.isSubpathSupported
@@ -160,11 +160,11 @@
           size="sm"
           name="fsa-enable"
           disabled={!env.isFileSystemAccessAvaliable()}
-          bind:checked={downloadSetting.current.useFileSystemAccessApi}
+          bind:checked={downloadSetting.useFileSystemAccessApi}
         ></SlideToggle>
       </li>
 
-      {#if downloadSetting.current.useFileSystemAccessApi}
+      {#if downloadSetting.useFileSystemAccessApi}
         <li>
           <p class="flex-auto">{t('setting.save_to.options.fsa_directory')}</p>
 
@@ -180,21 +180,21 @@
             <RadioItem
               name="FilenameConflictAction"
               class="text-sm"
-              bind:group={downloadSetting.current.filenameConflictAction}
+              bind:group={downloadSetting.filenameConflictAction}
               value={FilenameConflictAction.UNIQUIFY}
               >{t('setting.save_to.radio.filename_conflict_option_uniquify')}</RadioItem
             >
             <RadioItem
               name="FilenameConflictAction"
               class="text-sm"
-              bind:group={downloadSetting.current.filenameConflictAction}
+              bind:group={downloadSetting.filenameConflictAction}
               value={FilenameConflictAction.OVERWRITE}
               >{t('setting.save_to.radio.filename_conflict_option_overwrite')}</RadioItem
             >
             <RadioItem
               name="FilenameConflictAction"
               class="text-sm"
-              bind:group={downloadSetting.current.filenameConflictAction}
+              bind:group={downloadSetting.filenameConflictAction}
               value={FilenameConflictAction.PROMPT}
               >{t('setting.save_to.radio.filename_conflict_option_prompt')}</RadioItem
             >
@@ -264,25 +264,25 @@
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={siteFeature.current.tagLocale}
+              bind:group={siteFeature.tagLocale}
               value={PixivTagLocale.JAPANESE}>日本語</RadioItem
             >
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={siteFeature.current.tagLocale}
+              bind:group={siteFeature.tagLocale}
               value={PixivTagLocale.CHINESE}>简中</RadioItem
             >
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={siteFeature.current.tagLocale}
+              bind:group={siteFeature.tagLocale}
               value={PixivTagLocale.TRADITIONAL_CHINESE}>繁中</RadioItem
             >
             <RadioItem
               name="tagLang"
               class="text-sm"
-              bind:group={siteFeature.current.tagLocale}
+              bind:group={siteFeature.tagLocale}
               value={PixivTagLocale.ENGLISH}>En</RadioItem
             >
           </RadioGroup>

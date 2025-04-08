@@ -76,7 +76,7 @@
     <ul class={ulClasses}>
       <li>
         <p class="flex-auto">{t('setting.history.options.scheduled_backups')}</p>
-        <select class="select {inputClasses}" bind:value={backupSetting.current.interval}>
+        <select class="select {inputClasses}" bind:value={backupSetting.interval}>
           <option value={BackupInterval.NEVER}
             >{t('setting.history.select.backup_interval_never')}</option
           >
@@ -104,7 +104,7 @@
           class="btn variant-filled"
           onclick={async () => {
             await wrapExportAsJSON();
-            backupSetting.current.lastTimestamp = new Date().getTime();
+            backupSetting.lastTimestamp = new Date().getTime();
           }}
         >
           {#if $exportJsonPending}

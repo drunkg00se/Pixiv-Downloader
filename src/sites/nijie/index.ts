@@ -22,16 +22,19 @@ export class Nijie extends SiteInject {
   #searchParams = new URLSearchParams(location.search);
 
   constructor() {
-    if (clientSetting.current.version === null) {
+    if (clientSetting.version === null) {
       downloadSetting.setDirectoryTemplate(legacyConfig.folderPattern ?? 'nijie/{artist}');
       downloadSetting.setFilenameTemplate(
         legacyConfig.filenamePattern ?? '{artist}_{title}_{id}_p{page}'
       );
 
-      siteFeature.patch((state) => {
-        state.compressMultiIllusts ??= legacyConfig.bundleIllusts ?? false;
-        state.addBookmark ??= false;
-        state.bookmarkWithTags ??= legacyConfig.addBookmarkWithTags ?? false;
+      siteFeature.$update((state) => {
+        return {
+          ...state,
+          compressMultiIllusts: legacyConfig.bundleIllusts ?? false,
+          addBookmark: state.addBookmark ?? false,
+          bookmarkWithTags: state.bookmarkWithTags ?? false
+        };
       });
     }
 
@@ -346,9 +349,9 @@ export class Nijie extends SiteInject {
       this.getFileHandleIfNeeded();
 
       let downloadConfig: DownloadConfig | DownloadConfig[];
-      const option = { ...downloadSetting.current };
+      const option = { ...downloadSetting };
 
-      const bundleIllusts = siteFeature.current.compressMultiIllusts;
+      const bundleIllusts = siteFeature.compressMultiIllusts;
 
       if (Array.isArray(meta.src)) {
         downloadConfig = bundleIllusts
@@ -419,12 +422,12 @@ export class Nijie extends SiteInject {
     const { userId, comment, tags, artist, title, isBookmarked } = meta;
 
     // odai illust will be added every time since we cannot confirm whether it's bookmarked.
-    if (!isBookmarked && siteFeature.current.addBookmark) {
-      this.#addBookmark(id, siteFeature.current.bookmarkWithTags ? tags : undefined);
+    if (!isBookmarked && siteFeature.addBookmark) {
+      this.#addBookmark(id, siteFeature.bookmarkWithTags ? tags : undefined);
     }
 
     const option = {
-      ...downloadSetting.current,
+      ...downloadSetting,
       setProgress: (progress: number) => {
         btn.setProgress(progress);
       }
@@ -452,7 +455,7 @@ export class Nijie extends SiteInject {
           index: pageNum
         });
       } else {
-        const bundleIllusts = siteFeature.current.compressMultiIllusts;
+        const bundleIllusts = siteFeature.compressMultiIllusts;
         downloadConfig = bundleIllusts
           ? new NijieDownloadConfig(diffMeta).createBundle(option)
           : new NijieDownloadConfig(diffMeta).createMulti(option);

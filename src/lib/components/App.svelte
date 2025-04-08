@@ -27,11 +27,11 @@
   const modalStore = getModalStore();
 
   const dark = $derived.by(() => {
-    if (clientSetting.current.theme === 'auto') {
+    if (clientSetting.theme === 'auto') {
       return clientSetting.autoTheme === 'dark';
     }
 
-    return clientSetting.current.theme === 'dark';
+    return clientSetting.theme === 'dark';
   });
 
   let root: HTMLDivElement;
@@ -92,8 +92,8 @@
     addStyleToShadow(shadow);
     shadow.host.setAttribute('style', 'position:fixed; z-index:99999');
 
-    if (clientSetting.current.version !== __VERSION__) {
-      clientSetting.current.version = __VERSION__;
+    if (clientSetting.version !== __VERSION__) {
+      clientSetting.version = __VERSION__;
       showChangelog();
     }
   });
@@ -115,7 +115,7 @@
     <Downloader {downloaderConfig} {useBatchDownload} />
   {/if}
 
-  {#if clientSetting.current.showPopupButton}
+  {#if clientSetting.showPopupButton}
     <button
       onclick={showSetting}
       type="button"
