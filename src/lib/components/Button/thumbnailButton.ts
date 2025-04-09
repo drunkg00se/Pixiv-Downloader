@@ -354,7 +354,7 @@ export class ThumbnailButton extends HTMLElement {
     const span = shadowRoot.querySelector('span')!;
     const svg = shadowRoot.querySelector<SVGElement>('svg.pdl-icon')!;
 
-    if (span.classList.contains('show')) return;
+    if (!span.classList.contains('show')) return;
 
     span.classList.remove('show');
     span.addEventListener(
