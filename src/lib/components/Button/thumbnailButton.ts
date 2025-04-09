@@ -56,13 +56,16 @@ export class ThumbnailButton extends HTMLElement {
   private progress = 0;
   private dirty = false;
 
+  #downloadingId: number | null = null;
+  #downloadingPage: number | undefined | null = null;
+
   constructor(props: ThumbnailBtnProp) {
     super();
     this.dispatchDownload = this.dispatchDownload.bind(this);
     this.onClick = props.onClick;
 
     // modifying `dataset` triggers `attributeChangedCallback`, so we should assign private value before dataset.
-    this.mediaId = this.checkNumberValidity(props.id);
+    this.mediaId = this.toValidatedNumber(props.id);
     this.dataset.id = String(this.mediaId);
 
     if (props.type) {
@@ -70,7 +73,7 @@ export class ThumbnailButton extends HTMLElement {
     }
 
     if (props.page !== undefined) {
-      this.page = this.checkNumberValidity(props.page);
+      this.page = this.toValidatedNumber(props.page);
       this.dataset.page = String(this.page);
     }
 
@@ -87,29 +90,13 @@ export class ThumbnailButton extends HTMLElement {
     return 'pdl-button';
   }
 
-  private checkNumberValidity(num: number | string): number {
-    if (typeof num === 'string') {
-      if (num !== '') {
-        num = +num;
-      } else {
-        return logger.throw('Invalid argument: can not be "".', RangeError);
-      }
-    }
-
-    if (num < 0 || !Number.isSafeInteger(num)) {
-      return logger.throw(`Invalid number: ${num}, must be a non-negative integer.`, RangeError);
-    }
-
-    return num;
-  }
-
   static get observedAttributes() {
     return ['data-id', 'data-status', 'data-page', 'data-type', 'disabled'];
   }
 
   attributeChangedCallback(
     name: 'data-id' | 'data-status' | 'data-page' | 'data-type' | 'disabled',
-    oldValue: string | null,
+    _oldValue: string | null,
     newValue: string | null
   ) {
     switch (name) {
@@ -133,6 +120,27 @@ export class ThumbnailButton extends HTMLElement {
     }
   }
 
+  #resetStatus() {
+    this.hasAttribute('disabled') && this.removeAttribute('disabled');
+    this.setStatus(ThumbnailBtnStatus.Init);
+  }
+
+  private toValidatedNumber(num: number | string): number {
+    if (typeof num === 'string') {
+      if (num !== '') {
+        num = +num;
+      } else {
+        return logger.throw('Invalid argument: can not be "".', RangeError);
+      }
+    }
+
+    if (num < 0 || !Number.isSafeInteger(num)) {
+      return logger.throw(`Invalid number: ${num}, must be a non-negative integer.`, RangeError);
+    }
+
+    return num;
+  }
+
   private resetType(newVal: string | null) {
     if (newVal === null && this.type === undefined) return;
 
@@ -146,11 +154,15 @@ export class ThumbnailButton extends HTMLElement {
     }
   }
 
-  // TODO: do not update download status if id is updateId when downloading
   private updateId(id: string | null) {
     try {
       if (id === null) throw new Error('Attribute "data-id" is required.');
-      this.mediaId = this.checkNumberValidity(id);
+
+      this.mediaId = this.toValidatedNumber(id);
+
+      this.#resetStatus();
+      this.#downloadingId && (this.#downloadingId = null);
+
       this.connectedFlag && this.shouldObserveDb && this.observeDb()();
     } catch (error) {
       logger.error(error);
@@ -173,11 +185,11 @@ export class ThumbnailButton extends HTMLElement {
 
   private updatePage(page: string | null) {
     try {
-      if (page === null) {
-        this.page = undefined;
-      } else {
-        this.page = this.checkNumberValidity(page);
-      }
+      this.page = page === null ? undefined : this.toValidatedNumber(page);
+
+      this.#downloadingPage && (this.#downloadingPage = null);
+
+      this.#resetStatus();
 
       this.connectedFlag && this.shouldObserveDb && this.observeDb()();
     } catch (error) {
@@ -236,24 +248,41 @@ export class ThumbnailButton extends HTMLElement {
     this.setAttribute('disabled', '');
     this.setStatus(ThumbnailBtnStatus.Loading);
 
+    const id = (this.#downloadingId = this.mediaId);
+    const page = (this.#downloadingPage = this.page);
+
     Promise.resolve(this.onClick(this))
       .then(
         () => {
-          this.setStatus(ThumbnailBtnStatus.Complete);
+          if (id === this.#downloadingId && page === this.#downloadingPage) {
+            this.setStatus(ThumbnailBtnStatus.Complete);
+            this.removeAttribute('disabled');
+          }
         },
-        (err: any) => {
+        (err: unknown) => {
           if (err) logger.error(err);
-          this.setStatus(ThumbnailBtnStatus.Error);
+
+          if (id === this.#downloadingId && page === this.#downloadingPage) {
+            this.setStatus(ThumbnailBtnStatus.Error);
+            this.removeAttribute('disabled');
+          }
         }
       )
       .finally(() => {
-        this.removeAttribute('disabled');
+        id === this.#downloadingId && (this.#downloadingId = null);
+        page === this.#downloadingPage && (this.#downloadingPage = null);
       });
   }
 
   private observeDb() {
     return historyDb.subscribe(async () => {
-      const downloaded = await historyDb.has(this.mediaId, this.page);
+      const id = this.mediaId;
+      const page = this.page;
+
+      const downloaded = await historyDb.has(id, page);
+
+      // id or page may change during query.
+      if (id !== this.mediaId || page !== this.page) return;
 
       if (this.status === ThumbnailBtnStatus.Complete) {
         !downloaded && this.setStatus(ThumbnailBtnStatus.Init);
@@ -287,6 +316,7 @@ export class ThumbnailButton extends HTMLElement {
 
   public setProgress(progress: number, updateProgressbar = true) {
     if (progress < 0 || progress > 100) throw new RangeError('Value "progress" must between 0-100');
+    if (this.mediaId !== this.#downloadingId || this.page !== this.#downloadingPage) return;
 
     this.progress = Math.floor(progress);
 
@@ -312,8 +342,6 @@ export class ThumbnailButton extends HTMLElement {
   }
 
   public removeProgress() {
-    if (this.status === ThumbnailBtnStatus.Progress) this.dataset.status = ThumbnailBtnStatus.Init;
-
     this.progress = 0;
 
     if (!this.connectedFlag) {
@@ -326,6 +354,8 @@ export class ThumbnailButton extends HTMLElement {
     const span = shadowRoot.querySelector('span')!;
     const svg = shadowRoot.querySelector<SVGElement>('svg.pdl-icon')!;
 
+    if (span.classList.contains('show')) return;
+
     span.classList.remove('show');
     span.addEventListener(
       'transitionend',
@@ -337,23 +367,20 @@ export class ThumbnailButton extends HTMLElement {
     svg.style.removeProperty('stroke-dashoffset');
   }
 
-  public setStatus(status: ThumbnailBtnStatus) {
-    if (status !== this.status) {
-      if (status === ThumbnailBtnStatus.Init) {
+  public setStatus(newStatus: ThumbnailBtnStatus) {
+    if (newStatus !== this.status) {
+      if (newStatus === ThumbnailBtnStatus.Init) {
         delete this.dataset.status;
         return;
       }
 
-      if (status === ThumbnailBtnStatus.Progress) {
+      if (newStatus === ThumbnailBtnStatus.Progress) {
         this.setProgress(0);
         return;
       }
 
-      if (this.status === ThumbnailBtnStatus.Progress) {
-        this.removeProgress();
-      }
-
-      this.dataset.status = status;
+      this.removeProgress();
+      this.dataset.status = newStatus;
     }
   }
 }
