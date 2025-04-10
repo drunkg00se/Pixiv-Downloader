@@ -8,8 +8,8 @@
   padding: 0;
   height: 32px;
   width: 32px;
-  top: calc((100% - 32px) * var(--pdl-btn-top) / 100);
-  left: calc((100% - 32px) * var(--pdl-btn-left) / 100);
+  top: calc((100% - 32px) * var(--pdl-btn-top-percent) / 100 + var(--pdl-btn-top-px));
+  left: calc((100% - 32px) * var(--pdl-btn-left-percent) / 100 + var(--pdl-btn-left-px));
 
   border: none;
   border-radius: 4px;
@@ -59,8 +59,14 @@
 
   // pixiv个人收藏
   :host([data-type='pixiv-my-bookmark']) & {
-    top: calc((100% - 32px) * var(--pdl-btn-self-bookmark-top) / 100);
-    left: calc((100% - 32px) * var(--pdl-btn-self-bookmark-left) / 100);
+    top: calc(
+      (100% - 32px) * var(--pdl-btn-pixiv-bookmark-top-percent) / 100 +
+        var(--pdl-btn-pixiv-bookmark-top-px)
+    );
+    left: calc(
+      (100% - 32px) * var(--pdl-btn-pixiv-bookmark-left-percent) / 100 +
+        var(--pdl-btn-pixiv-bookmark-left-px)
+    );
   }
 
   // pixiv历史记录

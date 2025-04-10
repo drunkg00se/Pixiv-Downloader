@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { RangeSlider } from '@skeletonlabs/skeleton';
+  import { RadioGroup, RadioItem, RangeSlider } from '@skeletonlabs/skeleton';
   import { env } from '@/lib/env';
   import {
     ThumbnailBtnStatus,
@@ -8,7 +8,8 @@
   } from '@/lib/components/Button/thumbnailButton';
   import { onMount } from 'svelte';
   import { t } from '@/lib/i18n.svelte';
-  import { buttonPosition, ButtonStyleVariable } from '@/lib/store/buttonPosition.svelte';
+  import { buttonPosition, ButtonStyle } from '@/lib/store/buttonPosition.svelte';
+  import { inputValidation } from '@/lib/components/Actions/inputValidation.svelte';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -60,7 +61,7 @@
   <div class="flex items-center justify-center">
     <div
       bind:this={buttonContainer}
-      class="w-48 h-48 backdrop-blur-sm rounded-lg relative {bg}"
+      class="w-48 h-48 backdrop-blur-sm rounded-lg relative overflow-hidden {bg}"
     ></div>
   </div>
 
@@ -68,32 +69,117 @@
     <p class={sectionTitle}>{t('setting.button_position.label.common')}</p>
     <ul class={ulClasses}>
       <li class="flex-col !items-stretch md:flex-row md:!items-baseline gap-4 *:!m-0">
-        <RangeSlider
-          name="pdl-btn-left"
-          {step}
-          {max}
-          ticked
-          class="flex-grow"
-          bind:value={buttonPosition[ButtonStyleVariable.LEFT]}
-        >
+        <div class=" flex-1">
           <div class="flex justify-between items-center">
             <p>{t('setting.button_position.options.horizon_position')}</p>
-            <div class="text-xs">{buttonPosition[ButtonStyleVariable.LEFT]} / {max}</div>
+            <RadioGroup>
+              <RadioItem
+                bind:group={buttonPosition.btnLeftUsePx}
+                name="btn-left"
+                value={false}
+                class=" text-xs">%</RadioItem
+              >
+              <RadioItem
+                bind:group={buttonPosition.btnLeftUsePx}
+                name="btn-left"
+                value={true}
+                class=" text-xs">px</RadioItem
+              >
+            </RadioGroup>
           </div>
-        </RangeSlider>
-        <RangeSlider
-          name="pdl-btn-top"
-          {step}
-          {max}
-          ticked
-          class="flex-grow"
-          bind:value={buttonPosition[ButtonStyleVariable.TOP]}
-        >
+
+          <div class="flex flex-row mt-2 gap-1 h-8">
+            {#if buttonPosition.btnLeftUsePx}
+              <button
+                class="btn variant-filled rounded-r-none text-xl flex-[1]"
+                onclick={() => (buttonPosition['--pdl-btn-left-px'] += 1)}>+</button
+              >
+              <input
+                type="number"
+                class="input variant-form-material text-sm flex-[3]"
+                min="0"
+                use:inputValidation={{
+                  get() {
+                    return buttonPosition['--pdl-btn-left-px'];
+                  },
+                  set(val) {
+                    buttonPosition['--pdl-btn-left-px'] = val;
+                  }
+                }}
+              />
+              <button
+                class=" btn variant-filled rounded-l-none text-xl flex-[1]"
+                onclick={() => (buttonPosition['--pdl-btn-left-px'] -= 1)}
+                disabled={buttonPosition['--pdl-btn-left-px'] < 1}>-</button
+              >
+            {:else}
+              <RangeSlider
+                name="pdl-btn-left"
+                {step}
+                {max}
+                ticked
+                class=" flex-grow self-center"
+                bind:value={buttonPosition[ButtonStyle.LEFT_PERCENT]}
+              ></RangeSlider>
+            {/if}
+          </div>
+        </div>
+
+        <div class=" flex-1">
           <div class="flex justify-between items-center">
             <p>{t('setting.button_position.options.vertical_position')}</p>
-            <div class="text-xs">{buttonPosition[ButtonStyleVariable.TOP]} / {max}</div>
+            <RadioGroup>
+              <RadioItem
+                bind:group={buttonPosition.btnTopUsePx}
+                name="btn-left"
+                value={false}
+                class=" text-xs">%</RadioItem
+              >
+              <RadioItem
+                bind:group={buttonPosition.btnTopUsePx}
+                name="btn-left"
+                value={true}
+                class=" text-xs">px</RadioItem
+              >
+            </RadioGroup>
           </div>
-        </RangeSlider>
+
+          <div class="flex flex-row mt-2 gap-1 h-8">
+            {#if buttonPosition.btnTopUsePx}
+              <button
+                class="btn variant-filled rounded-r-none text-xl flex-[1]"
+                onclick={() => (buttonPosition['--pdl-btn-top-px'] += 1)}>+</button
+              >
+              <input
+                type="number"
+                class="input variant-form-material text-sm flex-[3]"
+                min="0"
+                use:inputValidation={{
+                  get() {
+                    return buttonPosition['--pdl-btn-top-px'];
+                  },
+                  set(val) {
+                    buttonPosition['--pdl-btn-top-px'] = val;
+                  }
+                }}
+              />
+              <button
+                class=" btn variant-filled rounded-l-none text-xl flex-[1]"
+                onclick={() => (buttonPosition['--pdl-btn-top-px'] -= 1)}
+                disabled={buttonPosition['--pdl-btn-top-px'] < 1}>-</button
+              >
+            {:else}
+              <RangeSlider
+                name="pdl-btn-top"
+                {step}
+                {max}
+                ticked
+                class=" flex-grow self-center"
+                bind:value={buttonPosition[ButtonStyle.TOP_PERCENT]}
+              ></RangeSlider>
+            {/if}
+          </div>
+        </div>
       </li>
     </ul>
   </section>
@@ -109,12 +195,12 @@
             {max}
             ticked
             class="flex-grow"
-            bind:value={buttonPosition[ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]}
+            bind:value={buttonPosition[ButtonStyle.PIXIV_BOOKMARK_LEFT_PERCENT]}
           >
             <div class="flex justify-between items-center">
               <p>{t('setting.button_position.options.horizon_position')}</p>
               <div class="text-xs">
-                {buttonPosition[ButtonStyleVariable.PIXIV_BOOKMARK_LEFT]} / {max}
+                {buttonPosition[ButtonStyle.PIXIV_BOOKMARK_LEFT_PERCENT]} / {max}
               </div>
             </div>
           </RangeSlider>
@@ -124,12 +210,12 @@
             {max}
             ticked
             class="flex-grow"
-            bind:value={buttonPosition[ButtonStyleVariable.PIXIV_BOOKMARK_TOP]}
+            bind:value={buttonPosition[ButtonStyle.PIXIV_BOOKMARK_TOP_PERCENT]}
           >
             <div class="flex justify-between items-center">
               <p>{t('setting.button_position.options.vertical_position')}</p>
               <div class="text-xs">
-                {buttonPosition[ButtonStyleVariable.PIXIV_BOOKMARK_TOP]} / {max}
+                {buttonPosition[ButtonStyle.PIXIV_BOOKMARK_TOP_PERCENT]} / {max}
               </div>
             </div>
           </RangeSlider>

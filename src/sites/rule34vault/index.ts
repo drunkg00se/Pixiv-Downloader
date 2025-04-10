@@ -51,8 +51,9 @@ export class Rule34Vault extends SiteInject {
       buttonPosition.$update((state) => {
         return {
           ...state,
-          '--pdl-btn-left': 100,
-          '--pdl-btn-top': 76
+          btnTopUsePx: true,
+          '--pdl-btn-left-percent': 100,
+          '--pdl-btn-top-px': 40
         };
       });
 

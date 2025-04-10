@@ -10,7 +10,9 @@ export const inputValidation: Action<HTMLInputElement, DataToValidate> = (
   node: HTMLInputElement,
   value: DataToValidate
 ) => {
-  node.value = String(value.get());
+  $effect(() => {
+    node.value = String(value.get());
+  });
 
   $effect(() => {
     const off = on(node, 'input', function validate() {
