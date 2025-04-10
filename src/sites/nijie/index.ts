@@ -2,7 +2,7 @@ import { SiteInject } from '../base';
 import { ThumbnailBtnType, ThumbnailButton } from '@/lib/components/Button/thumbnailButton';
 import { ArtworkButton } from '@/lib/components/Button/artworkButton';
 import { downloader, type DownloadConfig } from '@/lib/downloader';
-import { NijieParser, type NijieMeta } from './parser';
+import { NijieParser } from './parser';
 import { NijieApi, type IllustSearchParams } from './api';
 import { NijieDownloadConfig } from './downloadConfig';
 import { historyDb, type HistoryData } from '@/lib/db';
@@ -82,13 +82,57 @@ export class Nijie extends SiteInject {
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
-    metaType: {} as NijieMeta<string | string[]>,
-
     avatar: () => {
       const userAvatarImg = document.querySelector<HTMLImageElement>(
         'a[href*="members.php"].name img'
       );
       return userAvatarImg ? userAvatarImg.src : '/pic/icon/nijie.png';
+    },
+
+    parseMetaByArtworkId: async (id) => {
+      const viewDoc = await this.api.getViewDoc(id);
+      const meta = this.parser.buildMetaByView(id, viewDoc);
+
+      if (this.parser.docHasDiff(viewDoc)) {
+        const popupDoc = await this.api.getViewPopupDoc(id);
+        const imgDiffSrcs = this.parser.parseDiffSrcByDoc(popupDoc);
+
+        return this.parser.mergeImageDiff(meta, imgDiffSrcs);
+      }
+
+      return meta;
+    },
+
+    downloadArtworkByMeta: async (meta, signal) => {
+      this.getFileHandleIfNeeded();
+
+      let downloadConfig: DownloadConfig | DownloadConfig[];
+      const option = { ...downloadSetting };
+
+      const bundleIllusts = siteFeature.compressMultiIllusts;
+
+      if (Array.isArray(meta.src)) {
+        downloadConfig = bundleIllusts
+          ? new NijieDownloadConfig(meta).createBundle(option)
+          : new NijieDownloadConfig(meta).createMulti(option);
+      } else {
+        downloadConfig = new NijieDownloadConfig(meta).create(option);
+      }
+
+      await downloader.download(downloadConfig, { signal });
+
+      const { id, artist, userId, title, comment, tags } = meta;
+
+      const historyData: HistoryData = {
+        pid: Number(id),
+        user: artist,
+        userId: Number(userId),
+        title,
+        comment,
+        tags
+      };
+
+      historyDb.add(historyData);
     },
 
     filterOption: {
@@ -329,52 +373,6 @@ export class Nijie extends SiteInject {
           );
         }
       }
-    },
-
-    parseMetaByArtworkId: async (id) => {
-      const viewDoc = await this.api.getViewDoc(id);
-      const meta = this.parser.buildMetaByView(id, viewDoc);
-
-      if (this.parser.docHasDiff(viewDoc)) {
-        const popupDoc = await this.api.getViewPopupDoc(id);
-        const imgDiffSrcs = this.parser.parseDiffSrcByDoc(popupDoc);
-
-        return this.parser.mergeImageDiff(meta, imgDiffSrcs);
-      }
-
-      return meta;
-    },
-
-    downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
-      let downloadConfig: DownloadConfig | DownloadConfig[];
-      const option = { ...downloadSetting };
-
-      const bundleIllusts = siteFeature.compressMultiIllusts;
-
-      if (Array.isArray(meta.src)) {
-        downloadConfig = bundleIllusts
-          ? new NijieDownloadConfig(meta).createBundle(option)
-          : new NijieDownloadConfig(meta).createMulti(option);
-      } else {
-        downloadConfig = new NijieDownloadConfig(meta).create(option);
-      }
-
-      await downloader.download(downloadConfig, { signal });
-
-      const { id, artist, userId, title, comment, tags } = meta;
-
-      const historyData: HistoryData = {
-        pid: Number(id),
-        user: artist,
-        userId: Number(userId),
-        title,
-        comment,
-        tags
-      };
-
-      historyDb.add(historyData);
     }
   });
 

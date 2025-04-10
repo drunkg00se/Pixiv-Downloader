@@ -103,9 +103,44 @@ export abstract class AbstractDanbooru extends SiteInject {
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
-    metaType: {} as DanbooruMeta,
-
     avatar: () => this.getAvatar(),
+
+    beforeDownload: async () => {
+      this.profile = await this.api.getProfile();
+
+      const blacklistTags = this.profile.blacklisted_tags;
+      this.blacklist = blacklistTags ? this.parser.getBlacklistItem(blacklistTags) : null;
+    },
+
+    afterDownload: () => {
+      this.profile = null;
+      this.blacklist = null;
+    },
+
+    parseMetaByArtworkId: async (id) => {
+      return this.getMetaByPostId(id);
+    },
+
+    downloadArtworkByMeta: async (meta, signal) => {
+      this.getFileHandleIfNeeded();
+
+      const downloadConfig = new BooruDownloadConfig(meta).create({
+        ...downloadSetting
+      });
+
+      await downloader.download(downloadConfig, { signal });
+
+      const { id, tags, artist, title, comment, source, rating } = meta;
+      historyDb.add({
+        pid: Number(id),
+        user: artist,
+        title,
+        comment,
+        tags,
+        source,
+        rating
+      });
+    },
 
     filterOption: {
       filters: [
@@ -295,43 +330,6 @@ export abstract class AbstractDanbooru extends SiteInject {
         name: 'pool_gallery',
         match: /\/pools\/gallery/
       }
-    },
-
-    parseMetaByArtworkId: async (id) => {
-      return this.getMetaByPostId(id);
-    },
-
-    downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
-      const downloadConfig = new BooruDownloadConfig(meta).create({
-        ...downloadSetting
-      });
-
-      await downloader.download(downloadConfig, { signal });
-
-      const { id, tags, artist, title, comment, source, rating } = meta;
-      historyDb.add({
-        pid: Number(id),
-        user: artist,
-        title,
-        comment,
-        tags,
-        source,
-        rating
-      });
-    },
-
-    beforeDownload: async () => {
-      this.profile = await this.api.getProfile();
-
-      const blacklistTags = this.profile.blacklisted_tags;
-      this.blacklist = blacklistTags ? this.parser.getBlacklistItem(blacklistTags) : null;
-    },
-
-    afterDownload: () => {
-      this.profile = null;
-      this.blacklist = null;
     }
   });
 

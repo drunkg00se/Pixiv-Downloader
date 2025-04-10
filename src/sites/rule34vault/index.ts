@@ -12,7 +12,7 @@ import {
   type SubscriptionSearchParam,
   type TagAndBookmarkSearchParam
 } from './api';
-import { Rule34VaultParser, type Rule34VaultMeta } from './parser';
+import { Rule34VaultParser } from './parser';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { downloader } from '@/lib/downloader';
 import { historyDb } from '@/lib/db';
@@ -115,8 +115,6 @@ export class Rule34Vault extends SiteInject {
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
-    metaType: {} as Rule34VaultMeta,
-
     avatar() {
       try {
         // sequence matters
@@ -131,6 +129,30 @@ export class Rule34Vault extends SiteInject {
       } catch (error) {
         return '/assets/icons/icon-512x512.png';
       }
+    },
+
+    parseMetaByArtworkId: async (id: string) => {
+      const postData = await this.api.getPostData(id);
+      return this.parser.buildMeta(postData);
+    },
+
+    downloadArtworkByMeta: async (meta, signal) => {
+      this.getFileHandleIfNeeded();
+
+      const downloadConfig = new Rule34VaultDownloadConfig(meta).create({
+        ...downloadSetting
+      });
+
+      await downloader.download(downloadConfig, { signal });
+
+      const { id, tagsToStore, artist, title, source } = meta;
+      historyDb.add({
+        pid: Number(id),
+        user: artist,
+        title,
+        tags: tagsToStore,
+        source
+      });
     },
 
     filterOption: {
@@ -351,30 +373,6 @@ export class Rule34Vault extends SiteInject {
           );
         }
       }
-    },
-
-    parseMetaByArtworkId: async (id: string) => {
-      const postData = await this.api.getPostData(id);
-      return this.parser.buildMeta(postData);
-    },
-
-    downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
-      const downloadConfig = new Rule34VaultDownloadConfig(meta).create({
-        ...downloadSetting
-      });
-
-      await downloader.download(downloadConfig, { signal });
-
-      const { id, tagsToStore, artist, title, source } = meta;
-      historyDb.add({
-        pid: Number(id),
-        user: artist,
-        title,
-        tags: tagsToStore,
-        source
-      });
     }
   });
 

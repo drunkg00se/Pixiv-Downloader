@@ -48,9 +48,33 @@ export abstract class GelbooruV020 extends SiteInject {
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
-    metaType: {} as GelbooruMeta,
-
     avatar: this.getAvatar.bind(this),
+
+    parseMetaByArtworkId: async (id) => {
+      const doc = await this.api.getPostDoc(id);
+      return this.parser.buildMeta(id, doc);
+    },
+
+    downloadArtworkByMeta: async (meta, signal) => {
+      this.getFileHandleIfNeeded();
+
+      const downloadConfigs = new BooruDownloadConfig(meta).create({
+        ...downloadSetting,
+        cfClearance: userAuthentication.cf_clearance || undefined
+      });
+
+      await downloader.download(downloadConfigs, { signal });
+
+      const { id, tags, artist, title, source, rating } = meta;
+      historyDb.add({
+        pid: Number(id),
+        user: artist,
+        title,
+        tags,
+        source,
+        rating
+      });
+    },
 
     filterOption: {
       filters: [
@@ -167,32 +191,6 @@ export abstract class GelbooruV020 extends SiteInject {
           );
         }
       }
-    },
-
-    parseMetaByArtworkId: async (id) => {
-      const doc = await this.api.getPostDoc(id);
-      return this.parser.buildMeta(id, doc);
-    },
-
-    downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
-      const downloadConfigs = new BooruDownloadConfig(meta).create({
-        ...downloadSetting,
-        cfClearance: userAuthentication.cf_clearance || undefined
-      });
-
-      await downloader.download(downloadConfigs, { signal });
-
-      const { id, tags, artist, title, source, rating } = meta;
-      historyDb.add({
-        pid: Number(id),
-        user: artist,
-        title,
-        tags,
-        source,
-        rating
-      });
     }
   });
 

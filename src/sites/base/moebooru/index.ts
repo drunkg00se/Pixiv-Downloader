@@ -78,9 +78,38 @@ export abstract class Moebooru extends SiteInject {
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
-    metaType: {} as MoebooruMeta,
-
     avatar: '/favicon.ico',
+
+    parseMetaByArtworkId: async (id) => {
+      const htmlText = await this.api.getPostHtml(id);
+      const { posts, tags } = this.parser.parsePostAndPool(htmlText);
+      return this.parser.buildMeta(posts[0], tags);
+    },
+
+    downloadArtworkByMeta: async (meta, signal) => {
+      this.getFileHandleIfNeeded();
+
+      const downloadConfig = new BooruDownloadConfig(meta).create({
+        ...downloadSetting,
+        cfClearance: userAuthentication.cf_clearance || undefined
+      });
+
+      await downloader.download(downloadConfig, { signal });
+
+      const { id, tags, artist, title, rating, source } = meta;
+      historyDb.add({
+        pid: Number(id),
+        user: artist,
+        title,
+        tags,
+        rating,
+        source
+      });
+    },
+
+    afterDownload: () => {
+      this.blacklist && (this.blacklist = null);
+    },
 
     filterOption: {
       filters: [
@@ -276,37 +305,6 @@ export abstract class Moebooru extends SiteInject {
           );
         }
       }
-    },
-
-    parseMetaByArtworkId: async (id) => {
-      const htmlText = await this.api.getPostHtml(id);
-      const { posts, tags } = this.parser.parsePostAndPool(htmlText);
-      return this.parser.buildMeta(posts[0], tags);
-    },
-
-    downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
-      const downloadConfig = new BooruDownloadConfig(meta).create({
-        ...downloadSetting,
-        cfClearance: userAuthentication.cf_clearance || undefined
-      });
-
-      await downloader.download(downloadConfig, { signal });
-
-      const { id, tags, artist, title, rating, source } = meta;
-      historyDb.add({
-        pid: Number(id),
-        user: artist,
-        title,
-        tags,
-        rating,
-        source
-      });
-    },
-
-    afterDownload: () => {
-      this.blacklist && (this.blacklist = null);
     }
   });
 

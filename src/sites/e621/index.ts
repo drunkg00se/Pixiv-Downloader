@@ -122,9 +122,45 @@ export class E621ng extends SiteInject {
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
-    metaType: {} as E621ngMeta,
-
     avatar: '/packs/static/main-logo-2653c015c5870ec4ff08.svg',
+
+    parseMetaByArtworkId: async (id) => {
+      const { post } = await this.api.getPost(+id);
+      return this.parser.buildMeta(post);
+    },
+
+    downloadArtworkByMeta: async (meta, signal) => {
+      this.getFileHandleIfNeeded();
+
+      const downloadConfig = new BooruDownloadConfig(meta).create({
+        ...downloadSetting
+      });
+
+      await downloader.download(downloadConfig, { priority: 1, signal });
+
+      const { tags, artist, title, comment, source, rating } = meta;
+      historyDb.add({
+        pid: Number(meta.id),
+        user: artist,
+        title,
+        comment,
+        tags,
+        source,
+        rating
+      });
+    },
+
+    beforeDownload: async () => {
+      this.#throwIfNotAuthorized();
+
+      const userId = this.parser.parseCurrentUserId();
+      if (!userId) throw new Error('Cannot get user id.');
+      this.profile = await this.api.getCurrentUserProfile(+userId);
+    },
+
+    afterDownload: () => {
+      this.profile = null;
+    },
 
     filterOption: {
       filters: [
@@ -304,44 +340,6 @@ export class E621ng extends SiteInject {
         name: 'pool_gallery',
         match: /\/pools\/gallery/
       }
-    },
-
-    parseMetaByArtworkId: async (id) => {
-      const { post } = await this.api.getPost(+id);
-      return this.parser.buildMeta(post);
-    },
-
-    downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
-      const downloadConfig = new BooruDownloadConfig(meta).create({
-        ...downloadSetting
-      });
-
-      await downloader.download(downloadConfig, { priority: 1, signal });
-
-      const { tags, artist, title, comment, source, rating } = meta;
-      historyDb.add({
-        pid: Number(meta.id),
-        user: artist,
-        title,
-        comment,
-        tags,
-        source,
-        rating
-      });
-    },
-
-    beforeDownload: async () => {
-      this.#throwIfNotAuthorized();
-
-      const userId = this.parser.parseCurrentUserId();
-      if (!userId) throw new Error('Cannot get user id.');
-      this.profile = await this.api.getCurrentUserProfile(+userId);
-    },
-
-    afterDownload: () => {
-      this.profile = null;
     }
   });
 

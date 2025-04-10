@@ -35,8 +35,6 @@ import { legacyConfig } from '@/lib/store/legacyConfig';
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
   protected useBatchDownload = this.app.initBatchDownloader({
-    metaType: {} as PixivMeta,
-
     async avatar(url: string) {
       let userId: string;
       let matchReg: RegExpExecArray | null;
@@ -58,6 +56,30 @@ export class Pixiv extends SiteInject {
         logger.error(error);
         return '';
       }
+    },
+
+    parseMetaByArtworkId: (id) => {
+      const tagLang = siteFeature.tagLocale ?? PixivTagLocale.JAPANESE;
+      return pixivParser.parse(id, { tagLang, type: 'api' });
+    },
+
+    downloadArtworkByMeta: async (meta, signal) => {
+      this.getFileHandleIfNeeded();
+
+      const downloadConfigs = this.getDownloadConfig(meta);
+
+      await downloader.download(downloadConfigs, { signal });
+
+      const { comment, id, tags, artist, userId, title } = meta;
+      const historyData: HistoryData = {
+        pid: Number(id),
+        user: artist,
+        userId: Number(userId),
+        title,
+        comment,
+        tags
+      };
+      historyDb.add(historyData);
     },
 
     filterOption: {
@@ -217,29 +239,6 @@ export class Pixiv extends SiteInject {
           }
         }
       }
-    },
-    parseMetaByArtworkId: (id) => {
-      const tagLang = siteFeature.tagLocale ?? PixivTagLocale.JAPANESE;
-      return pixivParser.parse(id, { tagLang, type: 'api' });
-    },
-
-    downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
-      const downloadConfigs = this.getDownloadConfig(meta);
-
-      await downloader.download(downloadConfigs, { signal });
-
-      const { comment, id, tags, artist, userId, title } = meta;
-      const historyData: HistoryData = {
-        pid: Number(id),
-        user: artist,
-        userId: Number(userId),
-        title,
-        comment,
-        tags
-      };
-      historyDb.add(historyData);
     }
   });
 

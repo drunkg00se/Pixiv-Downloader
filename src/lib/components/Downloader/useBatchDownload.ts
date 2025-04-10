@@ -116,12 +116,17 @@ export interface BatchDownloadConfig<
   ArtworkMeta extends MediaMeta<string | string[]>,
   P extends PageOption<ArtworkMeta> = PageOption<ArtworkMeta>
 > {
-  /** use for type inference */
-  metaType: ArtworkMeta;
+  parseMetaByArtworkId: (id: string) => Promise<ArtworkMeta>;
+
+  downloadArtworkByMeta(meta: ArtworkMeta, signal: AbortSignal): Promise<void>;
 
   beforeDownload?(): void | Promise<void>;
+
   afterDownload?(): void;
+
   onDownloadAbort?(): void;
+
+  avatar?: string | ((url: string) => string | Promise<string>);
 
   filterOption: {
     filters: {
@@ -139,12 +144,7 @@ export interface BatchDownloadConfig<
     enableTagFilter?: ArtworkMeta extends { tags: string[] } ? true | CustomTagFilter : never;
   };
 
-  avatar?: string | ((url: string) => string | Promise<string>);
-
   pageOption: P;
-
-  parseMetaByArtworkId(id: string): Promise<ArtworkMeta>;
-  downloadArtworkByMeta(meta: ArtworkMeta, signal: AbortSignal): Promise<void>;
 }
 
 interface FailedItem {
