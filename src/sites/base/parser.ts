@@ -11,6 +11,7 @@ export interface MediaMeta<T extends string | string[] = string> {
 }
 
 export interface BooruMeta extends MediaMeta {
+  tagsWithType?: string[];
   character: string;
   score: number;
   source: string;

@@ -70,7 +70,8 @@ export default defineConfig({
           'https://e6ai.net/*',
           'https://nijie.info/*',
           'https://rule34vault.com/*',
-          'https://rule34.paheal.net/*'
+          'https://rule34.paheal.net/*',
+          'https://rule34.us/*'
         ],
         noframes: true,
         connect: [
@@ -91,7 +92,8 @@ export default defineConfig({
           'nijie.net',
           'rule34vault.com',
           'r34xyz.b-cdn.net',
-          'r34i.paheal-cdn.net'
+          'r34i.paheal-cdn.net',
+          'rule34.us'
         ],
         require: [
           'https://unpkg.com/dexie@3.2.7/dist/dexie.min.js',
