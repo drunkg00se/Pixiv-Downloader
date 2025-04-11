@@ -12,6 +12,7 @@ export const enum SupportedTemplate {
   ARTISTID = 'artistID',
   CHARACTER = 'character',
   DATE = 'date',
+  MD5 = 'md5',
   SCORE = 'score',
   TAGS = 'tags',
   TITLE = 'title',
@@ -110,6 +111,7 @@ export abstract class MediaDownloadConfig<T extends string | string[] = string> 
         `${SupportedTemplate.ARTISTID}|` +
         `${SupportedTemplate.CHARACTER}|` +
         `${SupportedTemplate.ID}|` +
+        `${SupportedTemplate.MD5}|` +
         `${SupportedTemplate.PAGE}|` +
         `${SupportedTemplate.SCORE}|` +
         `${SupportedTemplate.TAGS}|` +

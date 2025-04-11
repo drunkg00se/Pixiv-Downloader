@@ -11,8 +11,9 @@ import { Safebooru } from './sites/safebooru';
 import { Gelbooru } from './sites/gelbooru';
 import { E621ng } from './sites/e621';
 import { Nijie } from './sites/nijie';
-import './lib/components/app.tailwind.css';
 import { Rule34Vault } from './sites/rule34vault';
+import { Rule34Paheal } from './sites/rule34paheal';
+import './lib/components/app.tailwind.css';
 
 // Remove CSS injected into dom in the dev server
 if (import.meta.env.DEV) {
@@ -32,7 +33,8 @@ function getSiteInjector() {
     Gelbooru,
     E621ng,
     Nijie,
-    Rule34Vault
+    Rule34Vault,
+    Rule34Paheal
   ];
   const hostname = location.hostname;
 

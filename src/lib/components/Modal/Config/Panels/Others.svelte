@@ -63,46 +63,48 @@
       </li>
     {/if}
 
-    <li class="flex-col !items-stretch">
-      <div class="flex items-center">
-        <div class="flex-auto">
-          <p>{t('setting.others.options.add_bookmark_when_downloading')}</p>
-          <p class={descriptionText}>
-            {t('setting.others.options.option_does_not_apply_to_batch_download')}
-          </p>
+    {#if siteFeature.addBookmark !== null}
+      <li class="flex-col !items-stretch">
+        <div class="flex items-center">
+          <div class="flex-auto">
+            <p>{t('setting.others.options.add_bookmark_when_downloading')}</p>
+            <p class={descriptionText}>
+              {t('setting.others.options.option_does_not_apply_to_batch_download')}
+            </p>
+          </div>
+          <SlideToggle name="add-bookmark" bind:checked={siteFeature.addBookmark!} size="sm"
+          ></SlideToggle>
         </div>
-        <SlideToggle name="add-bookmark" bind:checked={siteFeature.addBookmark!} size="sm"
-        ></SlideToggle>
-      </div>
 
-      {#if siteFeature.addBookmark && (env.isPixiv() || env.isNijie())}
-        <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
-          <li>
-            <label class="label flex flex-grow items-center justify-center">
-              <p class="flex-auto">{t('setting.others.options.add_bookmark_with_tags')}</p>
-              <SlideToggle
-                name="bookmark-with-tags"
-                bind:checked={siteFeature.bookmarkWithTags!}
-                size="sm"
-              ></SlideToggle>
-            </label>
-          </li>
-
-          {#if env.isPixiv()}
+        {#if siteFeature.addBookmark && (env.isPixiv() || env.isNijie())}
+          <ul class="list {border} {rounded} [&:not(:last-child)]:*:py-4 [&:last-child]:*:pt-4">
             <li>
               <label class="label flex flex-grow items-center justify-center">
-                <p class="flex-auto">{t('setting.others.options.add_bookmark_private_r18')}</p>
+                <p class="flex-auto">{t('setting.others.options.add_bookmark_with_tags')}</p>
                 <SlideToggle
-                  name="private-bookmark-if-r18"
-                  bind:checked={siteFeature.privateBookmarkIfR18!}
+                  name="bookmark-with-tags"
+                  bind:checked={siteFeature.bookmarkWithTags!}
                   size="sm"
                 ></SlideToggle>
               </label>
             </li>
-          {/if}
-        </ul>
-      {/if}
-    </li>
+
+            {#if env.isPixiv()}
+              <li>
+                <label class="label flex flex-grow items-center justify-center">
+                  <p class="flex-auto">{t('setting.others.options.add_bookmark_private_r18')}</p>
+                  <SlideToggle
+                    name="private-bookmark-if-r18"
+                    bind:checked={siteFeature.privateBookmarkIfR18!}
+                    size="sm"
+                  ></SlideToggle>
+                </label>
+              </li>
+            {/if}
+          </ul>
+        {/if}
+      </li>
+    {/if}
   </ul>
 
   {#if env.isPixiv()}
