@@ -241,7 +241,7 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
       [SupportedTemplate.ARTIST]: '{artist}',
       [SupportedTemplate.CHARACTER]: '{character}',
       [SupportedTemplate.DATE]: '{date}, {date(YYYY-MM-DD)}',
-      [SupportedTemplate.TITLE]: '{title}',
+      [SupportedTemplate.MD5]: '{md5}',
       [SupportedTemplate.SCORE]: '{score}'
     };
   }
@@ -258,6 +258,7 @@ export class BooruDownloadConfig extends MediaDownloadConfig {
       artist: this.artist,
       character: this.character,
       date: this.createDate,
+      md5: this.title,
       title: this.title,
       score: String(this.score)
     };
