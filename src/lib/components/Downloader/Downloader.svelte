@@ -11,7 +11,6 @@
     SlideToggle
   } from '@skeletonlabs/skeleton';
   import { logger } from '@/lib/logger';
-  import { nonNegativeInt } from '../Actions/nonNegativeInt';
   import optionStore from './store';
 
   import downloadSvg from '@/assets/download.svg?src';
@@ -27,6 +26,7 @@
   } from './useBatchDownload';
   import type { MediaMeta } from '@/sites/base/parser';
   import { t } from '@/lib/i18n.svelte';
+  import { inputValidation } from '../Actions/inputValidation.svelte';
 
   interface Props {
     downloaderConfig: BatchDownloadConfig<MediaMeta<string | string[]>>;
@@ -317,9 +317,16 @@
                       type="number"
                       min="1"
                       step="1"
+                      required
                       disabled={$downloadAllPages}
-                      use:nonNegativeInt={pageStart}
-                      bind:value={$pageStart}
+                      use:inputValidation={{
+                        get() {
+                          return $pageStart;
+                        },
+                        set(v) {
+                          $pageStart = v;
+                        }
+                      }}
                     />
                   </label>
 
@@ -336,9 +343,16 @@
                       type="number"
                       min="1"
                       step="1"
+                      required
                       disabled={$downloadAllPages}
-                      use:nonNegativeInt={pageEnd}
-                      bind:value={$pageEnd}
+                      use:inputValidation={{
+                        get() {
+                          return $pageEnd;
+                        },
+                        set(v) {
+                          $pageEnd = v;
+                        }
+                      }}
                     />
                   </label>
                 </div>
