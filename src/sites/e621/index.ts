@@ -16,6 +16,7 @@ import { siteFeature } from '@/lib/store/siteFeature.svelte';
 import { userAuthentication } from '@/lib/store/auth.svelte';
 import { clientSetting } from '@/lib/store/clientSetting.svelte';
 import { legacyConfig } from '@/lib/store/legacyConfig';
+import { toStore } from 'svelte/store';
 
 export class E621ng extends SiteInject {
   protected api: E621ngApi = new E621ngApi({
@@ -45,10 +46,12 @@ export class E621ng extends SiteInject {
 
     super();
 
-    userAuthentication.$subscribe((state) => {
-      this.api.username = state.username!;
-      this.api.apiKey = state.apiKey!;
-    });
+    toStore(() => [userAuthentication.username, userAuthentication.apiKey]).subscribe(
+      ([username, apiKey]) => {
+        this.api.username = username!;
+        this.api.apiKey = apiKey!;
+      }
+    );
   }
 
   static get hostname(): string[] {
