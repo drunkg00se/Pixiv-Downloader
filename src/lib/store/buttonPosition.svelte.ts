@@ -19,6 +19,8 @@ type ButtonPositionState = {
   btnTopUsePx: boolean;
   pixivBtnLeftUsePx: boolean;
   pixivBtnTopUsePx: boolean;
+  artworkBtnAlignLeft: boolean;
+  artworkBtnAlignTop: boolean;
 };
 
 type ButtonPositionProto = {
@@ -41,7 +43,10 @@ export const buttonPosition = createPersistedStore<ButtonPositionState, ButtonPo
     btnLeftUsePx: false,
     btnTopUsePx: false,
     pixivBtnLeftUsePx: false,
-    pixivBtnTopUsePx: false
+    pixivBtnTopUsePx: false,
+
+    artworkBtnAlignLeft: false,
+    artworkBtnAlignTop: true
   },
   {
     setPosition(key: ButtonStyle, value: string) {

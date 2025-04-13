@@ -83,11 +83,14 @@
       "title": "Button",
       "label": {
         "common": "Common",
-        "my_bookmark": "My Bookmark"
+        "my_bookmark": "My Bookmark",
+        "gallery": "Gallery"
       },
       "options": {
-        "horizon_position": "Horizontal Position",
-        "vertical_position": "Vertical Position"
+        "horizontal_position": "Horizontal Position",
+        "vertical_position": "Vertical Position",
+        "horizontal_alignment": "Horizontal Alignment",
+        "vertical_alignment": "Vertical Alignment"
       }
     },
 

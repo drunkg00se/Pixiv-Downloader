@@ -27,6 +27,7 @@
   backdrop-filter: blur(4px);
 
   z-index: 1;
+  pointer-events: auto;
   cursor: pointer;
 
   &:disabled {
@@ -51,10 +52,30 @@
   }
 
   // 画廊页按钮
+  // top, left, right, bottom only affect `position: sticky` even if
+  // the sticky element's parent has `position: absolute`;
   :host([data-type='gallery']) & {
+    --pdl-sticky-safe-area-top: 0px;
+    --pdl-sticky-safe-area-bottom: 0px;
+
     position: sticky;
-    top: 40px;
+    top: var(--pdl-sticky-safe-area-top);
     left: 0px;
+    right: 0px;
+  }
+
+  :host([data-type='gallery'].bottom) & {
+    top: calc(100% - 32px - var(--pdl-sticky-safe-area-bottom));
+  }
+
+  :host([data-type='gallery'].pixiv) & {
+    --pdl-sticky-safe-area-top: 40px;
+    --pdl-sticky-safe-area-bottom: 48px;
+  }
+
+  :host([data-type='gallery'].nijie) & {
+    --pdl-sticky-safe-area-top: 36px;
+    --pdl-sticky-safe-area-bottom: 70px;
   }
 
   // pixiv个人收藏

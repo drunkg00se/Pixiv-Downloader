@@ -10,6 +10,10 @@
   import { t } from '@/lib/i18n.svelte';
   import { buttonPosition, ButtonStyle } from '@/lib/store/buttonPosition.svelte';
   import { inputValidation } from '@/lib/components/Actions/inputValidation.svelte';
+  import alignLeft from '@/assets/align-left.svg?src';
+  import alignRight from '@/assets/align-right.svg?src';
+  import alignTop from '@/assets/align-start-horizontal.svg?src';
+  import alignBottom from '@/assets/align-end-horizontal.svg?src';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -71,7 +75,7 @@
       <li class="flex-col !items-stretch md:flex-row md:!items-baseline gap-4 *:!m-0">
         <div class=" flex-1">
           <div class="flex justify-between items-center">
-            <p>{t('setting.button_position.options.horizon_position')}</p>
+            <p>{t('setting.button_position.options.horizontal_position')}</p>
             <RadioGroup>
               <RadioItem
                 bind:group={buttonPosition.btnLeftUsePx}
@@ -198,7 +202,7 @@
             bind:value={buttonPosition[ButtonStyle.PIXIV_BOOKMARK_LEFT_PERCENT]}
           >
             <div class="flex justify-between items-center">
-              <p>{t('setting.button_position.options.horizon_position')}</p>
+              <p>{t('setting.button_position.options.horizontal_position')}</p>
               <div class="text-xs">
                 {buttonPosition[ButtonStyle.PIXIV_BOOKMARK_LEFT_PERCENT]} / {max}
               </div>
@@ -223,4 +227,55 @@
       </ul>
     </section>
   {/if}
+
+  <section>
+    <p class={sectionTitle}>{t('setting.button_position.label.gallery')}</p>
+    <ul class={ulClasses}>
+      <li class="flex-col !items-stretch md:flex-row md:!items-center gap-4 *:!m-0">
+        <div class="flex flex-1 justify-between items-center">
+          <p>{t('setting.button_position.options.horizontal_alignment')}</p>
+          <RadioGroup>
+            <RadioItem
+              bind:group={buttonPosition.artworkBtnAlignLeft}
+              name="align-left"
+              value={true}
+              class=" text-xs"
+            >
+              <i class="w-2">{@html alignLeft}</i>
+            </RadioItem>
+            <RadioItem
+              bind:group={buttonPosition.artworkBtnAlignLeft}
+              name="align-left"
+              value={false}
+              class=" text-xs"
+            >
+              <i class="w-2">{@html alignRight}</i>
+            </RadioItem>
+          </RadioGroup>
+        </div>
+
+        <div class="flex flex-1 justify-between items-center">
+          <p>{t('setting.button_position.options.vertical_alignment')}</p>
+          <RadioGroup>
+            <RadioItem
+              bind:group={buttonPosition.artworkBtnAlignTop}
+              name="align-left"
+              value={true}
+              class=" text-xs"
+            >
+              <i class="!w-2">{@html alignTop}</i>
+            </RadioItem>
+            <RadioItem
+              bind:group={buttonPosition.artworkBtnAlignTop}
+              name="align-left"
+              value={false}
+              class=" text-xs"
+            >
+              <i class="!w-2">{@html alignBottom}</i>
+            </RadioItem>
+          </RadioGroup>
+        </div>
+      </li>
+    </ul>
+  </section>
 </div>

@@ -1,27 +1,40 @@
 .button-wrapper {
+  --pdl-sticky-container-safe-area-top: 0px;
+  --pdl-sticky-container-safe-area-bottom: 0px;
+  --pdl-sticky-container-safe-area-right: 8px;
+  --pdl-sticky-container-safe-area-left: 8px;
+  inset: var(--pdl-sticky-container-safe-area-top) var(--pdl-sticky-container-safe-area-right)
+    var(--pdl-sticky-container-safe-area-bottom) var(--pdl-sticky-container-safe-area-left);
+
   position: absolute;
-  right: 8px;
-  top: 0px;
-  bottom: 0px;
-  margin-top: 40px;
+  direction: ltr;
+  pointer-events: none;
+
+  &.rtl {
+    direction: rtl;
+  }
+
+  &.pixiv {
+    --pdl-sticky-container-safe-area-top: 40px;
+  }
 
   &.gelbooru {
-    bottom: calc(1em + 22px);
+    --pdl-sticky-container-safe-area-bottom: calc(1em + 22px);
   }
 
   &.moebooru_image {
-    right: calc(5em + 8px);
+    --pdl-sticky-container-safe-area-right: calc(5em + 8px);
   }
 
   &.native_video {
-    bottom: 70px;
+    --pdl-sticky-container-safe-area-bottom: 70px;
   }
 
   &.vjs_video {
-    bottom: 32px;
+    --pdl-sticky-container-safe-area-bottom: 32px;
   }
 
   &.fluid_video {
-    bottom: 56px;
+    --pdl-sticky-container-safe-area-bottom: 56px;
   }
 }

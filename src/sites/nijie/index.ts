@@ -638,7 +638,9 @@ export class Nijie extends SiteInject {
       const filterImg = container.querySelector<HTMLImageElement>('img.filter');
       filterImg && (filterImg.style.zIndex = 'auto');
 
-      container.appendChild(new ArtworkButton({ id, page: idx, onClick: this.downloadArtwork }));
+      container.appendChild(
+        new ArtworkButton({ id, page: idx, site: 'nijie', onClick: this.downloadArtwork })
+      );
     });
   }
 

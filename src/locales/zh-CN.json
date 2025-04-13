@@ -83,11 +83,14 @@
       "title": "按钮位置",
       "label": {
         "common": "通用",
-        "my_bookmark": "我的收藏"
+        "my_bookmark": "我的收藏",
+        "gallery": "画廊"
       },
       "options": {
-        "horizon_position": "水平位置",
-        "vertical_position": "垂直位置"
+        "horizontal_position": "水平位置",
+        "vertical_position": "垂直位置",
+        "horizontal_alignment": "水平对齐",
+        "vertical_alignment": "垂直对齐"
       }
     },
 

@@ -20,6 +20,7 @@ export function createWorkExpanedViewBtn(
       new ArtworkButton({
         id,
         page: idx,
+        site: 'pixiv',
         extraData: unlistedId ? { unlistedId } : undefined,
         onClick: downloadArtwork
       })
