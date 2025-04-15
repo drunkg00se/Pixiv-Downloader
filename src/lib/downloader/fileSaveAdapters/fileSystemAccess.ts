@@ -4,7 +4,7 @@ import { CancelError } from '@/lib/error';
 import { logger } from '@/lib/logger';
 
 // 状态标识，避免下载多图时多次弹出DirectoryPicker
-const enum DirHandleStatus {
+export const enum DirHandleStatus {
   REQUEST = 'dirHandle.request',
   RESPONSE = 'dirHandle.response',
   PICKED = 'dirHandle.picked',

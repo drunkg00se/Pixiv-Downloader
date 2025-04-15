@@ -9,8 +9,12 @@
   import type { TemplateData } from '@/sites/base/downloadConfig';
   import { t } from '@/lib/i18n.svelte';
   import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
-  import { FilenameConflictAction } from '@/lib/downloader/fileSaveAdapters/fileSystemAccess';
+  import {
+    DirHandleStatus,
+    FilenameConflictAction
+  } from '@/lib/downloader/fileSaveAdapters/fileSystemAccess';
   import { PixivTagLocale, siteFeature } from '@/lib/store/siteFeature.svelte';
+  import { channelEvent } from '@/lib/channelEvent';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -37,6 +41,17 @@
   let filename = $state(downloadSetting.filenameTemplate);
   let fsaDirectory = $state(downloader.getCurrentFsaDirName());
 
+  $effect(() => {
+    const updateDirectory = (handler: FileSystemDirectoryHandle) => {
+      fsaDirectory = handler.name;
+    };
+    channelEvent.on(DirHandleStatus.PICKED, updateDirectory);
+
+    return () => {
+      channelEvent.off(DirHandleStatus.PICKED, updateDirectory);
+    };
+  });
+
   async function resetFolder() {
     directory = downloadSetting.directoryTemplate;
 
@@ -56,7 +71,6 @@
     filenameRef.setSelectionRange(pos, pos);
   }
 
-  // TODO: reactivity
   async function updatefsaDir() {
     fsaDirectory = await downloader.updateDirHandle();
   }
