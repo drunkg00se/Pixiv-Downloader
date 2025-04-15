@@ -21,12 +21,29 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
 
   <article class="modal-body mt-4">
-    <p class="mb-2">本次更新修复了测试版Pixiv中的几个问题。</p>
-    <h4 class=" text-xl mt-2">修复</h4>
+    <h4 class=" text-xl mt-2">新增</h4>
     <ul class="list-disc list-inside leading-loose">
-      <li>测试版Pixiv中，开启“下载作品时点赞 / 下载作品时收藏”功能时无法下载作品的问题。</li>
-      <li>测试版Pixiv中，预览原图时下载按钮不显示的问题。</li>
-      <li>测试版Pixiv中，仅可由链接浏览作品不显示下载按钮的问题。</li>
+      <li>支持更多网站：rule34vault, rule34paheal, rule34us。</li>
+      <li>现在可以在设置中调整画廊下载按钮的位置。</li>
+      <li>支持使用像素值来调整预览按钮的位置，以适应瀑布流布局。</li>
+      <li>现在修改设置也会实时反馈到同网站的其它标签页。</li>
+    </ul>
+
+    <h4 class=" text-xl mt-2">调整</h4>
+    <ul class="list-disc list-inside leading-loose">
+      <li>
+        Booru站点文件名模板<code class="code">&#123;title&#125;</code>修改为<code class="code"
+          >&#123;md5&#125;</code
+        >。
+      </li>
+    </ul>
+
+    <h4 class=" text-xl mt-2">已知问题</h4>
+    <ul class="list-disc list-inside leading-loose">
+      <li>
+        使用篡改猴并启用浏览器API时，Firefox
+        137下载较大图片会出现下载成功但无法保存的问题。如您在使用中遇到此问题，请回滚到版本136直至篡改猴正式版更新至v5.4或开发版更新至v5.4.6226。
+      </li>
     </ul>
   </article>
 
