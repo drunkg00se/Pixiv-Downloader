@@ -16,7 +16,7 @@ import { Rule34VaultParser } from './parser';
 import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { downloader } from '@/lib/downloader';
 import { historyDb } from '@/lib/db';
-import { buttonPosition } from '@/lib/store/buttonPosition.svelte';
+import { BtnLengthUnit, buttonPosition } from '@/lib/store/buttonPosition.svelte';
 import { t } from '@/lib/i18n.svelte';
 import { regexp } from '@/lib/regExp';
 import { logger } from '@/lib/logger';
@@ -51,7 +51,7 @@ export class Rule34Vault extends SiteInject {
       buttonPosition.$update((state) => {
         return {
           ...state,
-          btnTopUsePx: true,
+          thumbnailBtnUnitY: BtnLengthUnit.PX,
           '--pdl-btn-left-percent': 100,
           '--pdl-btn-top-px': 40
         };

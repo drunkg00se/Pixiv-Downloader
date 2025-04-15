@@ -8,7 +8,13 @@
   } from '@/lib/components/Button/thumbnailButton';
   import { onMount } from 'svelte';
   import { t } from '@/lib/i18n.svelte';
-  import { buttonPosition, ButtonStyle } from '@/lib/store/buttonPosition.svelte';
+  import {
+    BtnAlignX,
+    BtnAlignY,
+    BtnLengthUnit,
+    buttonPosition,
+    ButtonStyle
+  } from '@/lib/store/buttonPosition.svelte';
   import { inputValidation } from '@/lib/components/Actions/inputValidation.svelte';
   import alignLeft from '@/assets/align-left.svg?src';
   import alignRight from '@/assets/align-right.svg?src';
@@ -78,22 +84,22 @@
             <p>{t('setting.button_position.options.horizontal_position')}</p>
             <RadioGroup>
               <RadioItem
-                bind:group={buttonPosition.btnLeftUsePx}
-                name="btn-left"
-                value={false}
+                bind:group={buttonPosition.thumbnailBtnUnitX}
+                name="thumbnail-btn-unit-x"
+                value={BtnLengthUnit.PERCENT}
                 class=" text-xs">%</RadioItem
               >
               <RadioItem
-                bind:group={buttonPosition.btnLeftUsePx}
-                name="btn-left"
-                value={true}
+                bind:group={buttonPosition.thumbnailBtnUnitX}
+                name="thumbnail-btn-unit-x"
+                value={BtnLengthUnit.PX}
                 class=" text-xs">px</RadioItem
               >
             </RadioGroup>
           </div>
 
           <div class="flex flex-row mt-2 gap-1 h-8">
-            {#if buttonPosition.btnLeftUsePx}
+            {#if buttonPosition.thumbnailBtnUnitX === BtnLengthUnit.PX}
               <button
                 class="btn variant-filled rounded-r-none text-xl flex-[1]"
                 onclick={() => (buttonPosition['--pdl-btn-left-px'] += 1)}>+</button
@@ -118,7 +124,7 @@
               >
             {:else}
               <RangeSlider
-                name="pdl-btn-left"
+                name="thumbnail-btn-left"
                 {step}
                 {max}
                 ticked
@@ -134,22 +140,22 @@
             <p>{t('setting.button_position.options.vertical_position')}</p>
             <RadioGroup>
               <RadioItem
-                bind:group={buttonPosition.btnTopUsePx}
-                name="btn-left"
-                value={false}
+                bind:group={buttonPosition.thumbnailBtnUnitY}
+                name="thumbnail-btn-unit-y"
+                value={BtnLengthUnit.PERCENT}
                 class=" text-xs">%</RadioItem
               >
               <RadioItem
-                bind:group={buttonPosition.btnTopUsePx}
-                name="btn-left"
-                value={true}
+                bind:group={buttonPosition.thumbnailBtnUnitY}
+                name="thumbnail-btn-unit-y"
+                value={BtnLengthUnit.PX}
                 class=" text-xs">px</RadioItem
               >
             </RadioGroup>
           </div>
 
           <div class="flex flex-row mt-2 gap-1 h-8">
-            {#if buttonPosition.btnTopUsePx}
+            {#if buttonPosition.thumbnailBtnUnitY === BtnLengthUnit.PX}
               <button
                 class="btn variant-filled rounded-r-none text-xl flex-[1]"
                 onclick={() => (buttonPosition['--pdl-btn-top-px'] += 1)}>+</button
@@ -174,7 +180,7 @@
               >
             {:else}
               <RangeSlider
-                name="pdl-btn-top"
+                name="thumbnail-btn-top"
                 {step}
                 {max}
                 ticked
@@ -236,20 +242,20 @@
           <p>{t('setting.button_position.options.horizontal_alignment')}</p>
           <RadioGroup>
             <RadioItem
-              bind:group={buttonPosition.artworkBtnAlignLeft}
-              name="align-left"
-              value={true}
+              bind:group={buttonPosition.artworkBtnAlignX}
+              name="artwork-align-x"
+              value={BtnAlignX.LEFT}
               class=" text-xs"
             >
-              <i class="w-2">{@html alignLeft}</i>
+              <i>{@html alignLeft}</i>
             </RadioItem>
             <RadioItem
-              bind:group={buttonPosition.artworkBtnAlignLeft}
-              name="align-left"
-              value={false}
+              bind:group={buttonPosition.artworkBtnAlignX}
+              name="artwork-align-x"
+              value={BtnAlignX.RIGHT}
               class=" text-xs"
             >
-              <i class="w-2">{@html alignRight}</i>
+              <i>{@html alignRight}</i>
             </RadioItem>
           </RadioGroup>
         </div>
@@ -258,20 +264,20 @@
           <p>{t('setting.button_position.options.vertical_alignment')}</p>
           <RadioGroup>
             <RadioItem
-              bind:group={buttonPosition.artworkBtnAlignTop}
-              name="align-left"
-              value={true}
+              bind:group={buttonPosition.artworkBtnAlignY}
+              name="artwork-align-y"
+              value={BtnAlignY.TOP}
               class=" text-xs"
             >
-              <i class="!w-2">{@html alignTop}</i>
+              <i>{@html alignTop}</i>
             </RadioItem>
             <RadioItem
-              bind:group={buttonPosition.artworkBtnAlignTop}
-              name="align-left"
-              value={false}
+              bind:group={buttonPosition.artworkBtnAlignY}
+              name="artwork-align-y"
+              value={BtnAlignY.BOTTOM}
               class=" text-xs"
             >
-              <i class="!w-2">{@html alignBottom}</i>
+              <i>{@html alignBottom}</i>
             </RadioItem>
           </RadioGroup>
         </div>

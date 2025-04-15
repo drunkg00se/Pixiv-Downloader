@@ -1,7 +1,7 @@
 import { legacyConfig } from './legacyConfig';
 import { createPersistedStore } from './storage.svelte';
 
-export enum ButtonStyle {
+export const enum ButtonStyle {
   LEFT_PERCENT = '--pdl-btn-left-percent',
   TOP_PERCENT = '--pdl-btn-top-percent',
   PIXIV_BOOKMARK_LEFT_PERCENT = '--pdl-btn-pixiv-bookmark-left-percent',
@@ -12,15 +12,30 @@ export enum ButtonStyle {
   PIXIV_BOOKMARK_TOP_PX = '--pdl-btn-pixiv-bookmark-top-px'
 }
 
+export enum BtnLengthUnit {
+  PERCENT,
+  PX
+}
+
+export const enum BtnAlignX {
+  LEFT,
+  RIGHT
+}
+
+export const enum BtnAlignY {
+  TOP,
+  BOTTOM
+}
+
 type ButtonPositionState = {
   [k in ButtonStyle]: number;
 } & {
-  btnLeftUsePx: boolean;
-  btnTopUsePx: boolean;
-  pixivBtnLeftUsePx: boolean;
-  pixivBtnTopUsePx: boolean;
-  artworkBtnAlignLeft: boolean;
-  artworkBtnAlignTop: boolean;
+  thumbnailBtnUnitX: BtnLengthUnit;
+  thumbnailBtnUnitY: BtnLengthUnit;
+  pixivBookmarkBtnUnitX: BtnLengthUnit;
+  pixivBookmarkBtnUnitY: BtnLengthUnit;
+  artworkBtnAlignX: BtnAlignX;
+  artworkBtnAlignY: BtnAlignY;
 };
 
 type ButtonPositionProto = {
@@ -30,23 +45,24 @@ type ButtonPositionProto = {
 export const buttonPosition = createPersistedStore<ButtonPositionState, ButtonPositionProto>(
   'pdl-button-position',
   {
-    [ButtonStyle.PIXIV_BOOKMARK_LEFT_PERCENT]: legacyConfig['pdl-btn-self-bookmark-left'] ?? 100,
-    [ButtonStyle.PIXIV_BOOKMARK_TOP_PERCENT]: legacyConfig['pdl-btn-self-bookmark-top'] ?? 76,
     [ButtonStyle.LEFT_PERCENT]: legacyConfig['pdl-btn-left'] ?? 0,
-    [ButtonStyle.TOP_PERCENT]: legacyConfig['pdl-btn-top'] ?? 100,
-
-    [ButtonStyle.PIXIV_BOOKMARK_LEFT_PX]: 0,
-    [ButtonStyle.PIXIV_BOOKMARK_TOP_PX]: 0,
     [ButtonStyle.LEFT_PX]: 0,
+    [ButtonStyle.TOP_PERCENT]: legacyConfig['pdl-btn-top'] ?? 100,
     [ButtonStyle.TOP_PX]: 0,
 
-    btnLeftUsePx: false,
-    btnTopUsePx: false,
-    pixivBtnLeftUsePx: false,
-    pixivBtnTopUsePx: false,
+    [ButtonStyle.PIXIV_BOOKMARK_LEFT_PERCENT]: legacyConfig['pdl-btn-self-bookmark-left'] ?? 100,
+    [ButtonStyle.PIXIV_BOOKMARK_LEFT_PX]: 0,
+    [ButtonStyle.PIXIV_BOOKMARK_TOP_PERCENT]: legacyConfig['pdl-btn-self-bookmark-top'] ?? 76,
+    [ButtonStyle.PIXIV_BOOKMARK_TOP_PX]: 0,
 
-    artworkBtnAlignLeft: false,
-    artworkBtnAlignTop: true
+    thumbnailBtnUnitX: BtnLengthUnit.PERCENT,
+    thumbnailBtnUnitY: BtnLengthUnit.PERCENT,
+
+    pixivBookmarkBtnUnitX: BtnLengthUnit.PERCENT,
+    pixivBookmarkBtnUnitY: BtnLengthUnit.PERCENT,
+
+    artworkBtnAlignX: BtnAlignX.RIGHT,
+    artworkBtnAlignY: BtnAlignY.TOP
   },
   {
     setPosition(key: ButtonStyle, value: string) {
@@ -61,26 +77,26 @@ export const buttonPosition = createPersistedStore<ButtonPositionState, ButtonPo
 
 $effect.root(() => {
   const btnPosTypeSelection = [
-    [() => buttonPosition.btnLeftUsePx, ButtonStyle.LEFT_PX, ButtonStyle.LEFT_PERCENT],
-    [() => buttonPosition.btnTopUsePx, ButtonStyle.TOP_PX, ButtonStyle.TOP_PERCENT],
+    [() => buttonPosition.thumbnailBtnUnitX, ButtonStyle.LEFT_PX, ButtonStyle.LEFT_PERCENT],
+    [() => buttonPosition.thumbnailBtnUnitY, ButtonStyle.TOP_PX, ButtonStyle.TOP_PERCENT],
     [
-      () => buttonPosition.pixivBtnLeftUsePx,
+      () => buttonPosition.pixivBookmarkBtnUnitX,
       ButtonStyle.PIXIV_BOOKMARK_LEFT_PX,
       ButtonStyle.PIXIV_BOOKMARK_LEFT_PERCENT
     ],
     [
-      () => buttonPosition.pixivBtnTopUsePx,
+      () => buttonPosition.pixivBookmarkBtnUnitY,
       ButtonStyle.PIXIV_BOOKMARK_TOP_PX,
       ButtonStyle.PIXIV_BOOKMARK_TOP_PERCENT
     ]
-  ] as Array<[isUsePxFn: () => boolean, pxKey: ButtonStyle, percentKey: ButtonStyle]>;
+  ] as Array<[getUnit: () => BtnLengthUnit, pxKey: ButtonStyle, percentKey: ButtonStyle]>;
 
-  btnPosTypeSelection.forEach(([isUsePxFn, pxKey, percentKey]) => {
+  btnPosTypeSelection.forEach(([getUnit, pxKey, percentKey]) => {
     $effect(() => {
       let px: string;
       let percent: string;
 
-      if (isUsePxFn()) {
+      if (getUnit() === BtnLengthUnit.PX) {
         px = buttonPosition[pxKey] + 'px';
         percent = '0';
       } else {

@@ -1,7 +1,7 @@
 import { toStore, type Unsubscriber } from 'svelte/store';
 import { ThumbnailButton, ThumbnailBtnType, type ThumbnailBtnProp } from './thumbnailButton';
 import wrapperStyle from '@/assets/styles/artworkButton.scss?inline';
-import { buttonPosition } from '@/lib/store/buttonPosition.svelte';
+import { BtnAlignX, BtnAlignY, buttonPosition } from '@/lib/store/buttonPosition.svelte';
 
 type ArtworkButtonProps = Omit<ThumbnailBtnProp, 'type'> & {
   site?:
@@ -58,9 +58,9 @@ export class ArtworkButton extends HTMLElement {
   connectedCallback() {
     this.render();
 
-    const unsubscribeLeft = toStore(() => buttonPosition.artworkBtnAlignLeft).subscribe(
-      (artworkBtnAlignLeft) => {
-        if (artworkBtnAlignLeft) {
+    const unsubscribeX = toStore(() => buttonPosition.artworkBtnAlignX).subscribe(
+      (artworkBtnAlignX) => {
+        if (artworkBtnAlignX === BtnAlignX.LEFT) {
           this.#stickyContainer?.classList.remove('rtl');
         } else {
           this.#stickyContainer?.classList.add('rtl');
@@ -68,9 +68,9 @@ export class ArtworkButton extends HTMLElement {
       }
     );
 
-    const unsbuscribeTop = toStore(() => buttonPosition.artworkBtnAlignTop).subscribe(
-      (artworkBtnAlignTop) => {
-        if (artworkBtnAlignTop) {
+    const unsbuscribeY = toStore(() => buttonPosition.artworkBtnAlignY).subscribe(
+      (artworkBtnAlignY) => {
+        if (artworkBtnAlignY === BtnAlignY.TOP) {
           this.#thumbnailButton?.classList.remove('bottom');
         } else {
           this.#thumbnailButton?.classList.add('bottom');
@@ -78,7 +78,7 @@ export class ArtworkButton extends HTMLElement {
       }
     );
 
-    this.#unsubscribers.push(unsubscribeLeft, unsbuscribeTop);
+    this.#unsubscribers.push(unsubscribeX, unsbuscribeY);
   }
 
   disconnectedCallback() {
