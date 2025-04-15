@@ -24,6 +24,9 @@ export enum PostValidState {
 }
 
 export abstract class ParserBase {
+  protected UNKNOWN_ARTIST = 'UnknownArtist';
+  protected UNKNOWN_CHARACTER = 'UnknownCharacter';
+
   async *paginationGenerator<
     PostData extends object | string,
     IdOrMeta extends string | MediaMeta<string | string[]>
