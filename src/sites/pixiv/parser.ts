@@ -20,7 +20,7 @@ import { logger } from '@/lib/logger';
 import type {
   ValidatedArtworkGenerator,
   YieldArtwork
-} from '@/lib/components/Downloader/useBatchDownload';
+} from '@/lib/components/Downloader/useBatchDownload.svelte';
 import type { PixivTagLocale } from '@/lib/store/siteFeature.svelte';
 
 interface PixivMetaBase<T extends string | string[]> extends MediaMeta<T> {

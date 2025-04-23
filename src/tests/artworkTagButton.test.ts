@@ -3,8 +3,8 @@ import { ArtworkTagButton } from '@/lib/components/Pixiv/artworkTagButton';
 
 let el: ArtworkTagButton;
 const downloading = {
-  subscribe() {
-    return () => {};
+  get current() {
+    return false;
   }
 };
 const handleDownload = () => Promise.resolve();

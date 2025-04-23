@@ -1,19 +1,21 @@
-import { writable, derived, readonly, type Readable, get } from 'svelte/store';
-import optionStore from './store';
 import { logger } from '@/lib/logger';
 import { CancelError, RequestError } from '@/lib/error';
 import { sleep } from '@/lib/util';
 import type { MediaMeta } from '@/sites/base/parser';
 import PQueue from 'p-queue';
 import { useChannel } from './useChannel';
+import {
+  batchDownloaderStore,
+  type BatchDownloaderState
+} from '@/lib/store/batchDownloader.svelte';
 
-export interface YieldArtwork<IdOrMeta extends string | MediaMeta<string | string[]>> {
+export type YieldArtwork<IdOrMeta extends string | MediaMeta<string | string[]>> = {
   total: number;
   page: number;
   avaliable: IdOrMeta[];
   invalid: IdOrMeta[];
   unavaliable: IdOrMeta[];
-}
+};
 
 type CustomTagFilter = (blacklistedTags: string[], tags: string[]) => boolean;
 
@@ -41,23 +43,23 @@ export type ArtworkGenerator<RestArgs = undefined> = (
   | Generator<YieldArtwork<string>, void, undefined>
   | AsyncGenerator<YieldArtwork<string>, void, undefined>;
 
-interface GeneratorOptionBase {
+type GeneratorOptionBase = {
   name: string | (() => string);
   match: string | ((url: string) => boolean) | RegExp;
   beforeDownload?(): void | Promise<void>;
   afterDownload?(): void;
-}
+};
 
-interface ValidatedArtworkGeneratorOption<ArtworkMeta extends MediaMeta<string | string[]>>
-  extends GeneratorOptionBase {
-  filterInGenerator: true;
-  fn: ValidatedArtworkGenerator<ArtworkMeta, any[]>;
-}
+type ValidatedArtworkGeneratorOption<ArtworkMeta extends MediaMeta<string | string[]>> =
+  GeneratorOptionBase & {
+    filterInGenerator: true;
+    fn: ValidatedArtworkGenerator<ArtworkMeta, any[]>;
+  };
 
-interface ArtworkGeneratorOption extends GeneratorOptionBase {
+type ArtworkGeneratorOption = GeneratorOptionBase & {
   filterInGenerator: false;
   fn: ArtworkGenerator<any[]>;
-}
+};
 
 export type PageOption<ArtworkMeta extends MediaMeta<string | string[]>> = Record<
   string,
@@ -88,34 +90,32 @@ type GetGeneratorParameters<
     ? DropFirstAndSecondArg<Option['fn']>
     : never;
 
-interface BatchDownload<
+type BatchDownload<
   ArtworkMeta extends MediaMeta<string | string[]>,
   P extends PageOption<ArtworkMeta> = PageOption<ArtworkMeta>
-> {
-  artworkCount: Readable<number>;
-  successd: Readable<string[]>;
-  failed: Readable<FailedItem[]>;
-  excluded: Readable<string[]>;
-  downloading: Readable<boolean>;
-  log: Readable<LogItem>;
+> = {
+  artworkCount: Readonly<ReactiveValue<number>>;
+  successd: Readonly<ReactiveValue<string[]>>;
+  failed: Readonly<ReactiveValue<FailedItem[]>>;
+  excluded: Readonly<ReactiveValue<string[]>>;
+  downloading: Readonly<ReactiveValue<boolean>>;
+  log: Readonly<ReactiveValue<LogItem | undefined>>;
   batchDownload<K extends OmitNotGeneratorKey<ArtworkMeta, P>>(
     fnId: K,
     ...restArgs: GetGeneratorParameters<P[K], ArtworkMeta>
   ): Promise<void>;
   abort(): void;
-}
+};
 
-export interface BatchDownloadDefinition<
+export type BatchDownloadDefinition<
   ArtworkMeta extends MediaMeta<string | string[]>,
   P extends PageOption<ArtworkMeta> = PageOption<ArtworkMeta>
-> {
-  (): BatchDownload<ArtworkMeta, P>;
-}
+> = () => BatchDownload<ArtworkMeta, P>;
 
-export interface BatchDownloadConfig<
+export type BatchDownloadConfig<
   ArtworkMeta extends MediaMeta<string | string[]>,
   P extends PageOption<ArtworkMeta> = PageOption<ArtworkMeta>
-> {
+> = {
   parseMetaByArtworkId: (id: string) => Promise<ArtworkMeta>;
 
   downloadArtworkByMeta(meta: ArtworkMeta, signal: AbortSignal): Promise<void>;
@@ -145,17 +145,17 @@ export interface BatchDownloadConfig<
   };
 
   pageOption: P;
-}
+};
 
-interface FailedItem {
+type FailedItem = {
   id: string;
   reason: unknown;
-}
+};
 
-interface LogItem {
+type LogItem = {
   type: 'Info' | 'Add' | 'Complete' | 'Fail' | 'Error';
   message: string;
-}
+};
 
 const ERROR_MASKED = 'Masked.';
 
@@ -165,102 +165,75 @@ export function defineBatchDownload<
 >(downloaderConfig: BatchDownloadConfig<T, P>): BatchDownloadDefinition<T, P> {
   const { requestDownload, cancelDownloadRequest, processNextDownload } = useChannel();
 
-  const artworkCount = writable<number>(0);
-  const successd = writable<string[]>([]);
-  const failed = writable<FailedItem[]>([]);
-  const excluded = writable<string[]>([]);
-  const downloading = writable<boolean>(false);
-  const log = writable<LogItem>();
+  let batchDownloaderState: BatchDownloaderState | null = null;
+  let artworkCount = $state(0);
+  let successd = $state<string[]>([]);
+  let failed = $state<FailedItem[]>([]);
+  let excluded = $state<string[]>([]);
+  let downloading = $state<boolean>(false);
+  let log = $state<LogItem>();
 
   const failedIdTasks: string[] = [];
-  const unavaliableIdTasks: string[] = [];
   const failedMetaTasks: T[] = [];
+  const unavaliableIdTasks: string[] = [];
   const unavaliableMetaTasks: T[] = [];
-
-  let controller: AbortController | null;
-  const taskControllers: Set<AbortController> = new Set();
-
-  const downloadQueue = new PQueue({ concurrency: 5, interval: 1100, intervalCap: 1 });
-
-  let resolveDownload: () => void;
-  let rejectDownload: (reason?: unknown) => void;
-
-  let $pageStart!: number;
-  let $pageEnd!: number;
-  let $downloadAllPages: boolean;
-  let $blacklistTag: string[] = [];
-  let $whitelistTag: string[] = [];
-  let $retryFailed: boolean = false;
-
   const includeFilters: FilterFn<T>[] = [];
   const excludeFilters: FilterFn<T>[] = [];
 
-  const {
-    selectedFilters,
-    blacklistTag,
-    whitelistTag,
-    downloadAllPages,
-    pageStart,
-    pageEnd,
-    retryFailed
-  } = optionStore;
+  let controller: AbortController | null;
+  const taskControllers: Set<AbortController> = new Set();
+  const downloadQueue = new PQueue({ concurrency: 5, interval: 1100, intervalCap: 1 });
 
-  const watchPageRange = derived([downloadAllPages, pageStart, pageEnd], (data) => data);
-  watchPageRange.subscribe(([downloadAllPages, pageStart, pageEnd]) => {
-    // update page range
-    $downloadAllPages = downloadAllPages;
-    $pageStart = pageStart;
-    $pageEnd = pageEnd;
-  });
-
-  selectedFilters.subscribe((selected) => {
-    if (!selected) return;
-
-    includeFilters.length = 0;
-    excludeFilters.length = 0;
-
-    selected.forEach((id) => {
-      const filter = downloaderConfig.filterOption.filters.find((filter) => filter.id === id);
-      if (filter) {
-        if (filter.type === 'include') {
-          includeFilters.push(filter.fn);
-        } else {
-          excludeFilters.push(filter.fn);
-        }
+  const batchDownloadStore = {
+    artworkCount: {
+      get current() {
+        return artworkCount;
       }
-    });
-  });
+    },
 
-  blacklistTag.subscribe((val) => {
-    $blacklistTag = [...val];
-  });
-  whitelistTag.subscribe((val) => {
-    $whitelistTag = [...val];
-  });
+    successd: {
+      get current() {
+        return successd;
+      }
+    },
 
-  retryFailed.subscribe((val) => {
-    $retryFailed = val;
-  });
+    failed: {
+      get current() {
+        return failed;
+      }
+    },
 
-  const checkIfDownloadCompleted = derived(
-    [artworkCount, successd, failed, excluded],
-    ([$artworkCount, $successd, $failed, $excluded]) =>
-      $artworkCount === $successd.length + $failed.length + $excluded.length
-  );
-  checkIfDownloadCompleted.subscribe((isDone) => {
-    // resolve waitUntilDownloadComplete when download completed.
-    isDone && resolveDownload?.();
-  });
+    excluded: {
+      get current() {
+        return excluded;
+      }
+    },
+
+    downloading: {
+      get current() {
+        return downloading;
+      }
+    },
+
+    log: {
+      get current() {
+        return log;
+      }
+    },
+
+    batchDownload,
+    abort
+  };
 
   function isStringArray(arr: string[] | T[]): arr is string[] {
     return typeof arr[0] === 'string';
   }
 
   function reset() {
-    artworkCount.set(0);
-    successd.set([]);
-    failed.set([]);
-    excluded.set([]);
+    artworkCount = 0;
+    successd = [];
+    failed = [];
+    excluded = [];
 
     failedIdTasks.length = 0;
     unavaliableIdTasks.length = 0;
@@ -274,78 +247,58 @@ export function defineBatchDownload<
     // may be paused by http status 429, so we need to start it.
     downloadQueue.start();
 
-    resolveDownload = () => {};
-    rejectDownload = () => {};
-
     writeLog('Info', 'Reset store.');
   }
 
-  function setDownloading(isDownloading: boolean) {
-    downloading.update((val) => {
-      // throw if already downloading
-      if (val && isDownloading) throw new Error('Already downloading.');
-      return isDownloading;
-    });
+  function setDownloading(state: boolean) {
+    if (downloading && state) {
+      throw new Error('Already downloading.');
+    }
+
+    downloading = state;
   }
 
-  function setArtworkCount(num: number) {
-    artworkCount.set(num);
-  }
-
-  function addSuccessd(id: string | string[]) {
-    successd.update((val) => {
-      if (Array.isArray(id)) {
-        val.push(...id);
-        writeLog('Complete', id[id.length - 1]);
-      } else {
-        val.push(id);
-        writeLog('Complete', id);
-      }
-      return val;
-    });
+  function addSuccessd(idOrIdArr: string | string[]) {
+    if (Array.isArray(idOrIdArr)) {
+      successd.push(...idOrIdArr);
+      writeLog('Complete', idOrIdArr[idOrIdArr.length - 1]);
+    } else {
+      successd.push(idOrIdArr);
+      writeLog('Complete', idOrIdArr);
+    }
   }
 
   function addFailed(item: FailedItem | FailedItem[]) {
-    failed.update((val) => {
-      let id: string;
-      let reason: unknown;
+    let failedItem: FailedItem;
 
-      if (Array.isArray(item)) {
-        val.push(...item);
-        const lastItem = item[item.length - 1];
-        id = lastItem.id;
-        reason = lastItem.reason;
-      } else {
-        val.push(item);
-        id = item.id;
-        reason = item.reason;
-      }
+    if (Array.isArray(item)) {
+      failed.push(...item);
+      failedItem = item[item.length - 1];
+    } else {
+      failed.push(item);
+      failedItem = item;
+    }
 
-      if (reason instanceof Error || typeof reason === 'string') {
-        writeLog('Fail', id, reason);
-      }
-
-      return val;
-    });
+    const { id, reason } = failedItem;
+    if (reason instanceof Error || typeof reason === 'string') {
+      writeLog('Fail', id, reason);
+    }
   }
 
   function addExcluded(idOrMeta: string | string[] | T | T[]) {
-    excluded.update((val) => {
-      if (Array.isArray(idOrMeta)) {
-        isStringArray(idOrMeta)
-          ? val.push(...idOrMeta)
-          : val.push(...idOrMeta.map((meta) => meta.id));
-        writeLog(
-          'Info',
-          `${idOrMeta.length + ' task' + (idOrMeta.length > 1 ? 's were' : ' was')} excluded...`
-        );
-      } else {
-        const id = typeof idOrMeta === 'string' ? idOrMeta : idOrMeta.id;
-        val.push(id);
-        writeLog('Info', `${id} was excluded...`);
-      }
-      return val;
-    });
+    if (Array.isArray(idOrMeta)) {
+      isStringArray(idOrMeta)
+        ? excluded.push(...idOrMeta)
+        : excluded.push(...idOrMeta.map((meta) => meta.id));
+      writeLog(
+        'Info',
+        `${idOrMeta.length + ' task' + (idOrMeta.length > 1 ? 's were' : ' was')} excluded...`
+      );
+    } else {
+      const id = typeof idOrMeta === 'string' ? idOrMeta : idOrMeta.id;
+      excluded.push(id);
+      writeLog('Info', `${id} was excluded...`);
+    }
   }
 
   function writeLog(type: Extract<LogItem['type'], 'Error'>, error: Error): void;
@@ -381,23 +334,25 @@ export function defineBatchDownload<
         break;
     }
 
-    log.set(item);
+    log = item;
   }
 
   function filterTag(partialMeta: Partial<T>, customTagFilter?: CustomTagFilter): boolean {
     if (!('tags' in partialMeta) || !Array.isArray(partialMeta.tags)) return true;
+
+    const { whitelistTag, blacklistTag } = batchDownloaderState!;
 
     const defaultTagFilter = (userTags: string[], metaTags: string[]) =>
       userTags.some((tag) => metaTags.includes(tag));
 
     customTagFilter ??= defaultTagFilter;
 
-    if ($whitelistTag.length) {
-      return customTagFilter($whitelistTag, partialMeta.tags);
+    if (whitelistTag.length) {
+      return customTagFilter(whitelistTag, partialMeta.tags);
     }
 
-    if ($blacklistTag.length) {
-      return !customTagFilter($blacklistTag, partialMeta.tags);
+    if (blacklistTag.length) {
+      return !customTagFilter(blacklistTag, partialMeta.tags);
     }
 
     return true;
@@ -442,6 +397,20 @@ export function defineBatchDownload<
     setDownloading(true);
     writeLog('Info', 'Download start...');
 
+    batchDownloaderState = $state.snapshot(batchDownloaderStore.$state);
+
+    const selectedFilters = batchDownloaderState.selectedFilters ?? [];
+    selectedFilters.forEach((id) => {
+      const filter = downloaderConfig.filterOption.filters.find((filter) => filter.id === id);
+      if (filter) {
+        if (filter.type === 'include') {
+          includeFilters.push(filter.fn);
+        } else {
+          excludeFilters.push(filter.fn);
+        }
+      }
+    });
+
     // reset store before download start, so we can still access store data after download finished.
     reset();
 
@@ -460,14 +429,7 @@ export function defineBatchDownload<
     signal.addEventListener(
       'abort',
       () => {
-        downloadQueue.size !== 0 && downloadQueue.clear();
-
-        taskControllers.forEach((controller) => controller.abort(signal.reason));
-        taskControllers.clear();
-
         cancelDownloadRequest(signal.reason);
-        rejectDownload?.(signal.reason);
-
         downloaderConfig.onDownloadAbort?.();
       },
       { once: true }
@@ -480,13 +442,13 @@ export function defineBatchDownload<
 
       const {
         filterInGenerator,
-        beforeDownload: generaotrBeforeDownloadCb,
+        beforeDownload: beforeDownloadInGenerator,
         afterDownload
       } = pageIdItem;
       generatorAfterDownloadCb = afterDownload;
 
       typeof beforeDownload === 'function' && (await beforeDownload());
-      typeof generaotrBeforeDownloadCb === 'function' && (await generaotrBeforeDownloadCb());
+      typeof beforeDownloadInGenerator === 'function' && (await beforeDownloadInGenerator());
 
       generator = getGenerator(pageIdItem, ...restArgs);
 
@@ -497,10 +459,10 @@ export function defineBatchDownload<
       await dispatchDownload(generator, filterInGenerator, signal);
 
       // retry failed downloads
-      if ($retryFailed && (failedIdTasks.length || failedMetaTasks.length)) {
+      if (batchDownloaderState.retryFailed && (failedIdTasks.length || failedMetaTasks.length)) {
         if (failedIdTasks.length) {
           generator = getIdRetryGenerator(
-            get(artworkCount),
+            artworkCount,
             failedIdTasks.slice(),
             unavaliableIdTasks.slice()
           );
@@ -509,7 +471,7 @@ export function defineBatchDownload<
           unavaliableIdTasks.length = 0;
         } else if (failedMetaTasks.length) {
           generator = getMetaRetryGenerator(
-            get(artworkCount),
+            artworkCount,
             failedMetaTasks.slice(),
             unavaliableMetaTasks.slice()
           );
@@ -518,7 +480,7 @@ export function defineBatchDownload<
           unavaliableMetaTasks.length = 0;
         }
 
-        failed.set([]);
+        failed = [];
 
         writeLog('Info', 'Retry...');
 
@@ -544,6 +506,10 @@ export function defineBatchDownload<
     typeof generatorAfterDownloadCb === 'function' && generatorAfterDownloadCb();
     typeof afterDownload === 'function' && afterDownload();
 
+    batchDownloaderState = null;
+    includeFilters.length = 0;
+    excludeFilters.length = 0;
+
     setDownloading(false);
     processNextDownload();
 
@@ -566,12 +532,14 @@ export function defineBatchDownload<
   ) {
     let generator: ReturnType<(typeof item)['fn']>;
 
-    if (!$downloadAllPages && $pageEnd < $pageStart)
+    const { downloadAllPages, pageEnd, pageStart } = batchDownloaderState!;
+
+    if (!downloadAllPages && pageEnd < pageStart)
       throw new Error('End page must not be less than the start page.');
 
-    const pageRange: [start: number, end: number] | null = $downloadAllPages
+    const pageRange: [start: number, end: number] | null = downloadAllPages
       ? null
-      : [$pageStart, $pageEnd];
+      : [pageStart, pageEnd];
 
     if ('filterInGenerator' in item && !item.filterInGenerator) {
       generator = item.fn(pageRange, ...restArgs);
@@ -617,9 +585,19 @@ export function defineBatchDownload<
   ) {
     batchDownloadSignal.throwIfAborted();
 
-    const waitUntilDownloadComplete = new Promise<void>((resolve, reject) => {
-      resolveDownload = resolve;
-      rejectDownload = reject;
+    const waitUntilDownloadReject = new Promise<void>((_, reject) => {
+      batchDownloadSignal.addEventListener(
+        'abort',
+        () => {
+          reject(batchDownloadSignal.reason);
+
+          downloadQueue.size !== 0 && downloadQueue.clear();
+
+          taskControllers.forEach((controller) => controller.abort(batchDownloadSignal.reason));
+          taskControllers.clear();
+        },
+        { once: true }
+      );
     });
 
     const { parseMetaByArtworkId, downloadArtworkByMeta } = downloaderConfig;
@@ -630,7 +608,7 @@ export function defineBatchDownload<
       | void;
 
     while (
-      (result = await Promise.race([generator.next(), waitUntilDownloadComplete])) &&
+      (result = await Promise.race([generator.next(), waitUntilDownloadReject])) &&
       !result.done
     ) {
       batchDownloadSignal.throwIfAborted();
@@ -639,9 +617,13 @@ export function defineBatchDownload<
 
       logger.info(total, avaliable, invalid, unavaliable);
 
-      // Update artwork count store
-      setArtworkCount(total);
-      invalid.length && addExcluded(invalid);
+      if (total !== artworkCount) {
+        artworkCount = total;
+      }
+
+      if (invalid.length) {
+        addExcluded(invalid);
+      }
 
       if (unavaliable.length) {
         if (isStringArray(unavaliable)) {
@@ -655,7 +637,7 @@ export function defineBatchDownload<
 
       if (!avaliable.length) {
         // Avoid frequent network requests by the generator.
-        await Promise.race([sleep(1500), waitUntilDownloadComplete]);
+        await Promise.race([sleep(1500), waitUntilDownloadReject]);
         continue;
       }
 
@@ -739,30 +721,17 @@ export function defineBatchDownload<
           });
       }
 
-      await downloadQueue.onEmpty();
+      await Promise.race([waitUntilDownloadReject, downloadQueue.onEmpty()]);
     }
 
-    return waitUntilDownloadComplete;
+    return Promise.race([waitUntilDownloadReject, downloadQueue.onIdle()]);
   }
 
   function abort() {
     controller && controller.abort(new CancelError());
   }
 
-  function batchDownloadDefinition() {
+  return function batchDownloadDefinition() {
     return batchDownloadStore;
-  }
-
-  const batchDownloadStore = {
-    artworkCount: readonly(artworkCount),
-    successd: readonly(successd),
-    failed: readonly(failed),
-    excluded: readonly(excluded),
-    downloading: readonly(downloading),
-    log: readonly(log),
-    batchDownload,
-    abort
   };
-
-  return batchDownloadDefinition;
 }

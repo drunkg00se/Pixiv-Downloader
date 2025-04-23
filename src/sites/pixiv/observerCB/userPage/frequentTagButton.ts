@@ -1,8 +1,7 @@
 import { ArtworkTagButton, type TagProps } from '@/lib/components/Pixiv/artworkTagButton';
-import type { Readable } from 'svelte/store';
 
 export function createFrequentTagBtn(
-  downloading: Readable<boolean>,
+  downloading: ReactiveValue<boolean>,
   handleDownload: (props: TagProps) => Promise<void>
 ) {
   const tagsEles = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[status]'));

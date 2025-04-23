@@ -11,7 +11,6 @@
     SlideToggle
   } from '@skeletonlabs/skeleton';
   import { logger } from '@/lib/logger';
-  import optionStore from './store';
 
   import downloadSvg from '@/assets/download.svg?src';
   import stopSvg from '@/assets/close.svg?src';
@@ -23,10 +22,11 @@
     BatchDownloadConfig,
     BatchDownloadDefinition,
     PageOption
-  } from './useBatchDownload';
+  } from './useBatchDownload.svelte';
   import type { MediaMeta } from '@/sites/base/parser';
   import { t } from '@/lib/i18n.svelte';
   import { inputValidation } from '../Actions/inputValidation.svelte';
+  import { batchDownloaderStore } from '@/lib/store/batchDownloader.svelte';
 
   interface Props {
     downloaderConfig: BatchDownloadConfig<MediaMeta<string | string[]>>;
@@ -41,16 +41,6 @@
 
   const { artworkCount, successd, failed, excluded, downloading, log, batchDownload, abort } =
     useBatchDownload();
-
-  const {
-    selectedFilters,
-    blacklistTag,
-    whitelistTag,
-    downloadAllPages,
-    pageStart,
-    pageEnd,
-    retryFailed
-  } = optionStore;
 
   initFilterStore();
 
@@ -80,8 +70,8 @@
     onUrlChange(location.href);
   });
 
-  downloading.subscribe((val) => {
-    if (val) {
+  $effect(() => {
+    if (downloading.current) {
       // show avatar if triggers batch download in page that doesn't show batch downloader
       if (!avatarUpdated) updateAvatarSrc(location.href);
       // alert before unload while downloading
@@ -94,15 +84,19 @@
     }
   });
 
-  const showDownloader = $derived($downloading || !!batchDownloadEntries);
+  const showDownloader = $derived(downloading.current || !!batchDownloadEntries);
 
-  const processed = $derived($successd.length + $failed.length + $excluded.length);
+  const processed = $derived(
+    successd.current.length + failed.current.length + excluded.current.length
+  );
 
-  const downloadProgress = $derived($artworkCount ? (processed / $artworkCount) * 100 : undefined);
+  const downloadProgress = $derived(
+    artworkCount.current ? (processed / artworkCount.current) * 100 : undefined
+  );
 
   const downloadResult = $derived(
-    !$downloading && $artworkCount
-      ? `Completed: ${$successd.length}. Failed: ${$failed.length}. Excluded: ${$excluded.length}.`
+    !downloading.current && artworkCount.current
+      ? `Completed: ${successd.current.length}. Failed: ${failed.current.length}. Excluded: ${excluded.current.length}.`
       : ''
   );
 
@@ -112,8 +106,8 @@
   });
 
   function initFilterStore() {
-    Array.isArray($selectedFilters) ||
-      ($selectedFilters = downloaderConfig.filterOption.filters
+    Array.isArray(batchDownloaderStore.selectedFilters) ||
+      (batchDownloaderStore.selectedFilters = downloaderConfig.filterOption.filters
         .filter((filter) => filter.checked)
         .map((filter) => filter.id));
   }
@@ -122,7 +116,7 @@
     if (!downloaderConfig.avatar) return;
 
     // don't update avatar during download.
-    if ($downloading && avatarUpdated !== undefined) {
+    if (downloading.current && avatarUpdated !== undefined) {
       nextAvatarUrl = url;
       return;
     }
@@ -243,7 +237,7 @@
     data-theme="skeleton"
     class="card px-4 fixed right-20 top-36 w-[600px] *:text-sm shadow-xl bg-scroll"
   >
-    {#if !$downloading}
+    {#if !downloading.current}
       <div transition:slide class="downloader-filter">
         <TabGroup regionList="text-surface-700-200-token" class="text-sm">
           <Tab bind:group={menuTabSet} name="category" value={0}
@@ -269,7 +263,11 @@
                       >
                         <!-- NOTE: Don't use `hidden` as it prevents `required` from operating -->
                         <div class="w-0 h-0 overflow-hidden hidden">
-                          <input type="checkbox" bind:group={$selectedFilters} value={id} />
+                          <input
+                            type="checkbox"
+                            bind:group={batchDownloaderStore.selectedFilters}
+                            value={id}
+                          />
                         </div>
                         <div class="!m-0">{typeof name === 'function' ? name() : name}</div>
                       </label>
@@ -289,13 +287,13 @@
                   >
                     <RadioItem
                       class="text-sm !py-[7px]"
-                      bind:group={$downloadAllPages}
+                      bind:group={batchDownloaderStore.downloadAllPages}
                       name="justify"
                       value={true}>{t('downloader.category.filter.download_all_pages')}</RadioItem
                     >
                     <RadioItem
                       class="text-sm !py-[7px]"
-                      bind:group={$downloadAllPages}
+                      bind:group={batchDownloaderStore.downloadAllPages}
                       name="justify"
                       value={false}
                       >{t('downloader.category.filter.download_selected_pages')}</RadioItem
@@ -318,13 +316,13 @@
                       min="1"
                       step="1"
                       required
-                      disabled={$downloadAllPages}
+                      disabled={batchDownloaderStore.downloadAllPages}
                       use:inputValidation={{
                         get() {
-                          return $pageStart;
+                          return batchDownloaderStore.pageStart;
                         },
                         set(v) {
-                          $pageStart = v;
+                          batchDownloaderStore.pageStart = v;
                         }
                       }}
                     />
@@ -344,13 +342,13 @@
                       min="1"
                       step="1"
                       required
-                      disabled={$downloadAllPages}
+                      disabled={batchDownloaderStore.downloadAllPages}
                       use:inputValidation={{
                         get() {
-                          return $pageEnd;
+                          return batchDownloaderStore.pageEnd;
                         },
                         set(v) {
-                          $pageEnd = v;
+                          batchDownloaderStore.pageEnd = v;
                         }
                       }}
                     />
@@ -359,14 +357,14 @@
               </div>
             {:else if menuTabSet === 1}
               <InputChip
-                bind:value={$blacklistTag}
+                bind:value={batchDownloaderStore.blacklistTag}
                 allowUpperCase
                 name="blacklist"
                 chips="variant-filled-primary"
                 placeholder={t('downloader.tag_filter.placeholder.blacklist_tag')}
               />
               <InputChip
-                bind:value={$whitelistTag}
+                bind:value={batchDownloaderStore.whitelistTag}
                 allowUpperCase
                 name="whitelist"
                 chips="variant-filled-primary"
@@ -376,7 +374,10 @@
             {:else if menuTabSet === 2}
               <div class="flex justify-between items-center text-base text-surface-700-200-token">
                 <p>{t('downloader.others.options.retry_failed')}</p>
-                <SlideToggle size="sm" name="download-retry" bind:checked={$retryFailed}
+                <SlideToggle
+                  size="sm"
+                  name="download-retry"
+                  bind:checked={batchDownloaderStore.retryFailed}
                 ></SlideToggle>
               </div>
             {/if}
@@ -387,7 +388,7 @@
     {/if}
 
     <div class="flex relative my-4">
-      {#if !$downloading}
+      {#if !downloading.current}
         <div
           bind:this={startDownloadEl}
           transition:fade={{ duration: 250 }}
@@ -403,8 +404,8 @@
             <p class="truncate">
               {downloadResult}
             </p>
-            <p class="break-words" class:text-error-500={$log?.type === 'Error'}>
-              {$log?.message ?? ''}
+            <p class="break-words" class:text-error-500={log.current?.type === 'Error'}>
+              {log.current?.message ?? ''}
             </p>
           </div>
 
@@ -462,11 +463,11 @@
               value={downloadProgress}
             />
             <div class="flex items-center justify-between gap-4 basis-0 text-surface-700-200-token">
-              <p class="truncate" class:text-error-500={$log?.type === 'Error'}>
-                {$log?.message ?? ''}
+              <p class="truncate" class:text-error-500={log.current?.type === 'Error'}>
+                {log.current?.message ?? ''}
               </p>
               <p class=" flex-none">
-                {$artworkCount ? `${processed} / ${$artworkCount}` : ''}
+                {artworkCount.current ? `${processed} / ${artworkCount.current}` : ''}
               </p>
             </div>
           </div>
@@ -516,7 +517,7 @@
       {/await}
     </div>
 
-    {#if $downloading && !showMenu}
+    {#if downloading.current && !showMenu}
       <div
         transition:fade={{ duration: 250 }}
         class="!absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
@@ -535,7 +536,7 @@
 
     <div class="size-14 flex justify-center items-center relative">
       <!-- TODO: out-in transition -->
-      {#if $downloading && $artworkCount && !showMenu}
+      {#if downloading.current && artworkCount.current && !showMenu}
         <div
           transition:fade={{ duration: 250 }}
           bind:this={avatarProgressEl}
@@ -547,7 +548,7 @@
           <hr
             class="!border-t-1 my-[1px] self-stretch !border-surface-700 dark:!border-surface-200"
           />
-          <span class=" truncate max-w-full">{$artworkCount}</span>
+          <span class=" truncate max-w-full">{artworkCount.current}</span>
         </div>
       {:else if !showMenu}
         <i

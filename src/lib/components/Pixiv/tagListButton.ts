@@ -3,19 +3,23 @@ import { addStyleToShadow } from '@/lib/util';
 import type { Category } from '@/sites/pixiv/types';
 import type { TagProps } from './artworkTagButton';
 import { regexp } from '@/lib/regExp';
-import type { Unsubscriber, Readable } from 'svelte/store';
+import { type Unsubscriber, type Readable, toStore } from 'svelte/store';
 import { logger } from '@/lib/logger';
 
 export class TagListButton extends HTMLElement {
   private btn?: HTMLButtonElement;
+  private downloadingStore: Readable<boolean>;
   private unsubscriber?: Unsubscriber;
 
   constructor(
     private tagUrl: string,
-    private downloading: Readable<boolean>,
+    downloading: ReactiveValue<boolean>,
     private handleDownload: (props: TagProps) => Promise<void>
   ) {
     super();
+
+    this.downloadingStore = toStore(() => downloading.current);
+
     this.dispatchDownload = this.dispatchDownload.bind(this);
   }
 
@@ -79,7 +83,7 @@ export class TagListButton extends HTMLElement {
     this.btn ??= this.shadowRoot!.querySelector('button')!;
     this.btn.addEventListener('click', this.dispatchDownload);
 
-    this.unsubscriber = this.downloading.subscribe((val) => {
+    this.unsubscriber = this.downloadingStore.subscribe((val) => {
       if (val) {
         this.setAttribute('disabled', '');
       } else {

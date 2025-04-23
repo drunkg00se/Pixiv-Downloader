@@ -1,12 +1,12 @@
-import type { Readable } from 'svelte/store';
+import { toStore, type Readable } from 'svelte/store';
 import { ThumbnailButton, type ThumbnailBtnProp } from '../Button/thumbnailButton';
 
 type DanbooruPoolButtonProp = Omit<ThumbnailBtnProp, 'page' | 'type' | 'shouldObserveDb'> & {
-  downloading: Readable<boolean>;
+  downloading: ReactiveValue<boolean>;
 };
 
 export class DanbooruPoolButton extends ThumbnailButton {
-  private downloading: Readable<boolean>;
+  private downloadingStore: Readable<boolean>;
 
   constructor(props: DanbooruPoolButtonProp) {
     super({
@@ -14,7 +14,8 @@ export class DanbooruPoolButton extends ThumbnailButton {
       shouldObserveDb: false
     });
 
-    this.downloading = props.downloading;
+    const { downloading } = props;
+    this.downloadingStore = toStore(() => downloading.current);
   }
 
   static get tagNameLowerCase() {
@@ -23,7 +24,7 @@ export class DanbooruPoolButton extends ThumbnailButton {
 
   connectedCallback() {
     super.connectedCallback();
-    this.unsubscriber = this.downloading.subscribe((val) => {
+    this.unsubscriber = this.downloadingStore.subscribe((val) => {
       if (val) {
         this.setAttribute('disabled', '');
       } else {

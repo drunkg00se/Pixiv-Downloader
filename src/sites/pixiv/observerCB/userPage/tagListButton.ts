@@ -1,9 +1,8 @@
 import { TagListButton } from '@/lib/components/Pixiv/tagListButton';
 import type { TagProps } from '@/lib/components/Pixiv/artworkTagButton';
-import type { Readable } from 'svelte/store';
 
 export function createTagListBtn(
-  downloading: Readable<boolean>,
+  downloading: ReactiveValue<boolean>,
   handleDownload: (props: TagProps) => Promise<void>
 ) {
   const listContainer = document.querySelector('div[style*="position: relative"]');

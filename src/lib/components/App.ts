@@ -5,7 +5,7 @@ import {
   type BatchDownloadConfig,
   type BatchDownloadDefinition,
   type PageOption
-} from './Downloader/useBatchDownload';
+} from './Downloader/useBatchDownload.svelte';
 import { create_custom_element } from 'svelte/internal/client';
 import type { TemplateData } from '@/sites/base/downloadConfig';
 

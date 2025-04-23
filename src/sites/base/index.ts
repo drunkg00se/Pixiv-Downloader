@@ -1,7 +1,7 @@
 import { GM_registerMenuCommand } from '$';
 import { PdlApp } from '@/lib/components/App';
 import { useHistoryBackup } from '@/lib/useHistoryBackup';
-import type { BatchDownloadDefinition } from '@/lib/components/Downloader/useBatchDownload';
+import type { BatchDownloadDefinition } from '@/lib/components/Downloader/useBatchDownload.svelte';
 import type { MediaMeta } from './parser';
 import type { TemplateData } from './downloadConfig';
 import { t } from '@/lib/i18n.svelte';

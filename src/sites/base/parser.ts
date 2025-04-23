@@ -1,4 +1,4 @@
-import type { YieldArtwork } from '@/lib/components/Downloader/useBatchDownload';
+import type { YieldArtwork } from '@/lib/components/Downloader/useBatchDownload.svelte';
 
 export interface MediaMeta<T extends string | string[] = string> {
   id: string;

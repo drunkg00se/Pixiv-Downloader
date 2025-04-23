@@ -10,16 +10,12 @@ type ClientSettingState = {
   showPopupButton: boolean;
 };
 
-type ReactiveTheme = {
-  current: boolean;
-};
-
 type ClientSettingProto = {
   readonly autoTheme: 'light' | 'dark';
-  setThemeWatcher(watcher: ReactiveTheme): void;
+  setThemeWatcher(watcher: ReactiveValue<boolean>): void;
 };
 
-let themeWatcher: ReactiveTheme = new MediaQuery('(prefers-color-scheme: dark)');
+let themeWatcher: ReactiveValue<boolean> = new MediaQuery('(prefers-color-scheme: dark)');
 let themeVersion = $state(0);
 
 export const clientSetting = createPersistedStore<ClientSettingState, ClientSettingProto>(
@@ -36,7 +32,7 @@ export const clientSetting = createPersistedStore<ClientSettingState, ClientSett
       return themeWatcher.current ? 'dark' : 'light';
     },
 
-    setThemeWatcher(watcher: ReactiveTheme) {
+    setThemeWatcher(watcher: ReactiveValue<boolean>) {
       themeVersion += 1;
       themeWatcher = watcher;
     }
