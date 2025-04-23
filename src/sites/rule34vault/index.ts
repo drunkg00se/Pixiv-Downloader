@@ -21,6 +21,7 @@ import { t } from '@/lib/i18n.svelte';
 import { regexp } from '@/lib/regExp';
 import { logger } from '@/lib/logger';
 import { ReactiveValue } from '@/lib/reactiveValue.svelte';
+import { waitDom } from '@/lib/util';
 
 export class Rule34Vault extends SiteInject {
   private api = new Rule34VaultApi();
@@ -115,18 +116,20 @@ export class Rule34Vault extends SiteInject {
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
-    //FIXME: shows wrong avatar when navigating to playlist
-    avatar() {
+    avatar: async (url) => {
       try {
-        // sequence matters
-        const avatarEl = (document.body.querySelector(
-          'app-playlist-page-content app-user-avatar div.img'
-        ) || document.body.querySelector('mat-sidenav app-user-avatar div.img'))!;
+        let avatarEl: Element;
+
+        if (/\/playlists\/view\/[0-9]+/.test(url)) {
+          avatarEl = (await waitDom('app-playlist-page-content app-user-avatar div.img'))!;
+        } else {
+          avatarEl = document.body.querySelector('mat-sidenav app-user-avatar div.img')!;
+        }
 
         const style = avatarEl.getAttribute('style')!;
+        const avatarSrc = /(?<=url\(").+(?="\))/.exec(style)![0];
 
-        const url = /(?<=url\(").+(?="\))/.exec(style)![0];
-        return url;
+        return avatarSrc;
       } catch (error) {
         return '/assets/icons/icon-512x512.png';
       }

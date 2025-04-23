@@ -182,3 +182,36 @@ export function isPlainObject(val: unknown): boolean {
     Function.prototype.toString.call(valConstructor) === Function.prototype.toString.call(Object)
   );
 }
+
+export function waitDom<T extends Element = Element>(
+  selector: string,
+  timeout = 3000
+): Promise<T | null> {
+  const el = document.querySelector<T>(selector);
+  if (el) {
+    return Promise.resolve(el);
+  }
+
+  return new Promise<T | null>((resolve) => {
+    // eslint-disable-next-line prefer-const
+    let timer: ReturnType<typeof setTimeout>;
+
+    const observer = new MutationObserver(() => {
+      const el = document.querySelector<T>(selector);
+      if (el) {
+        resolve(el);
+        observer.disconnect();
+        if (timer) {
+          clearTimeout(timer);
+        }
+      }
+    });
+
+    observer.observe(document, { childList: true, subtree: true });
+
+    timer = setTimeout(() => {
+      resolve(null);
+      observer.disconnect();
+    }, timeout);
+  });
+}
