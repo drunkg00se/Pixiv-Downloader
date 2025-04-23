@@ -27,22 +27,23 @@ export class Rule34Vault extends SiteInject {
   private api = new Rule34VaultApi();
   private parser = new Rule34VaultParser();
 
-  #isHome: ReactiveValue<boolean>;
-  #notifyPageChange?: () => void;
-
-  #pageType = [
+  private pageType = [
     'app-home-page',
     'app-post-page',
     'app-highest-posts-page',
     'app-hot-posts-page',
     'app-playlists-page',
+    'app-playlist-page',
     'app-comments-page',
     'app-upgrade-to-premium-page',
     'app-user-page',
     'app-feed-page',
     'app-sign-in-page',
     'app-sign-up-page'
-  ];
+  ] as const;
+
+  #currentPage: ReactiveValue<(typeof this.pageType)[number]>;
+  #notifyPageChange?: () => void;
 
   constructor() {
     if (clientSetting.version === null) {
@@ -63,8 +64,11 @@ export class Rule34Vault extends SiteInject {
 
     super();
 
-    this.#isHome = new ReactiveValue(
-      () => !!document.querySelector('app-home-page'),
+    this.#currentPage = new ReactiveValue<(typeof this.pageType)[number]>(
+      () =>
+        document
+          .querySelector(this.pageType.join(','))!
+          .tagName.toLowerCase() as (typeof this.pageType)[number],
       (update) => {
         this.#notifyPageChange = update;
         return () => {
@@ -196,7 +200,7 @@ export class Rule34Vault extends SiteInject {
     pageOption: {
       playlist: {
         name: 'Playlist',
-        match: /\/playlists\/view\/[0-9]+/,
+        match: () => this.#currentPage.current === 'app-playlist-page',
         filterInGenerator: false,
         fn: (pageRange) => {
           const idMathch = /(?<=\/playlists\/view\/)[0-9]+/.exec(location.pathname);
@@ -241,7 +245,7 @@ export class Rule34Vault extends SiteInject {
 
       tagSearch: {
         name: 'All Posts',
-        match: () => this.#isHome.current,
+        match: () => this.#currentPage.current === 'app-home-page',
         filterInGenerator: false,
         fn: (pageRange) => {
           const { includeTags, sortBy, type } = this.#getCurrentSearchSetting();
@@ -283,7 +287,7 @@ export class Rule34Vault extends SiteInject {
 
       bookmarkSearch: {
         name: 'Bookmarks',
-        match: () => this.#isHome.current,
+        match: () => this.#currentPage.current === 'app-home-page',
         filterInGenerator: false,
         fn: (pageRange) => {
           const token = this.parser.getCurrentUserToken();
@@ -332,7 +336,7 @@ export class Rule34Vault extends SiteInject {
 
       subscriptionSearch: {
         name: 'Subscriptions',
-        match: () => this.#isHome.current,
+        match: () => this.#currentPage.current === 'app-home-page',
         filterInGenerator: false,
         fn: (pageRange) => {
           const token = this.parser.getCurrentUserToken();
@@ -502,9 +506,10 @@ export class Rule34Vault extends SiteInject {
             this.#createOrUpdatePostActionButton();
             break;
           }
-          case el.matches(this.#pageType.join(',')): {
-            if (!this.#notifyPageChange)
+          case el.matches(this.pageType.join(',')): {
+            if (!this.#notifyPageChange) {
               throw new TypeError('Type of #notifyPageChange is undefined.');
+            }
             this.#notifyPageChange();
             break;
           }
