@@ -115,6 +115,7 @@ export class Rule34Vault extends SiteInject {
   }
 
   protected useBatchDownload = this.app.initBatchDownloader({
+    //FIXME: shows wrong avatar when navigating to playlist
     avatar() {
       try {
         // sequence matters
