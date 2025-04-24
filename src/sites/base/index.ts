@@ -48,6 +48,10 @@ export abstract class SiteInject {
     backupSetting.lastTimestamp = timestamp;
   }
 
+  protected toast(settings: Parameters<typeof this.app.toast>[0]) {
+    return this.app.toast(settings);
+  }
+
   public inject(): void {
     GM_registerMenuCommand(
       t('button.setting'),

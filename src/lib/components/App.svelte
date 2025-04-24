@@ -1,12 +1,21 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
-  import { Modal, getModalStore, initializeStores } from '@skeletonlabs/skeleton';
+  import {
+    Modal,
+    getModalStore,
+    initializeStores,
+    Toast,
+    getToastStore
+  } from '@skeletonlabs/skeleton';
   import { addStyleToShadow } from '../util';
   import Changelog from './Modal/Changelog/Changelog.svelte';
   import Downloader from './Downloader/Downloader.svelte';
   import cog from '@/assets/cog.svg?src';
-  import type { ModalComponent } from '@skeletonlabs/skeleton';
-  import type { BatchDownloadConfig, BatchDownloadDefinition } from './Downloader/useBatchDownload';
+  import type { ModalComponent, ToastSettings } from '@skeletonlabs/skeleton';
+  import type {
+    BatchDownloadConfig,
+    BatchDownloadDefinition
+  } from './Downloader/useBatchDownload.svelte';
   import type { MediaMeta } from '@/sites/base/parser';
   import Config from './Modal/Config/Config.svelte';
   import type { TemplateData } from '@/sites/base/downloadConfig';
@@ -25,6 +34,7 @@
 
   initializeStores();
   const modalStore = getModalStore();
+  const toastStore = getToastStore();
 
   const dark = $derived.by(() => {
     if (clientSetting.theme === 'auto') {
@@ -53,6 +63,30 @@
       type: 'component',
       component: 'setting'
     });
+  }
+
+  export function toast(
+    settings: Omit<ToastSettings, 'background' | 'classes'> & {
+      type?: 'success' | 'warning' | 'error';
+    }
+  ) {
+    let background: string;
+    switch (settings.type || 'success') {
+      case 'success':
+        background = 'variant-filled-primary';
+        break;
+      case 'warning':
+        background = 'variant-filled-warning';
+        break;
+      case 'error':
+        background = 'variant-filled-error';
+        break;
+      default:
+        throw new Error('Unknown toast type.');
+    }
+
+    if (settings.type) delete settings.type;
+    return toastStore.trigger({ ...settings, background });
   }
 
   /** disable the backdrop's click */
@@ -127,4 +161,6 @@
       <span class="text-sm">{t('button.setting')}</span>
     </button>
   {/if}
+
+  <Toast />
 </div>

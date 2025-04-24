@@ -7,7 +7,6 @@ import { downloader } from '@/lib/downloader';
 import { E621ngParser, type E621ngMeta } from './parser';
 import { historyDb } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { unsafeWindow } from '$';
 import { PostValidState } from '../base/parser';
 import { BooruDownloadConfig, type TemplateData } from '../base/downloadConfig';
 import { t } from '@/lib/i18n.svelte';
@@ -62,13 +61,6 @@ export class E621ng extends SiteInject {
     return BooruDownloadConfig.supportedTemplate;
   }
 
-  #notice(msg: string) {
-    (unsafeWindow as any).Danbooru.Utility.notice(msg);
-  }
-  #noticeError(msg: string) {
-    (unsafeWindow as any).Danbooru.Utility.error(msg);
-  }
-
   #isPoolGallery() {
     return location.pathname === '/pools/gallery';
   }
@@ -95,9 +87,9 @@ export class E621ng extends SiteInject {
 
   #throwIfNotAuthorized() {
     if (!this.#isAuthorized()) {
-      const msg = 'Please input your username and apiKey in setting.';
-      this.#noticeError(msg);
-      throw new Error(msg);
+      const message = 'Please input your username and apiKey in setting.';
+      this.toast({ message, type: 'error' });
+      throw new Error(message);
     }
   }
 
@@ -347,16 +339,15 @@ export class E621ng extends SiteInject {
   });
 
   async #addFavorites(id: number) {
-    const csrfToken = this.parser.parseCsrfToken();
-    if (!csrfToken) throw new Error('Cannot parse csrf-token.');
-
     try {
-      this.#notice(`Updating posts: ${id}`);
+      const csrfToken = this.parser.parseCsrfToken();
+      if (!csrfToken) throw new Error('Cannot get csrf-token.');
+
       await this.api.addFavorites(id, csrfToken);
-      this.#notice(`Favorite added: ${id}`);
+      this.toast({ message: 'You have favorited this post', timeout: 2000 });
     } catch (error) {
-      this.#noticeError(`Failed to add favorite: ${id}. Reason: ${error}`);
       logger.error(error);
+      this.toast({ message: (error as Error).message, type: 'error' });
     }
   }
 

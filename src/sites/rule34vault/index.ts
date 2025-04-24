@@ -384,6 +384,19 @@ export class Rule34Vault extends SiteInject {
     }
   });
 
+  async #addBookmark(id: string) {
+    try {
+      const token = this.parser.getCurrentUserToken();
+      if (!token) throw new Error('Token not found, please sign in');
+
+      await this.api.addBookmark(id, token);
+      this.toast({ message: 'You have favorited this post', timeout: 2000 });
+    } catch (error) {
+      logger.error(error);
+      this.toast({ message: (error as Error).message, type: 'error' });
+    }
+  }
+
   async #downloadArtwork(btn: ThumbnailButton) {
     this.getFileHandleIfNeeded();
 
@@ -398,9 +411,8 @@ export class Rule34Vault extends SiteInject {
       }
     });
 
-    const token = this.parser.getCurrentUserToken();
-    if (siteFeature.addBookmark && token) {
-      this.api.addBookmark(id, token).catch(logger.error);
+    if (siteFeature.addBookmark) {
+      this.#addBookmark(id);
     }
 
     await downloader.download(downloadConfig, { priority: 1 });

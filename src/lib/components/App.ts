@@ -21,7 +21,7 @@ export const PdlApp = create_custom_element(
     useBatchDownload: {}
   },
   [],
-  ['showChangelog', 'showSetting'],
+  ['showChangelog', 'showSetting', 'toast'],
   true,
   (customElementConstructor) => {
     return class extends customElementConstructor {

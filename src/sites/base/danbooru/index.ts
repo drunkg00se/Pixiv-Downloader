@@ -8,7 +8,6 @@ import { DanbooruPoolButton } from '@/lib/components/Danbooru/danbooruPoolButton
 import type { DanbooruArtistCommentary, DanbooruPost, DanbooruUserProfile } from './types';
 import { DanbooruApi } from './api';
 import { JsonDataError } from '@/lib/error';
-import { unsafeWindow } from '$';
 import { evalScript } from '@/lib/util';
 import { logger } from '@/lib/logger';
 import { PostValidState } from '../parser';
@@ -339,17 +338,17 @@ export abstract class AbstractDanbooru extends SiteInject {
       if (!token) throw new Error('Can not get csrf-token');
 
       const script = await this.api.addFavorite(id, token);
-
       const galleryMatch = /(?<=^\/posts\/)\d+/.exec(location.pathname);
 
-      // 在画廊页下载其它作品时，只显示提示
-      if (galleryMatch && id !== galleryMatch[0]) {
-        (unsafeWindow as any).Danbooru.Utility.notice('You have favorited ' + id);
-      } else {
+      // modify dom and show native toast message in gallery page
+      if (galleryMatch && id === galleryMatch[0]) {
         evalScript(script);
       }
+
+      this.toast({ message: 'You have favorited this post', timeout: 2000 });
     } catch (error) {
       logger.error(error);
+      this.toast({ message: (error as Error).message, type: 'error' });
     }
   }
 

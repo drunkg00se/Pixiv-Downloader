@@ -308,6 +308,17 @@ export abstract class Moebooru extends SiteInject {
     }
   });
 
+  async #addBookmark(id: string) {
+    try {
+      const token = this.parser.parseCsrfToken();
+      await this.api.addFavorite(id, token);
+      this.toast({ message: 'You have favorited this post', timeout: 2000 });
+    } catch (error) {
+      logger.error(error);
+      this.toast({ message: (error as Error).message, type: 'error' });
+    }
+  }
+
   async #downloadArtwork(btn: ThumbnailButton) {
     this.getFileHandleIfNeeded();
 
@@ -325,8 +336,7 @@ export abstract class Moebooru extends SiteInject {
     });
 
     if (siteFeature.addBookmark && !this.parser.isFavorite(id, votes)) {
-      const token = this.parser.parseCsrfToken();
-      this.api.addFavorite(id, token).catch(logger.error);
+      this.#addBookmark(id);
     }
 
     await downloader.download(downloadConfig, { priority: 1 });
