@@ -145,8 +145,6 @@ export class Rule34Vault extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
       const downloadConfig = new Rule34VaultDownloadConfig(meta).create({
         ...downloadSetting
       });
@@ -398,8 +396,6 @@ export class Rule34Vault extends SiteInject {
   }
 
   async #downloadArtwork(btn: ThumbnailButton) {
-    this.getFileHandleIfNeeded();
-
     const id = btn.dataset.id!;
 
     const postData = await this.api.getPostData(id);

@@ -5,8 +5,6 @@ import type { BatchDownloadDefinition } from '@/lib/components/Downloader/useBat
 import type { MediaMeta } from './parser';
 import type { TemplateData } from './downloadConfig';
 import { t } from '@/lib/i18n.svelte';
-import { downloader } from '@/lib/downloader';
-import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
 import { BackupInterval, backupSetting } from '@/lib/store/backupSetting.svelte';
 
 export abstract class SiteInject {
@@ -28,10 +26,6 @@ export abstract class SiteInject {
     return new PdlApp({
       supportedTemplate: this.getSupportedTemplate()
     });
-  }
-
-  protected getFileHandleIfNeeded() {
-    downloadSetting.useFileSystemAccessApi && downloader.dirHandleCheck();
   }
 
   protected backupIfNeeded() {

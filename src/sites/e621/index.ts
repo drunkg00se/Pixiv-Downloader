@@ -125,8 +125,6 @@ export class E621ng extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
       const downloadConfig = new BooruDownloadConfig(meta).create({
         ...downloadSetting
       });
@@ -353,8 +351,6 @@ export class E621ng extends SiteInject {
 
   protected async downloadArtwork(btn: ThumbnailButton) {
     this.#throwIfNotAuthorized();
-
-    this.getFileHandleIfNeeded();
 
     const id = +btn.dataset.id!;
     const { post } = await this.api.getPost(id);

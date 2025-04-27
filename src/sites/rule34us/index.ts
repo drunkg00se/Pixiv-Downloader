@@ -66,8 +66,6 @@ export class Rule34Us extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
       const downloadConfig = new Rule34UsDownloadConfig(meta).create({
         ...downloadSetting
       });
@@ -172,8 +170,6 @@ export class Rule34Us extends SiteInject {
   }
 
   async #downloadArtwork(btn: ThumbnailButton) {
-    this.getFileHandleIfNeeded();
-
     const id = btn.dataset.id!;
 
     const postDoc = await this.#api.getPostViewDoc(id);

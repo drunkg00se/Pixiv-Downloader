@@ -1,5 +1,5 @@
 import { env } from '@/lib/env';
-import { FilenameConflictAction, fsaHandler } from './fileSystemAccess';
+import { FilenameConflictAction, saveFile as saveFileByFSA } from './fileSystemAccess';
 import { gmDownload } from './gmDownload';
 import { logger } from '@/lib/logger';
 import { aDownload } from './aDownload';
@@ -37,28 +37,9 @@ export const fileSaveAdapters = {
     filenameConflictAction: FilenameConflictAction = FilenameConflictAction.UNIQUIFY
   ): FileSaveFn {
     if (this.isFileSystemAccessAvailable && useFileSystemAccessApi) {
-      fsaHandler.setFilenameConflictAction(filenameConflictAction);
-      return fsaHandler.saveFile.bind(fsaHandler);
+      return saveFileByFSA.bind(undefined, filenameConflictAction);
     } else {
       return saveFile;
     }
-  },
-
-  dirHandleCheck(): void {
-    if (this.isFileSystemAccessAvailable && fsaHandler.isDirHandleNotSet())
-      fsaHandler.updateDirHandle();
-  },
-
-  async updateDirHandle(): Promise<string> {
-    if (!this.isFileSystemAccessAvailable) return '';
-
-    await fsaHandler.updateDirHandle();
-    return fsaHandler.getCurrentDirName();
-  },
-
-  getFsaDirName(): string {
-    if (!this.isFileSystemAccessAvailable) return '';
-
-    return fsaHandler.getCurrentDirName();
   }
 };

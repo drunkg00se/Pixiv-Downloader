@@ -21,6 +21,12 @@
   import type { TemplateData } from '@/sites/base/downloadConfig';
   import { t } from '../i18n.svelte';
   import { clientSetting } from '../store/clientSetting.svelte';
+  import {
+    EVENT_DIR_HANDLE_NOT_FOUND,
+    EVENT_FILE_HANDLE_NOT_FOUND,
+    type DirHandleNotFoundEventDetail,
+    type FileHandleNotFoundEventDetail
+  } from '../globalEvents';
 
   interface Props extends Record<string, unknown> {
     supportedTemplate?: Partial<TemplateData>;
@@ -130,6 +136,65 @@
       clientSetting.version = __VERSION__;
       showChangelog();
     }
+
+    globalThis.addEventListener(EVENT_DIR_HANDLE_NOT_FOUND, (evt) => {
+      const customEvent = evt as CustomEvent<DirHandleNotFoundEventDetail>;
+
+      const { getFileHandle, abort } = customEvent.detail;
+      let actionIsActive = false;
+
+      toast({
+        message: t('toast.message.pick_directory_handle'),
+        type: 'warning',
+        autohide: false,
+        action: {
+          label: t('toast.actionLabel.browse'),
+          response: () => {
+            actionIsActive = true;
+            getFileHandle();
+          }
+        },
+        callback({ status }) {
+          if (status === 'closed' && !actionIsActive) {
+            abort();
+          }
+        }
+      });
+    });
+
+    globalThis.addEventListener(EVENT_FILE_HANDLE_NOT_FOUND, (evt) => {
+      const customEvent = evt as CustomEvent<FileHandleNotFoundEventDetail>;
+
+      if (useBatchDownload) {
+        const { downloading, hasTask } = useBatchDownload();
+        const { signal } = customEvent.detail;
+
+        if (signal && downloading.current && hasTask(signal)) {
+          return;
+        }
+      }
+
+      const { getFileHandle, abort } = customEvent.detail;
+      let actionIsActive = false;
+
+      toast({
+        message: t('toast.message.file_handle_not_found'),
+        type: 'warning',
+        autohide: false,
+        action: {
+          label: t('toast.actionLabel.save'),
+          response: () => {
+            actionIsActive = true;
+            getFileHandle();
+          }
+        },
+        callback({ status }) {
+          if (status === 'closed' && !actionIsActive) {
+            abort();
+          }
+        }
+      });
+    });
   });
 </script>
 

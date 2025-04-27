@@ -28,6 +28,11 @@
   import { inputValidation } from '../Actions/inputValidation.svelte';
   import { batchDownloaderStore } from '@/lib/store/batchDownloader.svelte';
   import { ReactiveValue } from '@/lib/reactiveValue.svelte';
+  import {
+    EVENT_FILE_HANDLE_NOT_FOUND,
+    type FileHandleNotFoundEventDetail
+  } from '@/lib/globalEvents';
+  import { untrack } from 'svelte';
 
   interface Props {
     downloaderConfig: BatchDownloadConfig<MediaMeta<string | string[]>>;
@@ -40,8 +45,19 @@
 
   let { downloaderConfig, useBatchDownload }: Props = $props();
 
-  const { artworkCount, successd, failed, excluded, downloading, log, batchDownload, abort } =
-    useBatchDownload();
+  const {
+    artworkCount,
+    successd,
+    failed,
+    excluded,
+    downloading,
+    log,
+    hasTask,
+    batchDownload,
+    abort,
+    getConcurrency,
+    setConcurrency
+  } = useBatchDownload();
 
   const reactiveUrl = new ReactiveValue(
     () => location.href,
@@ -88,6 +104,8 @@
   let stopDownloadEl: HTMLDivElement;
   let avatarProgressEl: HTMLDivElement;
   let avatarDownloadIcon: HTMLElement;
+
+  let fileHandleNotFoundTasks = $state<FileHandleNotFoundEventDetail[]>([]);
 
   const avatarCache: Record<string, string> = {};
   let avatarSrc: string = $state('');
@@ -199,9 +217,24 @@
   // alert before unload while downloading
   $effect(() => {
     if (downloading.current) {
-      window.addEventListener('beforeunload', beforeUnloadHandler);
+      globalThis.addEventListener('beforeunload', beforeUnloadHandler);
     } else {
-      window.removeEventListener('beforeunload', beforeUnloadHandler);
+      globalThis.removeEventListener('beforeunload', beforeUnloadHandler);
+    }
+  });
+
+  $effect(() => {
+    if (downloading.current) {
+      globalThis.addEventListener(EVENT_FILE_HANDLE_NOT_FOUND, fileHandleNotFoundHandler);
+    } else {
+      globalThis.removeEventListener(EVENT_FILE_HANDLE_NOT_FOUND, fileHandleNotFoundHandler);
+      untrack(() => {
+        if (fileHandleNotFoundTasks.length !== 0) {
+          fileHandleNotFoundTasks.forEach((detail) => detail.abort());
+          fileHandleNotFoundTasks = [];
+          setConcurrency();
+        }
+      });
     }
   });
 
@@ -217,6 +250,18 @@
     evt.preventDefault();
     // Included for legacy support, e.g. Chrome/Edge < 119
     evt.returnValue = true;
+  }
+
+  function fileHandleNotFoundHandler(evt: Event) {
+    if (!downloading.current) return;
+
+    const customEvent = evt as CustomEvent<FileHandleNotFoundEventDetail>;
+    const { signal } = customEvent.detail;
+
+    if (!signal || !hasTask(signal)) return;
+
+    fileHandleNotFoundTasks.push(customEvent.detail);
+    setConcurrency(getConcurrency() + 1);
   }
 
   function startDownload(id: string) {
@@ -479,6 +524,49 @@
         </div>
       {/if}
     </div>
+
+    {#if fileHandleNotFoundTasks.length}
+      <div transition:slide={{ duration: 250 }}>
+        <h3 class="text-sm">{t('downloader.file_handle_not_found.title')}</h3>
+        <ul
+          class="relative list px-4 *:py-2 mt-2 mb-4 bg-white/30 dark:bg-black/15 rounded-container-token *:!rounded-none max-h-80 scrollbar-track-transparent scrollbar-thumb-slate-400/50 scrollbar-corner-transparent scrollbar-thin overflow-y-auto divide-y-[1px] *:border-surface-300-600-token"
+          style="scrollbar-gutter: stable"
+        >
+          {#each fileHandleNotFoundTasks as task, i (task)}
+            {@const filenameIndex = task.path.lastIndexOf('/')}
+            {@const hasSubpath = filenameIndex !== -1}
+            <li transition:slide={{ duration: 250 }}>
+              <div class="flex-1 flex flex-col overflow-hidden">
+                <span class="text-base truncate"
+                  >{hasSubpath ? task.path.slice(filenameIndex + 1) : task.path}</span
+                >
+                <span class="text-sm text-surface-400 truncate"
+                  >{hasSubpath ? task.path.slice(0, filenameIndex) : ''}</span
+                >
+              </div>
+              <div>
+                <button
+                  class="btn variant-soft-surface"
+                  onclick={() => {
+                    task.abort();
+                    fileHandleNotFoundTasks.splice(i, 1);
+                    setConcurrency(getConcurrency() - 1);
+                  }}>{t('downloader.file_handle_not_found.button.cancel')}</button
+                >
+                <button
+                  class="btn variant-soft-primary"
+                  onclick={async () => {
+                    await task.getFileHandle();
+                    fileHandleNotFoundTasks.splice(i, 1);
+                    setConcurrency(getConcurrency() - 1);
+                  }}>{t('downloader.file_handle_not_found.button.save')}</button
+                >
+              </div>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
   </div>
 {/if}
 

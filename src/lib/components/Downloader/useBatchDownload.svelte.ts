@@ -104,7 +104,10 @@ type BatchDownload<
     fnId: K,
     ...restArgs: GetGeneratorParameters<P[K], ArtworkMeta>
   ): Promise<void>;
+  hasTask(signal: AbortSignal): boolean;
   abort(): void;
+  getConcurrency(): number;
+  setConcurrency(v?: number): void;
 };
 
 export type BatchDownloadDefinition<
@@ -158,6 +161,9 @@ type LogItem = {
 };
 
 const ERROR_MASKED = 'Masked.';
+const STATUS_CODES_TOO_MANY_REQUEST = 429;
+const DOWNLOAD_RESUME_TIMEOUT = 30000;
+const DEFAULT_CONCURRENCY = 5;
 
 export function defineBatchDownload<
   T extends MediaMeta<string | string[]>,
@@ -181,8 +187,12 @@ export function defineBatchDownload<
   const excludeFilters: FilterFn<T>[] = [];
 
   let controller: AbortController | null;
-  const taskControllers: Set<AbortController> = new Set();
-  const downloadQueue = new PQueue({ concurrency: 5, interval: 1100, intervalCap: 1 });
+  const taskControllers: Map<AbortSignal, AbortController> = new Map();
+  const downloadQueue = new PQueue({
+    concurrency: DEFAULT_CONCURRENCY,
+    interval: 1100,
+    intervalCap: 1
+  });
 
   const batchDownloadStore = {
     artworkCount: {
@@ -222,7 +232,27 @@ export function defineBatchDownload<
     },
 
     batchDownload,
-    abort
+
+    abort() {
+      controller && controller.abort(new CancelError());
+    },
+
+    hasTask(signal: AbortSignal) {
+      return taskControllers.has(signal);
+    },
+
+    getConcurrency(): number {
+      return downloadQueue.concurrency;
+    },
+
+    setConcurrency(num?: number) {
+      if (typeof num === 'undefined') {
+        downloadQueue.concurrency = DEFAULT_CONCURRENCY;
+        return;
+      }
+
+      downloadQueue.concurrency = num;
+    }
   };
 
   function isStringArray(arr: string[] | T[]): arr is string[] {
@@ -239,13 +269,6 @@ export function defineBatchDownload<
     unavaliableIdTasks.length = 0;
     failedMetaTasks.length = 0;
     unavaliableMetaTasks.length = 0;
-
-    controller = null;
-    downloadQueue.size !== 0 && downloadQueue.clear();
-    taskControllers.size !== 0 && taskControllers.clear();
-
-    // may be paused by http status 429, so we need to start it.
-    downloadQueue.start();
 
     writeLog('Info', 'Reset store.');
   }
@@ -395,7 +418,10 @@ export function defineBatchDownload<
     ...restArgs: GetGeneratorParameters<P[K], T>
   ) {
     setDownloading(true);
+
     writeLog('Info', 'Download start...');
+
+    downloadQueue.start();
 
     batchDownloaderState = $state.snapshot(batchDownloaderStore.$state);
 
@@ -417,8 +443,6 @@ export function defineBatchDownload<
     const { beforeDownload, afterDownload } = downloaderConfig;
 
     let generatorAfterDownloadCb: (() => void) | undefined = undefined;
-
-    let downloadError: unknown = null;
 
     let generator!: ReturnType<typeof getGenerator>;
 
@@ -489,8 +513,6 @@ export function defineBatchDownload<
 
       writeLog('Info', 'Download complete.');
     } catch (error) {
-      downloadError = error;
-
       generator?.return();
 
       // unexpected error, call `controller.abort()` to abort unfinished download
@@ -501,19 +523,21 @@ export function defineBatchDownload<
       if (error instanceof Error) {
         writeLog('Error', error);
       }
+
+      throw error;
+    } finally {
+      typeof generatorAfterDownloadCb === 'function' && generatorAfterDownloadCb();
+      typeof afterDownload === 'function' && afterDownload();
+
+      controller = null;
+      batchDownloaderState = null;
+      includeFilters.length = 0;
+      excludeFilters.length = 0;
+
+      downloadQueue.pause();
+      setDownloading(false);
+      processNextDownload();
     }
-
-    typeof generatorAfterDownloadCb === 'function' && generatorAfterDownloadCb();
-    typeof afterDownload === 'function' && afterDownload();
-
-    batchDownloaderState = null;
-    includeFilters.length = 0;
-    excludeFilters.length = 0;
-
-    setDownloading(false);
-    processNextDownload();
-
-    if (downloadError) throw downloadError;
   }
 
   function getGenPageIdItem(fnId: keyof P) {
@@ -645,7 +669,7 @@ export function defineBatchDownload<
         const taskController = new AbortController();
         const taskSingal = taskController.signal;
 
-        taskControllers.add(taskController);
+        taskControllers.set(taskSingal, taskController);
 
         downloadQueue
           .add(
@@ -697,7 +721,7 @@ export function defineBatchDownload<
 
                 if (
                   error instanceof RequestError &&
-                  error.status === 429 &&
+                  error.status === STATUS_CODES_TOO_MANY_REQUEST &&
                   !downloadQueue.isPaused
                 ) {
                   // too many request, pause the download queue and resume is after 30 seconds.
@@ -705,7 +729,7 @@ export function defineBatchDownload<
 
                   setTimeout(() => {
                     !batchDownloadSignal.aborted && downloadQueue.start();
-                  }, 30000);
+                  }, DOWNLOAD_RESUME_TIMEOUT);
 
                   writeLog('Error', new Error('Http status: 429, wait for 30 seconds.'));
                 }
@@ -717,7 +741,7 @@ export function defineBatchDownload<
           )
           .catch(logger.warn)
           .finally(() => {
-            taskControllers.delete(taskController);
+            taskControllers.delete(taskSingal);
           });
       }
 
@@ -725,10 +749,6 @@ export function defineBatchDownload<
     }
 
     return Promise.race([waitUntilDownloadReject, downloadQueue.onIdle()]);
-  }
-
-  function abort() {
-    controller && controller.abort(new CancelError());
   }
 
   return function batchDownloadDefinition() {

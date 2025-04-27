@@ -87,8 +87,6 @@ export abstract class Moebooru extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
       const downloadConfig = new BooruDownloadConfig(meta).create({
         ...downloadSetting,
         cfClearance: userAuthentication.cf_clearance || undefined
@@ -320,8 +318,6 @@ export abstract class Moebooru extends SiteInject {
   }
 
   async #downloadArtwork(btn: ThumbnailButton) {
-    this.getFileHandleIfNeeded();
-
     const id = btn.dataset.id!;
     const htmlText = await this.api.getPostHtml(id);
     const { posts, tags: tagType, votes } = this.parser.parsePostAndPool(htmlText);

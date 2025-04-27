@@ -3,7 +3,11 @@ import { logger } from '@/lib/logger';
 import { CancelError, RequestError, TimoutError } from '@/lib/error';
 import { fileSaveAdapters } from './fileSaveAdapters';
 import PQueue from 'p-queue';
-import type { FilenameConflictAction } from './fileSaveAdapters/fileSystemAccess';
+import {
+  getRootDirHandleName,
+  selectRootDirHandle,
+  type FilenameConflictAction
+} from './fileSaveAdapters/fileSystemAccess';
 
 type XhrResult = [Error, null] | [null, Blob];
 
@@ -36,7 +40,6 @@ export type DownloadConfig = {
 } & DownloaderHooks;
 
 interface IDownloader {
-  dirHandleCheck: () => void;
   updateDirHandle: () => Promise<string>;
   getCurrentFsaDirName: () => string;
   download: (configs: DownloadConfig | DownloadConfig[], option?: DownloadOption) => Promise<void>;
@@ -47,21 +50,12 @@ class Downloader implements IDownloader {
 
   #downloadQueue = new PQueue({ concurrency: 5, interval: 1000, intervalCap: 4 });
 
-  /**
-   * 下载触发后应该先弹窗选择文件保存位置，避免下载/转换用时过长导致错误
-   * Must be handling a user gesture to show a file picker.
-   * https://bugs.chromium.org/p/chromium/issues/detail?id=1193489
-   */
-  dirHandleCheck() {
-    fileSaveAdapters.dirHandleCheck();
-  }
-
-  updateDirHandle() {
-    return fileSaveAdapters.updateDirHandle();
+  async updateDirHandle() {
+    return (await selectRootDirHandle()).name;
   }
 
   getCurrentFsaDirName() {
-    return fileSaveAdapters.getFsaDirName();
+    return getRootDirHandleName();
   }
 
   #xhr(config: DownloadConfig, signal?: AbortSignal): Promise<XhrResult> {

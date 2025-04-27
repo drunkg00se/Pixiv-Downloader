@@ -173,6 +173,14 @@
       "moebooru_popular_1m": "月",
       "moebooru_popular_1y": "年",
       "moebooru_popular_date": "人气"
+    },
+
+    "file_handle_not_found": {
+      "title": "重复文件名 / 无效文件名",
+      "button": {
+        "save": "保存",
+        "cancel": "取消"
+      }
     }
   },
 
@@ -185,5 +193,16 @@
     "credit": "脚本还行？请点这里支持我！",
     "give_me_a_star": "在GitHub中给我一个 ⭐Star，",
     "buy_me_a_drink": "或者，扫码请我喝杯香草味冰可乐。^_^"
+  },
+
+  "toast": {
+    "message": {
+      "pick_directory_handle": "请选择保存文件夹",
+      "file_handle_not_found": "文件名重复或无效，请手动保存"
+    },
+    "actionLabel": {
+      "browse": "浏览",
+      "save": "保存"
+    }
   }
 }

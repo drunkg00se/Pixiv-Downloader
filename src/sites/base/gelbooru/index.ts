@@ -56,8 +56,6 @@ export abstract class GelbooruV020 extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
       const downloadConfigs = new BooruDownloadConfig(meta).create({
         ...downloadSetting,
         cfClearance: userAuthentication.cf_clearance || undefined
@@ -199,8 +197,6 @@ export abstract class GelbooruV020 extends SiteInject {
   }
 
   protected async downloadArtwork(btn: ThumbnailButton) {
-    this.getFileHandleIfNeeded();
-
     const id = btn.dataset.id!;
 
     const doc = await this.api.getPostDoc(id);

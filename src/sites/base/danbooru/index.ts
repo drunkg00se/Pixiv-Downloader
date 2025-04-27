@@ -121,8 +121,6 @@ export abstract class AbstractDanbooru extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
       const downloadConfig = new BooruDownloadConfig(meta).create({
         ...downloadSetting
       });
@@ -353,8 +351,6 @@ export abstract class AbstractDanbooru extends SiteInject {
   }
 
   protected async downloadArtwork(btn: ThumbnailButton) {
-    this.getFileHandleIfNeeded();
-
     const id = btn.dataset.id!;
     const mediaMeta = await this.getMetaByPostId(id);
 

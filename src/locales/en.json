@@ -173,6 +173,14 @@
       "moebooru_popular_1m": "1m",
       "moebooru_popular_1y": "1y",
       "moebooru_popular_date": "Popular"
+    },
+
+    "file_handle_not_found": {
+      "title": "Duplicate / Invalid File Name",
+      "button": {
+        "save": "Save",
+        "cancel": "Cancel"
+      }
     }
   },
 
@@ -185,5 +193,16 @@
     "credit": "Click here to support me!",
     "give_me_a_star": "Give me a ⭐Star on GitHub.",
     "buy_me_a_drink": "Or, buy me a vanilla-flavored iced cola. ^_^"
+  },
+
+  "toast": {
+    "message": {
+      "pick_directory_handle": "Select a folder to save",
+      "file_handle_not_found": "The file name is duplicated or invalid. Please save it manually."
+    },
+    "actionLabel": {
+      "browse": "Browse",
+      "save": "Save"
+    }
   }
 }

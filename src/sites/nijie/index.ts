@@ -104,8 +104,6 @@ export class Nijie extends SiteInject {
     },
 
     downloadArtworkByMeta: async (meta, signal) => {
-      this.getFileHandleIfNeeded();
-
       let downloadConfig: DownloadConfig | DownloadConfig[];
       const option = { ...downloadSetting };
 
@@ -403,8 +401,6 @@ export class Nijie extends SiteInject {
   }
 
   protected async downloadArtwork(btn: ThumbnailButton) {
-    this.getFileHandleIfNeeded();
-
     const { id, page } = btn.dataset as { id: string; page?: string };
 
     let viewDoc: Document;

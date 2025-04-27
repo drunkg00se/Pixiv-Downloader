@@ -1,20 +1,22 @@
 import { unsafeWindow } from '$';
 import { channelEvent } from '@/lib/channelEvent';
 import { CancelError } from '@/lib/error';
+import {
+  EVENT_DIR_HANDLE_NOT_FOUND,
+  EVENT_FILE_HANDLE_NOT_FOUND,
+  type DirHandleNotFoundEventDetail,
+  type FileHandleNotFoundEventDetail
+} from '@/lib/globalEvents';
 import { logger } from '@/lib/logger';
+import { regexp } from '@/lib/regExp';
 
-// 状态标识，避免下载多图时多次弹出DirectoryPicker
 export const enum DirHandleStatus {
-  REQUEST = 'dirHandle.request',
-  RESPONSE = 'dirHandle.response',
   PICKED = 'dirHandle.picked',
   UNPICK = 'dirHandle.unpick',
   PICKING = 'dirHandle.picking'
 }
 
 type DirHandleEventArgsMap = {
-  [DirHandleStatus.REQUEST]: never;
-  [DirHandleStatus.RESPONSE]: FileSystemDirectoryHandle;
   [DirHandleStatus.PICKED]: FileSystemDirectoryHandle;
   [DirHandleStatus.UNPICK]: never;
   [DirHandleStatus.PICKING]: never;
@@ -26,287 +28,359 @@ export const enum FilenameConflictAction {
   PROMPT = 'prompt'
 }
 
-class FileSystemAccessHandler {
-  private filenameConflictAction: FilenameConflictAction = FilenameConflictAction.UNIQUIFY;
+let dirHandle: FileSystemDirectoryHandle | null = null;
+let dirHandleStatus = DirHandleStatus.UNPICK;
 
-  private dirHandle: FileSystemDirectoryHandle | undefined = undefined;
+const occupiedFilename: Set<string> = new Set();
 
-  private dirHandleStatus = DirHandleStatus.UNPICK;
+const pendingList: [(v: FileSystemDirectoryHandle) => void, (reason?: unknown) => void][] = [];
 
-  private cachedTasks: [
-    data: Blob,
-    path: string,
-    signal: AbortSignal | undefined,
-    resolve: () => void,
-    reject: (reason?: unknown) => void
-  ][] = [];
+channelEvent.on(DirHandleStatus.PICKING, () => {
+  dirHandleStatus = DirHandleStatus.PICKING;
+  logger.info('正在选择目录');
+});
 
-  private duplicateFilenameCached: Record<string, string[]> = {};
+channelEvent.on(DirHandleStatus.UNPICK, async () => {
+  logger.warn('取消更新dirHandle');
 
-  constructor() {
-    this.#addChannelEventListeners();
-
-    channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.REQUEST>(DirHandleStatus.REQUEST);
-  }
-
-  #addChannelEventListeners() {
-    channelEvent.on(DirHandleStatus.REQUEST, () => {
-      if (!this.dirHandle) return;
-
-      channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.RESPONSE>(
-        DirHandleStatus.RESPONSE,
-        this.dirHandle
-      );
-
-      logger.info('响应请求dirHandle');
-    });
-
-    channelEvent.on<DirHandleEventArgsMap, DirHandleStatus.RESPONSE>(
-      DirHandleStatus.RESPONSE,
-      (handler: FileSystemDirectoryHandle) => {
-        if (this.dirHandle) return;
-
-        if (this.dirHandleStatus === DirHandleStatus.UNPICK)
-          this.dirHandleStatus = DirHandleStatus.PICKED;
-
-        this.dirHandle = handler;
-
-        logger.info('首次获取dirHandle', this.dirHandle);
-      }
-    );
-
-    channelEvent.on(DirHandleStatus.PICKING, () => {
-      this.dirHandleStatus = DirHandleStatus.PICKING;
-      logger.info('正在选择目录');
-    });
-
-    channelEvent.on(DirHandleStatus.UNPICK, () => {
-      logger.warn('取消更新dirHandle');
-
-      if (this.dirHandle) {
-        this.dirHandleStatus = DirHandleStatus.PICKED;
-        this.processCachedTasks();
-      } else {
-        this.dirHandleStatus = DirHandleStatus.UNPICK;
-        this.rejectCachedTasks();
-      }
-    });
-
-    channelEvent.on<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
-      DirHandleStatus.PICKED,
-      (handler: FileSystemDirectoryHandle) => {
-        this.dirHandleStatus = DirHandleStatus.PICKED;
-        this.dirHandle = handler;
-
-        logger.info('更新dirHandle', this.dirHandle);
-        this.processCachedTasks();
-      }
-    );
-  }
-
-  protected async getDirHandleRecursive(
-    dirs: string | string[]
-  ): Promise<FileSystemDirectoryHandle> {
-    if (!this.dirHandle) throw new Error('未选择保存文件夹');
-
-    let handler = this.dirHandle;
-
-    if (typeof dirs === 'string') {
-      if (dirs.indexOf('/') === -1) return await handler.getDirectoryHandle(dirs, { create: true });
-      dirs = dirs.split('/').filter((dir) => !!dir);
-    }
-
-    for await (const dir of dirs) {
-      handler = await handler.getDirectoryHandle(dir, { create: true });
-    }
-
-    return handler;
-  }
-
-  protected processCachedTasks() {
-    const { length } = this.cachedTasks;
-    for (let i = 0; i < length; i++) {
-      const [blob, path, signal, onSaveFullfilled, onSaveRejected] = this.cachedTasks[i];
-      this.saveFile(blob, path, signal).then(onSaveFullfilled, onSaveRejected);
-    }
-    logger.info(`执行${length}个缓存任务`);
-
-    // saveWithFileSystemAccess可能存在push数据到数组的情况
-    if (this.cachedTasks.length > length) {
-      this.cachedTasks = this.cachedTasks.slice(length);
+  if (dirHandle) {
+    dirHandleStatus = DirHandleStatus.PICKED;
+    if (await verifyPermission(dirHandle)) {
+      resolvePendingList(dirHandle);
     } else {
-      this.cachedTasks.length = 0;
+      rejectPendingList(new Error('Permission denied.'));
     }
+  } else {
+    dirHandleStatus = DirHandleStatus.UNPICK;
+    rejectPendingList(new Error('DirHanle not found.'));
   }
+});
 
-  protected rejectCachedTasks() {
-    this.cachedTasks.forEach(([, , , , onSaveRejected]) => onSaveRejected(new CancelError()));
-    this.cachedTasks.length = 0;
-    logger.info(`取消${this.cachedTasks.length}个缓存任务`);
-  }
+channelEvent.on<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
+  DirHandleStatus.PICKED,
+  async (handler: FileSystemDirectoryHandle) => {
+    dirHandleStatus = DirHandleStatus.PICKED;
+    dirHandle = handler;
 
-  protected async getFilenameHandle(
-    dirHandle: FileSystemDirectoryHandle,
-    filename: string
-  ): Promise<FileSystemFileHandle> {
-    if (this.filenameConflictAction === 'overwrite')
-      return await dirHandle.getFileHandle(filename, { create: true });
+    logger.info('更新dirHandle', dirHandle);
 
-    /** 首次检查是否存在同名文件 */
-    if (!(filename in this.duplicateFilenameCached)) {
-      this.duplicateFilenameCached[filename] = [];
-
-      try {
-        await dirHandle.getFileHandle(filename);
-        logger.warn('存在同名文件', filename);
-      } catch (error) {
-        return await dirHandle.getFileHandle(filename, { create: true });
-      }
-    }
-
-    const extIndex = filename.lastIndexOf('.');
-    const ext = filename.slice(extIndex + 1);
-    const name = filename.slice(0, extIndex);
-
-    if (this.filenameConflictAction === 'prompt') {
-      return await unsafeWindow.showSaveFilePicker({
-        suggestedName: filename,
-        // @ts-expect-error accept MIMEType & FileExtension
-        types: [{ description: 'Image file', accept: { ['image/' + ext]: '.' + ext } }]
-      });
+    if (await verifyPermission(dirHandle)) {
+      resolvePendingList(dirHandle);
     } else {
-      for (let suffix = 1; suffix < 1000; suffix++) {
-        const newName = `${name} (${suffix}).${ext}`;
-
-        try {
-          await dirHandle.getFileHandle(newName);
-        } catch (error) {
-          if (this.duplicateFilenameCached[filename].includes(newName)) {
-            continue;
-          } else {
-            this.duplicateFilenameCached[filename].push(newName);
-          }
-
-          logger.info('使用文件名:', newName);
-          return await dirHandle.getFileHandle(newName, { create: true });
-        }
-      }
-
-      throw new RangeError('Oops, you have too many duplicate files.');
+      rejectPendingList(new Error('Permission denied.'));
     }
   }
+);
 
-  protected clearFilenameCached(duplicateName: string, actualName: string): void {
-    if (!(duplicateName in this.duplicateFilenameCached)) return;
-
-    const usedNameArr = this.duplicateFilenameCached[duplicateName];
-
-    logger.info('清理重名文件名', usedNameArr, actualName);
-
-    if (usedNameArr.length === 0) {
-      delete this.duplicateFilenameCached[duplicateName];
-      return;
-    }
-
-    const index = usedNameArr.indexOf(actualName);
-    if (index === -1) return;
-
-    usedNameArr.splice(index, 1);
-    if (usedNameArr.length === 0) delete this.duplicateFilenameCached[duplicateName];
-  }
-
-  public async updateDirHandle(): Promise<boolean> {
-    try {
-      this.dirHandleStatus = DirHandleStatus.PICKING;
-
-      channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKING>(DirHandleStatus.PICKING);
-
-      this.dirHandle = await unsafeWindow.showDirectoryPicker({ id: 'pdl', mode: 'readwrite' });
-
-      logger.info('更新dirHandle', this.dirHandle);
-
-      this.dirHandleStatus = DirHandleStatus.PICKED;
-
-      channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
-        DirHandleStatus.PICKED,
-        this.dirHandle
-      );
-
-      this.processCachedTasks();
-
-      return true;
-    } catch (error) {
-      logger.warn(error);
-
-      channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.UNPICK>(DirHandleStatus.UNPICK);
-
-      /** 更新目录失败，如果旧目录存在则继续存储到旧目录 */
-      if (this.dirHandle) {
-        this.dirHandleStatus = DirHandleStatus.PICKED;
-        this.processCachedTasks();
-      } else {
-        /** 目录不存在，reject待下载的任务 */
-        this.dirHandleStatus = DirHandleStatus.UNPICK;
-        this.rejectCachedTasks();
-      }
-      return false;
-    }
-  }
-
-  public getCurrentDirName(): string {
-    return this.dirHandle?.name ?? '';
-  }
-
-  public isDirHandleNotSet(): boolean {
-    return this.dirHandleStatus === DirHandleStatus.UNPICK;
-  }
-
-  public setFilenameConflictAction(action: FilenameConflictAction) {
-    this.filenameConflictAction !== action && (this.filenameConflictAction = action);
-  }
-
-  public async saveFile(blob: Blob, path: string, signal?: AbortSignal): Promise<void> {
-    signal?.throwIfAborted();
-
-    if (this.dirHandleStatus === DirHandleStatus.PICKING) {
-      let onSaveFullfilled!: () => void;
-      let onSaveRejected!: (reason?: unknown) => void;
-
-      const promiseExcutor = new Promise<void>((resolve, reject) => {
-        onSaveFullfilled = resolve;
-        onSaveRejected = reject;
-      });
-
-      this.cachedTasks.push([blob, path, signal, onSaveFullfilled, onSaveRejected]);
-      return promiseExcutor;
-    }
-
-    if (this.dirHandleStatus === DirHandleStatus.UNPICK) {
-      const isSuccess = await this.updateDirHandle();
-      if (!isSuccess) throw new TypeError('Failed to get dir handle.');
-    }
-
-    let currenDirHandle: FileSystemDirectoryHandle;
-    let filename: string;
-    const index = path.lastIndexOf('/');
-
-    if (index === -1) {
-      filename = path;
-      currenDirHandle = this.dirHandle!;
-    } else {
-      filename = path.slice(index + 1);
-      currenDirHandle = await this.getDirHandleRecursive(path.slice(0, index));
-    }
-
-    signal?.throwIfAborted();
-
-    const fileHandle = await this.getFilenameHandle(currenDirHandle, filename);
-    const writableStream = await fileHandle.createWritable();
-    await writableStream.write(blob);
-    await writableStream.close();
-
-    this.clearFilenameCached(filename, fileHandle.name);
-  }
+function getPersistedDirHanle(): FileSystemDirectoryHandle | null {
+  return null;
 }
 
-export const fsaHandler = new FileSystemAccessHandler();
+function setPersistedDirHanle(_: FileSystemDirectoryHandle): void {
+  console.log('set dirhandle', _);
+}
+
+function resolvePendingList(dirHandle: FileSystemDirectoryHandle) {
+  for (const [resolve] of pendingList) {
+    resolve(dirHandle);
+  }
+
+  pendingList.length = 0;
+}
+
+function rejectPendingList(reason?: unknown) {
+  for (const [, reject] of pendingList) {
+    reject(reason);
+  }
+
+  pendingList.length = 0;
+}
+
+async function verifyPermission(fileHandle: FileSystemDirectoryHandle) {
+  const opts = { mode: 'readwrite' } as const;
+
+  if ((await fileHandle.queryPermission(opts)) === 'granted') {
+    return true;
+  }
+
+  if ((await fileHandle.requestPermission(opts)) === 'granted') {
+    return true;
+  }
+
+  return false;
+}
+
+/*
+ * Must be handling a user gesture to show a file picker.
+ * https://bugs.chromium.org/p/chromium/issues/detail?id=1193489
+ * https://developer.mozilla.org/en-US/docs/Web/API/UserActivation/isActive
+ */
+async function getDirHandleByUserAction(
+  userAction: () => Promise<FileSystemDirectoryHandle>
+): Promise<FileSystemDirectoryHandle> {
+  try {
+    dirHandleStatus = DirHandleStatus.PICKING;
+    channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKING>(DirHandleStatus.PICKING);
+
+    dirHandle = await userAction();
+
+    dirHandleStatus = DirHandleStatus.PICKED;
+    channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
+      DirHandleStatus.PICKED,
+      dirHandle
+    );
+
+    resolvePendingList(dirHandle);
+    setPersistedDirHanle(dirHandle);
+  } catch (error) {
+    channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.UNPICK>(DirHandleStatus.UNPICK);
+
+    if (dirHandle) {
+      logger.warn(error);
+
+      dirHandleStatus = DirHandleStatus.PICKED;
+      if (await verifyPermission(dirHandle)) {
+        resolvePendingList(dirHandle);
+      } else {
+        rejectPendingList(new Error('Permission denied.'));
+      }
+    } else {
+      dirHandleStatus = DirHandleStatus.UNPICK;
+      rejectPendingList(error);
+      throw error;
+    }
+  }
+
+  return dirHandle;
+}
+
+async function getRootDirHandle(signal?: AbortSignal) {
+  if (dirHandleStatus === DirHandleStatus.UNPICK) {
+    if ((dirHandle = getPersistedDirHanle())) {
+      dirHandleStatus = DirHandleStatus.PICKED;
+      channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
+        DirHandleStatus.PICKED,
+        dirHandle
+      );
+
+      if (!(await verifyPermission(dirHandle))) {
+        const error = new Error('Permission denied.');
+        rejectPendingList(error);
+        throw error;
+      }
+
+      resolvePendingList(dirHandle);
+
+      return dirHandle;
+    }
+
+    return await getDirHandleByUserAction(() => {
+      return new Promise<FileSystemDirectoryHandle>((resolve, reject) => {
+        globalThis.dispatchEvent(
+          new CustomEvent<DirHandleNotFoundEventDetail>(EVENT_DIR_HANDLE_NOT_FOUND, {
+            detail: {
+              getFileHandle: async () => {
+                try {
+                  const dirHandle = await unsafeWindow.showDirectoryPicker({
+                    id: 'pdl-dir-handle',
+                    mode: 'readwrite'
+                  });
+                  resolve(dirHandle);
+                } catch (error) {
+                  reject(error);
+                }
+              },
+              abort: () => reject(new CancelError())
+            }
+          })
+        );
+
+        signal?.addEventListener(
+          'abort',
+          () => {
+            reject(signal.reason);
+          },
+          { once: true }
+        );
+
+        // push the promise to the pendingList so it can be resolved when the user
+        // selects a directory handle in the setting.
+        pendingList.push([resolve, reject]);
+      });
+    });
+  }
+
+  if (dirHandleStatus === DirHandleStatus.PICKING) {
+    const prom = new Promise<FileSystemDirectoryHandle>((resolve, reject) => {
+      pendingList.push([resolve, reject]);
+    });
+
+    return await prom;
+  }
+
+  if (!dirHandle) throw new Error('DirHandle should not be null.');
+
+  if (!(await verifyPermission(dirHandle))) {
+    throw new Error('Permission denied.');
+  }
+
+  return dirHandle;
+}
+
+async function getFileHandle(
+  dirHandle: FileSystemDirectoryHandle,
+  filename: string,
+  filenameConflictAction: FilenameConflictAction
+): Promise<FileSystemFileHandle> {
+  if (filenameConflictAction === FilenameConflictAction.OVERWRITE) {
+    return dirHandle.getFileHandle(filename, { create: true });
+  }
+
+  if (!occupiedFilename.has(filename)) {
+    occupiedFilename.add(filename);
+
+    try {
+      await dirHandle.getFileHandle(filename);
+    } catch (error) {
+      // await is needed here
+      return await dirHandle.getFileHandle(filename, { create: true });
+    } finally {
+      occupiedFilename.delete(filename);
+    }
+  }
+
+  // filename is duplicated
+
+  if (filenameConflictAction === FilenameConflictAction.PROMPT) {
+    throw new DOMException('', 'NotFoundError');
+  }
+
+  const extIndex = filename.lastIndexOf('.');
+  const ext = filename.slice(extIndex + 1);
+  const name = filename.slice(0, extIndex);
+
+  for (let suffix = 1; suffix < 101; suffix++) {
+    const newFilename = `${name} (${suffix}).${ext}`;
+
+    if (occupiedFilename.has(newFilename)) {
+      continue;
+    }
+
+    occupiedFilename.add(newFilename);
+
+    try {
+      await dirHandle.getFileHandle(newFilename);
+    } catch (error) {
+      const fileHandle = await dirHandle.getFileHandle(newFilename, { create: true });
+      logger.info(`Rename ${filename}' to ${newFilename}`);
+      return fileHandle;
+    } finally {
+      occupiedFilename.delete(newFilename);
+    }
+  }
+
+  const newFilename = `${name} - ${new Date().toISOString().replaceAll(':', '')}.${ext}`;
+
+  return dirHandle.getFileHandle(newFilename, { create: true });
+}
+
+export async function saveFile(
+  filenameConflictAction: FilenameConflictAction,
+  blob: Blob,
+  path: string,
+  signal?: AbortSignal
+): Promise<void> {
+  const rootDirHandle = await getRootDirHandle(signal);
+
+  signal?.throwIfAborted();
+
+  let currentDirHandle: FileSystemDirectoryHandle = rootDirHandle;
+  let fileHandle: FileSystemFileHandle | null = null;
+  let writableStream: FileSystemWritableFileStream | null = null;
+
+  const filenameIndex = path.lastIndexOf('/');
+  const filename = filenameIndex === -1 ? path : path.slice(filenameIndex + 1);
+
+  try {
+    if (filenameIndex !== -1) {
+      const relativePaths = path.slice(0, filenameIndex).split('/');
+
+      for (const dir of relativePaths) {
+        currentDirHandle = await currentDirHandle.getDirectoryHandle(dir, { create: true });
+      }
+    }
+
+    fileHandle = await getFileHandle(currentDirHandle, filename, filenameConflictAction);
+    writableStream = await fileHandle.createWritable();
+  } catch (error) {
+    if (!(error instanceof DOMException && error.name === 'NotFoundError')) {
+      throw error;
+    }
+
+    if (fileHandle !== null) {
+      currentDirHandle.removeEntry(fileHandle.name);
+    }
+
+    fileHandle = await new Promise<FileSystemFileHandle>((resolve, reject) => {
+      const extIndex = filename.lastIndexOf('.');
+      const ext = filename.slice(extIndex + 1);
+      const mimeType = regexp.imageExt.test(ext) ? `image/${ext}` : `video/${ext}`;
+
+      globalThis.dispatchEvent(
+        new CustomEvent<FileHandleNotFoundEventDetail>(EVENT_FILE_HANDLE_NOT_FOUND, {
+          detail: {
+            signal,
+            path,
+            getFileHandle: async () => {
+              try {
+                const fileHandle = await unsafeWindow.showSaveFilePicker({
+                  startIn: currentDirHandle,
+                  suggestedName: filename,
+                  types: [
+                    {
+                      description: 'Media',
+                      accept: { [mimeType]: '.' + ext } as Record<
+                        `${string}/${string}`,
+                        `.${string}`
+                      >
+                    }
+                  ]
+                });
+                resolve(fileHandle);
+              } catch (error) {
+                reject(error);
+              }
+            },
+            abort: () => reject(new CancelError())
+          }
+        })
+      );
+
+      signal?.addEventListener(
+        'abort',
+        () => {
+          reject(signal.reason);
+        },
+        { once: true }
+      );
+    });
+
+    writableStream = await fileHandle.createWritable();
+  }
+
+  await writableStream.write(blob);
+  await writableStream.close();
+}
+
+export function selectRootDirHandle() {
+  return getDirHandleByUserAction(() => {
+    return unsafeWindow.showDirectoryPicker({
+      id: 'pdl-dir-handle',
+      mode: 'readwrite'
+    });
+  });
+}
+
+export function getRootDirHandleName() {
+  return dirHandle?.name || '';
+}

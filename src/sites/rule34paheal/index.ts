@@ -140,8 +140,6 @@ export class Rule34Paheal extends SiteInject {
   }
 
   async #downloadArtwork(btn: ThumbnailButton) {
-    this.getFileHandleIfNeeded();
-
     const id = btn.dataset.id!;
 
     const postDoc = await this.#api.getPostViewDoc(id);
