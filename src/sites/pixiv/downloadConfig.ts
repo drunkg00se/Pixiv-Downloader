@@ -80,10 +80,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
       date: this.createDate,
       score: String(this.bookmarkCount),
       title: this.normalizeString(this.title) || this.id,
-      tags: this.tags
-        .map((tag) => this.normalizeString(tag))
-        .filter(Boolean)
-        .join('_'),
+      tags: this.tags.join('_'),
       ...data
     };
   }
@@ -206,10 +203,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     const templateData = this.getTemplateData(
       useTranslatedTags
         ? {
-            tags: this.translatedTags
-              .map((tag) => this.normalizeString(tag))
-              .filter(Boolean)
-              .join('_'),
+            tags: this.translatedTags.join('_'),
             page: String(index)
           }
         : {
@@ -247,10 +241,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
 
     const overwriteData: Partial<TemplateData> = useTranslatedTags
       ? {
-          tags: this.translatedTags
-            .map((tag) => this.normalizeString(tag))
-            .filter(Boolean)
-            .join('_')
+          tags: this.translatedTags.join('_')
         }
       : {};
 
@@ -294,10 +285,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
 
     const overwriteData: Partial<TemplateData> = useTranslatedTags
       ? {
-          tags: this.translatedTags
-            .map((tag) => this.normalizeString(tag))
-            .filter(Boolean)
-            .join('_')
+          tags: this.translatedTags.join('_')
         }
       : {};
 
@@ -363,10 +351,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     const templateData = this.getTemplateData(
       useTranslatedTags
         ? {
-            tags: this.translatedTags
-              .map((tag) => this.normalizeString(tag))
-              .filter(Boolean)
-              .join('_'),
+            tags: this.translatedTags.join('_'),
             page: String(0)
           }
         : {
@@ -414,10 +399,7 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
     const templateData = this.getTemplateData(
       useTranslatedTags
         ? {
-            tags: this.translatedTags
-              .map((tag) => this.normalizeString(tag))
-              .filter(Boolean)
-              .join('_'),
+            tags: this.translatedTags.join('_'),
             page: String(index)
           }
         : {

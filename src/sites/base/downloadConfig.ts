@@ -125,7 +125,7 @@ export abstract class MediaDownloadConfig<T extends string | string[] = string> 
         if (!(templateName in data)) return match;
         const val = data[templateName];
 
-        return !val ? match : val;
+        return !val ? match : this.normalizeString(val);
       }
     );
 
@@ -135,6 +135,7 @@ export abstract class MediaDownloadConfig<T extends string | string[] = string> 
       dateRe,
       (match, _templateName: SupportedTemplate.DATE, _formatMatch: string, formatValue: string) => {
         if (!data.date) return match;
+        // formatValue has already been normalized in downloadSetting store
         const format = formatValue || 'YYYY-MM-DD';
         const date = data.date;
 
