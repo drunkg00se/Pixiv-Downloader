@@ -1,5 +1,6 @@
 import { unsafeWindow } from '$';
 import { channelEvent } from '@/lib/channelEvent';
+import { historyDb } from '@/lib/db';
 import { CancelError } from '@/lib/error';
 import {
   EVENT_DIR_HANDLE_NOT_FOUND,
@@ -72,12 +73,12 @@ channelEvent.on<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
   }
 );
 
-function getPersistedDirHanle(): FileSystemDirectoryHandle | null {
-  return null;
+async function getPersistedDirHanle(): Promise<FileSystemDirectoryHandle | null> {
+  return (await historyDb.getDirectoryHandle()) ?? null;
 }
 
-function setPersistedDirHanle(_: FileSystemDirectoryHandle): void {
-  console.log('set dirhandle', _);
+function setPersistedDirHanle(dirHandle: FileSystemDirectoryHandle): void {
+  historyDb.setDirectoryHandle(dirHandle);
 }
 
 function resolvePendingList(dirHandle: FileSystemDirectoryHandle) {
@@ -156,7 +157,7 @@ async function getDirHandleByUserAction(
 
 async function getRootDirHandle(signal?: AbortSignal) {
   if (dirHandleStatus === DirHandleStatus.UNPICK) {
-    if ((dirHandle = getPersistedDirHanle())) {
+    if ((dirHandle = await getPersistedDirHanle())) {
       dirHandleStatus = DirHandleStatus.PICKED;
       channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
         DirHandleStatus.PICKED,
@@ -379,8 +380,4 @@ export function selectRootDirHandle() {
       mode: 'readwrite'
     });
   });
-}
-
-export function getRootDirHandleName() {
-  return dirHandle?.name || '';
 }

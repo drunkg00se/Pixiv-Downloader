@@ -9,12 +9,10 @@
   import type { TemplateData } from '@/sites/base/downloadConfig';
   import { t } from '@/lib/i18n.svelte';
   import { downloadSetting } from '@/lib/store/downloadSetting.svelte';
-  import {
-    DirHandleStatus,
-    FilenameConflictAction
-  } from '@/lib/downloader/fileSaveAdapters/fileSystemAccess';
+  import { FilenameConflictAction } from '@/lib/downloader/fileSaveAdapters/fileSystemAccess';
   import { PixivTagLocale, siteFeature } from '@/lib/store/siteFeature.svelte';
-  import { channelEvent } from '@/lib/channelEvent';
+  import { liveQuery } from 'dexie';
+  import { historyDb } from '@/lib/db';
 
   let {
     bg = 'bg-white/30 dark:bg-black/15',
@@ -39,18 +37,10 @@
 
   let directory = $state(downloadSetting.directoryTemplate);
   let filename = $state(downloadSetting.filenameTemplate);
-  let fsaDirectory = $state(downloader.getCurrentFsaDirName());
 
-  $effect(() => {
-    const updateDirectory = (handler: FileSystemDirectoryHandle) => {
-      fsaDirectory = handler.name;
-    };
-    channelEvent.on(DirHandleStatus.PICKED, updateDirectory);
-
-    return () => {
-      channelEvent.off(DirHandleStatus.PICKED, updateDirectory);
-    };
-  });
+  const directoryHandleStore = liveQuery(
+    async () => (await historyDb.getDirectoryHandle())?.name ?? ''
+  );
 
   async function resetFolder() {
     directory = downloadSetting.directoryTemplate;
@@ -72,7 +62,7 @@
   }
 
   async function updatefsaDir() {
-    fsaDirectory = await downloader.updateDirHandle();
+    downloader.updateDirHandle();
   }
 
   function insertDirTemplateAtCursor(template: string) {
@@ -182,7 +172,7 @@
         <li>
           <p class="flex-auto">{t('setting.save_to.options.fsa_directory')}</p>
 
-          <span class="text-sm italic">{fsaDirectory}</span>
+          <span class="text-sm italic">{$directoryHandleStore}</span>
           <button class="btn btn-sm variant-filled" onclick={updatefsaDir}
             >{t('setting.save_to.button.choose_fsa_directory')}</button
           >

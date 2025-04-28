@@ -4,7 +4,6 @@ import { CancelError, RequestError, TimoutError } from '@/lib/error';
 import { fileSaveAdapters } from './fileSaveAdapters';
 import PQueue from 'p-queue';
 import {
-  getRootDirHandleName,
   selectRootDirHandle,
   type FilenameConflictAction
 } from './fileSaveAdapters/fileSystemAccess';
@@ -41,7 +40,6 @@ export type DownloadConfig = {
 
 interface IDownloader {
   updateDirHandle: () => Promise<string>;
-  getCurrentFsaDirName: () => string;
   download: (configs: DownloadConfig | DownloadConfig[], option?: DownloadOption) => Promise<void>;
 }
 
@@ -52,10 +50,6 @@ class Downloader implements IDownloader {
 
   async updateDirHandle() {
     return (await selectRootDirHandle()).name;
-  }
-
-  getCurrentFsaDirName() {
-    return getRootDirHandleName();
   }
 
   #xhr(config: DownloadConfig, signal?: AbortSignal): Promise<XhrResult> {

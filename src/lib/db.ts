@@ -51,12 +51,15 @@ type DBEventArgsMap = {
 class HistoryDb extends Dexie {
   private history!: Table<HistoryItem, number>;
   private imageEffect!: Table<pixivSeasonalEffectItem, string>;
+  private filehandle!: Table<FileSystemDirectoryHandle, string>;
+  #DIRECTORY_HANDLE_NAME = 'directory-handle';
 
   constructor() {
     super('PdlHistory');
-    this.version(3).stores({
+    this.version(4).stores({
       history: 'pid, userId, user, title, *tags',
-      imageEffect: 'id'
+      imageEffect: 'id',
+      filehandle: ''
     });
   }
 
@@ -159,6 +162,14 @@ class HistoryDb extends Dexie {
 
   public addImageEffect(effectData: pixivSeasonalEffectItem) {
     return this.imageEffect.put(effectData);
+  }
+
+  public getDirectoryHandle() {
+    return this.filehandle.get(this.#DIRECTORY_HANDLE_NAME);
+  }
+
+  public setDirectoryHandle(dirHandle: FileSystemDirectoryHandle) {
+    return this.filehandle.put(dirHandle, this.#DIRECTORY_HANDLE_NAME);
   }
 
   static updatePageData(page: number, pageData?: Uint8Array): Uint8Array {
