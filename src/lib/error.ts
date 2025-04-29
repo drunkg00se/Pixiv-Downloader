@@ -30,3 +30,17 @@ export class TimoutError extends Error {
     this.name = 'TimoutError';
   }
 }
+
+export class PermissionError extends Error {
+  constructor() {
+    super('Permission denied.');
+    this.name = 'PermissionError';
+  }
+}
+
+export class InvalidPostError extends Error {
+  constructor(id: string) {
+    super(`Invalid post id: ${id}.`);
+    this.name = 'InvalidPostError';
+  }
+}

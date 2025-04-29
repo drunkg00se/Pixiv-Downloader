@@ -21,7 +21,6 @@
   import downloadMultipleSvg from '@/assets/download-multiple.svg?src';
 
   import {
-    ERROR_INVALID_ID,
     type BatchDownloadConfig,
     type BatchDownloadDefinition,
     type PageOption
@@ -36,6 +35,7 @@
     type FileHandleNotFoundEventDetail
   } from '@/lib/globalEvents';
   import { untrack } from 'svelte';
+  import { InvalidPostError } from '@/lib/error';
 
   interface Props {
     downloaderConfig: BatchDownloadConfig<MediaMeta<string | string[]>>;
@@ -573,7 +573,7 @@
 
     {#if !downloading.current && failed.current.length}
       {@const invalidIdFirst = failed.current.toSorted((item) =>
-        item.reason === ERROR_INVALID_ID ? -1 : 1
+        item.reason instanceof InvalidPostError ? -1 : 1
       )}
       <Accordion class="text-surface-700-200-token mt-4">
         <AccordionItem class="bg-white/30 dark:bg-black/15 rounded-container-token">

@@ -1,7 +1,7 @@
 import { unsafeWindow } from '$';
 import { channelEvent } from '@/lib/channelEvent';
 import { historyDb } from '@/lib/db';
-import { CancelError } from '@/lib/error';
+import { CancelError, PermissionError } from '@/lib/error';
 import {
   EVENT_DIR_HANDLE_NOT_FOUND,
   EVENT_FILE_HANDLE_NOT_FOUND,
@@ -62,7 +62,7 @@ channelEvent.on<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
     if ((await dirHandle.queryPermission({ mode: 'readwrite' })) === 'granted') {
       resolvePendingList(dirHandle);
     } else {
-      rejectPendingList(new Error('Permission denied.'));
+      rejectPendingList(new PermissionError());
     }
   }
 );
@@ -200,7 +200,7 @@ async function getDirHandleByUserAction(
       setDirHandleStatus(DirHandleStatus.PICKED, dirHandle);
 
       if (!hasPermission) {
-        const error = new Error('Permission denied.');
+        const error = new PermissionError();
         rejectPendingList(error);
         throw error;
       }
@@ -226,7 +226,7 @@ async function getRootDirHandle(signal?: AbortSignal) {
       setDirHandleStatus(DirHandleStatus.PICKED, dirHandle);
 
       if (!hasPermission) {
-        const error = new Error('Permission denied.');
+        const error = new PermissionError();
         rejectPendingList(error);
         throw error;
       }
@@ -283,7 +283,7 @@ async function getRootDirHandle(signal?: AbortSignal) {
   if (!dirHandle) throw new Error('DirHandle should not be null.');
 
   if (!(await verifyPermission(dirHandle))) {
-    const error = new Error('Permission denied.');
+    const error = new PermissionError();
     rejectPendingList(error);
     throw error;
   }

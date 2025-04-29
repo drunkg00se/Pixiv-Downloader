@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { CancelError, RequestError } from '@/lib/error';
+import { CancelError, InvalidPostError, PermissionError, RequestError } from '@/lib/error';
 import { sleep } from '@/lib/util';
 import type { MediaMeta } from '@/sites/base/parser';
 import PQueue from 'p-queue';
@@ -160,7 +160,6 @@ type LogItem = {
   message: string;
 };
 
-export const ERROR_INVALID_ID = 'Invalid post id.';
 const STATUS_CODES_TOO_MANY_REQUEST = 429;
 const DOWNLOAD_RESUME_TIMEOUT = 30000;
 const DEFAULT_CONCURRENCY = 5;
@@ -651,10 +650,12 @@ export function defineBatchDownload<
 
       if (unavaliable.length) {
         if (isStringArray(unavaliable)) {
-          addFailed(unavaliable.map((id) => ({ id, reason: ERROR_INVALID_ID })));
+          addFailed(unavaliable.map((id) => ({ id, reason: new InvalidPostError(id) })));
           unavaliableIdTasks.push(...unavaliable);
         } else {
-          addFailed(unavaliable.map((meta) => ({ id: meta.id, reason: ERROR_INVALID_ID })));
+          addFailed(
+            unavaliable.map((meta) => ({ id: meta.id, reason: new InvalidPostError(meta.id) }))
+          );
           unavaliableMetaTasks.push(...unavaliable);
         }
       }
@@ -679,18 +680,17 @@ export function defineBatchDownload<
                   'Expect `QueueAddOptions.signal` to be a AbortSignal but got undefined.'
                 );
 
+              const isId = typeof idOrMeta === 'string';
+              const metaId = isId ? idOrMeta : idOrMeta.id;
+
               try {
                 taskSingal.throwIfAborted();
 
                 let artworkMeta: T;
-                let metaId: string;
 
-                if (typeof idOrMeta !== 'string') {
+                if (!isId) {
                   artworkMeta = idOrMeta;
-                  metaId = artworkMeta.id;
                 } else {
-                  metaId = idOrMeta;
-
                   artworkMeta = await parseMetaByArtworkId(metaId);
 
                   taskSingal.throwIfAborted();
@@ -709,14 +709,19 @@ export function defineBatchDownload<
               } catch (error) {
                 if (taskSingal.aborted) return;
 
-                const isFailedTask = error !== ERROR_INVALID_ID;
+                addFailed({ id: metaId, reason: error });
 
-                if (typeof idOrMeta === 'string') {
-                  addFailed({ id: idOrMeta, reason: error });
-                  isFailedTask && failedIdTasks.push(idOrMeta);
+                // stop batch download if we get permissionError
+                if (error instanceof PermissionError) {
+                  controller?.abort(error);
+                  return;
+                }
+
+                const isInvalid = error instanceof InvalidPostError;
+                if (isId) {
+                  (isInvalid ? unavaliableIdTasks : failedIdTasks).push(idOrMeta);
                 } else {
-                  addFailed({ id: idOrMeta.id, reason: error });
-                  isFailedTask && failedMetaTasks.push(idOrMeta);
+                  (isInvalid ? unavaliableMetaTasks : failedMetaTasks).push(idOrMeta);
                 }
 
                 if (
