@@ -24,8 +24,10 @@
   import {
     EVENT_DIR_HANDLE_NOT_FOUND,
     EVENT_FILE_HANDLE_NOT_FOUND,
+    EVENT_REQUEST_USER_ACTIVATION,
     type DirHandleNotFoundEventDetail,
-    type FileHandleNotFoundEventDetail
+    type FileHandleNotFoundEventDetail,
+    type RequestUserActivationEventDetail
   } from '../globalEvents';
 
   interface Props extends Record<string, unknown> {
@@ -191,6 +193,30 @@
         callback({ status }) {
           if (status === 'closed' && !actionIsActive) {
             abort();
+          }
+        }
+      });
+    });
+
+    globalThis.addEventListener(EVENT_REQUEST_USER_ACTIVATION, (evt) => {
+      const customEvent = evt as CustomEvent<RequestUserActivationEventDetail>;
+      const { onAction, onClosed } = customEvent.detail;
+      let actionIsActive = false;
+
+      toast({
+        message: t('toast.message.request_directory_handle_permission'),
+        type: 'warning',
+        autohide: false,
+        action: {
+          label: t('toast.actionLabel.allow_permission'),
+          response: () => {
+            actionIsActive = true;
+            onAction();
+          }
+        },
+        callback({ status }) {
+          if (status === 'closed' && !actionIsActive) {
+            onClosed();
           }
         }
       });

@@ -200,11 +200,13 @@
   "toast": {
     "message": {
       "pick_directory_handle": "请选择保存文件夹",
-      "file_handle_not_found": "文件名重复或无效，请手动保存"
+      "file_handle_not_found": "文件名重复或无效，请手动保存",
+      "request_directory_handle_permission": "请授予权限以修改文件/文件夹"
     },
     "actionLabel": {
       "browse": "浏览",
-      "save": "保存"
+      "save": "保存",
+      "allow_permission": "同意"
     }
   }
 }

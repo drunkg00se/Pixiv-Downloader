@@ -5,8 +5,10 @@ import { CancelError } from '@/lib/error';
 import {
   EVENT_DIR_HANDLE_NOT_FOUND,
   EVENT_FILE_HANDLE_NOT_FOUND,
+  EVENT_REQUEST_USER_ACTIVATION,
   type DirHandleNotFoundEventDetail,
-  type FileHandleNotFoundEventDetail
+  type FileHandleNotFoundEventDetail,
+  type RequestUserActivationEventDetail
 } from '@/lib/globalEvents';
 import { logger } from '@/lib/logger';
 import { regexp } from '@/lib/regExp';
@@ -37,35 +39,27 @@ const occupiedFilename: Set<string> = new Set();
 const pendingList: [(v: FileSystemDirectoryHandle) => void, (reason?: unknown) => void][] = [];
 
 channelEvent.on(DirHandleStatus.PICKING, () => {
+  logger.info('channelEvnet:DirHandleStatus.PICKING');
   dirHandleStatus = DirHandleStatus.PICKING;
-  logger.info('正在选择目录');
 });
 
 channelEvent.on(DirHandleStatus.UNPICK, async () => {
-  logger.warn('取消更新dirHandle');
+  logger.info('channelEvnet:DirHandleStatus.UNPICK');
 
-  if (dirHandle) {
-    dirHandleStatus = DirHandleStatus.PICKED;
-    if (await verifyPermission(dirHandle)) {
-      resolvePendingList(dirHandle);
-    } else {
-      rejectPendingList(new Error('Permission denied.'));
-    }
-  } else {
-    dirHandleStatus = DirHandleStatus.UNPICK;
-    rejectPendingList(new Error('DirHanle not found.'));
-  }
+  dirHandleStatus = DirHandleStatus.UNPICK;
+  dirHandle = null;
+  rejectPendingList(new Error('Directory handle not found.'));
 });
 
 channelEvent.on<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
   DirHandleStatus.PICKED,
   async (handler: FileSystemDirectoryHandle) => {
+    logger.info('channelEvnet:DirHandleStatus.PICKED');
+
     dirHandleStatus = DirHandleStatus.PICKED;
     dirHandle = handler;
 
-    logger.info('更新dirHandle', dirHandle);
-
-    if (await verifyPermission(dirHandle)) {
+    if ((await dirHandle.queryPermission({ mode: 'readwrite' })) === 'granted') {
       resolvePendingList(dirHandle);
     } else {
       rejectPendingList(new Error('Permission denied.'));
@@ -82,6 +76,8 @@ function setPersistedDirHanle(dirHandle: FileSystemDirectoryHandle): void {
 }
 
 function resolvePendingList(dirHandle: FileSystemDirectoryHandle) {
+  if (!pendingList.length) return;
+
   for (const [resolve] of pendingList) {
     resolve(dirHandle);
   }
@@ -90,11 +86,41 @@ function resolvePendingList(dirHandle: FileSystemDirectoryHandle) {
 }
 
 function rejectPendingList(reason?: unknown) {
+  if (!pendingList.length) return;
+
   for (const [, reject] of pendingList) {
     reject(reason);
   }
 
   pendingList.length = 0;
+}
+
+function setDirHandleStatus(status: DirHandleStatus.PICKING): void;
+function setDirHandleStatus(status: DirHandleStatus.UNPICK): void;
+function setDirHandleStatus(
+  status: DirHandleStatus.PICKED,
+  dirHandle: FileSystemDirectoryHandle
+): void;
+function setDirHandleStatus(status: DirHandleStatus, dirHandle?: FileSystemDirectoryHandle): void {
+  if (status === DirHandleStatus.PICKING) {
+    dirHandleStatus = DirHandleStatus.PICKING;
+    channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKING>(DirHandleStatus.PICKING);
+    return;
+  }
+
+  if (status === DirHandleStatus.UNPICK) {
+    dirHandleStatus = DirHandleStatus.UNPICK;
+    channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.UNPICK>(DirHandleStatus.UNPICK);
+    return;
+  }
+
+  if (!dirHandle) throw new Error('directory handle should not be null.');
+
+  dirHandleStatus = DirHandleStatus.PICKED;
+  channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
+    DirHandleStatus.PICKED,
+    dirHandle
+  );
 }
 
 async function verifyPermission(fileHandle: FileSystemDirectoryHandle) {
@@ -104,8 +130,42 @@ async function verifyPermission(fileHandle: FileSystemDirectoryHandle) {
     return true;
   }
 
-  if ((await fileHandle.requestPermission(opts)) === 'granted') {
-    return true;
+  if (navigator.userActivation.isActive) {
+    if ((await fileHandle.requestPermission(opts)) === 'granted') {
+      return true;
+    }
+  } else {
+    if (dirHandleStatus !== DirHandleStatus.PICKING) {
+      setDirHandleStatus(DirHandleStatus.PICKING);
+    }
+
+    const success = await new Promise<boolean>((resolve) => {
+      globalThis.dispatchEvent(
+        new CustomEvent<RequestUserActivationEventDetail>(EVENT_REQUEST_USER_ACTIVATION, {
+          detail: {
+            onAction() {
+              resolve(true);
+            },
+            onClosed() {
+              resolve(false);
+            }
+          }
+        })
+      );
+    });
+
+    if (!success) {
+      setDirHandleStatus(DirHandleStatus.PICKED, fileHandle);
+      return false;
+    }
+
+    const permissionState = await fileHandle.requestPermission(opts);
+
+    setDirHandleStatus(DirHandleStatus.PICKED, fileHandle);
+
+    if (success && permissionState === 'granted') {
+      return true;
+    }
   }
 
   return false;
@@ -120,33 +180,34 @@ async function getDirHandleByUserAction(
   userAction: () => Promise<FileSystemDirectoryHandle>
 ): Promise<FileSystemDirectoryHandle> {
   try {
-    dirHandleStatus = DirHandleStatus.PICKING;
-    channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKING>(DirHandleStatus.PICKING);
+    if (dirHandleStatus !== DirHandleStatus.PICKING) {
+      setDirHandleStatus(DirHandleStatus.PICKING);
+    }
 
     dirHandle = await userAction();
 
-    dirHandleStatus = DirHandleStatus.PICKED;
-    channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
-      DirHandleStatus.PICKED,
-      dirHandle
-    );
+    setDirHandleStatus(DirHandleStatus.PICKED, dirHandle);
 
     resolvePendingList(dirHandle);
+
     setPersistedDirHanle(dirHandle);
   } catch (error) {
-    channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.UNPICK>(DirHandleStatus.UNPICK);
-
     if (dirHandle) {
       logger.warn(error);
 
-      dirHandleStatus = DirHandleStatus.PICKED;
-      if (await verifyPermission(dirHandle)) {
-        resolvePendingList(dirHandle);
-      } else {
-        rejectPendingList(new Error('Permission denied.'));
+      const hasPermission = await verifyPermission(dirHandle);
+
+      setDirHandleStatus(DirHandleStatus.PICKED, dirHandle);
+
+      if (!hasPermission) {
+        const error = new Error('Permission denied.');
+        rejectPendingList(error);
+        throw error;
       }
+
+      resolvePendingList(dirHandle);
     } else {
-      dirHandleStatus = DirHandleStatus.UNPICK;
+      setDirHandleStatus(DirHandleStatus.UNPICK);
       rejectPendingList(error);
       throw error;
     }
@@ -157,14 +218,14 @@ async function getDirHandleByUserAction(
 
 async function getRootDirHandle(signal?: AbortSignal) {
   if (dirHandleStatus === DirHandleStatus.UNPICK) {
-    if ((dirHandle = await getPersistedDirHanle())) {
-      dirHandleStatus = DirHandleStatus.PICKED;
-      channelEvent.emit<DirHandleEventArgsMap, DirHandleStatus.PICKED>(
-        DirHandleStatus.PICKED,
-        dirHandle
-      );
+    setDirHandleStatus(DirHandleStatus.PICKING);
 
-      if (!(await verifyPermission(dirHandle))) {
+    if ((dirHandle = await getPersistedDirHanle())) {
+      const hasPermission = await verifyPermission(dirHandle);
+
+      setDirHandleStatus(DirHandleStatus.PICKED, dirHandle);
+
+      if (!hasPermission) {
         const error = new Error('Permission denied.');
         rejectPendingList(error);
         throw error;
@@ -222,7 +283,9 @@ async function getRootDirHandle(signal?: AbortSignal) {
   if (!dirHandle) throw new Error('DirHandle should not be null.');
 
   if (!(await verifyPermission(dirHandle))) {
-    throw new Error('Permission denied.');
+    const error = new Error('Permission denied.');
+    rejectPendingList(error);
+    throw error;
   }
 
   return dirHandle;

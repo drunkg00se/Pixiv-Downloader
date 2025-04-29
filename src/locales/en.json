@@ -200,11 +200,13 @@
   "toast": {
     "message": {
       "pick_directory_handle": "Select a folder to save",
-      "file_handle_not_found": "The file name is duplicated or invalid. Please save it manually."
+      "file_handle_not_found": "The file name is duplicated or invalid. Please save it manually.",
+      "request_directory_handle_permission": "Please allow permission to edit files and folders."
     },
     "actionLabel": {
       "browse": "Browse",
-      "save": "Save"
+      "save": "Save",
+      "allow_permission": "Allow"
     }
   }
 }
