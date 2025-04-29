@@ -181,7 +181,9 @@
         "save": "Save",
         "cancel": "Cancel"
       }
-    }
+    },
+
+    "failed_downloads": "Failed downloads"
   },
 
   "button": {

@@ -160,7 +160,7 @@ type LogItem = {
   message: string;
 };
 
-const ERROR_MASKED = 'Masked.';
+export const ERROR_INVALID_ID = 'Invalid post id.';
 const STATUS_CODES_TOO_MANY_REQUEST = 429;
 const DOWNLOAD_RESUME_TIMEOUT = 30000;
 const DEFAULT_CONCURRENCY = 5;
@@ -651,10 +651,10 @@ export function defineBatchDownload<
 
       if (unavaliable.length) {
         if (isStringArray(unavaliable)) {
-          addFailed(unavaliable.map((id) => ({ id, reason: ERROR_MASKED })));
+          addFailed(unavaliable.map((id) => ({ id, reason: ERROR_INVALID_ID })));
           unavaliableIdTasks.push(...unavaliable);
         } else {
-          addFailed(unavaliable.map((meta) => ({ id: meta.id, reason: ERROR_MASKED })));
+          addFailed(unavaliable.map((meta) => ({ id: meta.id, reason: ERROR_INVALID_ID })));
           unavaliableMetaTasks.push(...unavaliable);
         }
       }
@@ -709,7 +709,7 @@ export function defineBatchDownload<
               } catch (error) {
                 if (taskSingal.aborted) return;
 
-                const isFailedTask = error !== ERROR_MASKED;
+                const isFailedTask = error !== ERROR_INVALID_ID;
 
                 if (typeof idOrMeta === 'string') {
                   addFailed({ id: idOrMeta, reason: error });

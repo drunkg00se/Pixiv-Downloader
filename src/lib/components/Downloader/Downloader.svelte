@@ -1,6 +1,8 @@
 <script lang="ts">
   import { fade, fly, slide } from 'svelte/transition';
   import {
+    Accordion,
+    AccordionItem,
     TabGroup,
     Tab,
     ProgressRadial,
@@ -18,10 +20,11 @@
   import stopOutLineSvg from '@/assets/stop-circle-outline.svg?src';
   import downloadMultipleSvg from '@/assets/download-multiple.svg?src';
 
-  import type {
-    BatchDownloadConfig,
-    BatchDownloadDefinition,
-    PageOption
+  import {
+    ERROR_INVALID_ID,
+    type BatchDownloadConfig,
+    type BatchDownloadDefinition,
+    type PageOption
   } from './useBatchDownload.svelte';
   import type { MediaMeta } from '@/sites/base/parser';
   import { t } from '@/lib/i18n.svelte';
@@ -273,7 +276,7 @@
   <div
     transition:fly={{ x: 50, opacity: 0 }}
     data-theme="skeleton"
-    class="card px-4 fixed right-20 top-36 w-[600px] *:text-sm shadow-xl bg-scroll"
+    class="card px-4 pb-4 fixed right-20 top-36 w-[600px] *:text-sm shadow-xl bg-scroll"
   >
     {#if !downloading.current}
       <div transition:slide class="downloader-filter">
@@ -425,7 +428,7 @@
       </div>
     {/if}
 
-    <div class="flex relative my-4">
+    <div class="flex flex-col relative mt-4 gap-4">
       {#if !downloading.current}
         <div
           bind:this={startDownloadEl}
@@ -526,10 +529,10 @@
     </div>
 
     {#if fileHandleNotFoundTasks.length}
-      <div transition:slide={{ duration: 250 }}>
+      <div transition:slide={{ duration: 250 }} class="text-surface-700-200-token mt-4">
         <h3 class="text-sm">{t('downloader.file_handle_not_found.title')}</h3>
         <ul
-          class="relative list px-4 *:py-2 mt-2 mb-4 bg-white/30 dark:bg-black/15 rounded-container-token *:!rounded-none max-h-80 scrollbar-track-transparent scrollbar-thumb-slate-400/50 scrollbar-corner-transparent scrollbar-thin overflow-y-auto divide-y-[1px] *:border-surface-300-600-token"
+          class="relative list px-4 *:py-2 mt-2 bg-white/30 dark:bg-black/15 rounded-container-token *:!rounded-none max-h-80 scrollbar-track-transparent scrollbar-thumb-slate-400/50 scrollbar-corner-transparent scrollbar-thin overflow-y-auto divide-y-[1px] *:border-surface-300-600-token"
           style="scrollbar-gutter: stable"
         >
           {#each fileHandleNotFoundTasks as task, i (task)}
@@ -566,6 +569,35 @@
           {/each}
         </ul>
       </div>
+    {/if}
+
+    {#if !downloading.current && failed.current.length}
+      {@const invalidIdFirst = failed.current.toSorted((item) =>
+        item.reason === ERROR_INVALID_ID ? -1 : 1
+      )}
+      <Accordion class="text-surface-700-200-token mt-4">
+        <AccordionItem class="bg-white/30 dark:bg-black/15 rounded-container-token">
+          {#snippet lead()}
+            <span class="badge variant-soft-error">{invalidIdFirst.length}</span>
+          {/snippet}
+          {#snippet summary()}
+            {t('downloader.failed_downloads')}
+          {/snippet}
+          {#snippet content()}
+            <ul
+              class="list max-h-80 scrollbar-track-transparent scrollbar-thumb-slate-400/50 scrollbar-corner-transparent scrollbar-thin overflow-y-auto"
+              style="scrollbar-gutter: stable"
+            >
+              {#each invalidIdFirst as item (item)}
+                <li>
+                  <span class="flex-[0_0_20%] truncate">{item.id}</span>
+                  <span class="text-error-400">{item.reason}</span>
+                </li>
+              {/each}
+            </ul>
+          {/snippet}
+        </AccordionItem>
+      </Accordion>
     {/if}
   </div>
 {/if}
