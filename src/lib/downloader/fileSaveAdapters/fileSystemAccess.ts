@@ -428,12 +428,16 @@ export async function saveFile(
         { once: true }
       );
     });
-
-    writableStream = await fileHandle.createWritable();
   }
 
-  await writableStream.write(blob);
-  await writableStream.close();
+  try {
+    writableStream ??= await fileHandle.createWritable();
+    await writableStream.write(blob);
+    await writableStream.close();
+  } catch (error) {
+    currentDirHandle.removeEntry(fileHandle.name);
+    throw error;
+  }
 }
 
 export function selectRootDirHandle() {
