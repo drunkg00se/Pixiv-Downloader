@@ -31,6 +31,7 @@ import { PixivTagLocale, siteFeature, type UgoiraFormat } from '@/lib/store/site
 import { ReactiveValue } from '@/lib/reactiveValue.svelte';
 import { clientSetting } from '@/lib/store/clientSetting.svelte';
 import { legacyConfig } from '@/lib/store/legacyConfig';
+import { createHomeRecommendBtn } from './observerCB/createHomeRecommendBtn';
 
 export class Pixiv extends SiteInject {
   private firstObserverCbRunFlag = true;
@@ -298,8 +299,19 @@ export class Pixiv extends SiteInject {
     this.downloadArtwork = this.downloadArtwork.bind(this);
 
     new MutationObserver((records) => {
-      this.injectThumbnailButtons(records);
-      this.pageActions();
+      const addedElements: HTMLElement[] = records.flatMap((record) => {
+        if (!record.addedNodes.length) return [];
+
+        return Array.from(record.addedNodes).filter(
+          (node): node is HTMLElement =>
+            node.nodeType === Node.ELEMENT_NODE &&
+            (node as HTMLElement).tagName.toLowerCase() !== ThumbnailButton.tagNameLowerCase &&
+            (node as HTMLElement).tagName !== 'IMG'
+        );
+      });
+
+      this.injectThumbnailButtons(addedElements);
+      this.pageActions(addedElements);
     }).observe(document.body, {
       childList: true,
       subtree: true
@@ -310,21 +322,8 @@ export class Pixiv extends SiteInject {
     return PixivDownloadConfig.supportedTemplate;
   }
 
-  private injectThumbnailButtons(records: MutationRecord[]) {
-    const addedNodes: HTMLElement[] = [];
-    records.forEach((record) => {
-      if (!record.addedNodes.length) return;
-      (record.addedNodes as NodeListOf<HTMLElement>).forEach((node) => {
-        if (
-          node.nodeType === Node.ELEMENT_NODE &&
-          node.tagName.toLowerCase() !== ThumbnailButton.tagNameLowerCase &&
-          node.tagName !== 'IMG'
-        ) {
-          addedNodes.push(node);
-        }
-      });
-    });
-    if (!addedNodes.length) return;
+  private injectThumbnailButtons(addedElements: HTMLElement[]) {
+    if (!addedElements.length) return;
 
     //为小图添加下载按钮
     if (this.firstObserverCbRunFlag) {
@@ -332,9 +331,9 @@ export class Pixiv extends SiteInject {
       createThumbnailBtn(document.querySelectorAll('a'), this.downloadArtwork);
       this.firstObserverCbRunFlag = false;
     } else {
-      fixPixivPreviewer(addedNodes);
+      fixPixivPreviewer(addedElements);
 
-      const thumbnails = addedNodes.reduce((prev, current) => {
+      const thumbnails = addedElements.reduce((prev, current) => {
         //新增的node也没有pdlbtn
         return prev.concat(
           current instanceof HTMLAnchorElement
@@ -346,7 +345,7 @@ export class Pixiv extends SiteInject {
     }
   }
 
-  private pageActions() {
+  private pageActions(addedElements: HTMLElement[]) {
     const pathname = location.pathname;
     let param: RegExpExecArray | null;
     switch (true) {
@@ -395,6 +394,10 @@ export class Pixiv extends SiteInject {
         createPresentationBtn(id, this.downloadArtwork, unlistedId);
         createPreviewModalBtn(id, this.downloadArtwork, unlistedId);
         createMangaViewerBtn(id, this.downloadArtwork, unlistedId);
+        break;
+      }
+      case pathname === '/' || pathname === '/en/': {
+        createHomeRecommendBtn(addedElements, this.downloadArtwork);
         break;
       }
       default:
