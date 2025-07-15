@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.10.0
+// @version            1.11.0
 // @author             ruaruarua
 // @description        一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info
 // @description:zh-TW  一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info
@@ -5343,7 +5343,7 @@
     }
   }
   const historyDb = new ReadableHistoryDb();
-  const btnStyle = ".pdl-thumbnail{position:absolute;display:flex;justify-content:center;align-items:center;margin:0;padding:0;height:32px;width:32px;top:calc((100% - 32px) * var(--pdl-btn-top-percent) / 100 + var(--pdl-btn-top-px));left:calc((100% - 32px) * var(--pdl-btn-left-percent) / 100 + var(--pdl-btn-left-px));border:none;border-radius:4px;overflow:hidden;white-space:nowrap;-webkit-user-select:none;-moz-user-select:none;user-select:none;font-family:system-ui;font-size:13px;font-weight:700;color:#262626;background-color:#ffffff80;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:1;pointer-events:auto;cursor:pointer}.pdl-thumbnail:disabled{cursor:not-allowed}.pdl-thumbnail>svg{position:absolute;width:85%;height:85%;fill:currentColor;stroke:currentColor}.pdl-thumbnail>span{opacity:0;transition:opacity .2s}.pdl-thumbnail>span.show{opacity:1}:host([data-type=gallery]) .pdl-thumbnail{--pdl-sticky-safe-area-top: 0px;--pdl-sticky-safe-area-bottom: 0px;position:sticky;top:var(--pdl-sticky-safe-area-top);left:0;right:0}:host([data-type=gallery].bottom) .pdl-thumbnail{top:calc(100% - 32px - var(--pdl-sticky-safe-area-bottom))}:host([data-type=gallery].pixiv) .pdl-thumbnail{--pdl-sticky-safe-area-top: 40px;--pdl-sticky-safe-area-bottom: 48px}:host([data-type=gallery].nijie) .pdl-thumbnail{--pdl-sticky-safe-area-top: 36px;--pdl-sticky-safe-area-bottom: 70px}:host([data-type=pixiv-my-bookmark]) .pdl-thumbnail{top:calc((100% - 32px) * var(--pdl-btn-pixiv-bookmark-top-percent) / 100 + var(--pdl-btn-pixiv-bookmark-top-px));left:calc((100% - 32px) * var(--pdl-btn-pixiv-bookmark-left-percent) / 100 + var(--pdl-btn-pixiv-bookmark-left-px))}:host([data-type=pixiv-history]) .pdl-thumbnail{z-index:auto}:host([data-type=pixiv-presentation]) .pdl-thumbnail{position:fixed;top:50px;right:20px;left:auto}:host([data-type=pixiv-toolbar]) .pdl-thumbnail{position:relative;top:auto;left:auto;color:inherit;background-color:transparent}:host([data-type=pixiv-manga-viewer]) .pdl-thumbnail{top:80%;right:4px;left:auto}:host([data-type=yande-browse]) .pdl-thumbnail{top:320px;right:4px;left:auto}:host([data-type=nijie-illust]) .pdl-thumbnail{display:inline-flex;position:static;height:44px;width:44px;top:auto;left:auto;border-radius:8px;margin:0 8px;vertical-align:top}:host([data-type=nijie-illust]) .pdl-thumbnail>svg{width:70%;height:70%}:host([data-type=rule34vault-post-action]) .pdl-thumbnail{position:relative;top:auto;left:auto;color:inherit;background-color:inherit;width:4em;height:36px}:host([data-type=rule34vault-post-action]) .pdl-thumbnail>svg{height:28px;width:28px}:host([data-type=rule34vault-post-action]) .pdl-thumbnail:hover{filter:brightness(1.2)}:host([data-status]) .pdl-thumbnail{color:#16a34a}:host([data-status=error]) .pdl-thumbnail{color:#ef4444}";
+  const btnStyle = ".pdl-thumbnail{position:absolute;display:flex;justify-content:center;align-items:center;margin:0;padding:0;height:32px;width:32px;top:calc((100% - 32px) * var(--pdl-btn-top-percent) / 100 + var(--pdl-btn-top-px));left:calc((100% - 32px) * var(--pdl-btn-left-percent) / 100 + var(--pdl-btn-left-px));border:none;border-radius:4px;overflow:hidden;white-space:nowrap;-webkit-user-select:none;-moz-user-select:none;user-select:none;font-family:system-ui;font-size:13px;font-weight:700;color:#262626;background-color:#ffffff80;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:1;pointer-events:auto;cursor:pointer}.pdl-thumbnail:disabled{cursor:not-allowed}.pdl-thumbnail>svg{position:absolute;width:85%;height:85%;fill:currentColor;stroke:currentColor}.pdl-thumbnail>span{opacity:0;transition:opacity .2s}.pdl-thumbnail>span.show{opacity:1}:host([data-type=gallery]) .pdl-thumbnail{--pdl-sticky-safe-area-top: 0px;--pdl-sticky-safe-area-bottom: 0px;position:sticky;top:var(--pdl-sticky-safe-area-top);left:0;right:0}:host([data-type=gallery].bottom) .pdl-thumbnail{top:calc(100% - 32px - var(--pdl-sticky-safe-area-bottom))}:host([data-type=gallery].pixiv) .pdl-thumbnail{--pdl-sticky-safe-area-top: 40px;--pdl-sticky-safe-area-bottom: 48px}:host([data-type=gallery].nijie) .pdl-thumbnail{--pdl-sticky-safe-area-top: 36px;--pdl-sticky-safe-area-bottom: 70px}:host([data-type=pixiv-my-bookmark]) .pdl-thumbnail{top:calc((100% - 32px) * var(--pdl-btn-pixiv-bookmark-top-percent) / 100 + var(--pdl-btn-pixiv-bookmark-top-px));left:calc((100% - 32px) * var(--pdl-btn-pixiv-bookmark-left-percent) / 100 + var(--pdl-btn-pixiv-bookmark-left-px))}:host([data-type=pixiv-history]) .pdl-thumbnail{z-index:auto}:host([data-type=pixiv-presentation]) .pdl-thumbnail{position:fixed;top:50px;right:20px;left:auto}:host([data-type=pixiv-toolbar]) .pdl-thumbnail{position:relative;top:auto;left:auto;color:inherit;background-color:transparent;z-index:auto}:host([data-type=pixiv-manga-viewer]) .pdl-thumbnail{top:80%;right:4px;left:auto}:host([data-type=yande-browse]) .pdl-thumbnail{top:320px;right:4px;left:auto}:host([data-type=nijie-illust]) .pdl-thumbnail{display:inline-flex;position:static;height:44px;width:44px;top:auto;left:auto;border-radius:8px;margin:0 8px;vertical-align:top}:host([data-type=nijie-illust]) .pdl-thumbnail>svg{width:70%;height:70%}:host([data-type=rule34vault-post-action]) .pdl-thumbnail{position:relative;top:auto;left:auto;color:inherit;background-color:inherit;width:4em;height:36px}:host([data-type=rule34vault-post-action]) .pdl-thumbnail>svg{height:28px;width:28px}:host([data-type=rule34vault-post-action]) .pdl-thumbnail:hover{filter:brightness(1.2)}:host([data-status]) .pdl-thumbnail{color:#16a34a}:host([data-status=error]) .pdl-thumbnail{color:#ef4444}";
   const svgGroup = `<svg xmlns="http://www.w3.org/2000/svg" style="display: none">
   <symbol id="pdl-download" viewBox="0 0 512 512">
     <path
@@ -10042,14 +10042,7 @@
     message
   });
   var on_click$2 = (_, showCreditCode) => set(showCreditCode, !get$1(showCreditCode));
-  var root_1$8 = /* @__PURE__ */ template(
-    `<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><p>本次更新提高了FileSystemAccess
-      API保存文件的可用性，现在应该可以替代篡改猴"浏览器API"下载模式，请大家尝试一下，反馈问题。</p> <h4 class=" text-xl mt-2">新增</h4> <ul class="list-disc list-inside leading-loose"><li>现在启用“使用FileSystemAccess API”，授予浏览器文件权限后，不需要再次选择文件夹。</li> <li>启用“使用FileSystemAccess
-        API”后，当图片文件名无效时，脚本现在会弹出提示，而不是默认失败（请在文件保存框中修改文件名，直接保存仍然会抛出错误）。</li> <li>启用“使用FileSystemAccess API”后，批量下载时，会列出无法保存的图片，请手动保存或取消。</li> <li>批量下载完成后，会列出下载失败的图片及其原因。</li> <li>为脚本的一些操作增加了提示信息。</li></ul> <h4 class=" text-xl mt-2">修复</h4> <ul class="list-disc list-inside leading-loose"><li>Large files throw security error (<a href="https://github.com/drunkg00se/Pixiv-Downloader/issues/39" target="_blank" class="anchor">#39</a>)</li> <li>修复在rule34vault中进行前进/后退导航时，头像/批量下载项未正确更新的问题。</li></ul> <h4 class=" text-xl mt-2">已知问题</h4> <ul class="list-disc list-inside leading-loose"><li>使用篡改猴并启用浏览器API时，Firefox
-        137下载较大图片会出现下载成功但无法保存的问题。如您在使用中遇到此问题，请回滚到版本136直至篡改猴正式版更新至v5.4或开发版更新至v5.4.6226。</li> <li>使用篡改猴开发版v5.4.6226并启用浏览器API时，无法创建子文件夹，请尝试使用FileSystemAccess
-        API。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`,
-    1
-  );
+  var root_1$8 = /* @__PURE__ */ template(`<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><h4 class=" text-xl mt-2">新增</h4> <ul class="list-disc list-inside leading-loose"><li>为Pixiv首页信息流添加下载按钮。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`, 1);
   function Changelog($$anchor, $$props) {
     push($$props, true);
     const anchorFocus = `focus:!outline-none focus:decoration-wavy`;
@@ -10063,7 +10056,7 @@
       children: ($$anchor2, $$slotProps) => {
         var fragment_1 = root_1$8();
         var header = first_child(fragment_1);
-        header.textContent = `Pixiv Downloader ${"1.10.0"}`;
+        header.textContent = `Pixiv Downloader ${"1.11.0"}`;
         var footer = sibling(header, 4);
         var div = child(footer);
         var button2 = child(div);
@@ -14556,8 +14549,8 @@
       const shadow = root2.getRootNode();
       addStyleToShadow(shadow);
       shadow.host.setAttribute("style", "position:fixed; z-index:99999");
-      if (clientSetting.version !== "1.10.0") {
-        clientSetting.version = "1.10.0";
+      if (clientSetting.version !== "1.11.0") {
+        clientSetting.version = "1.11.0";
         showChangelog();
       }
       globalThis.addEventListener(EVENT_DIR_HANDLE_NOT_FOUND, (evt) => {
@@ -18134,6 +18127,33 @@
     likeBtn.style.color = "#0096fa";
     likeBtn.style.cursor = "default";
   }
+  function createHomeRecommendBtn(elements, downloadArtwork) {
+    if (elements.length === 0) return;
+    elements.forEach((element) => {
+      var _a2, _b2;
+      const workContent = element.querySelector(
+        '[data-ga4-entity-id^="manga"], [data-ga4-entity-id^="illust"]'
+      );
+      const bookmarkBtn = workContent == null ? undefined : workContent.querySelector(
+        'div.justify-between > [data-ga4-label="bookmark_button"]'
+      );
+      if (!workContent || !bookmarkBtn) return;
+      const id = (_b2 = (_a2 = workContent.dataset.ga4EntityId) == null ? undefined : _a2.match(/([0-9]+)/)) == null ? undefined : _b2[0];
+      if (!id) throw new Error("ID not found in data-ga4-entity-id");
+      const title = bookmarkBtn.previousElementSibling;
+      title.style.maxWidth = "calc(100% - 68px)";
+      const btn2 = new ThumbnailButton({
+        id,
+        type: ThumbnailBtnType.PixivToolbar,
+        onClick: downloadArtwork
+      });
+      const btnWarpper = document.createElement("div");
+      btnWarpper.className = "flex flex-row gap-4";
+      btnWarpper.appendChild(btn2);
+      bookmarkBtn.parentElement.insertBefore(btnWarpper, bookmarkBtn);
+      btnWarpper.appendChild(bookmarkBtn);
+    });
+  }
   class Pixiv extends SiteInject {
     constructor() {
       if (clientSetting.version === null) {
@@ -18363,8 +18383,14 @@
       super.inject();
       this.downloadArtwork = this.downloadArtwork.bind(this);
       new MutationObserver((records) => {
-        this.injectThumbnailButtons(records);
-        this.pageActions();
+        const addedElements = records.flatMap((record) => {
+          if (!record.addedNodes.length) return [];
+          return Array.from(record.addedNodes).filter(
+            (node) => node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() !== ThumbnailButton.tagNameLowerCase && node.tagName !== "IMG"
+          );
+        });
+        this.injectThumbnailButtons(addedElements);
+        this.pageActions(addedElements);
       }).observe(document.body, {
         childList: true,
         subtree: true
@@ -18373,23 +18399,14 @@
     getSupportedTemplate() {
       return PixivDownloadConfig.supportedTemplate;
     }
-    injectThumbnailButtons(records) {
-      const addedNodes = [];
-      records.forEach((record) => {
-        if (!record.addedNodes.length) return;
-        record.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() !== ThumbnailButton.tagNameLowerCase && node.tagName !== "IMG") {
-            addedNodes.push(node);
-          }
-        });
-      });
-      if (!addedNodes.length) return;
+    injectThumbnailButtons(addedElements) {
+      if (!addedElements.length) return;
       if (this.firstObserverCbRunFlag) {
         createThumbnailBtn(document.querySelectorAll("a"), this.downloadArtwork);
         this.firstObserverCbRunFlag = false;
       } else {
-        fixPixivPreviewer(addedNodes);
-        const thumbnails = addedNodes.reduce((prev, current) => {
+        fixPixivPreviewer(addedElements);
+        const thumbnails = addedElements.reduce((prev, current) => {
           return prev.concat(
             current instanceof HTMLAnchorElement ? [current] : Array.from(current.querySelectorAll("a"))
           );
@@ -18397,7 +18414,7 @@
         createThumbnailBtn(thumbnails, this.downloadArtwork);
       }
     }
-    pageActions() {
+    pageActions(addedElements) {
       var _a2;
       const pathname = location.pathname;
       let param;
@@ -18442,6 +18459,10 @@
           createPresentationBtn(id, this.downloadArtwork, unlistedId);
           createPreviewModalBtn(id, this.downloadArtwork, unlistedId);
           createMangaViewerBtn(id, this.downloadArtwork, unlistedId);
+          break;
+        }
+        case (pathname === "/" || pathname === "/en/"): {
+          createHomeRecommendBtn(addedElements, this.downloadArtwork);
           break;
         }
       }
@@ -19421,7 +19442,7 @@
       super(option);
       __privateAdd(this, _authParams);
       const [username, apiKey] = option.authorization;
-      const UA = `Pixiv Downloader/${"1.10.0"} (by drunkg00se on e621)`;
+      const UA = `Pixiv Downloader/${"1.11.0"} (by drunkg00se on e621)`;
       __privateSet(this, _authParams, new URLSearchParams({ username, apiKey, _client: UA }));
     }
     get username() {
