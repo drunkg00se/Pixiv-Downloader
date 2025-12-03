@@ -6,6 +6,7 @@ export function getIllustId(node: HTMLAnchorElement | HTMLSpanElement): string {
   if (isLinkToArtworksPage) {
     if (
       node.getAttribute('data-gtm-value') ||
+      !!node.querySelector(':scope > figure, :scope > img[src*="pximg.net/c/480x960"]') || // ranking thumbnails
       [
         'gtm-illust-recommend-node-node',
         'gtm-discover-user-recommend-node',
