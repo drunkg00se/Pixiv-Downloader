@@ -21,9 +21,9 @@
   <header class="modal-header text-2xl font-bold">Pixiv Downloader {__VERSION__}</header>
 
   <article class="modal-body mt-4">
-    <h4 class=" text-xl mt-2">新增</h4>
+    <h4 class=" text-xl mt-2">修复</h4>
     <ul class="list-disc list-inside leading-loose">
-      <li>为Pixiv首页信息流添加下载按钮。</li>
+      <li>排行榜上的图片没有下载按钮。</li>
     </ul>
   </article>
 
