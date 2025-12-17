@@ -49,10 +49,10 @@ export default defineConfig({
         version,
         supportURL: 'https://github.com/drunkg00se/Pixiv-Downloader/issues',
         description: {
-          '': '一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info',
+          '': '一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info | SankakuComplex',
           'zh-TW':
-            '一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info',
-          en: 'Download artworks with one click. Batch download artworks or download by tags. Convert ugoira formats: Gif | Apng | Webp | Webm | MP4. Customize image file name, save path. Save / export download history. Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info'
+            '一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info | SankakuComplex',
+          en: 'Download artworks with one click. Batch download artworks or download by tags. Convert ugoira formats: Gif | Apng | Webp | Webm | MP4. Customize image file name, save path. Save / export download history. Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info | SankakuComplex'
         },
         match: [
           'https://www.pixiv.net/*',
