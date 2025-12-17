@@ -71,7 +71,9 @@ export default defineConfig({
           'https://nijie.info/*',
           'https://rule34vault.com/*',
           'https://rule34.paheal.net/*',
-          'https://rule34.us/*'
+          'https://rule34.us/*',
+          'https://www.sankakucomplex.com/*',
+          'https://sankaku.app/*'
         ],
         noframes: true,
         connect: [
@@ -93,7 +95,8 @@ export default defineConfig({
           'rule34vault.com',
           'r34xyz.b-cdn.net',
           'r34i.paheal-cdn.net',
-          'rule34.us'
+          'rule34.us',
+          'sankakucomplex.com'
         ],
         require: [
           'https://unpkg.com/dexie@3.2.7/dist/dexie.min.js',

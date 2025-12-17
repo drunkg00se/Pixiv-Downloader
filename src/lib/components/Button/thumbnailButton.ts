@@ -46,7 +46,7 @@ export interface ThumbnailBtnProp {
 export class ThumbnailButton extends HTMLElement {
   private btn?: HTMLButtonElement;
   private status: ThumbnailBtnStatus = ThumbnailBtnStatus.Init;
-  private mediaId: number;
+  private mediaId: string;
   private page?: number;
   private type?: ThumbnailBtnType;
   private onClick: ThumbnailBtnProp['onClick'];
@@ -56,7 +56,7 @@ export class ThumbnailButton extends HTMLElement {
   private progress = 0;
   private dirty = false;
 
-  #downloadingId: number | null = null;
+  #downloadingId: string | null = null;
   #downloadingPage: number | undefined | null = null;
 
   constructor(props: ThumbnailBtnProp) {
@@ -65,8 +65,8 @@ export class ThumbnailButton extends HTMLElement {
     this.onClick = props.onClick;
 
     // modifying `dataset` triggers `attributeChangedCallback`, so we should assign private value before dataset.
-    this.mediaId = this.toValidatedNumber(props.id);
-    this.dataset.id = String(this.mediaId);
+    this.mediaId = String(props.id);
+    this.dataset.id = this.mediaId;
 
     if (props.type) {
       this.dataset.type = this.type = props.type;
@@ -158,7 +158,7 @@ export class ThumbnailButton extends HTMLElement {
     try {
       if (id === null) throw new Error('Attribute "data-id" is required.');
 
-      this.mediaId = this.toValidatedNumber(id);
+      this.mediaId = id;
 
       this.#resetStatus();
       this.#downloadingId && (this.#downloadingId = null);
@@ -166,7 +166,7 @@ export class ThumbnailButton extends HTMLElement {
       this.connectedFlag && this.shouldObserveDb && this.observeDb()();
     } catch (error) {
       logger.error(error);
-      this.dataset.id = String(this.mediaId);
+      this.dataset.id = this.mediaId;
     }
   }
 

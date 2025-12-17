@@ -37,4 +37,8 @@
   &.fluid_video {
     --pdl-sticky-container-safe-area-bottom: 56px;
   }
+
+  &.sankaku_video {
+    --pdl-sticky-container-safe-area-bottom: 80px;
+  }
 }

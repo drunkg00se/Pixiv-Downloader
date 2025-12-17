@@ -11,7 +11,8 @@ type ArtworkButtonProps = Omit<ThumbnailBtnProp, 'type'> & {
     | 'moebooru_image'
     | 'native_video'
     | 'vjs_video'
-    | 'fluid_video';
+    | 'fluid_video'
+    | 'sankaku_video';
 };
 
 export class ArtworkButton extends HTMLElement {

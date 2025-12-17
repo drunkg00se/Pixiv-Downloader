@@ -5,7 +5,7 @@ import type { Readable, Unsubscriber } from 'svelte/store';
 import { channelEvent } from './channelEvent';
 
 interface HistoryItemBase {
-  pid: number;
+  pid: number | string;
   userId?: number;
   user?: string;
   title?: string;
@@ -30,7 +30,7 @@ interface pixivSeasonalEffectItem {
 }
 
 interface CacheItem {
-  pid: number;
+  pid: number | string;
   page: Uint8Array | null;
 }
 
@@ -49,7 +49,7 @@ type DBEventArgsMap = {
 };
 
 class HistoryDb extends Dexie {
-  private history!: Table<HistoryItem, number>;
+  private history!: Table<HistoryItem, number | string>;
   private imageEffect!: Table<pixivSeasonalEffectItem, string>;
   private filehandle!: Table<FileSystemDirectoryHandle, string>;
   #DIRECTORY_HANDLE_NAME = 'directory-handle';
@@ -63,20 +63,19 @@ class HistoryDb extends Dexie {
     });
   }
 
-  protected throwIfInvalidNumber(num: number | string): number {
-    if (typeof num === 'string') {
-      if (num !== '') {
-        num = +num;
-      } else {
+  protected throwIfInvalidNumber(numOrString: number | string): number | string {
+    if (typeof numOrString === 'string') {
+      if (numOrString === '') {
         return logger.throw('Invalid argument: can not be "".', RangeError);
       }
+      return numOrString;
     }
 
-    if (num < 0 || !Number.isSafeInteger(num)) {
-      logger.throw(`Invalid number: ${num}, must be a non-negative integer.`, RangeError);
+    if (numOrString < 0 || !Number.isSafeInteger(numOrString)) {
+      logger.throw(`Invalid number: ${numOrString}, must be a non-negative integer.`, RangeError);
     }
 
-    return num;
+    return numOrString;
   }
 
   public async add(historyData: HistoryData) {
