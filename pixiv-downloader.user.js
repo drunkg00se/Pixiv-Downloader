@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.11.1
+// @version            1.12.0
 // @author             ruaruarua
-// @description        一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info
-// @description:zh-TW  一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info
-// @description:en     Download artworks with one click. Batch download artworks or download by tags. Convert ugoira formats: Gif | Apng | Webp | Webm | MP4. Customize image file name, save path. Save / export download history. Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info
+// @description        一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info | SankakuComplex
+// @description:zh-TW  一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info | SankakuComplex
+// @description:en     Download artworks with one click. Batch download artworks or download by tags. Convert ugoira formats: Gif | Apng | Webp | Webm | MP4. Customize image file name, save path. Save / export download history. Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info | SankakuComplex
 // @license            MIT
 // @icon               https://www.pixiv.net/favicon.ico
 // @supportURL         https://github.com/drunkg00se/Pixiv-Downloader/issues
@@ -26,6 +26,8 @@
 // @match              https://rule34vault.com/*
 // @match              https://rule34.paheal.net/*
 // @match              https://rule34.us/*
+// @match              https://www.sankakucomplex.com/*
+// @match              https://sankaku.app/*
 // @require            https://unpkg.com/dexie@3.2.7/dist/dexie.min.js
 // @require            https://unpkg.com/jszip@3.9.1/dist/jszip.min.js
 // @require            https://unpkg.com/gif.js@0.2.0/dist/gif.js
@@ -55,6 +57,7 @@
 // @connect            r34xyz.b-cdn.net
 // @connect            r34i.paheal-cdn.net
 // @connect            rule34.us
+// @connect            sankakucomplex.com
 // @grant              GM_download
 // @grant              GM_getResourceText
 // @grant              GM_info
@@ -88,7 +91,7 @@
       return __privateGet(obj, member, getter);
     }
   });
-  var _events, _instance, _channel, _event, _DIRECTORY_HANDLE_NAME, _downloadingId, _downloadingPage, _ThumbnailButton_instances, resetStatus_fn, _stickyContainer, _thumbnailButton, _unsubscribers, _fn, _subscribe, _a, _fn2, _subscribe2, _queue, _carryoverConcurrencyCount, _isIntervalIgnored, _intervalCount, _intervalCap, _interval, _intervalEnd, _intervalId, _timeoutId, _queue2, _queueClass, _pending, _concurrency, _isPaused, _throwOnTimeout, _PQueue_instances, doesIntervalAllowAnother_get, doesConcurrentAllowAnother_get, next_fn, onResumeInterval_fn, isIntervalPaused_get, tryToStartAnother_fn, initializeIntervalIfNeeded_fn, onInterval_fn, processQueue_fn, throwOnAbort_fn, onEvent_fn, _DOWNLOAD_RETRY, _downloadQueue, _Downloader_instances, xhr_fn, dispatchDownload_fn, _b, _c, _d, _MediaDownloadConfig_instances, replaceTemplate_fn, _GelbooruV020_instances, validityCheckFactory_fn, addBookmark_fn, _DanbooruParser_instances, parseBlacklistItem_fn, _AbstractDanbooru_instances, validityCheckFactory_fn2, _ugoiraFramesData, _queue3, _Converter_instances, processConvert_fn, _MoebooruParser_instances, parsePostListData_fn, parseTagListData_fn, parseBlacklist_fn, _Moebooru_instances, validityCallbackFactory_fn, buildMetaByGeneratorData_fn, getPopularDataFactory_fn, addBookmark_fn2, downloadArtwork_fn, _Konachan_instances, fixPoolImageStyle_fn, _authParams, _E621ng_instances, isPoolGallery_fn, isPoolView_fn, isPostView_fn, isFavoritesPage_fn, isPostsPage_fn, isAuthorized_fn, throwIfNotAuthorized_fn, validityCallbackFactory_fn2, addFavorites_fn, _NijieParser_instances, parseIdByAnchors_fn, _searchParams, _Nijie_instances, isViewPage_fn, isViewPopupPage_fn, isOkazuPage_fn, isSupportedUserPage_fn, isSupportedHistoryPage_fn, getSearchId_fn, addBookmark_fn3, _Rule34VaultApi_instances, requestSearch_fn, _tagTypeMap, _currentPage, _notifyPageChange, _Rule34Vault_instances, getCurrentSearchSetting_fn, addBookmark_fn4, downloadArtwork_fn2, createOrUpdatePostActionButton_fn, createThumbnailButton_fn, _Rule34PahealParser_instances, buildMetaByThumbnailEl_fn, _api, _parser, _Rule34Paheal_instances, isPostList_fn, isPostView_fn2, downloadArtwork_fn3, createArtworkButton_fn, createThumbnailButtons_fn, _Rule34UsParser_instances, getTagsByEL_fn, _api2, _parser2, _searchParam, _Rule34Us_instances, isPostList_fn2, isPostView_fn3, isFavorites_fn, getQueryTag_fn, getQueryId_fn, addBookmark_fn5, downloadArtwork_fn4, createThumbnailButtons_fn2, createArtworkButton_fn2;
+  var _events, _instance, _channel, _event, _DIRECTORY_HANDLE_NAME, _downloadingId, _downloadingPage, _ThumbnailButton_instances, resetStatus_fn, _stickyContainer, _thumbnailButton, _unsubscribers, _fn, _subscribe, _a, _fn2, _subscribe2, _queue, _carryoverConcurrencyCount, _isIntervalIgnored, _intervalCount, _intervalCap, _interval, _intervalEnd, _intervalId, _timeoutId, _queue2, _queueClass, _pending, _concurrency, _isPaused, _throwOnTimeout, _PQueue_instances, doesIntervalAllowAnother_get, doesConcurrentAllowAnother_get, next_fn, onResumeInterval_fn, isIntervalPaused_get, tryToStartAnother_fn, initializeIntervalIfNeeded_fn, onInterval_fn, processQueue_fn, throwOnAbort_fn, onEvent_fn, _DOWNLOAD_RETRY, _downloadQueue, _Downloader_instances, xhr_fn, dispatchDownload_fn, _b, _c, _d, _MediaDownloadConfig_instances, replaceTemplate_fn, _GelbooruV020_instances, validityCheckFactory_fn, addBookmark_fn, _DanbooruParser_instances, parseBlacklistItem_fn, _AbstractDanbooru_instances, validityCheckFactory_fn2, _ugoiraFramesData, _queue3, _Converter_instances, processConvert_fn, _MoebooruParser_instances, parsePostListData_fn, parseTagListData_fn, parseBlacklist_fn, _Moebooru_instances, validityCallbackFactory_fn, buildMetaByGeneratorData_fn, getPopularDataFactory_fn, addBookmark_fn2, downloadArtwork_fn, _Konachan_instances, fixPoolImageStyle_fn, _authParams, _E621ng_instances, isPoolGallery_fn, isPoolView_fn, isPostView_fn, isFavoritesPage_fn, isPostsPage_fn, isAuthorized_fn, throwIfNotAuthorized_fn, validityCallbackFactory_fn2, addFavorites_fn, _NijieParser_instances, parseIdByAnchors_fn, _searchParams, _Nijie_instances, isViewPage_fn, isViewPopupPage_fn, isOkazuPage_fn, isSupportedUserPage_fn, isSupportedHistoryPage_fn, getSearchId_fn, addBookmark_fn3, _Rule34VaultApi_instances, requestSearch_fn, _tagTypeMap, _currentPage, _notifyPageChange, _Rule34Vault_instances, getCurrentSearchSetting_fn, addBookmark_fn4, downloadArtwork_fn2, createOrUpdatePostActionButton_fn, createThumbnailButton_fn, _Rule34PahealParser_instances, buildMetaByThumbnailEl_fn, _api, _parser, _Rule34Paheal_instances, isPostList_fn, isPostView_fn2, downloadArtwork_fn3, createArtworkButton_fn, createThumbnailButtons_fn, _Rule34UsParser_instances, getTagsByEL_fn, _api2, _parser2, _searchParam, _Rule34Us_instances, isPostList_fn2, isPostView_fn3, isFavorites_fn, getQueryTag_fn, getQueryId_fn, addBookmark_fn5, downloadArtwork_fn4, createThumbnailButtons_fn2, createArtworkButton_fn2, _baseUrl, _headers, _getAccessToken, _tagTypeMap2, _SankakuParser_instances, isPostWithFileURL_fn, _SankakuApp_instances, onElementAdded_fn, getPoolIdByURL_fn, addBookmark_fn6, downloadArtwork_fn5, _createButtonOption, createButton_fn, _useBatchDownload;
   (() => {
     if (/\[native code\]/.test(Array.from.toString())) return;
     const iframe = document.createElement("iframe");
@@ -5096,18 +5099,17 @@
         filehandle: ""
       });
     }
-    throwIfInvalidNumber(num) {
-      if (typeof num === "string") {
-        if (num !== "") {
-          num = +num;
-        } else {
+    throwIfInvalidNumber(numOrString) {
+      if (typeof numOrString === "string") {
+        if (numOrString === "") {
           return logger.throw('Invalid argument: can not be "".', RangeError);
         }
+        return numOrString;
       }
-      if (num < 0 || !Number.isSafeInteger(num)) {
-        logger.throw(`Invalid number: ${num}, must be a non-negative integer.`, RangeError);
+      if (numOrString < 0 || !Number.isSafeInteger(numOrString)) {
+        logger.throw(`Invalid number: ${numOrString}, must be a non-negative integer.`, RangeError);
       }
-      return num;
+      return numOrString;
     }
     async add(historyData) {
       const { pid, page } = historyData;
@@ -5470,8 +5472,8 @@
       __privateAdd(this, _downloadingPage, null);
       this.dispatchDownload = this.dispatchDownload.bind(this);
       this.onClick = props.onClick;
-      this.mediaId = this.toValidatedNumber(props.id);
-      this.dataset.id = String(this.mediaId);
+      this.mediaId = String(props.id);
+      this.dataset.id = this.mediaId;
       if (props.type) {
         this.dataset.type = this.type = props.type;
       }
@@ -5538,13 +5540,13 @@
     updateId(id) {
       try {
         if (id === null) throw new Error('Attribute "data-id" is required.');
-        this.mediaId = this.toValidatedNumber(id);
+        this.mediaId = id;
         __privateMethod(this, _ThumbnailButton_instances, resetStatus_fn).call(this);
         __privateGet(this, _downloadingId) && __privateSet(this, _downloadingId, null);
         this.connectedFlag && this.shouldObserveDb && this.observeDb()();
       } catch (error) {
         logger.error(error);
-        this.dataset.id = String(this.mediaId);
+        this.dataset.id = this.mediaId;
       }
     }
     updateDisableStatus(val) {
@@ -5743,7 +5745,7 @@
     );
   };
   customElements.define(ThumbnailButton.tagNameLowerCase, ThumbnailButton);
-  const wrapperStyle = ".button-wrapper{--pdl-sticky-container-safe-area-top: 0px;--pdl-sticky-container-safe-area-bottom: 0px;--pdl-sticky-container-safe-area-right: 8px;--pdl-sticky-container-safe-area-left: 8px;inset:var(--pdl-sticky-container-safe-area-top) var(--pdl-sticky-container-safe-area-right) var(--pdl-sticky-container-safe-area-bottom) var(--pdl-sticky-container-safe-area-left);position:absolute;direction:ltr;pointer-events:none}.button-wrapper.rtl{direction:rtl}.button-wrapper.pixiv{--pdl-sticky-container-safe-area-top: 40px}.button-wrapper.gelbooru{--pdl-sticky-container-safe-area-bottom: calc(1em + 22px) }.button-wrapper.moebooru_image{--pdl-sticky-container-safe-area-right: calc(5em + 8px) }.button-wrapper.native_video{--pdl-sticky-container-safe-area-bottom: 70px}.button-wrapper.vjs_video{--pdl-sticky-container-safe-area-bottom: 32px}.button-wrapper.fluid_video{--pdl-sticky-container-safe-area-bottom: 56px}";
+  const wrapperStyle = ".button-wrapper{--pdl-sticky-container-safe-area-top: 0px;--pdl-sticky-container-safe-area-bottom: 0px;--pdl-sticky-container-safe-area-right: 8px;--pdl-sticky-container-safe-area-left: 8px;inset:var(--pdl-sticky-container-safe-area-top) var(--pdl-sticky-container-safe-area-right) var(--pdl-sticky-container-safe-area-bottom) var(--pdl-sticky-container-safe-area-left);position:absolute;direction:ltr;pointer-events:none}.button-wrapper.rtl{direction:rtl}.button-wrapper.pixiv{--pdl-sticky-container-safe-area-top: 40px}.button-wrapper.gelbooru{--pdl-sticky-container-safe-area-bottom: calc(1em + 22px) }.button-wrapper.moebooru_image{--pdl-sticky-container-safe-area-right: calc(5em + 8px) }.button-wrapper.native_video{--pdl-sticky-container-safe-area-bottom: 70px}.button-wrapper.vjs_video{--pdl-sticky-container-safe-area-bottom: 32px}.button-wrapper.fluid_video{--pdl-sticky-container-safe-area-bottom: 56px}.button-wrapper.sankaku_video{--pdl-sticky-container-safe-area-bottom: 80px}";
   const gifWorker = (() => GM_getResourceText("gif.js/dist/gif.worker?raw"))();
   const workerUrl$2 = URL.createObjectURL(new Blob([gifWorker], { type: "text/javascript" }));
   function isBlobArray$2(frames2) {
@@ -10042,7 +10044,7 @@
     message
   });
   var on_click$2 = (_, showCreditCode) => set(showCreditCode, !get$1(showCreditCode));
-  var root_1$8 = /* @__PURE__ */ template(`<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><h4 class=" text-xl mt-2">修复</h4> <ul class="list-disc list-inside leading-loose"><li>排行榜上的图片没有下载按钮。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`, 1);
+  var root_1$8 = /* @__PURE__ */ template(`<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><h4 class=" text-xl mt-2">新增</h4> <ul class="list-disc list-inside leading-loose"><li>现在支持www.sankakucomplex.com | sankaku.app。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`, 1);
   function Changelog($$anchor, $$props) {
     push($$props, true);
     const anchorFocus = `focus:!outline-none focus:decoration-wavy`;
@@ -10056,7 +10058,7 @@
       children: ($$anchor2, $$slotProps) => {
         var fragment_1 = root_1$8();
         var header = first_child(fragment_1);
-        header.textContent = `Pixiv Downloader ${"1.11.1"}`;
+        header.textContent = `Pixiv Downloader ${"1.12.0"}`;
         var footer = sibling(header, 4);
         var div = child(footer);
         var button2 = child(div);
@@ -14549,8 +14551,8 @@
       const shadow = root2.getRootNode();
       addStyleToShadow(shadow);
       shadow.host.setAttribute("style", "position:fixed; z-index:99999");
-      if (clientSetting.version !== "1.11.1") {
-        clientSetting.version = "1.11.1";
+      if (clientSetting.version !== "1.12.0") {
+        clientSetting.version = "1.12.0";
         showChangelog();
       }
       globalThis.addEventListener(EVENT_DIR_HANDLE_NOT_FOUND, (evt) => {
@@ -19443,7 +19445,7 @@
       super(option);
       __privateAdd(this, _authParams);
       const [username, apiKey] = option.authorization;
-      const UA = `Pixiv Downloader/${"1.11.1"} (by drunkg00se on e621)`;
+      const UA = `Pixiv Downloader/${"1.12.0"} (by drunkg00se on e621)`;
       __privateSet(this, _authParams, new URLSearchParams({ username, apiKey, _client: UA }));
     }
     get username() {
@@ -21998,6 +22000,544 @@
       })
     );
   };
+  var SankakuTagType = /* @__PURE__ */ ((SankakuTagType2) => {
+    SankakuTagType2[SankakuTagType2["GENERAL"] = 0] = "GENERAL";
+    SankakuTagType2[SankakuTagType2["ARTIST"] = 1] = "ARTIST";
+    SankakuTagType2[SankakuTagType2["STUDIO"] = 2] = "STUDIO";
+    SankakuTagType2[SankakuTagType2["COPYRIGHT"] = 3] = "COPYRIGHT";
+    SankakuTagType2[SankakuTagType2["CHARACTER"] = 4] = "CHARACTER";
+    SankakuTagType2[SankakuTagType2["GENRE"] = 5] = "GENRE";
+    SankakuTagType2[SankakuTagType2["MEDIUM"] = 8] = "MEDIUM";
+    SankakuTagType2[SankakuTagType2["META"] = 9] = "META";
+    SankakuTagType2[SankakuTagType2["FASHION"] = 10] = "FASHION";
+    SankakuTagType2[SankakuTagType2["ANATOMY"] = 11] = "ANATOMY";
+    return SankakuTagType2;
+  })(SankakuTagType || {});
+  class SankakuApi extends ApiBase {
+    constructor({
+      baseUrl = "https://sankakuapi.com",
+      getAccessToken
+    }) {
+      super({ rateLimit: 3 });
+      __privateAdd(this, _baseUrl);
+      __privateAdd(this, _headers);
+      __privateAdd(this, _getAccessToken);
+      __privateSet(this, _headers, {
+        accept: "application/vnd.sankaku.api+json;v=2",
+        "api-version": "2",
+        platform: "web-app"
+      });
+      __privateSet(this, _baseUrl, baseUrl);
+      __privateSet(this, _getAccessToken, getAccessToken);
+    }
+    async getJSON(url, init2) {
+      var _a2;
+      const accessToken = (_a2 = __privateGet(this, _getAccessToken)) == null ? undefined : _a2.call(this);
+      const data = await super.getJSON(__privateGet(this, _baseUrl) + url, {
+        ...init2,
+        headers: {
+          ...__privateGet(this, _headers),
+          ...accessToken && { authorization: `Bearer ${accessToken}` },
+          ...init2 == null ? undefined : init2.headers
+        }
+      });
+      if ("success" in data && data.success !== true) {
+        const errMsg = "code" in data ? data.code : "";
+        throw new JsonDataError("Bad response. " + errMsg);
+      }
+      return data;
+    }
+    async getPostData(postId) {
+      const params = {
+        lang: "en",
+        page: "1",
+        limit: "1",
+        tags: "id_range:" + postId
+      };
+      const searchParams = new URLSearchParams(Object.entries(params)).toString();
+      const data = await this.getJSON(`/v2/posts?${searchParams}`);
+      return data[0];
+    }
+    async getPostUrl(postId) {
+      return (await this.getJSON(`/posts/${postId}/fu?lang=en`)).data;
+    }
+    async getTagDetail(postId) {
+      const params = {
+        lang: "en",
+        page: "1",
+        /** @max 100 */
+        limit: "100"
+      };
+      let currentPage;
+      const tags = [];
+      do {
+        const searchParams = new URLSearchParams(Object.entries(params)).toString();
+        currentPage = await this.getJSON(`/posts/${postId}/tags?${searchParams}`);
+        tags.push(...currentPage.data);
+        params.page = String(+params.page + 1);
+      } while (tags.length < currentPage.total);
+      return tags;
+    }
+    getPool(poolId) {
+      const params = {
+        lang: "en",
+        "exceptStatuses[]": "deleted"
+      };
+      const searchParams = new URLSearchParams(Object.entries(params)).toString();
+      return this.getJSON(`/pools/${poolId}?${searchParams}`);
+    }
+    addFav(postId) {
+      if (!("authorization" in __privateGet(this, _headers))) {
+        throw new Error("AccessToken not found, please sign in");
+      }
+      return this.getJSON(`/posts/${postId}/favorite`, { method: "POST" });
+    }
+    // /v2/posts/keyset?lang=en&default_threshold=2&hide_posts_in_books=in-larger-tags&limit=40&page=1&tags=collection:${id}
+    getCollection(collectionId, page) {
+      const params = {
+        lang: "en",
+        limit: "40",
+        tags: `collection:${collectionId}`,
+        page: String(page)
+      };
+      const searchParams = new URLSearchParams(Object.entries(params)).toString();
+      return this.getJSON(`/v2/posts/keyset?${searchParams}`);
+    }
+    async querySeries(seriesId) {
+      const body = `{"query":"\\n  query Series($seriesId: StringOrInt!) {\\n    seriesV2(id: $seriesId) {\\n      id\\n      name\\n      nameEn\\n      nameJa\\n      description\\n      descriptionEn\\n      descriptionJa\\n      isFavorite\\n      favCount\\n      voteCount\\n      score\\n      userVote\\n      isPremium\\n      isCompleted\\n      status\\n      createdAt\\n      updatedAt\\n      poolCount\\n      activePoolCount\\n      commentCount\\n      coverPool {\\n        coverPost {\\n          previewUrl\\n          sampleUrl\\n        }\\n      }\\n      pools {\\n        id\\n        name\\n        author {\\n          id\\n          name\\n          displayName\\n          level\\n          avatar {\\n            url\\n          }\\n        }\\n        nameEn\\n        nameJa\\n        coverPost {\\n          id\\n          author {\\n            id\\n          }\\n          isPremium\\n          sampleUrl\\n          sampleWidth\\n          sampleHeight\\n          previewUrl\\n          previewWidth\\n          previewHeight\\n          fileUrl\\n          width\\n          height\\n          fileSize\\n          fileType\\n          createdAt\\n          isFavorited\\n          totalScore\\n          voteCount\\n          favCount\\n          inVisiblePool\\n          rating\\n          status\\n          hasChildren\\n          tags {\\n            id\\n            name\\n            tagType\\n            nameEn\\n            nameJa\\n          }\\n        }\\n        premPostCount\\n        status\\n        isPremium\\n        isRatingLocked\\n        rating\\n        sequenceV2(seriesId: $seriesId)\\n        tags {\\n          id\\n          name\\n          tagType\\n          nameEn\\n          nameJa\\n        }\\n        reading {\\n          currentPage\\n        }\\n        postCount\\n        totalScore\\n        voteCount\\n      }\\n      tags {\\n        id\\n        name\\n        tagType\\n        nameEn\\n        nameJa\\n      }\\n      author {\\n        id\\n        name\\n        displayName\\n        avatar {\\n          url\\n        }\\n      }\\n      status\\n    }\\n  }\\n","variables":{"seriesId":"${seriesId}"},"operationName":"Series"}`;
+      const data = await this.getJSON("/graphql", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "*/*"
+        },
+        body
+      });
+      return data.data.seriesV2.pools.map((pool) => pool.id);
+    }
+  }
+  _baseUrl = new WeakMap();
+  _headers = new WeakMap();
+  _getAccessToken = new WeakMap();
+  class SankakuParser extends ParserBase {
+    constructor() {
+      super(...arguments);
+      __privateAdd(this, _SankakuParser_instances);
+      __privateAdd(this, _tagTypeMap2, {
+        [SankakuTagType.GENERAL]: "general",
+        [SankakuTagType.ARTIST]: "artist",
+        [SankakuTagType.STUDIO]: "studio",
+        [SankakuTagType.COPYRIGHT]: "copyright",
+        [SankakuTagType.CHARACTER]: "character",
+        [SankakuTagType.GENRE]: "genre",
+        [SankakuTagType.MEDIUM]: "medium",
+        [SankakuTagType.META]: "meta",
+        [SankakuTagType.FASHION]: "fashion",
+        [SankakuTagType.ANATOMY]: "anatomy"
+      });
+    }
+    buildMeta(postData, postURL, tagsDetail) {
+      let file_url;
+      let tags;
+      if (__privateMethod(this, _SankakuParser_instances, isPostWithFileURL_fn).call(this, postData)) {
+        ({ file_url, tags } = postData);
+      } else {
+        if (!postURL || !tagsDetail)
+          throw new Error("Argument `postURL` and `tagsDetail` are required.");
+        ({ file_url } = postURL);
+        tags = tagsDetail;
+      }
+      const { id, created_at, file_ext, tag_names, source: source2, fav_count, md5 } = postData;
+      if (!file_url) throw new Error("Can not get the file url for post: " + id);
+      const tagsWithType = [];
+      const artists = [];
+      const characters = [];
+      tags.forEach((tag) => {
+        const { tagName, type } = tag;
+        const mapTag = __privateGet(this, _tagTypeMap2)[tag.type];
+        tagsWithType.push(`${mapTag}:${tagName}`);
+        if (type === SankakuTagType.ARTIST) {
+          artists.push(tagName);
+        } else if (type === SankakuTagType.CHARACTER) {
+          characters.push(tagName);
+        }
+      });
+      return {
+        id,
+        src: file_url,
+        extendName: file_ext,
+        artist: artists.join(",") || this.UNKNOWN_ARTIST,
+        character: characters.join(",") || this.UNKNOWN_CHARACTER,
+        tags: tag_names,
+        tagsWithType,
+        score: fav_count,
+        source: source2 || "",
+        createDate: new Date(created_at.s * 1e3).toISOString(),
+        title: md5
+      };
+    }
+    getAccessToken() {
+      const [accessToken] = new RegExp("(?<=accessToken=).*?(?=;|$)").exec(document.cookie) ?? [];
+      return accessToken;
+    }
+    getAvatarURL() {
+      return localStorage.current_user ? JSON.parse(localStorage.current_user).avatar_url ?? "" : "";
+    }
+    isURLExpired(url, expiresEarlyBySeconds = 60) {
+      const timestamp = new URL(url).searchParams.get("e");
+      if (!timestamp) throw new Error("Can not find the expired params. " + url);
+      return Date.now() >= (+timestamp - expiresEarlyBySeconds) * 1e3;
+    }
+  }
+  _tagTypeMap2 = new WeakMap();
+  _SankakuParser_instances = new WeakSet();
+  isPostWithFileURL_fn = function(postData) {
+    return "file_url" in postData;
+  };
+  class SankakuDownloadConfig extends BooruDownloadConfig {
+    getHeaders() {
+      return {};
+    }
+    create(option) {
+      return super.create({ ...option, cfClearance: undefined });
+    }
+  }
+  class SankakuApp extends SiteInject {
+    constructor() {
+      if (clientSetting.version === null) {
+        downloadSetting.setDirectoryTemplate("Sankaku/{artist}");
+        downloadSetting.setFilenameTemplate("{id}_{artist}_{character}");
+        siteFeature.addBookmark ?? (siteFeature.addBookmark = false);
+      }
+      const themeWatcher2 = new ReactiveValue(
+        () => {
+          var _a2, _b2;
+          return !!((_b2 = (_a2 = document.head.querySelector('style[data-meta="MuiCssBaseline"]')) == null ? undefined : _a2.textContent) == null ? undefined : _b2.match(new RegExp("(?<!-)color: #fff")));
+        },
+        (update2) => {
+          return __privateMethod(this, _SankakuApp_instances, onElementAdded_fn).call(this, (elements) => {
+            if (elements.find((element) => element.getAttribute("data-meta") === "MuiCssBaseline")) {
+              update2();
+            }
+          }, document.head, { childList: true, subtree: false });
+        }
+      );
+      clientSetting.setThemeWatcher(themeWatcher2);
+      super();
+      __privateAdd(this, _SankakuApp_instances);
+      __publicField(this, "parser", new SankakuParser());
+      __publicField(this, "api", new SankakuApi({ getAccessToken: () => this.parser.getAccessToken() }));
+      /** file_url in pool will be expired in 1 hour. */
+      __publicField(this, "sharedPoolData", /* @__PURE__ */ new Map());
+      __privateAdd(this, _createButtonOption, [
+        {
+          containerSelectors: 'div[class*="jss"] > div > a[href*="/posts"]:has(img)',
+          btnProvider: (el) => {
+            if (el.querySelector(ThumbnailButton.tagNameLowerCase)) return;
+            const href = el.getAttribute("href");
+            const matchId = new RegExp("(?<=posts\\/)[a-zA-Z0-9]+").exec(href);
+            if (!matchId) throw new Error("Fail to get ID.");
+            el.style = "display: block; position: relative; font-size: 0px;";
+            return new ThumbnailButton({
+              id: matchId[0],
+              onClick: (btn2) => __privateMethod(this, _SankakuApp_instances, downloadArtwork_fn5).call(this, btn2)
+            });
+          }
+        },
+        {
+          containerSelectors: [
+            "[data-swiper-slide-index][slide] div:has(> .swiper-zoom-container > img)",
+            ".MuiGrid-root:has(> div > video)"
+          ],
+          btnProvider: (el) => {
+            if (el.querySelector(ArtworkButton.tagNameLowerCase)) return;
+            const idProvider = el.closest("[slide]");
+            if (!idProvider) throw new Error("Can not find ID provider.");
+            const id = idProvider.getAttribute("slide");
+            return new ArtworkButton({
+              id,
+              site: el.matches(":has(video)") ? "sankaku_video" : undefined,
+              onClick: (btn2) => __privateMethod(this, _SankakuApp_instances, downloadArtwork_fn5).call(this, btn2)
+            });
+          }
+        },
+        /** book */
+        {
+          containerSelectors: "[data-index] > div:has(span[id]), [data-index] > button:has(img[id])",
+          btnProvider: async (el) => {
+            if (el.querySelector(ArtworkButton.tagNameLowerCase)) return;
+            if (/series\/[a-zA-Z0-9]+/.test(location.pathname)) return;
+            const page = +el.closest("[data-index]").getAttribute("data-index");
+            const poolId = __privateMethod(this, _SankakuApp_instances, getPoolIdByURL_fn).call(this);
+            let poolDataPromise = this.sharedPoolData.get(poolId);
+            if (!poolDataPromise) {
+              poolDataPromise = this.api.getPool(poolId);
+              this.sharedPoolData.set(poolId, poolDataPromise);
+            }
+            const poolData = await poolDataPromise.catch((err) => {
+              if (this.sharedPoolData.has(poolId)) this.sharedPoolData.delete(poolId);
+              throw err;
+            });
+            const postId = poolData.posts[page].id;
+            el.style.position = "relative";
+            el.style.fontSize = "0px";
+            if (el instanceof HTMLButtonElement) {
+              return new ThumbnailButton({
+                id: postId,
+                page,
+                onClick: () => undefined
+              });
+            }
+            return new ArtworkButton({
+              id: postId,
+              page,
+              onClick: () => undefined
+            });
+          }
+        }
+      ]);
+      __privateAdd(this, _useBatchDownload, this.app.initBatchDownloader({
+        avatar: () => {
+          return this.parser.getAvatarURL() || "https://f.sankakucomplex.com/assets/triangle-grey-plus.b8c7af16.svg";
+        },
+        parseMetaByArtworkId: async (id) => {
+          const [postData, postUrl, tagDetail] = await Promise.all([
+            this.api.getPostData(id),
+            this.api.getPostUrl(id),
+            this.api.getTagDetail(id)
+          ]);
+          return this.parser.buildMeta(postData, postUrl, tagDetail);
+        },
+        downloadArtworkByMeta: async (meta, signal) => {
+          if (this.parser.isURLExpired(meta.src)) throw new Error("URL is expired.");
+          const downloadConfig = new SankakuDownloadConfig(meta).create({
+            ...downloadSetting
+          });
+          await downloader.download(downloadConfig, { signal });
+          const { id, tagsWithType, artist, title, source: source2 } = meta;
+          historyDb.add({
+            pid: id,
+            user: artist,
+            title,
+            tags: tagsWithType,
+            source: source2
+          });
+        },
+        filterOption: {
+          filters: [
+            {
+              id: "exclude_downloaded",
+              type: "exclude",
+              name: () => t("downloader.category.filter.exclude_downloaded"),
+              checked: false,
+              fn(meta) {
+                return !!meta.id && historyDb.has(meta.id);
+              }
+            },
+            {
+              id: "allow_image",
+              type: "include",
+              name: () => t("downloader.category.filter.image"),
+              checked: true,
+              fn(meta) {
+                return !!meta.extendName && regexp.imageExt.test(meta.extendName);
+              }
+            },
+            {
+              id: "allow_video",
+              type: "include",
+              name: () => t("downloader.category.filter.video"),
+              checked: true,
+              fn(meta) {
+                return !!meta.extendName && regexp.videoExt.test(meta.extendName);
+              }
+            }
+          ],
+          enableTagFilter: true
+        },
+        pageOption: {
+          books: {
+            name: "Book",
+            match: (url) => /books\/[a-zA-Z0-9]+/.test(url),
+            filterInGenerator: true,
+            fn: (_pageRange, checkValidity) => {
+              const matchBookId = new RegExp("(?<=books\\/)[a-zA-Z0-9]+").exec(location.href);
+              if (!matchBookId) throw new Error("Failed to get the book ID.");
+              const id = matchBookId[0];
+              return this.parser.paginationGenerator(
+                null,
+                async () => {
+                  const { posts } = await this.api.getPool(id);
+                  return { data: posts, lastPage: true };
+                },
+                (data) => this.parser.buildMeta(data),
+                async (data) => await checkValidity(this.parser.buildMeta(data)) ? PostValidState.VALID : PostValidState.INVALID
+              );
+            }
+          },
+          collection: {
+            name: "Collection",
+            match: (url) => /collections\/[a-zA-Z0-9]+/.test(url),
+            filterInGenerator: true,
+            fn: (_pageRange, checkValidity) => {
+              const matchColleId = new RegExp("(?<=collections\\/)[a-zA-Z0-9]+").exec(location.href);
+              if (!matchColleId) throw new Error("Failed to get the collection ID.");
+              const id = matchColleId[0];
+              return this.parser.paginationGenerator(
+                null,
+                async (page) => {
+                  const { data, meta } = await this.api.getCollection(id, page);
+                  return { data, lastPage: !meta.next };
+                },
+                (data) => data.id,
+                async (data) => await checkValidity({ id: data.id, extendName: data.file_ext }) ? PostValidState.VALID : PostValidState.INVALID
+              );
+            }
+          },
+          series: {
+            name: "Series",
+            match: (url) => /series\/[a-zA-Z0-9]+/.test(url),
+            filterInGenerator: true,
+            fn: (_pageRange, checkValidity) => {
+              const matchSeriesId = new RegExp("(?<=series\\/)[a-zA-Z0-9]+").exec(location.href);
+              if (!matchSeriesId) throw new Error("Failed to get the series ID.");
+              const volumeIndex = +(new URLSearchParams(location.search).get("volumeIndex") ?? "0");
+              const seriesId = matchSeriesId[0];
+              return this.parser.paginationGenerator(
+                null,
+                async () => {
+                  const poolId = (await this.api.querySeries(seriesId))[volumeIndex];
+                  const { posts } = await this.api.getPool(poolId);
+                  return { data: posts, lastPage: true };
+                },
+                (data) => this.parser.buildMeta(data),
+                async (data) => await checkValidity(this.parser.buildMeta(data)) ? PostValidState.VALID : PostValidState.INVALID
+              );
+            }
+          }
+        }
+      }));
+    }
+    getSupportedTemplate() {
+      return SankakuDownloadConfig.supportedTemplate;
+    }
+    static get hostname() {
+      return ["www.sankakucomplex.com", "sankaku.app"];
+    }
+    inject() {
+      super.inject();
+      __privateMethod(this, _SankakuApp_instances, onElementAdded_fn).call(this, (elements) => {
+        __privateMethod(this, _SankakuApp_instances, createButton_fn).call(this, elements);
+      }, document.querySelector("#app"));
+    }
+  }
+  _SankakuApp_instances = new WeakSet();
+  onElementAdded_fn = function(cb, target, option) {
+    option ?? (option = {
+      subtree: true,
+      childList: true
+    });
+    const ignoreElementList = [
+      ThumbnailButton.tagNameLowerCase.toUpperCase(),
+      ArtworkButton.tagNameLowerCase.toUpperCase()
+    ];
+    const observer2 = new MutationObserver((records) => {
+      const addedElementNodes = records.filter((record) => record.type === "childList" && record.addedNodes.length).flatMap((record) => Array.from(record.addedNodes)).filter(
+        (node) => node.nodeType === Node.ELEMENT_NODE && !ignoreElementList.includes(node.tagName)
+      );
+      if (!addedElementNodes.length) return;
+      cb(addedElementNodes);
+    });
+    observer2.observe(target, option);
+    return () => {
+      observer2.disconnect();
+    };
+  };
+  getPoolIdByURL_fn = function() {
+    var _a2;
+    const { pathname } = location;
+    const poolId = (_a2 = new RegExp("(?<=\\/books\\/)[a-zA-Z0-9]+").exec(pathname)) == null ? undefined : _a2[0];
+    if (!poolId) throw new Error("Can not parse pool ID from " + pathname);
+    return poolId;
+  };
+  addBookmark_fn6 = async function(postId) {
+    try {
+      await this.api.addFav(postId);
+      this.toast({ message: "You have favorited this post", timeout: 2e3 });
+    } catch (error) {
+      logger.error(error);
+      this.toast({ message: error.message, type: "error" });
+    }
+  };
+  downloadArtwork_fn5 = async function(btn2) {
+    const id = btn2.dataset.id;
+    const [postData, postUrl, tagDetail] = await Promise.all([
+      this.api.getPostData(id),
+      this.api.getPostUrl(id),
+      this.api.getTagDetail(id)
+    ]);
+    const mediaMeta = this.parser.buildMeta(postData, postUrl, tagDetail);
+    const downloadConfig = new SankakuDownloadConfig(mediaMeta).create({
+      ...downloadSetting,
+      setProgress: (progress) => {
+        btn2.setProgress(progress);
+      }
+    });
+    if (siteFeature.addBookmark) {
+      __privateMethod(this, _SankakuApp_instances, addBookmark_fn6).call(this, id);
+    }
+    await downloader.download(downloadConfig, { priority: 1 });
+    const { tagsWithType, artist, title, source: source2 } = mediaMeta;
+    historyDb.add({
+      pid: id,
+      user: artist,
+      title,
+      tags: tagsWithType,
+      source: source2
+    });
+  };
+  _createButtonOption = new WeakMap();
+  createButton_fn = function(elements) {
+    __privateGet(this, _createButtonOption).forEach(async (option) => {
+      const { containerSelectors, btnProvider } = option;
+      const selectorOptions = Array.isArray(containerSelectors) ? containerSelectors : [containerSelectors];
+      for (const selectorOption of selectorOptions) {
+        let selector;
+        let strategy;
+        if (typeof selectorOption === "string") {
+          selector = selectorOption;
+          strategy = "query";
+        } else {
+          ({ selector, strategy } = selectorOption);
+        }
+        if (!elements && strategy === "match") {
+          logger.error('Argument "elements" is required when strategy is "match"');
+          continue;
+        }
+        const containers = (elements == null ? undefined : elements.flatMap((el) => {
+          if (strategy === "query") {
+            return Array.from(el.querySelectorAll(selector));
+          } else if (strategy === "match") {
+            return el.matches(selector) ? el : null;
+          } else {
+            return el.matches(selector) ? el : Array.from(el.querySelectorAll(selector));
+          }
+        }).filter(Boolean)) || Array.from(document.querySelectorAll(selector));
+        if (containers.length === 0) continue;
+        for (const container of containers) {
+          try {
+            const maybePromise = btnProvider(container);
+            const childEl = maybePromise instanceof Promise ? await maybePromise : maybePromise;
+            if (!childEl) continue;
+            container.appendChild(childEl);
+          } catch (error) {
+            logger.error(error, container);
+          }
+        }
+      }
+    });
+  };
+  _useBatchDownload = new WeakMap();
   function getSiteInjector() {
     const sitesAdapters = [
       Pixiv,
@@ -22013,7 +22553,8 @@
       Nijie,
       Rule34Vault,
       Rule34Paheal,
-      Rule34Us
+      Rule34Us,
+      SankakuApp
     ];
     const hostname = location.hostname;
     for (const sites of sitesAdapters) {
