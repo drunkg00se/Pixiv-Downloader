@@ -34,7 +34,7 @@ interface CacheItem {
   page: Uint8Array | null;
 }
 
-type HistoryCache = Map<CacheItem['pid'], CacheItem['page']>;
+type HistoryCache = Map<string, CacheItem['page']>;
 
 type Subscription = (val: HistoryCache) => void;
 
@@ -219,7 +219,7 @@ class CachedHistoryDb extends HistoryDb {
     let historyItem: HistoryItem;
     for (let i = 0; (historyItem = historyItems[i++]); ) {
       const { pid, page = null } = historyItem;
-      this.cache.set(pid, page);
+      this.cache.set(pid + '', page);
     }
     logger.timeEnd('loadDb');
   }
@@ -228,12 +228,12 @@ class CachedHistoryDb extends HistoryDb {
     channelEvent.on<DBEventArgsMap, DbEvents.SYNC>(DbEvents.SYNC, (items) => {
       if (Array.isArray(items)) {
         items.forEach((item) => {
-          this.cache.set(item.pid, item.page);
+          this.cache.set(item.pid + '', item.page);
         });
 
         logger.info('Sync database cache:', items.length);
       } else {
-        this.cache.set(items.pid, items.page);
+        this.cache.set(items.pid + '', items.page);
       }
     });
 
@@ -246,10 +246,10 @@ class CachedHistoryDb extends HistoryDb {
   protected updateCache(item: CacheItem | CacheItem[]) {
     if (Array.isArray(item)) {
       item.forEach((cache) => {
-        this.cache.set(cache.pid, cache.page);
+        this.cache.set(cache.pid + '', cache.page);
       });
     } else {
-      this.cache.set(item.pid, item.page);
+      this.cache.set(item.pid + '', item.page);
     }
 
     channelEvent.emit<DBEventArgsMap, DbEvents.SYNC>(DbEvents.SYNC, item);
@@ -264,7 +264,7 @@ class CachedHistoryDb extends HistoryDb {
   private async getCache(pid: number | string): Promise<CacheItem['page'] | undefined> {
     pid = this.throwIfInvalidNumber(pid);
     await this.initCachePromise;
-    return this.cache.get(pid);
+    return this.cache.get(pid + '');
   }
 
   public async add(historyData: HistoryData): Promise<void> {
@@ -307,7 +307,7 @@ class CachedHistoryDb extends HistoryDb {
     await this.initCachePromise;
 
     if (page === undefined) {
-      return this.cache.has(pid);
+      return this.cache.has(pid + '');
     } else {
       this.throwIfInvalidNumber(page);
 
