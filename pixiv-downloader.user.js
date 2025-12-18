@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Pixiv Downloader
 // @namespace          https://greasyfork.org/zh-CN/scripts/432150
-// @version            1.12.0
+// @version            1.12.1
 // @author             ruaruarua
 // @description        一键下载各页面原图。批量下载画师作品，按作品标签下载。转换动图格式：Gif | Apng | Webp | Webm | MP4。自定义图片文件名，保存路径。保留 / 导出下载历史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info | SankakuComplex
 // @description:zh-TW  一鍵下載各頁面原圖。批次下載畫師作品，按作品標籤下載。轉換動圖格式：Gif | Apng | Webp | Webm | MP4。自定義圖片檔名，儲存路徑。保留 / 匯出下載歷史。Pixiv | Danbooru | ATFbooru | Yande.re | Konachan | Sakugabooru | Rule34 | Rule34paheal | Rule34us | Rule34vault | Gelbooru | Safebooru | E621 | E926 | E6ai | Nijie.info | SankakuComplex
@@ -5222,7 +5222,7 @@
       let historyItem;
       for (let i = 0; historyItem = historyItems[i++]; ) {
         const { pid, page = null } = historyItem;
-        this.cache.set(pid, page);
+        this.cache.set(pid + "", page);
       }
       logger.timeEnd("loadDb");
     }
@@ -5230,11 +5230,11 @@
       channelEvent.on("db.sync", (items) => {
         if (Array.isArray(items)) {
           items.forEach((item) => {
-            this.cache.set(item.pid, item.page);
+            this.cache.set(item.pid + "", item.page);
           });
           logger.info("Sync database cache:", items.length);
         } else {
-          this.cache.set(items.pid, items.page);
+          this.cache.set(items.pid + "", items.page);
         }
       });
       channelEvent.on("db.clear", () => {
@@ -5245,10 +5245,10 @@
     updateCache(item) {
       if (Array.isArray(item)) {
         item.forEach((cache) => {
-          this.cache.set(cache.pid, cache.page);
+          this.cache.set(cache.pid + "", cache.page);
         });
       } else {
-        this.cache.set(item.pid, item.page);
+        this.cache.set(item.pid + "", item.page);
       }
       channelEvent.emit("db.sync", item);
     }
@@ -5262,7 +5262,7 @@
     async getCache(pid) {
       pid = this.throwIfInvalidNumber(pid);
       await this.initCachePromise;
-      return this.cache.get(pid);
+      return this.cache.get(pid + "");
     }
     async add(historyData) {
       const { pid, page } = historyData;
@@ -5293,7 +5293,7 @@
       pid = this.throwIfInvalidNumber(pid);
       await this.initCachePromise;
       if (page === undefined) {
-        return this.cache.has(pid);
+        return this.cache.has(pid + "");
       } else {
         this.throwIfInvalidNumber(page);
         const cachesData = await this.getCache(pid);
@@ -10044,7 +10044,7 @@
     message
   });
   var on_click$2 = (_, showCreditCode) => set(showCreditCode, !get$1(showCreditCode));
-  var root_1$8 = /* @__PURE__ */ template(`<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><h4 class=" text-xl mt-2">新增</h4> <ul class="list-disc list-inside leading-loose"><li>现在支持www.sankakucomplex.com | sankaku.app。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`, 1);
+  var root_1$8 = /* @__PURE__ */ template(`<header class="modal-header text-2xl font-bold"></header> <article class="modal-body mt-4"><h4 class=" text-xl mt-2">新增</h4> <ul class="list-disc list-inside leading-loose"><li>现在支持www.sankakucomplex.com | sankaku.app。</li></ul> <h4 class=" text-xl mt-2">修复</h4> <ul class="list-disc list-inside leading-loose"><li>下载完成后按钮不显示已下载图标。</li></ul></article> <footer class="modal-footer mt-4"><div class="flex justify-between items-center text-sm"><button> </button> <a target="_blank" href="https://github.com/drunkg00se/Pixiv-Downloader/issues"> </a></div> <div><div class="flex justify-center items-center min-h-0 gap-14 overflow-hidden"><img alt="credit" class="rounded-full"> <p class="flex flex-col h-full justify-evenly"><a href="https://github.com/drunkg00se/Pixiv-Downloader" target="_blank" class="anchor"> </a> <span> </span></p></div></div></footer>`, 1);
   function Changelog($$anchor, $$props) {
     push($$props, true);
     const anchorFocus = `focus:!outline-none focus:decoration-wavy`;
@@ -10058,7 +10058,7 @@
       children: ($$anchor2, $$slotProps) => {
         var fragment_1 = root_1$8();
         var header = first_child(fragment_1);
-        header.textContent = `Pixiv Downloader ${"1.12.0"}`;
+        header.textContent = `Pixiv Downloader ${"1.12.1"}`;
         var footer = sibling(header, 4);
         var div = child(footer);
         var button2 = child(div);
@@ -14551,8 +14551,8 @@
       const shadow = root2.getRootNode();
       addStyleToShadow(shadow);
       shadow.host.setAttribute("style", "position:fixed; z-index:99999");
-      if (clientSetting.version !== "1.12.0") {
-        clientSetting.version = "1.12.0";
+      if (clientSetting.version !== "1.12.1") {
+        clientSetting.version = "1.12.1";
         showChangelog();
       }
       globalThis.addEventListener(EVENT_DIR_HANDLE_NOT_FOUND, (evt) => {
@@ -19445,7 +19445,7 @@
       super(option);
       __privateAdd(this, _authParams);
       const [username, apiKey] = option.authorization;
-      const UA = `Pixiv Downloader/${"1.12.0"} (by drunkg00se on e621)`;
+      const UA = `Pixiv Downloader/${"1.12.1"} (by drunkg00se on e621)`;
       __privateSet(this, _authParams, new URLSearchParams({ username, apiKey, _client: UA }));
     }
     get username() {
