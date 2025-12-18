@@ -25,6 +25,10 @@
     <ul class="list-disc list-inside leading-loose">
       <li>现在支持www.sankakucomplex.com | sankaku.app。</li>
     </ul>
+    <h4 class=" text-xl mt-2">修复</h4>
+    <ul class="list-disc list-inside leading-loose">
+      <li>下载完成后按钮不显示已下载图标。</li>
+    </ul>
   </article>
 
   <footer class="modal-footer mt-4">
