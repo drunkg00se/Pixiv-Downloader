@@ -138,7 +138,14 @@
         "download_selected_pages": "自定义页数",
         "pixiv_illust": "插画",
         "pixiv_manga": "漫画",
-        "pixiv_ugoira": "动图"
+        "pixiv_ugoira": "动图",
+        "skeb_art": "插画",
+        "skeb_comic": "漫画",
+        "skeb_voice": "语音",
+        "skeb_novel": "小说",
+        "skeb_video": "视频",
+        "skeb_music": "音乐",
+        "skeb_correction": "建议"
       }
     },
 

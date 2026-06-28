@@ -16,6 +16,7 @@ import { Rule34Paheal } from './sites/rule34paheal';
 import './lib/components/app.tailwind.css';
 import { Rule34Us } from './sites/rule34us';
 import { SankakuApp } from './sites/sankakuComplex';
+import { Skeb } from './sites/skeb';
 
 // Remove CSS injected into dom in the dev server
 if (import.meta.env.DEV) {
@@ -38,7 +39,8 @@ function getSiteInjector() {
     Rule34Vault,
     Rule34Paheal,
     Rule34Us,
-    SankakuApp
+    SankakuApp,
+    Skeb
   ];
   const hostname = location.hostname;
 

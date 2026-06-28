@@ -138,7 +138,14 @@
         "download_selected_pages": "Custom Pages",
         "pixiv_illust": "Illustration",
         "pixiv_manga": "Manga",
-        "pixiv_ugoira": "Ugoira"
+        "pixiv_ugoira": "Ugoira",
+        "skeb_art": "Illustration",
+        "skeb_comic": "Comic",
+        "skeb_voice": "Voice",
+        "skeb_novel": "Novel",
+        "skeb_video": "Video",
+        "skeb_music": "Music",
+        "skeb_correction": "Correction"
       }
     },
 

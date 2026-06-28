@@ -276,7 +276,7 @@
   <div
     transition:fly={{ x: 50, opacity: 0 }}
     data-theme="skeleton"
-    class="card px-4 pb-4 fixed right-20 top-36 w-[600px] *:text-sm shadow-xl bg-scroll"
+    class="card px-4 pb-4 fixed right-20 top-36 w-[700px] *:text-sm shadow-xl bg-scroll"
   >
     {#if !downloading.current}
       <div transition:slide class="downloader-filter">
