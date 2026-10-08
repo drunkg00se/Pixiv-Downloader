@@ -9,7 +9,7 @@ export function gmDownload(blob: Blob, path: string, signal?: AbortSignal): Prom
     const imgUrl = URL.createObjectURL(blob);
 
     const abortObj = GM_download({
-      url: URL.createObjectURL(blob),
+      url: imgUrl,
       name: path,
 
       onerror: (error) => {

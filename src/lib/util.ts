@@ -145,12 +145,16 @@ export function getElementText(el: HTMLElement): string {
   return str;
 }
 
+// WebKit（Safari）在 click() 之后异步才会去解引用 blob URL，
+// 同步调用 revokeObjectURL 会导致下载被静默取消或产生空文件，
+// 因此延迟回收（与 FileSaver.js 的做法一致）。
 export function aDownload(blob: Blob, filename: string) {
   const el = document.createElement('a');
-  el.href = URL.createObjectURL(blob);
+  const objectUrl = URL.createObjectURL(blob);
+  el.href = objectUrl;
   el.download = filename;
   el.click();
-  URL.revokeObjectURL(el.href);
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 40_000);
 }
 
 export function intersect(a: unknown[], b: unknown[]): unknown[] {

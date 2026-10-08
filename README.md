@@ -69,12 +69,18 @@
 
 ## 我的浏览器能用吗
 
-|               | Chrome         | Edge           | Firefox                              |
-| ------------- | -------------- | -------------- | ------------------------------------ |
-| Tampermonkey  | ✔             | ✔             | ✔⚠️FileSystemAccess API             |
-| Violentmonkey | ✔⚠️浏览器 API | ✔⚠️浏览器 API | ✔⚠️浏览器 API，FileSystemAccess API |
+|               | Chrome         | Edge           | Firefox                              | Safari                          |
+| ------------- | -------------- | -------------- | ------------------------------------ | ------------------------------- |
+| Tampermonkey  | ✔             | ✔             | ✔⚠️FileSystemAccess API             | ⚠️Referer 受限，见下文          |
+| Violentmonkey | ✔⚠️浏览器 API | ✔⚠️浏览器 API | ✔⚠️浏览器 API，FileSystemAccess API | ➖无官方版本                    |
 
 其他请自行测试 : )
+
+### Safari 说明
+
+- Safari 平台限制：脚本管理器无法通过 `GM_xmlhttpRequest` 设置 `Referer` 等特殊请求头（Tampermonkey 官方文档已注明），而 Pixiv 图床（`i.pximg.net`）、Gelbooru 等依赖 `Referer` 鉴权，缺失时会返回 **HTTP 403**。
+- Safari 上脚本会自动将 Tampermonkey 切换至其自研 Swift 网络实现（需 Tampermonkey ≥ 5.3.6219）以尝试发送 `Referer`。若切换后仍出现 403（错误信息以 `SafariRefererError` 开头），则为平台限制所致，请改用 Chrome / Edge / Firefox 下载。
+- Safari 不支持 FileSystemAccess API，且部分脚本管理器（如 Userscripts）缺少 `GM_download`、`GM_getResourceText` 等 API，不完全兼容本脚本。
 
 ---
 
