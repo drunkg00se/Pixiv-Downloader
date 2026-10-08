@@ -5,6 +5,14 @@ export const env = {
     return navigator.userAgent.includes('Firefox');
   },
 
+  // Chrome/Edge/Opera 等 Chromium 系浏览器的 UA 历史上也包含 "Safari" 字样，
+  // 需先排除再判断。
+  isSafari() {
+    const ua = navigator.userAgent;
+    const isChromiumBased = /Chrome|Chromium|Edg|OPR|CriOS|EdgiOS|FxiOS/.test(ua);
+    return !isChromiumBased && /Safari/.test(ua);
+  },
+
   isViolentmonkey() {
     return GM_info.scriptHandler === 'Violentmonkey';
   },

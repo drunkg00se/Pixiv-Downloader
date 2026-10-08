@@ -8,6 +8,7 @@ import {
 } from '@/sites/base/downloadConfig';
 import { IllustType, type UgoiraMeta } from './types';
 import { converter } from '@/lib/converter';
+import { env } from '@/lib/env';
 import { GM_xmlhttpRequest } from '$';
 import { historyDb } from '@/lib/db';
 import type { QualityOption } from '@/lib/converter/adapter';
@@ -159,6 +160,8 @@ export class PixivDownloadConfig extends MayBeMultiIllustsConfig {
             headers: {
               referer: 'https://www.pixiv.net'
             },
+            // 同 downloader：Safari 下切换 Swift 网络实现以发送 Referer
+            ...(env.isSafari() ? { fetch: false } : {}),
             responseType: 'blob',
             onload(e) {
               resolve(e.response);
